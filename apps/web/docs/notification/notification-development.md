@@ -334,7 +334,7 @@ export async function GET(request: Request) {
 ```typescript
 import { publishEvent, CHANNELS } from '@/lib/redis/client';
 import { db } from '@/lib/db';
-import { stories } from '@/lib/db/schema';
+import { stories } from '@/lib/schemas/database';
 
 export async function PUT(
   request: Request,
@@ -757,7 +757,7 @@ CREATE INDEX idx_notifications_cleanup ON notifications(expires_at) WHERE expire
 
 ```typescript
 import { db } from '@/lib/db';
-import { notifications, notificationPreferences } from '@/lib/db/schema';
+import { notifications, notificationPreferences } from '@/lib/schemas/database';
 import { eq, and, desc, lt } from 'drizzle-orm';
 import { publishEvent, CHANNELS } from '@/lib/redis/client';
 

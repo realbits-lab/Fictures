@@ -4,17 +4,6 @@
 
 This document outlines a comprehensive evaluation strategy for the novels generation system using the Adversity-Triumph Engine. The evaluation framework is **directly synchronized with the Core Principles** defined in the specification, ensuring that all testing validates the fundamental principles of the narrative engine.
 
-**Key Features:**
-- **Perfect 1:1 Core Principle Mapping**: Each Core Principle has dedicated Evaluation Objective, Success Criteria table, and Qualitative Rubric
-- **AI-Based Evaluation**: All metrics evaluated by AI models, enabling automated quality assessment at scale
-- **Unified Table Format**: All metrics use consistent 5-column format (Metric | Description | Target | Threshold | Method)
-- **Quantitative & Qualitative Framework**: Comprehensive measurement across structure, quality, and emotional impact
-- **Iterative Improvement**: Data-driven prompt optimization based on Core Principle adherence
-
-**Document Structure:**
-- **Part I (Testing Objectives)**: Evaluation objectives, success criteria tables, and qualitative framework
-- **Part II (Metrics & Evaluation)**: Detailed metric descriptions by generation phase
-
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core Principles (section 1.5), data model, and theoretical foundation
 - 📋 **Development Guide** (`novels-development.md`): API implementations and prompt specifications
@@ -210,6 +199,7 @@ This section provides detailed metric descriptions organized by generation phase
 | **Moral Framework Clarity** | How well the moral framework defines testable virtues and meaningful consequences | 3+ virtues named explicitly, causal logic present | 2+ virtues, basic logic | AI evaluation: Virtue identification and consequence logic |
 | **Thematic Coherence** | Consistency between premise, moral framework, and genre | Theme supports moral tests, no contradictions | Minor inconsistencies allowed | Automated: Keyword alignment across fields |
 | **Genre Consistency** | Story elements align with genre conventions and reader expectations | Genre-appropriate tone, conflict types, world rules | 80%+ genre alignment | AI evaluation: Genre checklist validation |
+| **Story Summary Quality** | Overall assessment of story foundation using database summary field | Composite score ≥3.5/4.0 averaging all story metrics, summary demonstrates strong thematic foundation | Composite score ≥3.0/4.0, summary is coherent and complete | AI evaluation: Holistic review of story summary field for narrative clarity, moral framework strength, and genre alignment |
 
 ### 2.2 Characters Generation Metrics
 
@@ -218,6 +208,7 @@ This section provides detailed metric descriptions organized by generation phase
 | **Character Depth** | Complexity of internal flaws, motivations, and arc potential | Each character has 1+ internal flaw, clear moral test, backstory > 200 chars | Internal flaw field populated | Automated: Field validation and length check |
 | **Jeong System Implementation** | Korean emotional bond system properly defined between characters | At least 2 Jeong relationships defined with type and intensity | 1+ Jeong relationship | Automated: Jeong array validation |
 | **Voice Distinctiveness** | Each character has unique speech patterns and personality traits | No overlapping voice descriptions, personality keyword overlap < 30% | Keyword overlap < 50% | Automated: Voice field uniqueness and keyword analysis |
+| **Character Summary Quality** | Overall assessment of character ensemble using database summary field | Composite score ≥3.5/4.0 averaging all character metrics, summary demonstrates complex character foundation | Composite score ≥3.0/4.0, summary shows distinct characters with clear flaws | AI evaluation: Holistic review of character summary field for flaw depth, relationship richness, and voice distinctiveness across all characters |
 
 ### 2.3 Settings Generation Metrics
 
@@ -226,6 +217,7 @@ This section provides detailed metric descriptions organized by generation phase
 | **Symbolic Meaning Clarity** | Setting's connection to moral framework is explicit | Symbolic meaning field directly references moral themes | Symbolic meaning field populated | AI evaluation: Moral framework-setting alignment |
 | **Sensory Detail Richness** | All 5 senses are engaged in setting description | At least 3 of 5 senses present in description | 2+ senses present | Automated: Sense keyword detection (sight, sound, smell, touch, taste) |
 | **Cycle Amplification Design** | How setting amplifies adversity-triumph cycle phases | Each cycle phase has setting amplification elements defined | 3+ phases have amplification | AI evaluation: Element array completeness per phase |
+| **Settings Summary Quality** | Overall assessment of settings ensemble using database summary field | Composite score ≥3.5/4.0 averaging all settings metrics, summary demonstrates settings that actively amplify narrative | Composite score ≥3.0/4.0, summary shows symbolic and sensory richness | AI evaluation: Holistic review of settings summary field for symbolic meaning, sensory detail, and cycle amplification across all settings |
 
 ### 2.4 Part Generation Metrics
 
@@ -234,6 +226,7 @@ This section provides detailed metric descriptions organized by generation phase
 | **Cycle Coherence** | 5-phase structure (Setup → Confrontation → Virtue → Consequence → Transition) is complete | All 5 phases present and distinct per character | 4+ phases present | Automated: Phase detection in part summary |
 | **Conflict Definition Clarity** | Internal and external conflicts are explicitly stated | Both conflict types named with specific examples | Both fields populated | AI evaluation: Conflict field analysis and concreteness |
 | **Earned Luck Tracking** | Seeds planted in setup/confrontation, resolved in consequence | At least 1 seed per cycle with planting and resolution noted | Seed tracking table exists | Automated: Seed tracking table validation |
+| **Part Summary Quality** | Overall assessment of macro-arc structure using database summary field | Composite score ≥3.5/4.0 averaging all part metrics, summary demonstrates complete 5-phase structure with clear conflicts | Composite score ≥3.0/4.0, summary shows cycle coherence and seed tracking | AI evaluation: Holistic review of part summary field for cycle structure completeness, conflict clarity, and seed causality across the macro arc |
 
 ### 2.5 Chapter Generation Metrics
 
@@ -245,6 +238,7 @@ This section provides detailed metric descriptions organized by generation phase
 | **Stakes Escalation** | New adversity increases in complexity or intensity compared to previous cycle | 80%+ of new adversities raise stakes (higher severity score) | 60%+ escalation | AI evaluation: Adversity severity comparison (1-5 scale) |
 | **Resolution-Adversity Transition Quality** | How naturally and inevitably the resolution creates the next adversity | Transition feels organic and causally connected (rating 3.0+/4.0) | Rating 2.5+/4.0 | AI evaluation: Transition logic assessment (1-4 scale) |
 | **Narrative Momentum** | AI-evaluated desire to continue after cycle resolution | 80%+ cycles demonstrate compelling forward momentum | 60%+ momentum | AI evaluation: Hook and transition strength analysis |
+| **Chapter Summary Quality** | Overall assessment of micro-cycle structure using database summary field | Composite score ≥3.5/4.0 averaging all chapter metrics, summary demonstrates single-cycle focus with strong momentum | Composite score ≥3.0/4.0, summary shows cycle focus and causal connections | AI evaluation: Holistic review of chapter summary field for cycle focus, seed tracking, adversity connections, stakes escalation, and narrative momentum |
 
 ### 2.6 Scene Summary Generation Metrics
 
@@ -253,6 +247,7 @@ This section provides detailed metric descriptions organized by generation phase
 | **Phase Distribution Balance** | Scenes distributed across 5 cycle phases (3-7 scenes per chapter) | At least 1 scene per critical phase (virtue, consequence) | All 5 phases represented | Automated: Phase assignment count per chapter |
 | **Emotional Beat Assignment** | Each scene has clear emotional trajectory and purpose | Emotional beat field populated with specific, varied emotions | All scenes have emotion | AI evaluation: Emotional beat clarity and variety |
 | **Pacing Rhythm** | Build to virtue scene (peak), release after consequence | Scene order follows: setup → build → peak → release → transition | Correct phase sequence | AI evaluation: Scene order and cycle phase progression |
+| **Scene Summaries Quality** | Overall assessment of scene planning using database summary field | Composite score ≥3.5/4.0 averaging all scene summary metrics, summary demonstrates balanced phase distribution with clear emotional beats | Composite score ≥3.0/4.0, summary shows proper pacing and emotional variety | AI evaluation: Holistic review of scene summaries field for phase balance, emotional beat clarity, and pacing rhythm across all scenes in chapter |
 
 ### 2.7 Scene Content Generation Metrics
 
@@ -261,5 +256,201 @@ This section provides detailed metric descriptions organized by generation phase
 | **Word Count Range Compliance** | Scene length appropriate for cycle phase | Setup/Transition: 300-600<br>Confrontation: 500-800<br>Virtue: 800-1000<br>Consequence: 600-900 words | Within ±20% of range | Automated: Word count by phase validation |
 | **Cycle Alignment** | Scene content matches assigned cycle phase guidelines | Phase-specific elements present (e.g., Virtue scene has moral elevation moment) | Key phase elements present | AI evaluation: Phase checklist validation |
 | **Emotional Resonance** | Scene creates intended emotional response (Gam-dong) | AI-evaluated emotional impact matches scene objective | 3.0+/4.0 emotion score | AI evaluation: Emotion intensity and alignment |
+| **Scene Content Quality** | Overall assessment of individual scene execution using database summary field | Composite score ≥3.5/4.0 averaging all scene content metrics, summary demonstrates proper word count, cycle alignment, and emotional resonance | Composite score ≥3.0/4.0, summary shows phase-appropriate content and emotional impact | AI evaluation: Holistic review of scene content summary field for word count compliance, cycle phase alignment, and emotional resonance achievement |
+
+---
+
+## Part III: Evaluation APIs
+
+### 3.1 API Implementation
+
+The metrics defined in this document are implemented as RESTful APIs under `/api/evaluation/`.
+
+**Location**: `apps/web/src/app/api/evaluation/`
+
+**Documentation**:
+- API Reference: `/api/evaluation/README.md`
+- Implementation Guide: `novels-development.md` (Part IV)
+- Detailed Specs: `docs/api/evaluation-api-structure.md`
+
+### 3.2 Available Endpoints
+
+**7 Core Evaluation Endpoints**:
+
+| API Endpoint | Metrics Evaluated | Section Reference |
+|--------------|-------------------|-------------------|
+| `POST /api/evaluation/story` | Moral Framework Clarity, Thematic Coherence, Genre Consistency | §2.1 Story Generation |
+| `POST /api/evaluation/characters` | Character Depth, Jeong System, Voice Distinctiveness | §2.2 Characters Generation |
+| `POST /api/evaluation/settings` | Symbolic Meaning, Sensory Details, Cycle Amplification | §2.3 Settings Generation |
+| `POST /api/evaluation/part` | Cycle Coherence, Conflict Definition, Seed Tracking | §2.4 Part Generation |
+| `POST /api/evaluation/chapter` | Single-Cycle Focus, Seed Tracking, Adversity Connection, Stakes Escalation, Momentum | §2.5 Chapter Generation |
+| `POST /api/evaluation/scene-summary` | Phase Distribution, Emotional Beat, Pacing Rhythm | §2.6 Scene Summary |
+| `POST /api/evaluation/scene-content` | Word Count Compliance, Cycle Alignment, Emotional Resonance | §2.7 Scene Content |
+
+**Evaluation Modes**:
+- `quick` - Automated metrics only (fast)
+- `standard` - Balanced automated + AI evaluation (default)
+- `thorough` - Comprehensive AI analysis (slower, detailed)
+
+### 3.3 Metric Scoring
+
+All metrics use standardized scoring:
+
+**Score Scales**:
+- **1-4 Scale**: AI evaluations (1=Weak, 2=Developing, 3=Effective, 4=Exceptional)
+- **0-100 Scale**: Percentage-based metrics (automated)
+- **Pass/Fail**: Boolean metrics (automated)
+
+**Pass Criteria**:
+- **Target**: Ideal score (aspire to achieve)
+- **Threshold**: Minimum passing score (must exceed)
+- **Passed**: `score >= threshold`
+
+**Example**:
+```json
+{
+  "moralFrameworkClarity": {
+    "score": 3.5,
+    "target": 3.0,
+    "threshold": 2.0,
+    "passed": true,
+    "feedback": "Moral Framework Clarity",
+    "method": "ai-evaluation"
+  }
+}
+```
+
+### 3.4 Response Format
+
+All evaluation endpoints return:
+
+```typescript
+{
+  evaluationId: string;        // Unique ID (e.g., "eval_1234567890_abc123")
+  timestamp: string;           // ISO 8601 timestamp
+  evaluationMode: string;      // "quick" | "standard" | "thorough"
+  overallScore: number;        // Average of all metric scores
+  passed: boolean;             // true if all metrics pass thresholds
+  metrics: {
+    [metricName]: {
+      score: number,           // Actual score achieved
+      target: number,          // Target score (from tables above)
+      threshold: number,       // Minimum passing score (from tables)
+      passed: boolean,         // score >= threshold
+      feedback: string,        // Metric description
+      method: string,          // "automated" | "ai-evaluation"
+      details?: object         // Metric-specific additional data
+    }
+  },
+  recommendations?: string[]   // Improvement suggestions (if failed)
+}
+```
+
+### 3.5 Usage Example
+
+**Evaluate Story Metrics** (§2.1):
+```bash
+curl -X POST http://localhost:3000/api/evaluation/story \
+  -H "Content-Type: application/json" \
+  -d '{
+    "storyId": "story_abc123",
+    "evaluationMode": "standard"
+  }'
+```
+
+**Response**:
+```json
+{
+  "evaluationId": "story_1731596400_xyz789",
+  "storyId": "story_abc123",
+  "timestamp": "2025-11-14T10:00:00.000Z",
+  "evaluationMode": "standard",
+  "overallScore": 3.67,
+  "passed": true,
+  "metrics": {
+    "moralFrameworkClarity": {
+      "score": 4,
+      "target": 3,
+      "threshold": 2,
+      "passed": true,
+      "feedback": "Moral Framework Clarity",
+      "method": "ai-evaluation",
+      "details": {
+        "virtuesIdentified": ["courage", "compassion", "honesty"],
+        "causalLogicPresent": true
+      }
+    },
+    "thematicCoherence": {
+      "score": 4,
+      "target": 4,
+      "threshold": 3,
+      "passed": true,
+      "feedback": "Thematic Coherence",
+      "method": "ai-evaluation"
+    },
+    "genreConsistency": {
+      "score": 3,
+      "target": 4,
+      "threshold": 3,
+      "passed": true,
+      "feedback": "Genre Consistency",
+      "method": "ai-evaluation"
+    }
+  },
+  "recommendations": []
+}
+```
+
+### 3.6 Batch Evaluation
+
+Evaluate multiple items at once:
+
+```bash
+# Batch evaluate all characters in a story
+curl -X POST http://localhost:3000/api/evaluation/characters \
+  -H "Content-Type: application/json" \
+  -d '{
+    "characterIds": ["char_1", "char_2", "char_3"],
+    "storyId": "story_abc123",
+    "evaluationMode": "thorough"
+  }'
+```
+
+### 3.7 Integration with Core Principles
+
+The evaluation APIs validate the **5 Core Principles** from `novels-specification.md`:
+
+1. **Cyclic Structure** - Validated by: part, chapter, scene-summary endpoints
+2. **Intrinsic Motivation** - Validated by: character, scene-content endpoints
+3. **Earned Consequence** - Validated by: chapter, part endpoints (seed tracking)
+4. **Character Transformation** - Validated by: character endpoint
+5. **Emotional Resonance** - Validated by: scene-content, scene-summary endpoints
+
+**Future Enhancement**:
+`POST /api/evaluation/core-principles/all` will provide comprehensive validation of all 5 principles for a complete story.
+
+### 3.8 Automated Quality Assurance
+
+The evaluation APIs enable automated quality loops during generation:
+
+```typescript
+// 1. Generate content
+const scene = await generateScene(params);
+
+// 2. Evaluate quality
+const evaluation = await fetch('/api/evaluation/scene-content', {
+  method: 'POST',
+  body: JSON.stringify({ sceneId: scene.id })
+}).then(r => r.json());
+
+// 3. Improve if needed
+if (!evaluation.passed) {
+  await improveScene(scene.id, evaluation.recommendations);
+}
+```
+
+This ensures all generated content meets the quality thresholds defined in this document before being shown to users.
+
+---
 
 ---

@@ -19,7 +19,7 @@ import type {
 import {
     type AiCharacterType,
     AiCharacterZodSchema,
-} from "./zod-schemas";
+} from "@/lib/schemas/zod/ai";
 
 /**
  * Generate character profiles for a story

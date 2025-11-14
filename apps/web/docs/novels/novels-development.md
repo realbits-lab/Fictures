@@ -40,20 +40,93 @@ All types follow a consistent layer-prefix pattern with explicit suffixes for se
 - `ZodSchema` - Zod validation schema (AI layer - SSOT)
 - `JsonSchema` - JSON Schema for Gemini API (AI layer - derived from Zod)
 
-### 1.3 Schema & Validation Architecture (Single Source of Truth)
+### 1.3 Schema & Validation Architecture (Layered SSOT)
 
-**Principle**: Database schema is the single source of truth. All validation schemas are auto-generated via `drizzle-zod`.
+**Principle**: Use the right tool for each layer. Drizzle for tables, Zod for nested structures and validation.
 
-#### Table-Level SSOT (Drizzle → Zod)
+#### Directory Structure: Tool-Based Organization
 
-For table structures, Drizzle schema is SSOT and generates Zod schemas via `drizzle-zod`:
+```typescript
+src/lib/schemas/
+  ├── nested-zod/        // SSOT: Zod schemas for nested JSON types
+  │   ├── personality.ts
+  │   ├── physical-description.ts
+  │   ├── voice-style.ts
+  │   └── setting-elements.ts
+  │
+  ├── drizzle/           // SSOT: Drizzle ORM table definitions
+  │   ├── stories.ts
+  │   ├── characters.ts
+  │   ├── settings.ts
+  │   ├── parts.ts
+  │   ├── chapters.ts
+  │   ├── scenes.ts
+  │   └── index.ts
+  │
+  ├── generated-zod/     // Generated: Table validators via drizzle-zod
+  │   ├── story-validators.ts
+  │   ├── character-validators.ts
+  │   ├── setting-validators.ts
+  │   └── index.ts
+  │
+  └── ai/                // Derived: AI-specific Zod schemas
+      ├── ai-story.ts
+      ├── ai-character.ts
+      ├── ai-setting.ts
+      └── index.ts
+```
+
+**Naming Rationale**:
+- **`nested-zod/`**: Explicitly "Zod for nested structures" (hand-written SSOT)
+- **`drizzle/`**: Explicitly "Drizzle schemas" (hand-written SSOT for tables)
+- **`generated-zod/`**: Explicitly "Generated Zod validators" (auto-generated from Drizzle via drizzle-zod)
+- **`ai/`**: "AI-specific schemas" (derived from Zod for Gemini API)
+
+**Clear Naming Pattern**: All Zod directories follow `{adjective}-zod/` pattern:
+- `nested-zod/` = Hand-written Zod SSOT for JSON field structures
+- `generated-zod/` = Auto-generated Zod validators for database tables
+
+#### Layer 1: Nested JSON Types (Zod SSOT)
+
+For **nested JSON field structures**, Zod is SSOT and Drizzle imports types:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  src/lib/db/schema.ts (Drizzle ORM)                    │
+│  src/lib/schemas/nested-zod/ (SSOT for Nested Types)   │
+│  - personalitySchema → PersonalityType                  │
+│  - physicalDescriptionSchema → PhysicalDescriptionType  │
+│  - voiceStyleSchema → VoiceStyleType                   │
+│  - adversityElementsSchema → AdversityElementsType     │
+│  - virtueElementsSchema → VirtueElementsType           │
+│  - consequenceElementsSchema → ConsequenceElementsType │
+│  - sensorySchema → SensoryType                         │
+└─────────────────┬───────────────────────────────────────┘
+                  │
+                  │ imports types
+                  ▼
+┌─────────────────────────────────────────────────────────┐
+│  src/lib/schemas/drizzle/ (Drizzle ORM)                │
+│  - characters.personality .$type<PersonalityType>()     │
+│  - characters.physicalDescription .$type<...>()         │
+│  - characters.voiceStyle .$type<VoiceStyleType>()      │
+│  - settings.adversityElements .$type<...>()            │
+│  - settings.virtueElements .$type<...>()               │
+│  - settings.consequenceElements .$type<...>()          │
+│  - settings.sensory .$type<SensoryType>()              │
+└─────────────────────────────────────────────────────────┘
+```
+
+#### Layer 2: Table Schemas (Drizzle SSOT → Zod Generated)
+
+For **table structures**, Drizzle schema is SSOT and generates Zod validators via `drizzle-zod`:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  src/lib/schemas/drizzle/ (Drizzle ORM)                │
 │  SINGLE SOURCE OF TRUTH (Table Structure)              │
 │  - Define tables with pgTable()                         │
 │  - Database constraints (NOT NULL, length, etc.)        │
+│  - Foreign keys, indexes, relations                     │
 └─────────────────┬───────────────────────────────────────┘
                   │
                   ▼
@@ -65,12 +138,13 @@ For table structures, Drizzle schema is SSOT and generates Zod schemas via `driz
                   │
                   ▼
 ┌─────────────────────────────────────────────────────────┐
-│  zod-schemas.ts (Generated Schemas)           │
+│  src/lib/schemas/generated-zod/ (Generated Validators) │
 │  - insertStorySchema, selectStorySchema                 │
 │  - insertCharacterSchema, selectCharacterSchema         │
+│  - insertSettingSchema, selectSettingSchema             │
+│  - insertPartSchema, selectPartSchema                   │
 │  - insertChapterSchema, selectChapterSchema             │
 │  - insertSceneSchema, selectSceneSchema                 │
-│  - + AI-specific schemas (AiStoryZodSchema, etc.)       │
 └─────────────────┬───────────────────────────────────────┘
                   │
                   ├─────────────────┬─────────────────┐
@@ -82,48 +156,46 @@ For table structures, Drizzle schema is SSOT and generates Zod schemas via `driz
        └──────────────────┘ └─────────────┘ └──────────────┘
 ```
 
-#### Nested JSON SSOT (Zod ← Drizzle) - HYBRID ARCHITECTURE
+#### Layer 3: AI Schemas (Derived from Zod)
 
-For **nested JSON field structures** (like `personality`, `physicalDescription`, `sensory`), Zod is SSOT and Drizzle imports types:
+For **AI generation**, schemas are derived from table validators:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  zod-schemas.ts (SSOT for Nested Types)       │
-│  - personalitySchema → PersonalityType                  │
-│  - physicalDescriptionSchema → PhysicalDescriptionType  │
-│  - voiceStyleSchema → VoiceStyleType                   │
-│  - adversityElementsSchema → AdversityElementsType     │
-│  - cycleAmplificationSchema → CycleAmplificationType   │
-│  - sensorySchema → SensoryType                         │
+│  src/lib/schemas/generated-zod/ (Table Validators)     │
+│  - insertStorySchema (full table schema)                │
+│  - insertCharacterSchema                                │
+│  - insertSceneSchema                                    │
 └─────────────────┬───────────────────────────────────────┘
                   │
-                  │ imports types (bidirectional)
+                  │ .pick() + .extend() + .describe()
                   ▼
 ┌─────────────────────────────────────────────────────────┐
-│  src/lib/db/schema.ts (Drizzle ORM)                    │
-│  - characters.personality .$type<PersonalityType>()     │
-│  - characters.physicalDescription .$type<...>()         │
-│  - characters.voiceStyle .$type<VoiceStyleType>()      │
-│  - settings.adversityElements .$type<...>()            │
-│  - settings.cycleAmplification .$type<...>()           │
-│  - settings.sensory .$type<SensoryType>()              │
+│  src/lib/schemas/ai/ (AI-Specific Schemas)             │
+│  - AiStoryZodSchema (only AI-generated fields)          │
+│  - AiCharacterZodSchema (+ rich descriptions)           │
+│  - AiSceneSummaryZodSchema                              │
+│  - AiSceneImprovementZodSchema                          │
 └─────────────────────────────────────────────────────────┘
 ```
 
-**Why Hybrid Architecture?**
-- Drizzle's `.$type<T>()` is **TypeScript-only** (compile-time) with no runtime information
-- `drizzle-zod` can only generate `z.unknown()` or `z.any()` for JSON fields
-- Zod provides **runtime validation** and detailed type definitions for nested structures
-- Solution: Define nested schemas in Zod, then reference those types in Drizzle
+**Why Layered Architecture?**
+- **Layer Separation**: Each directory has a single, clear responsibility
+- **Tool-Specific**: Drizzle for SQL, Zod for validation, AI for generation
+- **SSOT Clarity**: `nested-zod/` and `drizzle/` are hand-written sources of truth
+- **Generated Code**: `generated-zod/` is auto-generated from Drizzle via drizzle-zod
+- **Derived Schemas**: `ai/` derives from `generated-zod/` with AI-specific metadata
 
 **Files & Responsibilities**:
 
-| File | Purpose | Source |
-|------|---------|--------|
-| `src/lib/db/schema.ts` | Database schema (SSOT for tables) | Manual (Drizzle) |
-| `zod-schemas.ts` | Validation schemas (SSOT for nested types) | Semi-manual (drizzle-zod + manual nested schemas) |
-| `validation.ts` | Business logic (warnings, stats) | Uses generated schemas |
-| `validation-schemas.ts` | API request validation | Manual (different purpose) |
+| Directory | Purpose | Source | SSOT Status |
+|-----------|---------|--------|-------------|
+| `schemas/nested-zod/` | Nested JSON type definitions | Manual (Zod) | ✅ SSOT for JSON structures |
+| `schemas/drizzle/` | Database table definitions | Manual (Drizzle) | ✅ SSOT for tables |
+| `schemas/generated-zod/` | Table validation schemas | Auto-generated (drizzle-zod) | ❌ Derived from drizzle/ |
+| `schemas/ai/` | AI-specific schemas | Derived (.pick/.extend) | ❌ Derived from generated-zod/ |
+| `db/schema.ts` | **DEPRECATED** - Migrate to `schemas/drizzle/` | Manual (Drizzle) | ⚠️ Legacy location |
+| `studio/generators/zod-schemas.ts` | **DEPRECATED** - Migrate to `schemas/` | Manual + Generated | ⚠️ Legacy location |
 
 **Benefits**:
 - ✅ **No Schema Drift**: DB and validation always match
@@ -136,12 +208,13 @@ For **nested JSON field structures** (like `personality`, `physicalDescription`,
 
 ```typescript
 // ✅ CORRECT: Using auto-generated schema from SSOT
-import { insertStorySchema } from "@/lib/studio/generators/zod-schemas";
+import { insertStorySchema } from "@/lib/schemas/generated-zod/story-validators";
 
 // Validate API request
 const validatedData = insertStorySchema.parse(requestBody);
 
 // Insert into database (types match perfectly!)
+import { stories } from "@/lib/schemas/drizzle/stories";
 await db.insert(stories).values(validatedData);
 
 // ❌ INCORRECT: Manual schema (causes drift)
@@ -156,8 +229,8 @@ const manualSchema = z.object({
 // ✅ CORRECT: Using exported nested schemas (SSOT)
 import {
   personalitySchema,
-  PersonalityType
-} from "@/lib/studio/generators/zod-schemas";
+  type PersonalityType
+} from "@/lib/schemas/nested-zod/personality";
 
 // Validate nested JSON data
 const validatedPersonality: PersonalityType = personalitySchema.parse({
@@ -165,8 +238,9 @@ const validatedPersonality: PersonalityType = personalitySchema.parse({
   values: ["justice", "family"]
 });
 
-// In schema.ts - Import and use the type
-import type { PersonalityType } from "@/lib/studio/generators/zod-schemas";
+// In drizzle schema - Import and use the type
+import type { PersonalityType } from "@/lib/schemas/nested-zod/personality";
+import { pgTable, json } from "drizzle-orm/pg-core";
 
 export const characters = pgTable("characters", {
   // ...
@@ -180,31 +254,57 @@ personality: json().$type<{
 }>().notNull()
 ```
 
-**Exported Nested Schemas**:
+**Exported Nested Schemas** (`src/lib/schemas/nested-zod/`):
 
 Characters table:
-- `personalitySchema` + `PersonalityType` (traits, values)
-- `physicalDescriptionSchema` + `PhysicalDescriptionType` (age, appearance, distinctiveFeatures, style)
-- `voiceStyleSchema` + `VoiceStyleType` (tone, vocabulary, quirks, emotionalRange)
+- **`personality.ts`**: `personalitySchema` + `PersonalityType` (traits, values)
+- **`physical-description.ts`**: `physicalDescriptionSchema` + `PhysicalDescriptionType` (age, appearance, distinctiveFeatures, style)
+- **`voice-style.ts`**: `voiceStyleSchema` + `VoiceStyleType` (tone, vocabulary, quirks, emotionalRange)
 
 Settings table:
-- `adversityElementsSchema` + `AdversityElementsType` (physicalObstacles, scarcityFactors, dangerSources, socialDynamics)
-- `cycleAmplificationSchema` + `CycleAmplificationType` (setup, confrontation, virtue, consequence, transition)
-- `sensorySchema` + `SensoryType` (sight, sound, smell, touch, taste?)
+- **`setting-elements.ts`**:
+  - `adversityElementsSchema` + `AdversityElementsType` (physicalObstacles, scarcityFactors, dangerSources, socialDynamics)
+  - `virtueElementsSchema` + `VirtueElementsType` (witnessElements, contrastElements, opportunityElements, sacredSpaces)
+  - `consequenceElementsSchema` + `ConsequenceElementsType` (transformativeElements, rewardSources, revelationTriggers, communityResponses)
+  - `sensorySchema` + `SensoryType` (sight, sound, smell, touch, taste?)
 
 **When to Update**:
 
 **Table Structure Changes:**
-1. Modify `src/lib/db/schema.ts` (SSOT for tables)
+1. Modify table in `src/lib/schemas/drizzle/{entity}.ts` (SSOT for tables)
 2. Run `pnpm db:generate` (regenerate Drizzle types)
-3. Schemas in `zod-schemas.ts` auto-update
+3. Auto-regenerate validators in `src/lib/schemas/generated-zod/` using drizzle-zod
 4. All validation uses updated schema automatically
 
 **Nested JSON Structure Changes:**
-1. Modify nested schema in `zod-schemas.ts` (SSOT for nested types)
+1. Modify nested schema in `src/lib/schemas/nested-zod/{type}.ts` (SSOT for nested types)
 2. Export the schema and its type (if not already exported)
-3. Update imports in `src/lib/db/schema.ts` if needed
+3. Update imports in `src/lib/schemas/drizzle/{entity}.ts` if needed
 4. Both layers stay synchronized automatically
+
+**AI Schema Changes:**
+1. Modify AI schema in `src/lib/schemas/ai/{entity}.ts`
+2. Update `.pick()` fields or `.extend()` descriptions
+3. No other files need updates (derived schema pattern)
+
+#### Layered SSOT Summary Table
+
+| Layer | Directory | SSOT Status | Tool | Purpose | Example Files |
+|-------|-----------|-------------|------|---------|---------------|
+| **Nested JSON Types** | `schemas/nested-zod/` | ✅ **SSOT** | Zod | Nested data validation | `personality.ts`, `sensory.ts` |
+| **Database Schema** | `schemas/drizzle/` | ✅ **SSOT** | Drizzle | Table structure, relations, indexes | `stories.ts`, `characters.ts` |
+| **Table Validation** | `schemas/generated-zod/` | ❌ Generated | drizzle-zod | Runtime validation | `story-validators.ts` |
+| **AI Schemas** | `schemas/ai/` | ❌ Derived | Zod | AI metadata | `ai-story.ts`, `ai-character.ts` |
+
+**Data Flow**:
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────────┐     ┌──────────┐
+│ nested-zod/ │────▶│  drizzle/    │────▶│ generated-zod/  │────▶│   ai/    │
+│   (SSOT)    │     │   (SSOT)     │     │  (Generated)    │     │(Derived) │
+└─────────────┘     └──────────────┘     └─────────────────┘     └──────────┘
+  Personality         pgTable()            insertSchema           AiCharacter
+  Sensory             Foreign Keys         selectSchema           + descriptions
+```
 
 **Complete Type Hierarchy for Story Generation:**
 
@@ -643,12 +743,12 @@ const result = await generateStory({
 
 **3-Layer Type Structure**:
 
-1. **API Layer Types** (`src/app/api/studio/types.ts`)
+1. **API Layer Types** (`src/lib/schemas/api/studio.ts`)
    - `Api{Entity}Request` - HTTP request body
    - `Api{Entity}Response` - HTTP success response
    - `Api{Entity}ErrorResponse` - HTTP error response
 
-2. **Generator Layer Types** (`src/lib/studio/generators/types.ts`)
+2. **Generator Layer Types** (`src/lib/schemas/services/generators.ts`)
    - `Generator{Entity}Params` - Generator function parameters
    - `Generator{Entity}Result` - Generator function return value
    - `{Entity}PromptParams` - Prompt template variables
@@ -1202,6 +1302,151 @@ For complete testing metrics, evaluation frameworks, and success criteria, see:
 - [ ] Results compared to baseline with statistical significance
 - [ ] Decision documented with rationale
 - [ ] Changelog updated with version details
+
+---
+
+## Part IV: Evaluation APIs
+
+### 4.7 Evaluation API Overview
+
+The evaluation APIs provide automated quality assessment for all phases of novel generation based on the metrics defined in `novels-evaluation.md`.
+
+**Base URL**: `/api/evaluation/`
+
+**Documentation**: See `/api/evaluation/README.md` for complete API reference.
+
+### 4.8 Available Endpoints
+
+**7 Core Evaluation Types**:
+
+| Endpoint | Evaluates | Key Metrics |
+|----------|-----------|-------------|
+| `POST /api/evaluation/story` | Story-level quality | Moral Framework Clarity, Thematic Coherence, Genre Consistency |
+| `POST /api/evaluation/characters` | Character quality (batch) | Character Depth, Jeong System, Voice Distinctiveness |
+| `POST /api/evaluation/settings` | Setting quality (batch) | Symbolic Meaning, Sensory Details, Cycle Amplification |
+| `POST /api/evaluation/part` | Part structure | Cycle Coherence, Conflict Definition, Seed Tracking |
+| `POST /api/evaluation/chapter` | Chapter quality | Single-Cycle Focus, Seed Tracking, Stakes Escalation, Momentum |
+| `POST /api/evaluation/scene-summary` | Scene summary | Phase Distribution, Emotional Beat, Pacing Rhythm |
+| `POST /api/evaluation/scene-content` | Scene content | Word Count Compliance, Cycle Alignment, Emotional Resonance |
+
+**Evaluation Modes**:
+- `quick` - Fast automated metrics only
+- `standard` - Balanced (default)
+- `thorough` - Comprehensive with AI analysis
+
+### 4.9 Response Format
+
+All evaluation endpoints return standardized responses:
+
+```typescript
+{
+  evaluationId: string;        // Unique evaluation ID
+  timestamp: string;           // ISO timestamp
+  evaluationMode: string;      // "quick" | "standard" | "thorough"
+  overallScore: number;        // Average score (0-4 scale)
+  passed: boolean;             // All thresholds met
+  metrics: {                   // Individual metric results
+    [metricName]: {
+      score: number;           // Actual score
+      target: number;          // Target score
+      threshold: number;       // Minimum passing score
+      passed: boolean;         // score >= threshold
+      feedback: string;        // Metric description
+      method: string;          // "automated" | "ai-evaluation"
+      details?: {...}          // Metric-specific data
+    }
+  },
+  recommendations?: string[]   // Improvement suggestions
+}
+```
+
+### 4.10 Usage Examples
+
+**Evaluate Story**:
+```typescript
+const response = await fetch('/api/evaluation/story', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    storyId: 'story_123',
+    evaluationMode: 'standard'
+  })
+});
+
+const result = await response.json();
+// result.overallScore: 3.5
+// result.passed: true
+// result.metrics.moralFrameworkClarity.score: 4
+```
+
+**Batch Evaluate Characters**:
+```typescript
+const response = await fetch('/api/evaluation/characters', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    characterIds: ['char_1', 'char_2', 'char_3'],
+    storyId: 'story_123',
+    evaluationMode: 'thorough'
+  })
+});
+
+const result = await response.json();
+// result.results[0].characterName: "Alice"
+// result.results[0].overallScore: 3.8
+// result.overallPassed: true
+```
+
+**Evaluate Scene Content**:
+```typescript
+const response = await fetch('/api/evaluation/scene-content', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ sceneId: 'scene_123' })
+});
+
+const result = await response.json();
+// result.metrics.wordCountCompliance.withinRange: true
+// result.metrics.emotionalResonance.emotionIntensity: 3.2
+```
+
+### 4.11 Integration with Generation Pipeline
+
+Evaluation APIs can be integrated into the generation pipeline for automated quality assurance:
+
+1. **After Story Generation**: Evaluate moral framework and thematic coherence
+2. **After Characters**: Batch evaluate all characters for depth and voice
+3. **After Settings**: Batch evaluate symbolic meaning and sensory richness
+4. **After Chapters**: Evaluate cycle coherence and seed tracking
+5. **After Scenes**: Evaluate word count, alignment, and emotional resonance
+
+**Automated Quality Loop**:
+```typescript
+// Generate scene
+const scene = await generateScene(params);
+
+// Evaluate quality
+const evaluation = await evaluateSceneContent({ sceneId: scene.id });
+
+// Improve if needed
+if (!evaluation.passed) {
+  await improveScene(scene.id, evaluation.recommendations);
+}
+```
+
+### 4.12 Future Enhancements (Phase 2)
+
+Planned features:
+- **Batch Operations**: `/api/evaluation/batch/` - Evaluate multiple types
+- **Story Pipeline**: `/api/evaluation/batch/{storyId}` - Full story evaluation
+- **Reports**: `/api/evaluation/report/{storyId}` - Comprehensive reports
+- **Core Principles**: `/api/evaluation/core-principles/all` - Validate 5 principles
+- **History**: `/api/evaluation/story/{storyId}/history` - Track improvements
+- **Comparison**: `/api/evaluation/report/compare` - Compare multiple stories
+
+---
+
+**End of Part IV: Evaluation APIs**
 
 ---
 

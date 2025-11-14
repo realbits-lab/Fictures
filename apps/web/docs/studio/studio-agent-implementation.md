@@ -8,7 +8,7 @@ The Studio Agent is an AI-powered editing assistant integrated into the `/studio
 
 ### Components
 
-1. **Database Layer** (`src/lib/db/schema.ts`)
+1. **Database Layer** (`src/lib/schemas/database/index.ts`)
    - `studio_agent_chats` - Chat sessions
    - `studio_agent_messages` - Messages with tool invocations
    - `studio_agent_tool_executions` - Tool execution tracking
@@ -289,7 +289,7 @@ src/
 ## Related Documentation
 
 - [Studio Agent Chat System Specification](./studio-agent-chat.md) - Original design doc
-- [Database Schema](../../src/lib/db/schema.ts) - Full schema definition
+- [Database Schema](../../src/lib/schemas/database/index.ts) - Full schema definition
 - [CRUD Tools](../../src/lib/studio/agent-crud-tools.ts) - Tool implementations
 - [API Route](../../src/app/api/studio/agent/route.ts) - Backend logic
 

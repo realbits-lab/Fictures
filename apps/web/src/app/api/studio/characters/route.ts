@@ -12,15 +12,15 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
-import { characters, stories } from "@/lib/db/schema";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
+import { characters, stories } from "@/lib/schemas/database";
 import { characterService } from "@/lib/studio/services";
 import type {
     ApiCharactersErrorResponse,
     ApiCharactersRequest,
     ApiCharactersResponse,
-} from "../types";
-import { generateCharactersSchema } from "../validation-schemas";
+} from "@/lib/schemas/api/studio";
+import { generateCharactersSchema } from "@/lib/schemas/api/studio";
 
 export const runtime = "nodejs";
 

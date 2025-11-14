@@ -7,7 +7,7 @@ import {
     invalidateEntityCache,
 } from "@/lib/cache/unified-invalidation";
 import { db } from "@/lib/db";
-import { communityPosts } from "@/lib/db/schema";
+import { communityPosts } from "@/lib/schemas/database";
 
 /**
  * POST /api/community/posts

@@ -15,7 +15,7 @@ import type {
     GeneratorStoryResult,
     StoryPromptParams,
 } from "./types";
-import { type AiStoryType, AiStoryZodSchema } from "./zod-schemas";
+import { type AiStoryType, AiStoryZodSchema } from "@/lib/schemas/zod/ai";
 
 /**
  * Generate story foundation from user prompt

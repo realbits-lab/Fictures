@@ -7,7 +7,7 @@ import type {
     ApiChapterErrorResponse,
     ApiChapterRequest,
     ApiChapterResponse,
-} from "../types";
+} from "@/lib/schemas/api/studio";
 
 export const runtime = "nodejs";
 

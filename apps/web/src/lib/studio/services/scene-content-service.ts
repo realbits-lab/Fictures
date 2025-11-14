@@ -6,19 +6,6 @@
 
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import {
-    chapters,
-    characters,
-    parts,
-    scenes,
-    settings,
-    stories,
-} from "@/lib/db/schema";
-import { generateSceneContent } from "../generators/scene-content-generator";
-import type {
-    GeneratorSceneContentParams,
-    GeneratorSceneContentResult,
-} from "../generators/types";
 import type {
     Chapter,
     Character,
@@ -26,7 +13,20 @@ import type {
     Scene,
     Setting,
     Story,
-} from "../generators/zod-schemas";
+} from "@/lib/schemas/zod/ai";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
+import { generateSceneContent } from "../generators/scene-content-generator";
+import type {
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
+} from "../generators/types";
 
 export interface ServiceSceneContentParams {
     sceneId: string;

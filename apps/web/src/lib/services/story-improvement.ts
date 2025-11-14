@@ -2,11 +2,13 @@ import { generateObject, generateText } from "ai";
 import { z } from "zod";
 import { AI_MODELS } from "@/lib/ai/config";
 import type {
-    FullValidationResult,
-    OverallEvaluation,
-    StoryEvaluationResult,
-    ValidationResult,
-} from "@/types/validation-evaluation";
+	FullValidationResult,
+	ValidationResult,
+} from "@/lib/schemas/services/validation";
+import type {
+	OverallEvaluation,
+	StoryEvaluationResult,
+} from "@/lib/schemas/services/evaluation";
 
 // Improvement schemas
 const ImprovedStorySchema = z.object({

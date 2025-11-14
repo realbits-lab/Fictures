@@ -6,7 +6,7 @@ import {
     publishingSchedules,
     scenes,
     scheduledPublications,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/database";
 
 interface CreateScheduleParams {
     storyId: string;

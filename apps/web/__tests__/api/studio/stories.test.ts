@@ -21,7 +21,7 @@ import type {
     ApiStoryErrorResponse,
     ApiStoryRequest,
     ApiStoryResponse,
-} from "@/app/studio/api/types";
+} from "@/lib/schemas/api/studio";
 import { loadWriterAuth } from "../../helpers/auth-loader";
 
 // Load writer authentication

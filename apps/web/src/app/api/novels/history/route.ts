@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { readingHistory } from "@/lib/db/schema";
+import { readingHistory } from "@/lib/schemas/database";
 
 const FORMAT = "novel" as const;
 

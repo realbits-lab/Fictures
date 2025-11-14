@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, parts, scenes, stories } from "@/lib/db/schema";
+import { chapters, parts, scenes, stories } from "@/lib/schemas/database";
 
 /**
  * RelationshipManager handles database relationships using foreign keys

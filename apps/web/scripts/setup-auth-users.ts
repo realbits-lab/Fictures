@@ -20,12 +20,12 @@
  *   dotenv --file .env.local run pnpm exec tsx scripts/setup-auth-users.ts
  */
 
-import bcrypt from "bcryptjs";
 import crypto from "node:crypto";
+import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { apiKeys, users } from "../src/lib/db/schema";
+import { apiKeys, users } from "../src/lib/schemas/database";
 import { type AuthData, saveAuthData } from "../src/lib/utils/auth-loader";
 
 // PBKDF2 password hashing (matching src/lib/auth/password.ts)
@@ -126,8 +126,8 @@ const userConfigs = [
             "chapters:read",
             "chapters:write",
             "chapters:delete",
-            // Analytics (web)
-            "analytics:read",
+            // Analysis (web)
+            "analysis:read",
             // AI features (web)
             "ai:use",
             // Community (web)
@@ -155,8 +155,8 @@ const userConfigs = [
             // Chapter management (web)
             "chapters:read",
             "chapters:write",
-            // Analytics (web)
-            "analytics:read",
+            // Analysis (web)
+            "analysis:read",
             // AI features (web)
             "ai:use",
             // Community (web)
@@ -178,8 +178,8 @@ const userConfigs = [
             "images:read",
             // Chapter management (web)
             "chapters:read",
-            // Analytics (web)
-            "analytics:read",
+            // Analysis (web)
+            "analysis:read",
             // Community (web)
             "community:read",
             // Settings (web)

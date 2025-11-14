@@ -177,13 +177,13 @@ export function PublishClient() {
         error: historyError,
     } = usePublishHistory();
     const {
-        data: publishAnalytics,
-        isLoading: analyticsLoading,
-        error: analyticsError,
+        data: publishAnalysis,
+        isLoading: analysisLoading,
+        error: analysisError,
     } = usePublishAnalysis();
 
-    const isLoading = statusLoading || historyLoading || analyticsLoading;
-    const hasError = statusError || historyError || analyticsError;
+    const isLoading = statusLoading || historyLoading || analysisLoading;
+    const hasError = statusError || historyError || analysisError;
 
     // Show loading state for unauthenticated users
     if (!session?.user?.id) {
@@ -215,7 +215,7 @@ export function PublishClient() {
         const errorMessage =
             statusError?.message ||
             historyError?.message ||
-            analyticsError?.message;
+            analysisError?.message;
         return (
             <div className="text-center py-12">
                 <div className="text-4xl mb-4">⚠️</div>

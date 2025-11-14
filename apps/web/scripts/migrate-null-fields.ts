@@ -16,7 +16,7 @@ import {
     parts,
     scenes,
     settings,
-} from "../src/lib/db/schema";
+} from "../src/lib/schemas/database";
 
 async function migrateNullFields(): Promise<void> {
     console.log("🔄 Starting data migration to fix NULL fields...\n");

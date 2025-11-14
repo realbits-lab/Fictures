@@ -16,7 +16,7 @@ import type {
     GeneratorSettingsResult,
     SettingPromptParams,
 } from "./types";
-import { type AiSettingType, AiSettingZodSchema } from "./zod-schemas";
+import { type AiSettingType, AiSettingZodSchema } from "@/lib/schemas/zod/ai";
 
 /**
  * Generate story settings

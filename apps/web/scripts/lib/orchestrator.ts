@@ -8,24 +8,6 @@
 import { GENRE, type StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import type {
-    AiChapterType,
-    AiCharacterType,
-    AiPartType,
-    AiSceneSummaryType,
-    AiSettingType,
-    Story,
-} from "@/lib/studio/generators/zod-schemas";
-import {
-    generateCharacters,
-    generateSceneContent,
-    generateSettings,
-    generateStory,
-} from "./generators";
-import { generateChapter } from "./generators/chapter-generator";
-import { generatePart } from "./generators/part-generator";
-import { improveScene } from "./generators/scene-improvement-generator";
-import { generateSceneSummary } from "./generators/scene-summary-generator";
-import type {
     GeneratorChapterParams,
     GeneratorChapterResult,
     GeneratorCharactersParams,
@@ -42,7 +24,25 @@ import type {
     GeneratorSettingsResult,
     GeneratorStoryParams,
     GeneratorStoryResult,
-} from "./generators/types";
+} from "@/lib/schemas/services/generators";
+import type {
+    AiChapterType,
+    AiCharacterType,
+    AiPartType,
+    AiSceneSummaryType,
+    AiSettingType,
+    Story,
+} from "@/lib/schemas/zod/ai";
+import {
+    generateCharacters,
+    generateSceneContent,
+    generateSettings,
+    generateStory,
+} from "./generators";
+import { generateChapter } from "./generators/chapter-generator";
+import { generatePart } from "./generators/part-generator";
+import { improveScene } from "./generators/scene-improvement-generator";
+import { generateSceneSummary } from "./generators/scene-summary-generator";
 
 /**
  * Generate Novel Parameters

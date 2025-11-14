@@ -87,7 +87,7 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 |-----------|--------|-------|
 | **Specification** | ✅ Complete | `docs/novels/novels-specification.md` section 3.1 |
 | **TypeScript Types** | ✅ Complete | `src/lib/novels/types.ts` - `CharacterGenerationResult` |
-| **Database Schema** | ✅ Complete | `src/lib/db/schema.ts` - `characters` table |
+| **Database Schema** | ✅ Complete | `src/lib/schemas/database/index.ts` - `characters` table |
 | **Generation Code** | ✅ Complete | Already using correct types |
 | **Database Migration** | ✅ Complete | Migration 0048 applied successfully |
 
@@ -119,7 +119,7 @@ const mappedCharacterFocus = scene.characterFocus?.map((charId) =>
 ## Files Modified
 
 **Database Schema:**
-- `src/lib/db/schema.ts` - Updated character table definition
+- `src/lib/schemas/database/index.ts` - Updated character table definition
 
 **Generation Code:**
 - `src/app/studio/api/novels/route.ts` - Fixed ID mapping for parts, chapters, scenes

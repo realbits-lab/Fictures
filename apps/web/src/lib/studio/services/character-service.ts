@@ -7,17 +7,17 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, stories } from "@/lib/db/schema";
+import {
+    type Character,
+    insertCharacterSchema,
+    type Story,
+} from "@/lib/schemas/zod/ai";
+import { characters, stories } from "@/lib/schemas/database";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
     GeneratorCharactersParams,
     GeneratorCharactersResult,
 } from "../generators/types";
-import {
-    type Character,
-    insertCharacterSchema,
-    type Story,
-} from "../generators/zod-schemas";
 
 export interface ServiceCharactersParams {
     storyId: string;

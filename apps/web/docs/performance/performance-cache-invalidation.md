@@ -548,7 +548,7 @@ return NextResponse.json(
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { db } from '@/lib/db';
-import { scenes, chapters, stories } from '@/lib/db/schema';
+import { scenes, chapters, stories } from '@/lib/schemas/database';
 import { eq } from 'drizzle-orm';
 import {
   createInvalidationContext,

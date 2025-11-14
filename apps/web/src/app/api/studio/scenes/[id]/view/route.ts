@@ -15,7 +15,7 @@ import { db } from "@/lib/db";
 import {
     scenes as scenesTable,
     sceneViews as sceneViewsTable,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/database";
 import { getOrCreateSessionId } from "@/lib/utils/session";
 
 export async function POST(

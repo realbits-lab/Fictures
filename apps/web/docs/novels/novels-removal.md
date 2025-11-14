@@ -530,6 +530,6 @@ This should return no results if cleanup was complete.
 - [Story Generation](../CLAUDE.md#story-generation)
 - [Story Image Generation](./story-image-generation.md)
 - [Image Optimization](./image-optimization.md)
-- [Database Schema](../../src/lib/db/schema.ts)
+- [Database Schema](../../src/lib/schemas/database/index.ts)
 - [API Routes](../../src/app/api/stories/[id]/route.ts)
 - [Vercel Blob Docs](https://vercel.com/docs/storage/vercel-blob)

@@ -20,7 +20,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/database";
 
 export const maxDuration = 300; // 5 minutes
 
