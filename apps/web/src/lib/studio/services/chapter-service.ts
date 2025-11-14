@@ -96,11 +96,16 @@ export class ChapterService {
             throw new Error("Part does not belong to the specified story");
         }
 
-        console.log(`[chapter-service] Retrieved part:`, {
-            id: part.id,
-            characterArcs: part.characterArcs,
-            settingIds: part.settingIds,
-        });
+        console.log(`[chapter-service] ========== RETRIEVED PART DEBUG ==========`);
+        console.log(`[chapter-service] Part ID: ${part.id}`);
+        console.log(`[chapter-service] Part title: ${part.title}`);
+        console.log(`[chapter-service] Part object keys:`, Object.keys(part));
+        console.log(`[chapter-service] Part.characterArcs type: ${typeof part.characterArcs}`);
+        console.log(`[chapter-service] Part.characterArcs value:`, JSON.stringify(part.characterArcs, null, 2));
+        console.log(`[chapter-service] Part.settingIds type: ${typeof part.settingIds}`);
+        console.log(`[chapter-service] Part.settingIds value:`, JSON.stringify(part.settingIds, null, 2));
+        console.log(`[chapter-service] Raw part object:`, JSON.stringify(part, null, 2));
+        console.log(`[chapter-service] ============================================`);
 
         // 4. Fetch characters for the story
         const storyCharacters: Character[] = (await db

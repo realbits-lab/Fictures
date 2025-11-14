@@ -27,7 +27,7 @@ import type {
     SceneContentEvaluationResponse,
     EvaluationError,
 } from "@/lib/schemas/api/evaluation";
-import { loadWriterAuth } from "../../helpers/auth-loader";
+import { loadWriterAuth } from "../helpers/auth-loader";
 
 // Load writer authentication
 const apiKey: string = loadWriterAuth();

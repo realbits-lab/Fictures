@@ -13,7 +13,7 @@ import type {
     ApiCharactersResponse,
     ApiStoryRequest,
 } from "@/lib/schemas/api/studio";
-import { loadWriterAuth } from "../../helpers/auth-loader";
+import { loadWriterAuth } from "../helpers/auth-loader";
 
 // Load writer authentication
 const apiKey: string = loadWriterAuth();

@@ -97,6 +97,16 @@ export const POST = requireScopes("stories:write")(
             console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
             if (error instanceof z.ZodError) {
+                console.error("[CHAPTER API] Zod Validation Error Details:");
+                error.issues.forEach((issue, index) => {
+                    console.error(`  Issue ${index + 1}:`, {
+                        path: issue.path,
+                        message: issue.message,
+                        code: issue.code,
+                        expected: (issue as any).expected,
+                        received: (issue as any).received,
+                    });
+                });
                 const errorResponse: ApiChapterErrorResponse = {
                     error: "Invalid input",
                     details: error.issues,
