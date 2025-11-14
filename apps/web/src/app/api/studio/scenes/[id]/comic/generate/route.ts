@@ -4,12 +4,10 @@ import { generateComicPanels } from "@/lib/ai/comic-panel-generator";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import {
-    chapters,
     characters,
     comicPanels,
     scenes,
     settings,
-    stories,
 } from "@/lib/schemas/database";
 
 export const runtime = "nodejs";

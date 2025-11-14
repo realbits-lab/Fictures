@@ -174,7 +174,7 @@ export async function generateComicPanels(
     console.log(`   Iterations: ${toonplayResult.iterations}`);
 
     // Log evaluation report
-    console.log("\n" + toonplayResult.final_report);
+    console.log(`\n${toonplayResult.final_report}`);
 
     progressCallback?.(
         20,
@@ -235,7 +235,9 @@ export async function generateComicPanels(
         console.log(`   Prompt: ${imagePrompt.substring(0, 100)}...`);
 
         // Generate image with automatic retry for content filter errors
-        let imageResult;
+        let imageResult:
+            | Awaited<ReturnType<typeof generateStoryImage>>
+            | undefined;
         let attemptCount = 0;
         const maxAttempts = 3;
 

@@ -6,10 +6,50 @@
 
 import { describe, expect, it } from "@jest/globals";
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
-import type { Scene } from "@/lib/schemas/zod/ai";
+import type { Character, Scene, Setting } from "@/lib/schemas/database";
 import { evaluateToonplay } from "@/lib/services/toonplay-evaluator";
 
 describe("Toonplay Evaluator", () => {
+    const mockCharacter: Character = {
+        id: "char-1",
+        storyId: "story-1",
+        name: "Test Hero",
+        role: "protagonist",
+        summary: "A brave hero",
+        coreTrait: "courage",
+        internalFlaw: "fears failure",
+        externalGoal: "save the kingdom",
+        backstory: "Born in a small village",
+        physicalDescription: {
+            age: "mid-20s",
+            appearance: "tall with dark hair",
+            distinctiveFeatures: "scar on left cheek",
+            style: "adventurer gear",
+        },
+        voiceStyle: {
+            tone: "confident",
+            vocabulary: "educated",
+            quirks: [],
+            emotionalRange: "moderate",
+        },
+        personality: {
+            traits: ["brave", "stubborn"],
+            values: ["justice", "loyalty"],
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    } as Character;
+
+    const mockSetting: Setting = {
+        id: "setting-1",
+        storyId: "story-1",
+        name: "Test Castle",
+        description: "A grand medieval castle",
+        atmosphere: "mysterious and imposing",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    } as Setting;
+
     const mockScene: Scene = {
         id: "scene-1",
         chapterId: "chapter-1",
@@ -62,6 +102,9 @@ describe("Toonplay Evaluator", () => {
         const result = await evaluateToonplay({
             toonplay: mockToonplay,
             sourceScene: mockScene,
+            characters: [mockCharacter],
+            setting: mockSetting,
+            storyGenre: "Fantasy",
             evaluationMode: "standard",
         });
 
@@ -99,6 +142,9 @@ describe("Toonplay Evaluator", () => {
         const result = await evaluateToonplay({
             toonplay: mockToonplay,
             sourceScene: mockScene,
+            characters: [mockCharacter],
+            setting: mockSetting,
+            storyGenre: "Fantasy",
             evaluationMode: "quick",
         });
 

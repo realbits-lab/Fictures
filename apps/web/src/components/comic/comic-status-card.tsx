@@ -102,10 +102,7 @@ export function ComicStatusCard({
                         <CardTitle className="text-lg">Comic Panels</CardTitle>
                     </div>
                     <span
-                        className={cn(
-                            "text-sm font-medium",
-                            getStatusColor(),
-                        )}
+                        className={cn("text-sm font-medium", getStatusColor())}
                     >
                         {getStatusText()}
                     </span>
@@ -138,16 +135,17 @@ export function ComicStatusCard({
                                     </span>
                                 </div>
                             )}
-                            {comicPublishedAt && comicStatus === "published" && (
-                                <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                        Published:
-                                    </span>
-                                    <span className="font-medium">
-                                        {formatDate(comicPublishedAt)}
-                                    </span>
-                                </div>
-                            )}
+                            {comicPublishedAt &&
+                                comicStatus === "published" && (
+                                    <div className="flex justify-between">
+                                        <span className="text-muted-foreground">
+                                            Published:
+                                        </span>
+                                        <span className="font-medium">
+                                            {formatDate(comicPublishedAt)}
+                                        </span>
+                                    </div>
+                                )}
                         </>
                     )}
                 </div>
@@ -234,7 +232,8 @@ export function ComicStatusCard({
                 )}
                 {comicStatus === "draft" && (
                     <p className="text-xs text-muted-foreground">
-                        Review the generated panels before publishing to readers.
+                        Review the generated panels before publishing to
+                        readers.
                     </p>
                 )}
             </CardContent>

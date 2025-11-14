@@ -79,7 +79,7 @@ export function ProgressiveComicPanel({
     initialLoadCount = 3,
 }: ProgressiveComicPanelProps) {
     const [shouldLoad, setShouldLoad] = useState(false);
-    const [isLoaded, setIsLoaded] = useState(false);
+    const [_isLoaded, setIsLoaded] = useState(false);
     const observerRef = useRef<HTMLDivElement>(null);
 
     // Determine if this panel should load immediately

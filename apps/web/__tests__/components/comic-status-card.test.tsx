@@ -4,7 +4,8 @@
  * Unit tests for the comic publishing status card component
  */
 
-import { render, screen, fireEvent } from "@testing-library/react";
+import "@testing-library/jest-dom";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { ComicStatusCard } from "@/components/comic/comic-status-card";
 
 describe("ComicStatusCard", () => {

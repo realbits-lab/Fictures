@@ -160,6 +160,8 @@ export class PartService {
             id: savedPart.id,
             title: savedPart.title,
             orderIndex: savedPart.orderIndex,
+            characterArcs: savedPart.characterArcs,
+            settingIds: savedPart.settingIds,
         });
 
         // 8. Return result
