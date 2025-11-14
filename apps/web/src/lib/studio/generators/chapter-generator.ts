@@ -23,7 +23,7 @@ import type {
     ChapterPromptParams,
     GeneratorChapterParams,
     GeneratorChapterResult,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Generate ONE next chapter with full context

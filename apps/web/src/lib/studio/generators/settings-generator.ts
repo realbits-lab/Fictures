@@ -16,7 +16,7 @@ import type {
     GeneratorSettingsParams,
     GeneratorSettingsResult,
     SettingPromptParams,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Generate story settings

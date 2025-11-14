@@ -9,7 +9,7 @@
  */
 
 import { generateStoryImage } from "@/lib/services/image-generation";
-import type { GeneratorImagesParams, GeneratorImagesResult } from "./types";
+import type { GeneratorImagesParams, GeneratorImagesResult } from "@/lib/schemas/generators/types";
 
 /**
  * Generate images for story assets

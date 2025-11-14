@@ -27,7 +27,7 @@ import type {
     GeneratorSceneSummaryParams,
     GeneratorSceneSummaryResult,
     SceneSummaryPromptParams,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Generate ONE next scene summary with full context

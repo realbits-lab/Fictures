@@ -9,8 +9,20 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, characters, parts, stories } from "@/lib/schemas/database";
-import type { Chapter, Character, Part, Story } from "@/lib/schemas/zod/ai";
+import {
+    chapters,
+    characters,
+    parts,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
+import type {
+    Chapter,
+    Character,
+    Part,
+    Setting,
+    Story,
+} from "@/lib/schemas/zod/ai";
 import { insertChapterSchema } from "@/lib/schemas/zod/generated";
 import { generateChapter } from "../generators/chapter-generator";
 import type {
@@ -96,6 +108,16 @@ export class ChapterService {
             );
         }
 
+        // 4.5. Fetch settings for the story (optional but recommended)
+        const storySettings: Setting[] = (await db
+            .select()
+            .from(settings)
+            .where(eq(settings.storyId, storyId))) as Setting[];
+
+        console.log(
+            `[chapter-service] Found ${storySettings.length} settings for story`,
+        );
+
         // 5. Fetch ALL previous chapters for this story (FULL CONTEXT)
         const allPreviousChapters: Chapter[] = (await db
             .select()
@@ -117,6 +139,7 @@ export class ChapterService {
             story,
             part,
             characters: storyCharacters,
+            settings: storySettings.length > 0 ? storySettings : undefined,
             previousChapters: allPreviousChapters,
             chapterIndex: nextChapterIndex,
         };

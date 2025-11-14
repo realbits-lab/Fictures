@@ -22,7 +22,7 @@ import type {
     GeneratorPartParams,
     GeneratorPartResult,
     PartPromptParams,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Generate ONE next story part with full context

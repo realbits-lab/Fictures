@@ -16,7 +16,7 @@ import type {
     PromptType,
     TextGenerationRequest,
     TextGenerationResponse,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Environment configuration

@@ -15,7 +15,7 @@ import type {
     GeneratorStoryParams,
     GeneratorStoryResult,
     StoryPromptParams,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Generate story foundation from user prompt

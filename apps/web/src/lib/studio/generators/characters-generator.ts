@@ -19,7 +19,7 @@ import type {
     CharacterPromptParams,
     GeneratorCharactersParams,
     GeneratorCharactersResult,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Generate character profiles for a story

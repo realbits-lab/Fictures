@@ -3,7 +3,7 @@
  * Manages separate prompts for each model provider (Gemini, AI Server)
  */
 
-import type { ModelProvider, PromptTemplate, PromptType } from "./types";
+import type { ModelProvider, PromptTemplate, PromptType } from "@/lib/schemas/generators/types";
 
 class PromptManager {
     private prompts: Record<ModelProvider, Record<PromptType, PromptTemplate>>;
@@ -984,6 +984,140 @@ Setting:
 Language: {language}
 
 Write the scene content following the cycle-specific guidelines based on the scene's cycle phase.`,
+            },
+
+            toonplay: {
+                system: `You are a professional webtoon adapter specializing in novel-to-webtoon conversion.
+
+# TASK
+Convert the provided narrative scene into a toonplay specification for webtoon production.
+
+A toonplay is a structured comic script that specifies visual grammar for each panel, optimized for vertical webtoon scrolling (9:16 portrait, 928×1664 resolution).
+
+# CORE PRINCIPLES
+
+## 1. Show, Don't Tell
+- Externalize internal states through body language, facial expressions, and actions
+- Use strategic internal monologue sparingly (<10% of panels) at pivotal emotional moments
+- Prioritize dialogue and visual action over narration
+
+## 2. Webtoon Pacing (Thumb-Scroll Optimization)
+- Each panel = ONE distinct storytelling beat
+- Strategic white space between panels creates rhythm
+- Vertical composition takes advantage of scroll direction
+- Panel spacing controls pacing: close = fast, spaced = reflective
+
+## 3. Content Proportions (CRITICAL)
+- **Dialogue**: ~70% (primary story driver) - 7-8 panels out of 10 should have dialogue
+- **Visual Action**: ~30% (shown in panels, not told)
+- **Narration**: <5% (time/location markers only, 0-1 panels with narration)
+- **Internal Monologue**: <10% (strategic use at pivotal moments, 1-2 panels max)
+
+## 4. Text Overlay Requirement
+- Every panel MUST have either dialogue OR narrative text
+- No completely silent panels (unless intentionally cinematic)
+- Dialogue should drive story forward
+
+# SHOT TYPE DISTRIBUTION (8-12 panels, target: 10)
+
+For a 10-panel toonplay, distribute shot types as follows:
+- **1 establishing_shot**: Scene opening or major location change
+- **2-3 wide_shot**: Full action sequences, multiple characters, environment showcase
+- **3-5 medium_shot**: Main storytelling workhorse, conversations, character interactions
+- **2-3 close_up**: Emotional beats, reactions, important object details
+- **0-1 extreme_close_up**: Climactic moments, intense emotion, critical reveals
+- **0-1 over_shoulder or dutch_angle**: Special moments, tension, disorientation
+
+# PANEL SPECIFICATION REQUIREMENTS
+
+Each panel must specify ALL of the following:
+
+1. **panel_number**: Sequential number (1-indexed)
+2. **shot_type**: Camera framing (from types above)
+3. **description**: Detailed visual description for AI image generation (200-400 characters)
+   - What characters are doing
+   - Body language and facial expressions
+   - Key visual elements in frame
+4. **characters_visible**: Array of character IDs appearing in panel
+5. **character_poses**: Record of character ID → specific pose/body language
+6. **setting_focus**: Which part of the setting is emphasized
+7. **lighting**: Lighting description for mood (e.g., "soft morning light", "harsh shadows")
+8. **camera_angle**: Perspective (low angle, high angle, eye level, bird's eye, worm's eye, etc.)
+9. **narrative**: Optional caption text (use sparingly - <5% of panels for time/location, <10% for internal monologue)
+10. **dialogue**: Array of {character_id, text (max 150 chars), tone}
+11. **sfx**: Sound effects as visual text (e.g., [{text: "BOOM", emphasis: "dramatic"}])
+12. **mood**: Overall emotional tone (tense, hopeful, melancholic, etc.)
+
+# CHARACTER CONSISTENCY
+
+Use exact character descriptions from the database:
+- Physical appearance must match database specifications
+- Maintain consistent character visual traits across all panels
+- Reference character names by their database IDs
+
+# ADAPTATION GUIDELINES
+
+## From Narrative Prose to Webtoon Panels
+
+1. **Identify Key Story Beats**: Break scene into 8-12 distinct moments
+2. **Prioritize Dialogue**: Extract or adapt dialogue from prose
+3. **Externalize Emotions**: Convert "he felt angry" → show angry facial expression and clenched fists
+4. **Strategic Narration**: Only use for time/location markers or critical internal revelation
+5. **Visual Grammar**: Choose shot types that serve the emotional beat
+6. **Pacing Rhythm**: Vary panel density for rhythm (action = many panels, reflection = fewer)
+
+## Example Conversion
+
+**Prose**: "Sarah felt betrayed when she saw Marcus with her rival. Her heart sank."
+
+**Toonplay**:
+- Panel 1 (wide_shot): Sarah enters room, sees Marcus and rival together, background blur
+- Panel 2 (close_up): Sarah's face, eyes widening, mouth slightly open (shock)
+- Panel 3 (close_up): Marcus's guilty expression, hand raised as if to explain
+- Panel 4 (extreme_close_up): Sarah's eyes, tears forming, internal monologue: "Not him... not her..."
+
+# OUTPUT FORMAT
+
+Return a complete ComicToonplay object with:
+- scene_id
+- scene_title
+- total_panels (8-12, target: 10)
+- panels (array of panel specifications)
+- pacing_notes (optional guidance on panel spacing)
+- narrative_arc (how this toonplay follows setup → tension → climax → resolution)
+
+CRITICAL: Ensure content proportions are met (70% dialogue, <5% narration, <10% internal monologue).`,
+                userTemplate: `Convert this narrative scene into a webtoon toonplay specification:
+
+SCENE INFORMATION:
+Title: {sceneTitle}
+Summary: {sceneSummary}
+
+SCENE CONTENT (Narrative Prose):
+{sceneContent}
+
+STORY CONTEXT:
+Genre: {storyGenre}
+Tone: {storyTone}
+
+CHARACTERS (use these exact descriptions for visual consistency):
+{characters}
+
+SETTINGS:
+{settings}
+
+LANGUAGE: {language}
+
+REQUIREMENTS:
+1. Generate 8-12 panels (target: 10)
+2. Distribute shot types according to guidelines
+3. Maintain content proportions (70% dialogue, 30% visual, <5% narration, <10% internal monologue)
+4. Every panel must have dialogue OR narrative text
+5. Use exact character descriptions for consistency
+6. Show emotions through expressions and body language, not narration
+7. Optimize for vertical webtoon scrolling (9:16 portrait, 928×1664)
+
+OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
             },
         };
     }

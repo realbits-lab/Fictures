@@ -119,13 +119,32 @@ export class PartService {
         const now: string = new Date().toISOString();
         const partId: string = `part_${nanoid(16)}`;
 
+        // 7.5. Validate required fields from AI generation
+        if (
+            !generationResult.part.characterArcs ||
+            generationResult.part.characterArcs.length === 0
+        ) {
+            throw new Error(
+                "Part generation failed: characterArcs is required and must not be empty",
+            );
+        }
+
+        if (
+            !generationResult.part.settingIds ||
+            generationResult.part.settingIds.length === 0
+        ) {
+            throw new Error(
+                "Part generation failed: settingIds is required and must not be empty",
+            );
+        }
+
         const validatedPart = insertPartSchema.parse({
             id: partId,
             storyId,
             title: generationResult.part.title || `Part ${nextPartIndex + 1}`,
-            summary: generationResult.part.summary || null,
-            characterArcs: generationResult.part.characterArcs || null,
-            settingIds: generationResult.part.settingIds || [],
+            summary: generationResult.part.summary || "",
+            characterArcs: generationResult.part.characterArcs,
+            settingIds: generationResult.part.settingIds,
             orderIndex: nextPartIndex + 1,
             createdAt: now,
             updatedAt: now,

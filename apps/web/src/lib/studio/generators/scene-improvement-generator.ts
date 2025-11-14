@@ -16,7 +16,7 @@ import { createTextGenerationClient } from "./ai-client";
 import type {
     GeneratorSceneImprovementParams,
     GeneratorSceneImprovementResult,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Evaluate and iteratively improve a scene

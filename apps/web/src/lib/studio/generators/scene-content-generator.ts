@@ -23,7 +23,7 @@ import type {
     GeneratorSceneContentParams,
     GeneratorSceneContentResult,
     SceneContentPromptParams,
-} from "./types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Generate prose content for a single scene
