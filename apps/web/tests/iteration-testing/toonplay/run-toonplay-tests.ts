@@ -200,7 +200,7 @@ async function generateStoryForScene(
 
             // 6. Generate single scene summary
             console.log(`    • Generating scene summary...`);
-            const sceneSummariesResult =
+            const sceneSummaryResult =
                 await sceneSummaryService.generateAndSave({
                     userId: "usr_QKl8WRbF-U2u4ymj",
                     storyId,
@@ -208,16 +208,18 @@ async function generateStoryForScene(
                     sceneCount: 1,
                 });
 
+            const sceneId = sceneSummaryResult.scene.id;
+
             // 7. Generate scene content
             console.log(`    • Generating scene content...`);
-            await sceneContentService.generateAndUpdate({
+            await sceneContentService.generateAndSave({
                 userId: "usr_QKl8WRbF-U2u4ymj",
-                sceneId: sceneSummariesResult.scenes[0].id,
+                sceneId,
             });
 
             // Get the generated scene
             const scene = await db.query.scenes.findFirst({
-                where: eq(scenes.id, sceneSummariesResult.scenes[0].id),
+                where: eq(scenes.id, sceneId),
             });
 
             if (!scene || !scene.content) {
