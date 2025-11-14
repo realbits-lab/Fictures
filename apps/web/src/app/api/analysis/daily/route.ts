@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getDailyMetrics } from "@/lib/services/analytics";
+import { getDailyMetrics } from "@/lib/services/analysis";
 
 /**
  * GET /api/analysis/daily?storyId={id}&range={7d|30d|90d}

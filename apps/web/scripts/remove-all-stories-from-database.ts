@@ -8,7 +8,7 @@
  * - All parts, chapters, and scenes
  * - All characters and settings
  * - All community posts and comments
- * - All analytics and metrics data
+ * - All analysis and metrics data
  *
  * Usage:
  *   dotenv --file .env.local run pnpm exec tsx scripts/remove-all-stories-from-database.ts
@@ -21,7 +21,7 @@
 
 import { db } from "../src/lib/db";
 import {
-    analyticsEvents,
+    analysisEvents,
     chapterLikes,
     chapters,
     characters,
@@ -65,7 +65,7 @@ interface DeletionStats {
     chapterLikes: number;
     sceneLikes: number;
     sceneDislikes: number;
-    analyticsEvents: number;
+    analysisEvents: number;
     readingSessions: number;
     readingHistory: number;
     storyInsights: number;
@@ -102,7 +102,7 @@ async function countItems(): Promise<DeletionStats> {
         chapterLikesCount,
         sceneLikesCount,
         sceneDislikesCount,
-        analyticsEventsCount,
+        analysisEventsCount,
         readingSessionsCount,
         readingHistoryCount,
         storyInsightsCount,
@@ -131,7 +131,7 @@ async function countItems(): Promise<DeletionStats> {
         db.select().from(chapterLikes),
         db.select().from(sceneLikes),
         db.select().from(sceneDislikes),
-        db.select().from(analyticsEvents),
+        db.select().from(analysisEvents),
         db.select().from(readingSessions),
         db.select().from(readingHistory),
         db.select().from(storyInsights),
@@ -162,7 +162,7 @@ async function countItems(): Promise<DeletionStats> {
         chapterLikes: chapterLikesCount.length,
         sceneLikes: sceneLikesCount.length,
         sceneDislikes: sceneDislikesCount.length,
-        analyticsEvents: analyticsEventsCount.length,
+        analysisEvents: analysisEventsCount.length,
         readingSessions: readingSessionsCount.length,
         readingHistory: readingHistoryCount.length,
         storyInsights: storyInsightsCount.length,
@@ -199,7 +199,7 @@ function displayStats(stats: DeletionStats): void {
     console.log(`Chapter Likes:          ${stats.chapterLikes}`);
     console.log(`Scene Likes:            ${stats.sceneLikes}`);
     console.log(`Scene Dislikes:         ${stats.sceneDislikes}`);
-    console.log(`Analytics Events:       ${stats.analyticsEvents}`);
+    console.log(`Analysis Events:        ${stats.analysisEvents}`);
     console.log(`Reading Sessions:       ${stats.readingSessions}`);
     console.log(`Reading History:        ${stats.readingHistory}`);
     console.log(`Story Insights:         ${stats.storyInsights}`);
@@ -249,7 +249,7 @@ async function deleteAllStories(): Promise<DeletionStats> {
 
     // Delete in reverse dependency order to respect foreign key constraints
 
-    // 1. Delete dependent data first (junction tables and analytics)
+    // 1. Delete dependent data first (junction tables and analysis)
     console.log("Deleting likes and views...");
     await db.delete(commentDislikes);
     await db.delete(commentLikes);
@@ -261,9 +261,9 @@ async function deleteAllStories(): Promise<DeletionStats> {
     await db.delete(storyLikes);
     await db.delete(sceneViews);
 
-    // 2. Delete analytics and metrics
-    console.log("Deleting analytics and metrics...");
-    await db.delete(analyticsEvents);
+    // 2. Delete analysis and metrics
+    console.log("Deleting analysis and metrics...");
+    await db.delete(analysisEvents);
     await db.delete(readingSessions);
     await db.delete(readingHistory);
     await db.delete(storyInsights);

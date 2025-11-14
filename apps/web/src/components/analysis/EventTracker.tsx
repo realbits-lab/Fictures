@@ -40,10 +40,10 @@ export function EventTracker({
 
     useEffect(() => {
         // Get or create session ID (browser session)
-        let sessionId = sessionStorage.getItem("analytics_session_id");
+        let sessionId = sessionStorage.getItem("analysis_session_id");
         if (!sessionId) {
             sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-            sessionStorage.setItem("analytics_session_id", sessionId);
+            sessionStorage.setItem("analysis_session_id", sessionId);
         }
 
         // Detect device type

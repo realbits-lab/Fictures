@@ -116,7 +116,7 @@ export const insightTypeEnum = pgEnum('insight_type', [
 ]);
 
 // Analytics events table
-export const analyticsEvents = pgTable('analytics_events', {
+export const analysisEvents = pgTable('analysis_events', {
   id: text('id').primaryKey(),
   eventType: eventTypeEnum('event_type').notNull(),
   userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
@@ -204,7 +204,7 @@ dotenv --file .env.local run pnpm db:migrate
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { stories, analyticsEvents } from '@/lib/db/schema';
+import { stories, analysisEvents } from '@/lib/db/schema';
 import { eq, and, gte, desc, count, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -230,16 +230,16 @@ export async function GET(request: NextRequest) {
         imageVariants: stories.imageVariants,
         createdAt: stories.createdAt,
         // Analytics (last 30 days)
-        views: sql<number>`COUNT(DISTINCT CASE WHEN ${analyticsEvents.eventType} = 'story_view' THEN ${analyticsEvents.id} END)`,
-        readers: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
-        engagement: sql<number>`COUNT(CASE WHEN ${analyticsEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN ${analyticsEvents.id} END)`,
+        views: sql<number>`COUNT(DISTINCT CASE WHEN ${analysisEvents.eventType} = 'story_view' THEN ${analysisEvents.id} END)`,
+        readers: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
+        engagement: sql<number>`COUNT(CASE WHEN ${analysisEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN ${analysisEvents.id} END)`,
       })
       .from(stories)
       .leftJoin(
-        analyticsEvents,
+        analysisEvents,
         and(
-          eq(stories.id, analyticsEvents.storyId),
-          gte(analyticsEvents.timestamp, thirtyDaysAgo)
+          eq(stories.id, analysisEvents.storyId),
+          gte(analysisEvents.timestamp, thirtyDaysAgo)
         )
       )
       .where(eq(stories.authorId, session.user.id))
@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { stories, analyticsEvents, readingSessions } from '@/lib/db/schema';
+import { stories, analysisEvents, readingSessions } from '@/lib/db/schema';
 import { eq, and, gte, lte, desc, count, avg, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -317,21 +317,21 @@ export async function GET(request: NextRequest) {
     // Get daily metrics
     const dailyData = await db
       .select({
-        date: sql<string>`DATE(${analyticsEvents.timestamp})`,
-        views: count(sql`DISTINCT CASE WHEN ${analyticsEvents.eventType} = 'story_view' THEN ${analyticsEvents.id} END`),
-        readers: count(sql`DISTINCT ${analyticsEvents.userId}`),
-        engagement: count(sql`CASE WHEN ${analyticsEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN ${analyticsEvents.id} END`),
+        date: sql<string>`DATE(${analysisEvents.timestamp})`,
+        views: count(sql`DISTINCT CASE WHEN ${analysisEvents.eventType} = 'story_view' THEN ${analysisEvents.id} END`),
+        readers: count(sql`DISTINCT ${analysisEvents.userId}`),
+        engagement: count(sql`CASE WHEN ${analysisEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN ${analysisEvents.id} END`),
       })
-      .from(analyticsEvents)
+      .from(analysisEvents)
       .where(
         and(
-          eq(analyticsEvents.storyId, storyId),
-          gte(analyticsEvents.timestamp, start),
-          lte(analyticsEvents.timestamp, end)
+          eq(analysisEvents.storyId, storyId),
+          gte(analysisEvents.timestamp, start),
+          lte(analysisEvents.timestamp, end)
         )
       )
-      .groupBy(sql`DATE(${analyticsEvents.timestamp})`)
-      .orderBy(sql`DATE(${analyticsEvents.timestamp})`);
+      .groupBy(sql`DATE(${analysisEvents.timestamp})`)
+      .orderBy(sql`DATE(${analysisEvents.timestamp})`);
 
     // Get session metrics
     const sessionData = await db
@@ -428,7 +428,7 @@ import {
   stories,
   chapters,
   scenes,
-  analyticsEvents,
+  analysisEvents,
   readingSessions,
   sceneEvaluations,
   users,
@@ -511,32 +511,32 @@ export async function getStoryAnalytics(
   // Get view and reader stats
   const [viewStats] = await db
     .select({
-      totalViews: count(analyticsEvents.id),
-      uniqueReaders: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
+      totalViews: count(analysisEvents.id),
+      uniqueReaders: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        eq(analyticsEvents.storyId, storyId),
-        eq(analyticsEvents.eventType, 'story_view'),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        eq(analysisEvents.storyId, storyId),
+        eq(analysisEvents.eventType, 'story_view'),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     );
 
   // Get engagement stats
   const [engagementStats] = await db
     .select({
-      comments: count(sql`CASE WHEN ${analyticsEvents.eventType} = 'comment_created' THEN 1 END`),
-      likes: count(sql`CASE WHEN ${analyticsEvents.eventType} = 'story_liked' THEN 1 END`),
-      shares: count(sql`CASE WHEN ${analyticsEvents.eventType} = 'share' THEN 1 END`),
+      comments: count(sql`CASE WHEN ${analysisEvents.eventType} = 'comment_created' THEN 1 END`),
+      likes: count(sql`CASE WHEN ${analysisEvents.eventType} = 'story_liked' THEN 1 END`),
+      shares: count(sql`CASE WHEN ${analysisEvents.eventType} = 'share' THEN 1 END`),
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        eq(analyticsEvents.storyId, storyId),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        eq(analysisEvents.storyId, storyId),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     );
 
@@ -571,21 +571,21 @@ export async function getStoryAnalytics(
       returnRate: sql<number>`
         (COUNT(DISTINCT CASE
           WHEN EXISTS (
-            SELECT 1 FROM ${analyticsEvents} ae2
-            WHERE ae2.user_id = ${analyticsEvents.userId}
-            AND ae2.timestamp > ${analyticsEvents.timestamp} + INTERVAL '7 days'
+            SELECT 1 FROM ${analysisEvents} ae2
+            WHERE ae2.user_id = ${analysisEvents.userId}
+            AND ae2.timestamp > ${analysisEvents.timestamp} + INTERVAL '7 days'
             AND ae2.story_id = ${storyId}
-          ) THEN ${analyticsEvents.userId}
-        END)::float / NULLIF(COUNT(DISTINCT ${analyticsEvents.userId}), 0)) * 100
+          ) THEN ${analysisEvents.userId}
+        END)::float / NULLIF(COUNT(DISTINCT ${analysisEvents.userId}), 0)) * 100
       `,
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        eq(analyticsEvents.storyId, storyId),
-        eq(analyticsEvents.eventType, 'story_view'),
-        gte(analyticsEvents.timestamp, start),
-        lte(analyticsEvents.timestamp, end)
+        eq(analysisEvents.storyId, storyId),
+        eq(analysisEvents.eventType, 'story_view'),
+        gte(analysisEvents.timestamp, start),
+        lte(analysisEvents.timestamp, end)
       )
     );
 
@@ -625,18 +625,18 @@ export async function getStoryAnalytics(
 
   const [previousStats] = await db
     .select({
-      views: count(analyticsEvents.id),
-      readers: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
+      views: count(analysisEvents.id),
+      readers: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
       engagement: count(
-        sql`CASE WHEN ${analyticsEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN 1 END`
+        sql`CASE WHEN ${analysisEvents.eventType} IN ('comment_created', 'story_liked', 'share') THEN 1 END`
       ),
     })
-    .from(analyticsEvents)
+    .from(analysisEvents)
     .where(
       and(
-        eq(analyticsEvents.storyId, storyId),
-        gte(analyticsEvents.timestamp, previousPeriod.start),
-        lte(analyticsEvents.timestamp, previousPeriod.end)
+        eq(analysisEvents.storyId, storyId),
+        gte(analysisEvents.timestamp, previousPeriod.start),
+        lte(analysisEvents.timestamp, previousPeriod.end)
       )
     );
 
@@ -702,7 +702,7 @@ export async function getStoryAnalytics(
 ```typescript
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
-import { analyticsEvents } from '@/lib/db/schema';
+import { analysisEvents } from '@/lib/db/schema';
 
 interface TrackEventParams {
   eventType: string;
@@ -727,7 +727,7 @@ export async function trackEvent({
     // Get or create session ID (client-side would provide this)
     const sessionId = metadata.sessionId as string || nanoid();
 
-    await db.insert(analyticsEvents).values({
+    await db.insert(analysisEvents).values({
       id: nanoid(),
       eventType: eventType as any,
       userId: userId || null,
@@ -997,7 +997,7 @@ export function EventTracker({
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { analyticsEvents, sql } from '@/lib/db/schema';
+import { analysisEvents, sql } from '@/lib/db/schema';
 import { eq, gte, lte } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -1019,20 +1019,20 @@ export async function GET(request: NextRequest) {
     // Aggregate yesterday's data (example - expand as needed)
     const dailyMetrics = await db
       .select({
-        storyId: analyticsEvents.storyId,
-        date: sql<string>`DATE(${analyticsEvents.timestamp})`,
+        storyId: analysisEvents.storyId,
+        date: sql<string>`DATE(${analysisEvents.timestamp})`,
         views: sql<number>`COUNT(DISTINCT CASE WHEN event_type = 'story_view' THEN id END)`,
         readers: sql<number>`COUNT(DISTINCT user_id)`,
         engagement: sql<number>`COUNT(CASE WHEN event_type IN ('comment_created', 'story_liked', 'share') THEN 1 END)`,
       })
-      .from(analyticsEvents)
+      .from(analysisEvents)
       .where(
         and(
-          gte(analyticsEvents.timestamp, yesterday),
-          lte(analyticsEvents.timestamp, endOfYesterday)
+          gte(analysisEvents.timestamp, yesterday),
+          lte(analysisEvents.timestamp, endOfYesterday)
         )
       )
-      .groupBy(analyticsEvents.storyId, sql`DATE(${analyticsEvents.timestamp})`);
+      .groupBy(analysisEvents.storyId, sql`DATE(${analysisEvents.timestamp})`);
 
     // Store in a separate daily_metrics table (create this table if needed)
     // await db.insert(dailyMetrics).values(dailyMetrics);

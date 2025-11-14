@@ -13,8 +13,8 @@ import {
     storyInsights,
 } from "@/lib/db/schema";
 
-// Use Gemini Flash for analytics insights (fast, cost-effective for text generation)
-const analyticsModel = google("gemini-2.0-flash-exp");
+// Use Gemini Flash for analysis insights (fast, cost-effective for text generation)
+const analysisModel = google("gemini-2.0-flash-exp");
 
 export interface GenerateInsightsParams {
     storyId: string;
@@ -268,7 +268,7 @@ Format as JSON:
 
     try {
         const { text } = await generateText({
-            model: analyticsModel,
+            model: analysisModel,
             prompt,
             temperature: 0.7,
         });
@@ -315,7 +315,7 @@ Format as JSON:
 
     try {
         const { text } = await generateText({
-            model: analyticsModel,
+            model: analysisModel,
             prompt,
             temperature: 0.5,
         });

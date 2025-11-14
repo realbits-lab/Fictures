@@ -83,7 +83,7 @@ export function CacheManagerWidget() {
                 return "💬";
             case "publish":
                 return "📤";
-            case "analytics":
+            case "analysis":
                 return "📊";
             case "settings":
                 return "⚙️";

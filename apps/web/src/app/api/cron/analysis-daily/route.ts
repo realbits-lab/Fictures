@@ -3,18 +3,18 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
-    analyticsEvents,
+    analysisEvents,
     dailyStoryMetrics,
     readingSessions,
 } from "@/lib/db/schema";
 
 /**
- * GET /api/cron/analytics-daily
+ * GET /api/cron/analysis-daily
  *
- * Daily aggregation cron job for analytics metrics
+ * Daily aggregation cron job for analysis metrics
  * Runs every day at 1:00 AM UTC via Vercel cron
  *
- * Aggregates yesterday's analytics events into daily_story_metrics table
+ * Aggregates yesterday's analysis events into daily_story_metrics table
  */
 export async function GET(request: NextRequest) {
     try {
@@ -42,13 +42,13 @@ export async function GET(request: NextRequest) {
         // Get all unique story IDs that had activity yesterday
         const activeStories = await db
             .selectDistinct({
-                storyId: analyticsEvents.storyId,
+                storyId: analysisEvents.storyId,
             })
-            .from(analyticsEvents)
+            .from(analysisEvents)
             .where(
                 and(
-                    gte(analyticsEvents.timestamp, yesterdayStart),
-                    lte(analyticsEvents.timestamp, yesterdayEnd),
+                    gte(analysisEvents.timestamp, yesterdayStart),
+                    lte(analysisEvents.timestamp, yesterdayEnd),
                 ),
             );
 
@@ -73,34 +73,34 @@ export async function GET(request: NextRequest) {
             const [eventMetrics] = await db
                 .select({
                     totalViews: count(
-                        sql`DISTINCT CASE WHEN ${analyticsEvents.eventType} = 'story_view' THEN ${analyticsEvents.id} END`,
+                        sql`DISTINCT CASE WHEN ${analysisEvents.eventType} = 'story_view' THEN ${analysisEvents.id} END`,
                     ),
-                    uniqueReaders: sql<number>`COUNT(DISTINCT ${analyticsEvents.userId})`,
+                    uniqueReaders: sql<number>`COUNT(DISTINCT ${analysisEvents.userId})`,
                     comments: count(
-                        sql`CASE WHEN ${analyticsEvents.eventType} = 'comment_created' THEN 1 END`,
+                        sql`CASE WHEN ${analysisEvents.eventType} = 'comment_created' THEN 1 END`,
                     ),
                     likes: count(
-                        sql`CASE WHEN ${analyticsEvents.eventType} = 'story_liked' THEN 1 END`,
+                        sql`CASE WHEN ${analysisEvents.eventType} = 'story_liked' THEN 1 END`,
                     ),
                     shares: count(
-                        sql`CASE WHEN ${analyticsEvents.eventType} = 'share' THEN 1 END`,
+                        sql`CASE WHEN ${analysisEvents.eventType} = 'share' THEN 1 END`,
                     ),
                     bookmarks: count(
-                        sql`CASE WHEN ${analyticsEvents.eventType} = 'bookmark' THEN 1 END`,
+                        sql`CASE WHEN ${analysisEvents.eventType} = 'bookmark' THEN 1 END`,
                     ),
                     mobileUsers: count(
-                        sql`DISTINCT CASE WHEN ${analyticsEvents.metadata}->>'deviceType' = 'mobile' THEN ${analyticsEvents.userId} END`,
+                        sql`DISTINCT CASE WHEN ${analysisEvents.metadata}->>'deviceType' = 'mobile' THEN ${analysisEvents.userId} END`,
                     ),
                     desktopUsers: count(
-                        sql`DISTINCT CASE WHEN ${analyticsEvents.metadata}->>'deviceType' = 'desktop' THEN ${analyticsEvents.userId} END`,
+                        sql`DISTINCT CASE WHEN ${analysisEvents.metadata}->>'deviceType' = 'desktop' THEN ${analysisEvents.userId} END`,
                     ),
                 })
-                .from(analyticsEvents)
+                .from(analysisEvents)
                 .where(
                     and(
-                        eq(analyticsEvents.storyId, storyId),
-                        gte(analyticsEvents.timestamp, yesterdayStart),
-                        lte(analyticsEvents.timestamp, yesterdayEnd),
+                        eq(analysisEvents.storyId, storyId),
+                        gte(analysisEvents.timestamp, yesterdayStart),
+                        lte(analysisEvents.timestamp, yesterdayEnd),
                     ),
                 );
 

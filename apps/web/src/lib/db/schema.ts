@@ -899,8 +899,8 @@ export const aiInteractions = pgTable(
     ],
 );
 
-export const analyticsEvents = pgTable(
-    "analytics_events",
+export const analysisEvents = pgTable(
+    "analysis_events",
     {
         id: text().primaryKey().notNull(),
         eventType: eventType("event_type").notNull(),
@@ -917,27 +917,27 @@ export const analyticsEvents = pgTable(
             .notNull(),
     },
     (table) => [
-        index("idx_analytics_events_user").using(
+        index("idx_analysis_events_user").using(
             "btree",
             table.userId.asc().nullsLast().op("text_ops"),
         ),
-        index("idx_analytics_events_session").using(
+        index("idx_analysis_events_session").using(
             "btree",
             table.sessionId.asc().nullsLast().op("text_ops"),
         ),
-        index("idx_analytics_events_story").using(
+        index("idx_analysis_events_story").using(
             "btree",
             table.storyId.asc().nullsLast().op("text_ops"),
         ),
-        index("idx_analytics_events_type").using(
+        index("idx_analysis_events_type").using(
             "btree",
             table.eventType.asc().nullsLast().op("enum_ops"),
         ),
-        index("idx_analytics_events_timestamp").using(
+        index("idx_analysis_events_timestamp").using(
             "btree",
             table.timestamp.asc().nullsLast().op("timestamp_ops"),
         ),
-        index("idx_analytics_events_user_timestamp").using(
+        index("idx_analysis_events_user_timestamp").using(
             "btree",
             table.userId.asc().nullsLast().op("text_ops"),
             table.timestamp.asc().nullsLast().op("timestamp_ops"),
@@ -945,27 +945,27 @@ export const analyticsEvents = pgTable(
         foreignKey({
             columns: [table.userId],
             foreignColumns: [users.id],
-            name: "analytics_events_user_id_users_id_fk",
+            name: "analysis_events_user_id_users_id_fk",
         }).onDelete("set null"),
         foreignKey({
             columns: [table.storyId],
             foreignColumns: [stories.id],
-            name: "analytics_events_story_id_stories_id_fk",
+            name: "analysis_events_story_id_stories_id_fk",
         }).onDelete("cascade"),
         foreignKey({
             columns: [table.chapterId],
             foreignColumns: [chapters.id],
-            name: "analytics_events_chapter_id_chapters_id_fk",
+            name: "analysis_events_chapter_id_chapters_id_fk",
         }).onDelete("cascade"),
         foreignKey({
             columns: [table.sceneId],
             foreignColumns: [scenes.id],
-            name: "analytics_events_scene_id_scenes_id_fk",
+            name: "analysis_events_scene_id_scenes_id_fk",
         }).onDelete("cascade"),
         foreignKey({
             columns: [table.postId],
             foreignColumns: [communityPosts.id],
-            name: "analytics_events_post_id_community_posts_id_fk",
+            name: "analysis_events_post_id_community_posts_id_fk",
         }).onDelete("cascade"),
     ],
 );

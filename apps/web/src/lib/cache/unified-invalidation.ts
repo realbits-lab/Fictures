@@ -62,7 +62,7 @@ export type ClientCacheType =
     | "writing"
     | "reading"
     | "community"
-    | "analytics"
+    | "analysis"
     | "browse";
 
 /**
