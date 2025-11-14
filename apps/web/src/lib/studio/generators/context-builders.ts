@@ -14,12 +14,12 @@
  */
 
 import type {
-	Chapter,
-	Character,
-	Part,
-	Scene,
-	Setting,
-	Story,
+    Chapter,
+    Character,
+    Part,
+    Scene,
+    Setting,
+    Story,
 } from "@/lib/schemas/zod/generated";
 
 // =============================================================================

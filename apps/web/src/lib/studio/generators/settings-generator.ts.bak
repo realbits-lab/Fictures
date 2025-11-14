@@ -8,7 +8,6 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { type AiSettingType, AiSettingZodSchema } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
@@ -17,6 +16,7 @@ import type {
     GeneratorSettingsResult,
     SettingPromptParams,
 } from "./types";
+import { type AiSettingType, AiSettingZodSchema } from "@/lib/schemas/zod/ai";
 
 /**
  * Generate story settings
@@ -30,10 +30,11 @@ export async function generateSettings(
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, settingCount, onProgress }: GeneratorSettingsParams = params;
+    const { story, settingCount, onProgress, apiKey }: GeneratorSettingsParams =
+        params;
 
     // 2. Create text generation client with API key
-    const client = createTextGenerationClient();
+    const client = createTextGenerationClient(apiKey);
 
     const settings: AiSettingType[] = [];
 

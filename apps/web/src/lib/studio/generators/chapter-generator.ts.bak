@@ -9,7 +9,6 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { type AiChapterType, AiChapterZodSchema } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import {
     buildChapterContext,
@@ -24,6 +23,10 @@ import type {
     GeneratorChapterParams,
     GeneratorChapterResult,
 } from "./types";
+import {
+    type AiChapterType,
+    AiChapterZodSchema,
+} from "@/lib/schemas/zod/ai";
 
 /**
  * Generate ONE next chapter with full context
@@ -44,10 +47,11 @@ export async function generateChapter(
         settings,
         previousChapters,
         chapterIndex,
+        apiKey,
     }: GeneratorChapterParams = params;
 
     // 2. Create text generation client with API key
-    const client = createTextGenerationClient();
+    const client = createTextGenerationClient(apiKey);
 
     console.log(
         `[chapter-generator] 📖 Generating chapter ${chapterIndex + 1} (Part: ${part.title})...`,

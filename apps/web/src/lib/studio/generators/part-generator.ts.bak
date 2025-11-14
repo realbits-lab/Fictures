@@ -9,7 +9,6 @@
  * Database operations are handled by the caller (service/API layer).
  */
 
-import { type AiPartType, AiPartZodSchema } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
@@ -23,6 +22,7 @@ import type {
     GeneratorPartResult,
     PartPromptParams,
 } from "./types";
+import { type AiPartType, AiPartZodSchema } from "@/lib/schemas/zod/ai";
 
 /**
  * Generate ONE next story part with full context
@@ -42,10 +42,11 @@ export async function generatePart(
         settings,
         previousParts,
         partIndex,
+        apiKey,
     }: GeneratorPartParams = params;
 
     // 2. Create text generation client with API key
-    const client = createTextGenerationClient();
+    const client = createTextGenerationClient(apiKey);
 
     console.log(
         `[part-generator] 🎬 Generating part ${partIndex + 1} with full context...`,

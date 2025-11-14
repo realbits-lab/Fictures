@@ -8,10 +8,6 @@
  * Database operations are handled by the caller (API route).
  */
 
-import {
-    type AiCharacterType,
-    AiCharacterZodSchema,
-} from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
@@ -20,6 +16,10 @@ import type {
     GeneratorCharactersParams,
     GeneratorCharactersResult,
 } from "./types";
+import {
+    type AiCharacterType,
+    AiCharacterZodSchema,
+} from "@/lib/schemas/zod/ai";
 
 /**
  * Generate character profiles for a story
@@ -38,10 +38,11 @@ export async function generateCharacters(
         characterCount,
         language = "English",
         onProgress,
+        apiKey,
     }: GeneratorCharactersParams = params;
 
     // 2. Create text generation client with API key
-    const client = createTextGenerationClient();
+    const client = createTextGenerationClient(apiKey);
 
     const characters: AiCharacterType[] = [];
 

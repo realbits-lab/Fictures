@@ -45,10 +45,11 @@ export async function generateSceneContent(
         characters,
         settings,
         language = "English",
+        apiKey,
     }: GeneratorSceneContentParams = params;
 
     // 2. Create text generation client with API key
-    const client = createTextGenerationClient();
+    const client = createTextGenerationClient(apiKey);
 
     console.log(
         `[scene-content-generator] 📝 Generating content for scene: ${scene.title}`,

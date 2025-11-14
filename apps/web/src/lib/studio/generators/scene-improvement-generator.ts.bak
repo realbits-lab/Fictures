@@ -8,15 +8,15 @@
  * Database operations are handled by the caller (API route).
  */
 
-import {
-    type AiSceneImprovementType,
-    AiSceneImprovementZodSchema,
-} from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import type {
     GeneratorSceneImprovementParams,
     GeneratorSceneImprovementResult,
 } from "./types";
+import {
+    type AiSceneImprovementType,
+    AiSceneImprovementZodSchema,
+} from "@/lib/schemas/zod/ai";
 
 /**
  * Evaluate and iteratively improve a scene
@@ -28,10 +28,10 @@ export async function improveScene(
     params: GeneratorSceneImprovementParams,
 ): Promise<GeneratorSceneImprovementResult> {
     const startTime = Date.now();
-    const { content, story, maxIterations = 2 } = params;
+    const { content, story, maxIterations = 2, apiKey } = params;
 
     // Create text generation client with API key
-    const client = createTextGenerationClient();
+    const client = createTextGenerationClient(apiKey);
 
     let currentContent = content;
     let iterations = 0;

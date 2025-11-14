@@ -9,9 +9,14 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, characters, parts, stories } from "@/lib/schemas/database";
-import type { Chapter, Character, Part, Story } from "@/lib/schemas/zod/ai";
+import {
+    type Chapter,
+    type Character,
+    type Part,
+    type Story,
+} from "@/lib/schemas/zod/ai";
 import { insertChapterSchema } from "@/lib/schemas/zod/generated";
+import { chapters, characters, parts, stories } from "@/lib/schemas/database";
 import { generateChapter } from "../generators/chapter-generator";
 import type {
     GeneratorChapterParams,
@@ -22,6 +27,7 @@ export interface ServiceChapterParams {
     storyId: string;
     partId: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceChapterResult {
@@ -119,6 +125,7 @@ export class ChapterService {
             characters: storyCharacters,
             previousChapters: allPreviousChapters,
             chapterIndex: nextChapterIndex,
+            apiKey: params.apiKey,
         };
 
         const generationResult: GeneratorChapterResult =

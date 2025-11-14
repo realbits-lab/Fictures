@@ -10,6 +10,15 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
+    type Chapter,
+    type Character,
+    type Part,
+    type Scene,
+    type Setting,
+    type Story,
+} from "@/lib/schemas/zod/ai";
+import { insertSceneSchema } from "@/lib/schemas/zod/generated";
+import {
     chapters,
     characters,
     parts,
@@ -17,15 +26,6 @@ import {
     settings,
     stories,
 } from "@/lib/schemas/database";
-import type {
-    Chapter,
-    Character,
-    Part,
-    Scene,
-    Setting,
-    Story,
-} from "@/lib/schemas/zod/ai";
-import { insertSceneSchema } from "@/lib/schemas/zod/generated";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
     GeneratorSceneSummaryParams,
@@ -36,6 +36,7 @@ export interface ServiceSceneSummaryParams {
     storyId: string;
     chapterId: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServiceSceneSummaryResult {
@@ -58,7 +59,7 @@ export class SceneSummaryService {
     async generateAndSave(
         params: ServiceSceneSummaryParams,
     ): Promise<ServiceSceneSummaryResult> {
-        const { storyId, chapterId, userId } = params;
+        const { storyId, chapterId, userId, apiKey } = params;
 
         console.log(
             "[scene-summary-service] 📄 Generating next scene summary with full context...",
@@ -149,6 +150,7 @@ export class SceneSummaryService {
             settings: storySettings,
             previousScenes: allPreviousScenes,
             sceneIndex: nextSceneIndex,
+            apiKey,
         };
 
         const generationResult: GeneratorSceneSummaryResult =

@@ -8,7 +8,6 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { type AiStoryType, AiStoryZodSchema } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import { promptManager } from "./prompt-manager";
 import type {
@@ -16,6 +15,7 @@ import type {
     GeneratorStoryResult,
     StoryPromptParams,
 } from "./types";
+import { type AiStoryType, AiStoryZodSchema } from "@/lib/schemas/zod/ai";
 
 /**
  * Generate story foundation from user prompt
@@ -34,10 +34,11 @@ export async function generateStory(
         preferredGenre = "Slice" as const, // Default to Slice of Life genre
         preferredTone = "hopeful" as const,
         language = "English",
+        apiKey,
     }: GeneratorStoryParams = params;
 
     // 2. Create text generation client with API key
-    const client = createTextGenerationClient();
+    const client = createTextGenerationClient(apiKey);
 
     // 3. Get the prompt template for story generation
     const promptParams: StoryPromptParams = {

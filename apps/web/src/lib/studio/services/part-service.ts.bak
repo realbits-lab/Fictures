@@ -9,9 +9,14 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, parts, settings, stories } from "@/lib/schemas/database";
-import type { Character, Part, Setting, Story } from "@/lib/schemas/zod/ai";
+import {
+    type Character,
+    type Part,
+    type Setting,
+    type Story,
+} from "@/lib/schemas/zod/ai";
 import { insertPartSchema } from "@/lib/schemas/zod/generated";
+import { characters, parts, settings, stories } from "@/lib/schemas/database";
 import { generatePart } from "../generators/part-generator";
 import type {
     GeneratorPartParams,
@@ -21,6 +26,7 @@ import type {
 export interface ServicePartParams {
     storyId: string;
     userId: string;
+    apiKey?: string;
 }
 
 export interface ServicePartResult {
@@ -42,7 +48,7 @@ export class PartService {
     async generateAndSave(
         params: ServicePartParams,
     ): Promise<ServicePartResult> {
-        const { storyId, userId } = params;
+        const { storyId, userId, apiKey } = params;
 
         console.log(
             "[part-service] 🎬 Generating next part with full context...",
@@ -110,6 +116,7 @@ export class PartService {
             settings: storySettings,
             previousParts,
             partIndex: nextPartIndex,
+            apiKey,
         };
 
         const generationResult: GeneratorPartResult =
