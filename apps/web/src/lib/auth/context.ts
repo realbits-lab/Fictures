@@ -12,7 +12,7 @@
  */
 export interface AuthContext {
     /** Type of authentication */
-    type: 'session' | 'api-key' | 'anonymous';
+    type: "session" | "api-key" | "anonymous";
 
     /** User ID from the authentication source */
     userId?: string;
@@ -73,7 +73,7 @@ export interface AuthProviderConfig {
     allowParameterFallback: boolean;
 
     /** Storage type for server-side context */
-    storage: 'async-local' | 'headers' | 'custom';
+    storage: "async-local" | "headers" | "custom";
 
     /** Enforce permission scope checking (default: true) */
     enforceScopes: boolean;
@@ -89,36 +89,36 @@ export interface AuthProviderConfig {
  * Error types for authentication context system
  */
 export class AuthenticationError extends Error {
-    public readonly code: string = 'AUTH_ERROR';
+    public readonly code: string = "AUTH_ERROR";
 
     constructor(message: string, code?: string) {
         super(message);
-        this.name = 'AuthenticationError';
+        this.name = "AuthenticationError";
         if (code) this.code = code;
     }
 }
 
 export class NoContextError extends AuthenticationError {
     constructor() {
-        super('No authentication context available', 'NO_CONTEXT');
-        this.name = 'NoContextError';
+        super("No authentication context available", "NO_CONTEXT");
+        this.name = "NoContextError";
     }
 }
 
 export class InsufficientScopesError extends AuthenticationError {
     constructor(required: string[], actual: string[]) {
         super(
-            `Insufficient permissions. Required scopes: [${required.join(', ')}], Available scopes: [${actual.join(', ')}]`,
-            'INSUFFICIENT_SCOPES'
+            `Insufficient permissions. Required scopes: [${required.join(", ")}], Available scopes: [${actual.join(", ")}]`,
+            "INSUFFICIENT_SCOPES",
         );
-        this.name = 'InsufficientScopesError';
+        this.name = "InsufficientScopesError";
     }
 }
 
 export class InvalidApiKeyError extends AuthenticationError {
     constructor() {
-        super('Invalid or expired API key', 'INVALID_API_KEY');
-        this.name = 'InvalidApiKeyError';
+        super("Invalid or expired API key", "INVALID_API_KEY");
+        this.name = "InvalidApiKeyError";
     }
 }
 
@@ -132,14 +132,17 @@ export function isAuthError(error: unknown): error is AuthenticationError {
 /**
  * Helper function to check if a context has required scopes
  */
-export function hasScopes(context: AuthContext | null, requiredScopes: string[]): boolean {
+export function hasScopes(
+    context: AuthContext | null,
+    requiredScopes: string[],
+): boolean {
     if (!context) return false;
 
     // Admin scope has access to everything
-    if (context.scopes.includes('admin:all')) return true;
+    if (context.scopes.includes("admin:all")) return true;
 
     // Check each required scope
-    return requiredScopes.every(scope => context.scopes.includes(scope));
+    return requiredScopes.every((scope) => context.scopes.includes(scope));
 }
 
 /**
@@ -152,15 +155,17 @@ export function generateRequestId(): string {
 /**
  * Helper function to create anonymous context
  */
-export function createAnonymousContext(metadata?: Partial<AuthContext['metadata']>): AuthContext {
+export function createAnonymousContext(
+    metadata?: Partial<AuthContext["metadata"]>,
+): AuthContext {
     return {
-        type: 'anonymous',
+        type: "anonymous",
         scopes: [],
         metadata: {
             requestId: generateRequestId(),
             timestamp: Date.now(),
-            ...metadata
-        }
+            ...metadata,
+        },
     };
 }
 
@@ -172,10 +177,10 @@ export function createApiKeyContext(
     userId: string,
     email: string,
     scopes: string[],
-    metadata?: Partial<AuthContext['metadata']>
+    metadata?: Partial<AuthContext["metadata"]>,
 ): AuthContext {
     return {
-        type: 'api-key',
+        type: "api-key",
         userId,
         email,
         apiKey,
@@ -183,8 +188,8 @@ export function createApiKeyContext(
         metadata: {
             requestId: generateRequestId(),
             timestamp: Date.now(),
-            ...metadata
-        }
+            ...metadata,
+        },
     };
 }
 
@@ -195,17 +200,17 @@ export function createSessionContext(
     userId: string,
     email: string,
     scopes: string[],
-    metadata?: Partial<AuthContext['metadata']>
+    metadata?: Partial<AuthContext["metadata"]>,
 ): AuthContext {
     return {
-        type: 'session',
+        type: "session",
         userId,
         email,
         scopes,
         metadata: {
             requestId: generateRequestId(),
             timestamp: Date.now(),
-            ...metadata
-        }
+            ...metadata,
+        },
     };
 }

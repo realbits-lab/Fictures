@@ -2,14 +2,15 @@
  * Character Service
  *
  * Service layer for character generation and database persistence.
+ * Now uses authentication context instead of passing API keys as parameters.
  */
 
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { type Character, type Story } from "@/lib/schemas/zod/ai";
-import { insertCharacterSchema } from "@/lib/schemas/zod/generated";
 import { characters, stories } from "@/lib/schemas/database";
+import type { Character, Story } from "@/lib/schemas/zod/ai";
+import { insertCharacterSchema } from "@/lib/schemas/zod/generated";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
     GeneratorCharactersParams,
@@ -21,7 +22,7 @@ export interface ServiceCharactersParams {
     characterCount: number;
     language?: string;
     userId: string;
-    apiKey?: string;
+    // apiKey removed - now retrieved from auth context
 }
 
 export interface ServiceCharactersResult {
@@ -41,7 +42,6 @@ export class CharacterService {
             characterCount,
             language = "English",
             userId,
-            apiKey,
         } = params;
 
         // 1. Fetch and verify story
@@ -64,11 +64,11 @@ export class CharacterService {
         }
 
         // 3. Generate characters using pure generator
+        // API key is automatically retrieved from auth context
         const generateParams: GeneratorCharactersParams = {
             story,
             characterCount,
             language,
-            apiKey,
         };
 
         const generationResult: GeneratorCharactersResult =

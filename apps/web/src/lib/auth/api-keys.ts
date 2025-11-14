@@ -1,6 +1,6 @@
+import bcrypt from "bcryptjs";
 import { createHash, randomBytes } from "crypto";
 import { nanoid } from "nanoid";
-import bcrypt from "bcryptjs";
 
 // API key scopes - define what actions each scope allows
 export const API_SCOPES = {

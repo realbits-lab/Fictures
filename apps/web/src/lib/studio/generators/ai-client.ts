@@ -1,10 +1,13 @@
 /**
  * AI Client - Text Generation Wrapper
  * Unified interface for multiple AI providers (Gemini, AI Server)
+ *
+ * Now uses authentication context instead of passing API keys as parameters.
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
+import { getApiKey } from "@/lib/auth/server-context";
 import { loadProfile } from "@/lib/utils/auth-loader";
 import { promptManager } from "./prompt-manager";
 import type {
@@ -347,24 +350,24 @@ class GeminiProvider extends TextGenerationProvider {
  */
 class AIServerProvider extends TextGenerationProvider {
     private config: ReturnType<typeof getConfig>["aiServer"];
-    private apiKey?: string;
 
-    constructor(apiKey?: string) {
+    constructor() {
         super();
         this.config = getConfig().aiServer;
-        this.apiKey = apiKey;
     }
 
     /**
-     * Build headers with API key if available
+     * Build headers with API key from authentication context
      */
     private buildHeaders(): Record<string, string> {
         const headers: Record<string, string> = {
             "Content-Type": "application/json",
         };
 
-        if (this.apiKey) {
-            headers["x-api-key"] = this.apiKey;
+        // Get API key from authentication context
+        const apiKey = getApiKey();
+        if (apiKey) {
+            headers["x-api-key"] = apiKey;
         }
 
         return headers;
@@ -636,9 +639,9 @@ class TextGenerationWrapper {
     private provider: TextGenerationProvider;
     private providerType: ModelProvider;
 
-    constructor(apiKey?: string) {
+    constructor() {
         console.log("[TextGenerationWrapper] ===== CONSTRUCTOR CALLED =====");
-        console.log("[TextGenerationWrapper] API key provided:", !!apiKey);
+        // API key now retrieved from context when needed
         const config = getConfig();
         this.providerType = config.provider;
         console.log(
@@ -662,10 +665,9 @@ class TextGenerationWrapper {
                 "[TextGenerationWrapper] AI Server URL:",
                 config.aiServer.url,
             );
-            this.provider = new AIServerProvider(apiKey);
+            this.provider = new AIServerProvider();
             console.log(
-                "[TextGenerationWrapper] AIServerProvider instance created with API key:",
-                !!apiKey,
+                "[TextGenerationWrapper] AIServerProvider instance created (API key from context)",
             );
         } else {
             console.log(
@@ -811,16 +813,14 @@ class TextGenerationWrapper {
 export { TextGenerationWrapper };
 
 /**
- * Create a new text generation client with optional API key
- * @param apiKey - Optional API key for AI server authentication
+ * Create a new text generation client
+ * API key automatically retrieved from authentication context
  */
-export function createTextGenerationClient(
-    apiKey?: string,
-): TextGenerationWrapper {
-    return new TextGenerationWrapper(apiKey);
+export function createTextGenerationClient(): TextGenerationWrapper {
+    return new TextGenerationWrapper();
 }
 
-// Global singleton instance (for backward compatibility - no API key)
+// Global singleton instance (API key automatically retrieved from context)
 export const textGenerationClient = new TextGenerationWrapper();
 
 /**

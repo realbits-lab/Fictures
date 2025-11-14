@@ -7,22 +7,22 @@
  * @module auth/middleware
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { headers } from 'next/headers';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { authenticateRequest } from './dual-auth';
-import { withAuth, getAuth, getAuthSafe } from './server-context';
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import {
     type AuthContext,
+    createAnonymousContext,
     createApiKeyContext,
     createSessionContext,
-    createAnonymousContext,
     generateRequestId,
     hasScopes,
     InsufficientScopesError,
-    InvalidApiKeyError
-} from './context';
+    InvalidApiKeyError,
+} from "./context";
+import { authenticateRequest } from "./dual-auth";
+import { getAuth, getAuthSafe, withAuth } from "./server-context";
 
 /**
  * Middleware configuration options
@@ -44,12 +44,17 @@ interface AuthMiddlewareOptions {
 /**
  * Extract client metadata from request
  */
-function extractMetadata(request: NextRequest): Partial<AuthContext['metadata']> {
+function extractMetadata(
+    request: NextRequest,
+): Partial<AuthContext["metadata"]> {
     const requestHeaders = headers();
 
     return {
-        ip: requestHeaders.get('x-forwarded-for') ?? requestHeaders.get('x-real-ip') ?? undefined,
-        userAgent: requestHeaders.get('user-agent') ?? undefined,
+        ip:
+            requestHeaders.get("x-forwarded-for") ??
+            requestHeaders.get("x-real-ip") ??
+            undefined,
+        userAgent: requestHeaders.get("user-agent") ?? undefined,
     };
 }
 
@@ -60,8 +65,10 @@ function extractMetadata(request: NextRequest): Partial<AuthContext['metadata']>
  * @param request - The Next.js request
  * @returns The resolved authentication context
  */
-async function resolveAuthentication(request: NextRequest): Promise<AuthContext | null> {
-    const debug = process.env.NODE_ENV === 'development';
+async function resolveAuthentication(
+    request: NextRequest,
+): Promise<AuthContext | null> {
+    const debug = process.env.NODE_ENV === "development";
 
     // Try to authenticate the request using dual-auth
     const authResult = await authenticateRequest(request);
@@ -70,7 +77,7 @@ async function resolveAuthentication(request: NextRequest): Promise<AuthContext 
         console.log(`[AUTH_MIDDLEWARE] Authenticated via ${authResult.type}:`, {
             userId: authResult.user.id,
             email: authResult.user.email,
-            type: authResult.type
+            type: authResult.type,
         });
     }
 
@@ -81,22 +88,22 @@ async function resolveAuthentication(request: NextRequest): Promise<AuthContext 
     const metadata = extractMetadata(request);
 
     // Create appropriate context based on auth type
-    if (authResult.type === 'apiKey' && authResult.apiKey) {
+    if (authResult.type === "apiKey" && authResult.apiKey) {
         return createApiKeyContext(
             authResult.apiKey,
             authResult.user.id,
-            authResult.user.email ?? '',
+            authResult.user.email ?? "",
             authResult.user.scopes || [],
-            metadata
+            metadata,
         );
     }
 
     // Session-based authentication
     return createSessionContext(
         authResult.user.id,
-        authResult.user.email ?? '',
+        authResult.user.email ?? "",
         authResult.user.scopes || [],
-        metadata
+        metadata,
     );
 }
 
@@ -130,10 +137,15 @@ async function resolveAuthentication(request: NextRequest): Promise<AuthContext 
  */
 export function withAuthentication(
     handler: (request: NextRequest) => Promise<NextResponse | Response>,
-    options: AuthMiddlewareOptions = {}
+    options: AuthMiddlewareOptions = {},
 ): (request: NextRequest) => Promise<NextResponse | Response> {
     return async (request: NextRequest) => {
-        const { requiredScopes = [], allowAnonymous = false, debug = false, onError } = options;
+        const {
+            requiredScopes = [],
+            allowAnonymous = false,
+            debug = false,
+            onError,
+        } = options;
 
         try {
             // Resolve authentication from request
@@ -142,8 +154,8 @@ export function withAuthentication(
             // If no auth and anonymous not allowed, return 401
             if (!authContext && !allowAnonymous) {
                 return NextResponse.json(
-                    { error: 'Authentication required' },
-                    { status: 401 }
+                    { error: "Authentication required" },
+                    { status: 401 },
                 );
             }
 
@@ -155,16 +167,18 @@ export function withAuthentication(
             // Check required scopes
             if (authContext && requiredScopes.length > 0) {
                 if (!hasScopes(authContext, requiredScopes)) {
-                    throw new InsufficientScopesError(requiredScopes, authContext.scopes);
+                    throw new InsufficientScopesError(
+                        requiredScopes,
+                        authContext.scopes,
+                    );
                 }
             }
 
             // Run the handler with authentication context
             return await withAuth(authContext!, () => handler(request));
-
         } catch (error) {
             if (debug) {
-                console.error('[AUTH_MIDDLEWARE] Error:', error);
+                console.error("[AUTH_MIDDLEWARE] Error:", error);
             }
 
             // Use custom error handler if provided
@@ -176,21 +190,21 @@ export function withAuthentication(
             if (error instanceof InsufficientScopesError) {
                 return NextResponse.json(
                     { error: error.message },
-                    { status: 403 }
+                    { status: 403 },
                 );
             }
 
             if (error instanceof InvalidApiKeyError) {
                 return NextResponse.json(
-                    { error: 'Invalid API key' },
-                    { status: 401 }
+                    { error: "Invalid API key" },
+                    { status: 401 },
                 );
             }
 
             // Generic error
             return NextResponse.json(
-                { error: 'Authentication error' },
-                { status: 500 }
+                { error: "Authentication error" },
+                { status: 500 },
             );
         }
     };
@@ -214,11 +228,10 @@ export function withAuthentication(
  * ```
  */
 export function requireScopes(...scopes: string[]) {
-    return function (
-        handler: (request: NextRequest) => Promise<NextResponse | Response>
-    ): (request: NextRequest) => Promise<NextResponse | Response> {
-        return withAuthentication(handler, { requiredScopes: scopes });
-    };
+    return (
+        handler: (request: NextRequest) => Promise<NextResponse | Response>,
+    ): ((request: NextRequest) => Promise<NextResponse | Response>) =>
+        withAuthentication(handler, { requiredScopes: scopes });
 }
 
 /**
@@ -242,7 +255,7 @@ export function requireScopes(...scopes: string[]) {
  * ```
  */
 export function optionalAuth(
-    handler: (request: NextRequest) => Promise<NextResponse | Response>
+    handler: (request: NextRequest) => Promise<NextResponse | Response>,
 ): (request: NextRequest) => Promise<NextResponse | Response> {
     return withAuthentication(handler, { allowAnonymous: true });
 }
@@ -262,9 +275,9 @@ export function optionalAuth(
  * ```
  */
 export function adminOnly(
-    handler: (request: NextRequest) => Promise<NextResponse | Response>
+    handler: (request: NextRequest) => Promise<NextResponse | Response>,
 ): (request: NextRequest) => Promise<NextResponse | Response> {
-    return withAuthentication(handler, { requiredScopes: ['admin:all'] });
+    return withAuthentication(handler, { requiredScopes: ["admin:all"] });
 }
 
 /**
@@ -294,12 +307,12 @@ export async function getServerAuth(): Promise<AuthContext | null> {
 
     return createSessionContext(
         session.user.id,
-        session.user.email ?? '',
+        session.user.email ?? "",
         [], // TODO: Load scopes from user role
         {
             requestId: generateRequestId(),
-            timestamp: Date.now()
-        }
+            timestamp: Date.now(),
+        },
     );
 }
 
@@ -323,7 +336,9 @@ export async function getServerAuth(): Promise<AuthContext | null> {
  * ```
  */
 export function chain(
-    ...middlewares: Array<(req: NextRequest) => Promise<NextResponse | Response>>
+    ...middlewares: Array<
+        (req: NextRequest) => Promise<NextResponse | Response>
+    >
 ): (req: NextRequest) => Promise<NextResponse | Response> {
     return async (req: NextRequest) => {
         for (const middleware of middlewares) {

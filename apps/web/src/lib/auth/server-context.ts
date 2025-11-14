@@ -8,9 +8,13 @@
  * @module auth/server-context
  */
 
-import { AsyncLocalStorage } from 'node:async_hooks';
-import type { AuthContext, AuthStore } from './context';
-import { NoContextError, AuthenticationError, generateRequestId } from './context';
+import { AsyncLocalStorage } from "node:async_hooks";
+import type { AuthContext, AuthStore } from "./context";
+import {
+    AuthenticationError,
+    generateRequestId,
+    NoContextError,
+} from "./context";
 
 /**
  * AsyncLocalStorage instance for maintaining auth context
@@ -29,8 +33,8 @@ interface ServerContextConfig {
 }
 
 const config: ServerContextConfig = {
-    debug: process.env.NODE_ENV === 'development',
-    throwOnMissing: true
+    debug: process.env.NODE_ENV === "development",
+    throwOnMissing: true,
 };
 
 /**
@@ -52,10 +56,12 @@ const config: ServerContextConfig = {
  */
 export function withAuth<T>(
     context: AuthContext,
-    fn: () => Promise<T>
+    fn: () => Promise<T>,
 ): Promise<T> {
     if (config.debug) {
-        console.log(`[AUTH_CONTEXT] Creating context for request ${context.metadata.requestId}`);
+        console.log(
+            `[AUTH_CONTEXT] Creating context for request ${context.metadata.requestId}`,
+        );
     }
 
     // Run the function with the authentication context
@@ -186,8 +192,8 @@ export class ServerAuthStore implements AuthStore {
         // AsyncLocalStorage doesn't support direct setting outside of run()
         // This method should not be used with AsyncLocalStorage
         throw new AuthenticationError(
-            'Cannot set auth context directly with AsyncLocalStorage. Use withAuth() instead.',
-            'UNSUPPORTED_OPERATION'
+            "Cannot set auth context directly with AsyncLocalStorage. Use withAuth() instead.",
+            "UNSUPPORTED_OPERATION",
         );
     }
 
@@ -210,12 +216,12 @@ export class ServerAuthStore implements AuthStore {
  */
 export function traced<T extends (...args: any[]) => any>(
     fn: T,
-    name?: string
+    name?: string,
 ): T {
     return (async (...args: Parameters<T>): Promise<ReturnType<T>> => {
         const context = getAuthSafe();
-        const requestId = context?.metadata.requestId ?? 'no-context';
-        const fnName = name ?? fn.name ?? 'anonymous';
+        const requestId = context?.metadata.requestId ?? "no-context";
+        const fnName = name ?? fn.name ?? "anonymous";
 
         if (config.debug) {
             console.log(`[${requestId}] Entering ${fnName}`);
@@ -244,7 +250,7 @@ export function traced<T extends (...args: any[]) => any>(
  */
 export async function measureWithContext<T>(
     fn: () => Promise<T>,
-    label: string
+    label: string,
 ): Promise<T> {
     const context = getAuthSafe();
     const requestId = context?.metadata.requestId ?? generateRequestId();
@@ -263,7 +269,10 @@ export async function measureWithContext<T>(
         const duration = Date.now() - start;
 
         if (config.debug) {
-            console.error(`[${requestId}] ${label} failed after ${duration}ms:`, error);
+            console.error(
+                `[${requestId}] ${label} failed after ${duration}ms:`,
+                error,
+            );
         }
 
         throw error;

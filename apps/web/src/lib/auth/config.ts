@@ -6,7 +6,7 @@
  * @module auth/config
  */
 
-import type { AuthProviderConfig } from './context';
+import type { AuthProviderConfig } from "./context";
 
 /**
  * Default authentication configuration
@@ -19,13 +19,13 @@ export const authConfig: AuthProviderConfig = {
     allowParameterFallback: true,
 
     // Use AsyncLocalStorage for server-side context
-    storage: 'async-local',
+    storage: "async-local",
 
     // Enforce permission scope checking
     enforceScopes: true,
 
     // Debug logging in development
-    debug: process.env.NODE_ENV === 'development'
+    debug: process.env.NODE_ENV === "development",
 };
 
 /**
@@ -34,32 +34,32 @@ export const authConfig: AuthProviderConfig = {
  */
 export const PERMISSION_SCOPES = {
     // Story management
-    'stories:read': 'Read stories and related data',
-    'stories:write': 'Create and edit stories',
-    'stories:delete': 'Delete stories',
-    'stories:publish': 'Publish and unpublish stories',
+    "stories:read": "Read stories and related data",
+    "stories:write": "Create and edit stories",
+    "stories:delete": "Delete stories",
+    "stories:publish": "Publish and unpublish stories",
 
     // Chapter and scene management
-    'chapters:read': 'Read chapters and scenes',
-    'chapters:write': 'Create and edit chapters',
-    'chapters:delete': 'Delete chapters',
+    "chapters:read": "Read chapters and scenes",
+    "chapters:write": "Create and edit chapters",
+    "chapters:delete": "Delete chapters",
 
     // Image management
-    'images:read': 'View images',
-    'images:write': 'Upload and generate images',
-    'images:delete': 'Delete images',
+    "images:read": "View images",
+    "images:write": "Upload and generate images",
+    "images:delete": "Delete images",
 
     // AI features
-    'ai:use': 'Use AI generation features',
-    'ai:unlimited': 'Unlimited AI usage',
+    "ai:use": "Use AI generation features",
+    "ai:unlimited": "Unlimited AI usage",
 
     // User management
-    'users:read': 'View user profiles',
-    'users:write': 'Edit user profiles',
-    'users:delete': 'Delete users',
+    "users:read": "View user profiles",
+    "users:write": "Edit user profiles",
+    "users:delete": "Delete users",
 
     // Admin
-    'admin:all': 'Full admin access'
+    "admin:all": "Full admin access",
 } as const;
 
 export type PermissionScope = keyof typeof PERMISSION_SCOPES;
@@ -68,40 +68,35 @@ export type PermissionScope = keyof typeof PERMISSION_SCOPES;
  * Role-based scope mappings
  */
 export const ROLE_SCOPES: Record<string, PermissionScope[]> = {
-    reader: [
-        'stories:read',
-        'chapters:read',
-        'images:read',
-        'users:read'
-    ],
+    reader: ["stories:read", "chapters:read", "images:read", "users:read"],
     writer: [
-        'stories:read',
-        'stories:write',
-        'stories:publish',
-        'chapters:read',
-        'chapters:write',
-        'images:read',
-        'images:write',
-        'ai:use',
-        'users:read'
+        "stories:read",
+        "stories:write",
+        "stories:publish",
+        "chapters:read",
+        "chapters:write",
+        "images:read",
+        "images:write",
+        "ai:use",
+        "users:read",
     ],
     manager: [
-        'stories:read',
-        'stories:write',
-        'stories:delete',
-        'stories:publish',
-        'chapters:read',
-        'chapters:write',
-        'chapters:delete',
-        'images:read',
-        'images:write',
-        'images:delete',
-        'ai:use',
-        'ai:unlimited',
-        'users:read',
-        'users:write',
-        'admin:all'
-    ]
+        "stories:read",
+        "stories:write",
+        "stories:delete",
+        "stories:publish",
+        "chapters:read",
+        "chapters:write",
+        "chapters:delete",
+        "images:read",
+        "images:write",
+        "images:delete",
+        "ai:use",
+        "ai:unlimited",
+        "users:read",
+        "users:write",
+        "admin:all",
+    ],
 };
 
 /**
@@ -116,7 +111,7 @@ export function getScopesForRole(role: string): PermissionScope[] {
  */
 export function roleHasScope(role: string, scope: PermissionScope): boolean {
     const scopes = getScopesForRole(role);
-    return scopes.includes(scope) || scopes.includes('admin:all');
+    return scopes.includes(scope) || scopes.includes("admin:all");
 }
 
 /**
@@ -125,31 +120,31 @@ export function roleHasScope(role: string, scope: PermissionScope): boolean {
  */
 export const ENDPOINT_SCOPES: Record<string, PermissionScope[]> = {
     // Studio API endpoints
-    '/studio/api/novels': ['stories:write', 'ai:use'],
-    '/studio/api/scenes': ['chapters:write', 'ai:use'],
-    '/studio/api/characters': ['stories:write'],
-    '/studio/api/settings': ['stories:write'],
-    '/studio/api/remove-story': ['stories:write'],
-    '/studio/api/reset-all': ['admin:all'],
+    "/studio/api/novels": ["stories:write", "ai:use"],
+    "/studio/api/scenes": ["chapters:write", "ai:use"],
+    "/studio/api/characters": ["stories:write"],
+    "/studio/api/settings": ["stories:write"],
+    "/studio/api/remove-story": ["stories:write"],
+    "/studio/api/reset-all": ["admin:all"],
 
     // Novel API endpoints
-    '/novels/api/story': ['stories:read'],
-    '/novels/api/chapter': ['chapters:read'],
+    "/novels/api/story": ["stories:read"],
+    "/novels/api/chapter": ["chapters:read"],
 
     // Image API endpoints
-    '/api/images/generate': ['images:write', 'ai:use'],
-    '/api/images/upload': ['images:write'],
-    '/api/images/delete': ['images:delete'],
+    "/api/images/generate": ["images:write", "ai:use"],
+    "/api/images/upload": ["images:write"],
+    "/api/images/delete": ["images:delete"],
 
     // User API endpoints
-    '/api/users/profile': ['users:read'],
-    '/api/users/update': ['users:write'],
-    '/api/users/delete': ['users:delete'],
+    "/api/users/profile": ["users:read"],
+    "/api/users/update": ["users:write"],
+    "/api/users/delete": ["users:delete"],
 
     // Admin endpoints
-    '/api/admin/users': ['admin:all'],
-    '/api/admin/stories': ['admin:all'],
-    '/api/admin/system': ['admin:all']
+    "/api/admin/users": ["admin:all"],
+    "/api/admin/stories": ["admin:all"],
+    "/api/admin/system": ["admin:all"],
 };
 
 /**
@@ -164,7 +159,7 @@ export function getEndpointScopes(path: string): PermissionScope[] {
     // Pattern matching (e.g., /api/users/:id)
     for (const [pattern, scopes] of Object.entries(ENDPOINT_SCOPES)) {
         const regex = new RegExp(
-            '^' + pattern.replace(/:[^/]+/g, '[^/]+') + '$'
+            "^" + pattern.replace(/:[^/]+/g, "[^/]+") + "$",
         );
         if (regex.test(path)) {
             return scopes;
@@ -172,42 +167,48 @@ export function getEndpointScopes(path: string): PermissionScope[] {
     }
 
     // Default to read permission
-    return ['stories:read'];
+    return ["stories:read"];
 }
 
 /**
  * Rate limiting configuration per scope
  */
-export const SCOPE_RATE_LIMITS: Record<PermissionScope, { requests: number; window: number }> = {
-    'stories:read': { requests: 100, window: 60000 }, // 100 req/min
-    'stories:write': { requests: 20, window: 60000 }, // 20 req/min
-    'stories:delete': { requests: 10, window: 60000 }, // 10 req/min
-    'stories:publish': { requests: 10, window: 60000 }, // 10 req/min
-    'chapters:read': { requests: 100, window: 60000 },
-    'chapters:write': { requests: 30, window: 60000 },
-    'chapters:delete': { requests: 10, window: 60000 },
-    'images:read': { requests: 200, window: 60000 },
-    'images:write': { requests: 10, window: 60000 },
-    'images:delete': { requests: 10, window: 60000 },
-    'ai:use': { requests: 50, window: 60000 },
-    'ai:unlimited': { requests: 1000, window: 60000 },
-    'users:read': { requests: 50, window: 60000 },
-    'users:write': { requests: 10, window: 60000 },
-    'users:delete': { requests: 5, window: 60000 },
-    'admin:all': { requests: 1000, window: 60000 }
+export const SCOPE_RATE_LIMITS: Record<
+    PermissionScope,
+    { requests: number; window: number }
+> = {
+    "stories:read": { requests: 100, window: 60000 }, // 100 req/min
+    "stories:write": { requests: 20, window: 60000 }, // 20 req/min
+    "stories:delete": { requests: 10, window: 60000 }, // 10 req/min
+    "stories:publish": { requests: 10, window: 60000 }, // 10 req/min
+    "chapters:read": { requests: 100, window: 60000 },
+    "chapters:write": { requests: 30, window: 60000 },
+    "chapters:delete": { requests: 10, window: 60000 },
+    "images:read": { requests: 200, window: 60000 },
+    "images:write": { requests: 10, window: 60000 },
+    "images:delete": { requests: 10, window: 60000 },
+    "ai:use": { requests: 50, window: 60000 },
+    "ai:unlimited": { requests: 1000, window: 60000 },
+    "users:read": { requests: 50, window: 60000 },
+    "users:write": { requests: 10, window: 60000 },
+    "users:delete": { requests: 5, window: 60000 },
+    "admin:all": { requests: 1000, window: 60000 },
 };
 
 /**
  * Get rate limit for a set of scopes
  * Returns the most permissive limit
  */
-export function getRateLimit(scopes: PermissionScope[]): { requests: number; window: number } {
-    if (scopes.includes('admin:all')) {
-        return SCOPE_RATE_LIMITS['admin:all'];
+export function getRateLimit(scopes: PermissionScope[]): {
+    requests: number;
+    window: number;
+} {
+    if (scopes.includes("admin:all")) {
+        return SCOPE_RATE_LIMITS["admin:all"];
     }
 
-    if (scopes.includes('ai:unlimited')) {
-        return SCOPE_RATE_LIMITS['ai:unlimited'];
+    if (scopes.includes("ai:unlimited")) {
+        return SCOPE_RATE_LIMITS["ai:unlimited"];
     }
 
     // Find the most permissive limit
