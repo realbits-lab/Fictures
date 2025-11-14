@@ -10,7 +10,14 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { scenes } from "@/lib/schemas/database";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
 import { generateCompleteToonplay } from "@/lib/services/toonplay-service";
 
 /**
@@ -35,28 +42,14 @@ export async function POST(request: Request) {
 
         console.log("[toonplay-api] 📥 Request:", params);
 
-        // 2. Fetch scene with related data
-        const scene = await db.query.scenes.findFirst({
-            where: eq(scenes.id, params.sceneId),
-            with: {
-                chapter: {
-                    with: {
-                        part: {
-                            with: {
-                                story: {
-                                    with: {
-                                        characters: true,
-                                        settings: true,
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        });
+        // 2. Fetch scene
+        const sceneResult = await db
+            .select()
+            .from(scenes)
+            .where(eq(scenes.id, params.sceneId))
+            .limit(1);
 
-        if (!scene) {
+        if (sceneResult.length === 0) {
             return NextResponse.json(
                 {
                     success: false,
@@ -69,38 +62,92 @@ export async function POST(request: Request) {
             );
         }
 
-        if (!scene.chapter?.part?.story) {
+        const scene = sceneResult[0];
+
+        // 3. Fetch chapter
+        const chapterResult = await db
+            .select()
+            .from(chapters)
+            .where(eq(chapters.id, scene.chapterId))
+            .limit(1);
+
+        if (chapterResult.length === 0) {
             return NextResponse.json(
                 {
                     success: false,
                     error: {
-                        code: "INVALID_SCENE_DATA",
-                        message: "Scene is missing required relationships",
+                        code: "CHAPTER_NOT_FOUND",
+                        message: "Chapter not found for this scene",
                     },
                 },
-                { status: 400 },
+                { status: 404 },
             );
         }
 
-        const story = scene.chapter.part.story;
-        const characters = story.characters || [];
-        const settings = story.settings || [];
+        const chapter = chapterResult[0];
+
+        // 4. Fetch part (optional)
+        let part = null;
+        if (chapter.partId) {
+            const partResult = await db
+                .select()
+                .from(parts)
+                .where(eq(parts.id, chapter.partId))
+                .limit(1);
+
+            if (partResult.length > 0) {
+                part = partResult[0];
+            }
+        }
+
+        // 5. Fetch story
+        const storyResult = await db
+            .select()
+            .from(stories)
+            .where(eq(stories.id, scene.storyId))
+            .limit(1);
+
+        if (storyResult.length === 0) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    error: {
+                        code: "STORY_NOT_FOUND",
+                        message: "Story not found for this scene",
+                    },
+                },
+                { status: 404 },
+            );
+        }
+
+        const story = storyResult[0];
+
+        // 6. Fetch characters and settings for the story
+        const storyCharacters = await db
+            .select()
+            .from(characters)
+            .where(eq(characters.storyId, story.id));
+
+        const storySettings = await db
+            .select()
+            .from(settings)
+            .where(eq(settings.storyId, story.id));
 
         console.log(
             `[toonplay-api] Scene: ${scene.title}, Story: ${story.title}`,
         );
         console.log(
-            `[toonplay-api] Context: ${characters.length} characters, ${settings.length} settings`,
+            `[toonplay-api] Context: ${storyCharacters.length} characters, ${storySettings.length} settings`,
         );
 
-        // 3. Generate toonplay with panel images
+        // 7. Generate toonplay with panel images
         const result = await generateCompleteToonplay({
             scene,
             story,
-            characters,
-            settings,
+            characters: storyCharacters,
+            settings: storySettings,
             storyId: story.id,
-            chapterId: scene.chapter.id,
+            chapterId: chapter.id,
             sceneId: scene.id,
             language: params.language,
             evaluationMode: params.evaluationMode,
