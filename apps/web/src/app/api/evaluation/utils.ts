@@ -2,8 +2,11 @@
  * Shared utility functions for evaluation APIs
  */
 
-import type { EvaluationError, MetricResult } from "./types";
-import { EVALUATION_ERROR_CODES } from "./types";
+import type {
+	EvaluationError,
+	MetricResult,
+} from "@/lib/schemas/api/evaluation";
+import { EVALUATION_ERROR_CODES } from "@/lib/schemas/api/evaluation";
 
 // ============================================================================
 // Score Calculation

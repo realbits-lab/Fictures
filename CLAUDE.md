@@ -148,6 +148,44 @@ Store API keys and authentication data in `.auth/user.json`:
   2. Second: Update source schema (`src/lib/schemas/database/index.ts`)
   3. Third: Run `pnpm db:generate` to regenerate output files
 
+### Schema-First Type Definition Principle
+
+**CRITICAL: Always check schema directory for types before creating new ones.**
+
+When you need type definitions (TypeScript interfaces, Zod schemas, etc.):
+
+1. **FIRST**: Check centralized schema directories for existing types:
+   - `apps/web/src/lib/schemas/database/` - Database table schemas and types
+   - `apps/web/src/lib/schemas/api/` - API request/response types
+   - `apps/web/src/lib/schemas/validation/` - Validation schemas
+
+2. **IF NOT FOUND**: Create new type definitions in the appropriate schema directory:
+   - Database models → `src/lib/schemas/database/`
+   - API contracts → `src/lib/schemas/api/`
+   - Form validation → `src/lib/schemas/validation/`
+
+3. **NEVER**: Create type definitions in API route directories or component directories
+
+**Why This Matters:**
+- **Prevents Type Duplication**: Single source of truth for type definitions
+- **Maintains Consistency**: Same types used across entire codebase
+- **Enables Reusability**: Types can be imported anywhere they're needed
+- **Avoids Schema Drift**: Central location prevents divergent type definitions
+
+**Example (Correct):**
+```typescript
+// ✅ Import from centralized schema
+import type { MetricResult, EvaluationError } from "@/lib/schemas/api/evaluation";
+import { EVALUATION_ERROR_CODES } from "@/lib/schemas/api/evaluation";
+```
+
+**Example (Incorrect):**
+```typescript
+// ❌ DO NOT create types in API route directories
+// apps/web/src/app/api/evaluation/types.ts  ← WRONG LOCATION
+export interface MetricResult { ... }
+```
+
 ## Documentation
 
 - **Root docs/**: Platform-wide documentation

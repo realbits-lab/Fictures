@@ -102,7 +102,7 @@ export async function generateSceneContent(
         prompt: userPromptText,
         systemPrompt,
         temperature: 0.85,
-        maxTokens: 8192, // AI server limit is 8192 tokens
+        maxTokens: 12288, // 12K tokens - allows ~9000 words (AI server supports up to 40K)
     });
 
     // 5. Extract and process generated content

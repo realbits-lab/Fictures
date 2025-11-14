@@ -125,15 +125,36 @@ class TextGenerationService:
             # Get final output
             final_output = results[-1]
             generated_text = final_output.outputs[0].text
-            tokens_used = len(final_output.outputs[0].token_ids)
+            output_tokens = len(final_output.outputs[0].token_ids)
             finish_reason = final_output.outputs[0].finish_reason
 
-            logger.info(f"Text generation completed. Tokens used: {tokens_used}")
+            # Calculate input tokens (approximate from prompt length)
+            # vLLM doesn't directly provide input tokens, so we estimate
+            # Average: 1 token ≈ 4 characters for English text
+            estimated_input_tokens = len(prompt) // 4
+
+            # Total tokens (input + output)
+            total_tokens = estimated_input_tokens + output_tokens
+
+            logger.info("=" * 80)
+            logger.info("TEXT GENERATION TOKEN USAGE:")
+            logger.info(f"  Input tokens (estimated): {estimated_input_tokens}")
+            logger.info(f"  Output tokens: {output_tokens}")
+            logger.info(f"  Total tokens: {total_tokens}")
+            logger.info(f"  Finish reason: {finish_reason if finish_reason else 'unknown'}")
+            logger.info(f"  Prompt length: {len(prompt)} chars")
+            logger.info(f"  Output length: {len(generated_text)} chars")
+            logger.info("=" * 80)
 
             return {
                 "text": generated_text,
                 "model": self.model_name,
-                "tokens_used": tokens_used,
+                "tokens_used": output_tokens,
+                "tokens": {
+                    "input": estimated_input_tokens,
+                    "output": output_tokens,
+                    "total": total_tokens,
+                },
                 "finish_reason": finish_reason if finish_reason else "unknown",
             }
 
@@ -181,17 +202,38 @@ class TextGenerationService:
             logger.info(f"Starting streaming text generation with prompt length: {len(prompt)}")
             request_id = f"text-stream-{asyncio.current_task().get_name()}"
 
+            # Calculate estimated input tokens once
+            estimated_input_tokens = len(prompt) // 4
+
             async for request_output in self.engine.generate(
                 prompt, sampling_params, request_id=request_id
             ):
                 text = request_output.outputs[0].text
-                tokens_used = len(request_output.outputs[0].token_ids)
+                output_tokens = len(request_output.outputs[0].token_ids)
                 finish_reason = request_output.outputs[0].finish_reason
+                total_tokens = estimated_input_tokens + output_tokens
+
+                # Log when streaming completes
+                if finish_reason is not None:
+                    logger.info("=" * 80)
+                    logger.info("STREAMING TEXT GENERATION TOKEN USAGE:")
+                    logger.info(f"  Input tokens (estimated): {estimated_input_tokens}")
+                    logger.info(f"  Output tokens: {output_tokens}")
+                    logger.info(f"  Total tokens: {total_tokens}")
+                    logger.info(f"  Finish reason: {finish_reason}")
+                    logger.info(f"  Prompt length: {len(prompt)} chars")
+                    logger.info(f"  Output length: {len(text)} chars")
+                    logger.info("=" * 80)
 
                 yield {
                     "text": text,
                     "model": self.model_name,
-                    "tokens_used": tokens_used,
+                    "tokens_used": output_tokens,
+                    "tokens": {
+                        "input": estimated_input_tokens,
+                        "output": output_tokens,
+                        "total": total_tokens,
+                    },
                     "finish_reason": finish_reason if finish_reason else None,
                     "done": finish_reason is not None,
                 }
@@ -409,23 +451,30 @@ class TextGenerationService:
                 # Get final output
                 final_output = results[-1]
                 generated_text = final_output.outputs[0].text
-                tokens_used = len(final_output.outputs[0].token_ids)
+                output_tokens = len(final_output.outputs[0].token_ids)
                 finish_reason = final_output.outputs[0].finish_reason
+
+                # Calculate input tokens (estimate from prompt)
+                estimated_input_tokens = len(prompt) // 4
+                total_tokens = estimated_input_tokens + output_tokens
 
                 # Calculate token usage metrics
                 token_allocation = int(current_max_tokens)
-                token_utilization = (tokens_used / token_allocation) * 100 if token_allocation > 0 else 0
-                tokens_unused = token_allocation - tokens_used
+                token_utilization = (output_tokens / token_allocation) * 100 if token_allocation > 0 else 0
+                tokens_unused = token_allocation - output_tokens
                 output_size = len(generated_text)
 
                 logger.info("=" * 80)
-                logger.info("GENERATION METRICS:")
+                logger.info("STRUCTURED GENERATION TOKEN USAGE:")
+                logger.info(f"  Input tokens (estimated): {estimated_input_tokens}")
+                logger.info(f"  Output tokens: {output_tokens}")
+                logger.info(f"  Total tokens: {total_tokens}")
                 logger.info(f"  Tokens allocated: {token_allocation}")
-                logger.info(f"  Tokens used: {tokens_used}")
                 logger.info(f"  Tokens unused: {tokens_unused}")
                 logger.info(f"  Token utilization: {token_utilization:.1f}%")
                 logger.info(f"  Finish reason: {finish_reason}")
                 logger.info(f"  Output size: {output_size} characters")
+                logger.info(f"  Prompt length: {len(prompt)} chars")
                 logger.info(f"  Retry attempt: {retry_count + 1}/{max_retries + 1}")
                 logger.info("=" * 80)
 
@@ -472,7 +521,12 @@ class TextGenerationService:
                             "output": generated_text,
                             "parsed_output": parsed_output,
                             "model": self.model_name,
-                            "tokens_used": tokens_used,
+                            "tokens_used": output_tokens,
+                            "tokens": {
+                                "input": estimated_input_tokens,
+                                "output": output_tokens,
+                                "total": total_tokens,
+                            },
                             "finish_reason": finish_reason if finish_reason else "unknown",
                             "is_valid": True,
                             "retry_count": retry_count,
@@ -519,7 +573,12 @@ class TextGenerationService:
                                 "output": generated_text,
                                 "parsed_output": None,
                                 "model": self.model_name,
-                                "tokens_used": tokens_used,
+                                "tokens_used": output_tokens,
+                                "tokens": {
+                                    "input": estimated_input_tokens,
+                                    "output": output_tokens,
+                                    "total": total_tokens,
+                                },
                                 "finish_reason": finish_reason if finish_reason else "unknown",
                                 "is_valid": False,
                                 "retry_count": retry_count,
@@ -542,7 +601,12 @@ class TextGenerationService:
                         "output": generated_text,
                         "parsed_output": parsed_output,
                         "model": self.model_name,
-                        "tokens_used": tokens_used,
+                        "tokens_used": output_tokens,
+                        "tokens": {
+                            "input": estimated_input_tokens,
+                            "output": output_tokens,
+                            "total": total_tokens,
+                        },
                         "finish_reason": finish_reason if finish_reason else "unknown",
                         "is_valid": is_valid,
                         "retry_count": 0,
