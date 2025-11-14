@@ -247,12 +247,12 @@ ACTION: ${description}
 
 MOOD: ${mood}
 
-COMPOSITION RULES FOR 7:4 LANDSCAPE FORMAT (1344×768):
-- Cinematic horizontal composition - wider than tall
-- Frame composition: Utilize horizontal space for panoramic storytelling
-- For establishing shots: Show expansive width
-- For medium shots: Position characters off-center using rule of thirds
-- For close-ups: Frame character detail with horizontal breathing room
+COMPOSITION RULES FOR 9:16 PORTRAIT FORMAT (576×1024):
+- Vertical webtoon composition - taller than wide
+- Frame composition: Utilize vertical space for scroll-based storytelling
+- For establishing shots: Show expansive height with depth layers
+- For medium shots: Position characters with vertical balance
+- For close-ups: Frame character detail with vertical flow
 
 VISUAL STYLE:
 - Clean comic linework, vibrant colors, semi-realistic proportions

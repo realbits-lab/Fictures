@@ -125,6 +125,7 @@ export class PartService {
             title: generationResult.part.title || `Part ${nextPartIndex + 1}`,
             summary: generationResult.part.summary || null,
             characterArcs: generationResult.part.characterArcs || null,
+            settingIds: generationResult.part.settingIds || [],
             orderIndex: nextPartIndex + 1,
             createdAt: now,
             updatedAt: now,

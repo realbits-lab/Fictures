@@ -233,13 +233,13 @@ interface ApiToonplayErrorResponse {
 │  │  - Database character descriptions (consistent)             │
 │  │  - Setting context and mood                                 │
 │  │                                                              │
-│  ├─ Generate images via Gemini 2.5 Flash Image                 │
-│  │  - Resolution: 1344×768 (7:4 aspect ratio)                  │
+│  ├─ Generate images via AI Server                              │
+│  │  - Resolution: 576×1024 (9:16 portrait for webtoons)        │
 │  │  - Format: PNG (original)                                   │
 │  │                                                              │
 │  └─ Create 4 optimized variants per panel                      │
-│     - AVIF format (mobile 1x: 672×384, mobile 2x: 1344×768)    │
-│     - JPEG format (mobile 1x: 672×384, mobile 2x: 1344×768)    │
+│     - AVIF format (mobile 1x: 288×512, mobile 2x: 576×1024)    │
+│     - JPEG format (mobile 1x: 288×512, mobile 2x: 576×1024)    │
 └────────────────────────────┬────────────────────────────────────┘
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
@@ -271,11 +271,13 @@ interface ApiToonplayErrorResponse {
 ```typescript
 interface ConvertSceneParams {
   scene: Scene;              // Scene with content, summary, metadata
-  story: Story;              // Story context (genre, tone)
-  characters: Character[];   // Character profiles
-  settings: Setting[];       // Location details
+  story: Story;              // Story context (genre, tone) - needed for visual style
+  characters: Character[];   // Character profiles - needed for physical_description in image prompts
+  settings: Setting[];       // Location details - needed for atmosphere and visual context
 }
 ```
+
+**Design Note**: While the scene contains the narrative content, it typically only references characters and settings by ID. The full character profiles (with `physical_description` for image generation) and setting details (with `atmosphere` for visual context) must be passed explicitly to build consistent image prompts and provide genre/tone context for adaptation.
 
 **Output**:
 ```typescript
@@ -535,24 +537,24 @@ Maintain exact character appearances - 20-year-old male hunter with black hair a
 
 ### 3.4 Image Generation Specifications
 
-**Model**: Gemini 2.5 Flash (image generation)
-**Resolution**: 1344×768 pixels (7:4 aspect ratio)
+**Model**: AI Server (Qwen-Image-Lightning)
+**Resolution**: 576×1024 pixels (9:16 portrait aspect ratio)
 **Format**: PNG (original), then optimized to AVIF + JPEG
 
 **Optimization Pipeline**:
 
 Every generated panel creates **4 optimized variants**:
-- **AVIF Mobile 1x**: 672×384 (best compression)
-- **AVIF Mobile 2x**: 1344×768 (uses original)
-- **JPEG Mobile 1x**: 672×384 (universal fallback)
-- **JPEG Mobile 2x**: 1344×768 (uses original)
+- **AVIF Mobile 1x**: 288×512 (best compression)
+- **AVIF Mobile 2x**: 576×1024 (uses original)
+- **JPEG Mobile 1x**: 288×512 (universal fallback)
+- **JPEG Mobile 2x**: 576×1024 (uses original)
 
 **Storage**:
 ```typescript
 interface GeneratedPanel {
   id: string;
   panel_number: number;
-  imageUrl: string;           // Original PNG (1344×768)
+  imageUrl: string;           // Original PNG (576×1024)
   imageVariants: {
     imageId: string;
     originalUrl: string;
@@ -565,309 +567,27 @@ interface GeneratedPanel {
 
 ---
 
-## Part IV: Quality Evaluation System
+## Part IV: Quality Evaluation
 
-### 4.1 Automatic Quality Evaluation
+**The toonplay generation system includes automatic quality evaluation and iterative improvement.**
 
-**Location**: `src/lib/services/toonplay-evaluator.ts`
-**Purpose**: Evaluate toonplay quality using 4-category rubric
+For complete evaluation documentation, including:
+- Quality metrics and rubric
+- Testing strategies and scripts
+- Improvement loop implementation
+- Performance expectations
 
-**Function**: `evaluateToonplay()`
+**See**: `toonplay-evaluation.md` - Complete quality evaluation guide
 
-**Input**:
-```typescript
-interface EvaluateToonplayParams {
-  toonplay: ComicToonplay;
-  sourceScene: Scene;     // Original narrative for comparison
-  evaluationMode: 'quick' | 'standard' | 'thorough';
-}
-```
-
-**Output**:
-```typescript
-interface EvaluationResult {
-  weighted_score: number;    // 1.0-5.0 (weighted average)
-  passes: boolean;           // true if >= 3.0
-  category_scores: {
-    narrative_fidelity: number;      // 1-5 (weight: 20%)
-    visual_transformation: number;   // 1-5 (weight: 30%)
-    webtoon_pacing: number;          // 1-5 (weight: 30%)
-    script_formatting: number;       // 1-5 (weight: 20%)
-  };
-  metrics: {
-    narration_percentage: number;            // <5% target
-    internal_monologue_percentage: number;   // <10% target
-    dialogue_presence: number;               // ~70% target
-    shot_type_distribution: Record<string, number>;
-    text_overlay_validation: boolean;        // 100% required
-    dialogue_length_compliance: boolean;     // All <150 chars
-  };
-  recommendations: string[];   // Improvement suggestions
-  final_report: string;        // Full evaluation breakdown
-}
-```
-
-**Evaluation Categories** (4-category weighted scoring):
-
-| Category | Weight | Description | Scoring |
-|----------|--------|-------------|---------|
-| **1. Narrative Fidelity & Distillation** | 20% | Preserves story "soul" | 1 (Barely recognizable) to 5 (Masterfully distills essence) |
-| **2. Visual Transformation** | 30% | Shows vs tells, strategic internal monologue | 1 (Over-relies on narration >20%) to 5 (Perfect balance <10%) |
-| **3. Webtoon Pacing & Flow** | 30% | Thumb-scroll optimization | 1 (Choppy, disjointed) to 5 (Masterful panel flow) |
-| **4. Script Formatting & Utility** | 20% | Production usability | 1 (Vague descriptions) to 5 (Consistently formatted, clear) |
-
-**Passing Threshold**: 3.0/5.0 ("Effective" level)
-
-**Automatic Metrics**:
-
-```typescript
-function calculateAutomaticMetrics(toonplay: ComicToonplay) {
-  const totalPanels = toonplay.panels.length;
-
-  // 1. Narration percentage (<5% target)
-  const panelsWithNarration = toonplay.panels.filter(p => p.narrative).length;
-  const narrationPercentage = (panelsWithNarration / totalPanels) * 100;
-
-  // 2. Internal monologue percentage (<10% target)
-  const panelsWithInternalMonologue = toonplay.panels.filter(p =>
-    p.narrative && isInternalMonologue(p.narrative)
-  ).length;
-  const internalMonologuePercentage = (panelsWithInternalMonologue / totalPanels) * 100;
-
-  // 3. Dialogue presence (~70% target)
-  const panelsWithDialogue = toonplay.panels.filter(p => p.dialogue.length > 0).length;
-  const dialoguePresence = (panelsWithDialogue / totalPanels) * 100;
-
-  // 4. Text overlay validation (100% required)
-  const panelsWithText = toonplay.panels.filter(p =>
-    p.dialogue.length > 0 || p.narrative
-  ).length;
-  const textOverlayValidation = panelsWithText === totalPanels;
-
-  // 5. Shot type distribution
-  const shotTypeDistribution = {};
-  for (const panel of toonplay.panels) {
-    shotTypeDistribution[panel.shot_type] =
-      (shotTypeDistribution[panel.shot_type] || 0) + 1;
-  }
-
-  // 6. Dialogue length compliance (all <150 chars)
-  const dialogueLengthCompliance = toonplay.panels.every(panel =>
-    panel.dialogue.every(d => d.text.length <= 150)
-  );
-
-  return {
-    narration_percentage: narrationPercentage,
-    internal_monologue_percentage: internalMonologuePercentage,
-    dialogue_presence: dialoguePresence,
-    shot_type_distribution: shotTypeDistribution,
-    text_overlay_validation: textOverlayValidation,
-    dialogue_length_compliance: dialogueLengthCompliance
-  };
-}
-```
-
-### 4.2 Improvement Loop
-
-**Location**: `src/lib/services/toonplay-improvement-loop.ts`
-**Purpose**: Iteratively improve toonplay until passing quality
-
-**Function**: `generateToonplayWithEvaluation()`
-
-**Flow**:
-```
-┌─────────────────────────────────────────────┐
-│ Iteration 0: Initial Generation            │
-│ - convertSceneToToonplay()                  │
-│ - evaluateToonplay()                        │
-│ - If score >= 3.0: DONE ✅                  │
-└────────────────┬────────────────────────────┘
-                 │
-                 ▼ (score < 3.0)
-┌─────────────────────────────────────────────┐
-│ Iteration 1: First Improvement             │
-│ - improveToonplay(weaknesses)               │
-│ - evaluateToonplay()                        │
-│ - If score >= 3.0: DONE ✅                  │
-└────────────────┬────────────────────────────┘
-                 │
-                 ▼ (score < 3.0)
-┌─────────────────────────────────────────────┐
-│ Iteration 2: Final Improvement             │
-│ - improveToonplay(remaining weaknesses)     │
-│ - evaluateToonplay()                        │
-│ - Return best version (may not pass)        │
-└─────────────────────────────────────────────┘
-```
-
-**Improvement Strategy**:
-
-Based on category scores, the system generates targeted improvement suggestions:
-
-| Weak Category | Improvement Strategy |
-|---------------|---------------------|
-| **Narrative Fidelity** (< 3.0) | Re-analyze source scene for missed story beats, ensure key themes preserved |
-| **Visual Transformation** (< 3.0) | Reduce narration/internal monologue, externalize emotions through action and expression |
-| **Webtoon Pacing** (< 3.0) | Adjust panel spacing, break up dialogue, improve shot type distribution |
-| **Script Formatting** (< 3.0) | Clarify panel descriptions, add missing visual grammar, ensure consistency |
-
-### 4.3 Testing
-
-**Test Scripts**:
-
-**1. Database-based Test** (`test-scripts/test-toonplay-evaluation.mjs`):
-```bash
-# Test with existing scene in database
-dotenv --file .env.local run node test-scripts/test-toonplay-evaluation.mjs SCENE_ID
-```
-
-**2. API Endpoint Test** (`test-scripts/test-api-toonplay-generation.mjs`):
-```bash
-# Test via HTTP API (requires dev server running)
-dotenv --file .env.local run node test-scripts/test-api-toonplay-generation.mjs
-```
-
-**3. Playwright E2E Test** (`tests/toonplay-evaluation.spec.ts`):
-```bash
-# End-to-end integration test
-dotenv --file .env.local run npx playwright test toonplay-evaluation.spec.ts
-```
-
-**Expected Performance**:
-
-| Metric | Target | Typical Result |
-|--------|--------|----------------|
-| **First-Pass Rate** | 70-80% | 75% pass on first generation |
-| **Final Pass Rate** | 90%+ | 85% pass after improvements |
-| **Average Score** | 3.2-3.5/5.0 | 3.3/5.0 after improvements |
-| **Time Overhead** | +30-90 seconds | +45 seconds (evaluation + 1 improvement) |
-| **Cost Impact** | Minimal | Uses Gemini 2.5 Flash Lite for evaluation |
+**Quick Reference**:
+- **Location**: `src/lib/services/toonplay-evaluator.ts`
+- **Passing Score**: 3.0/5.0 (weighted average across 4 categories)
+- **First-Pass Rate**: 70-80% pass on first generation
+- **Max Iterations**: 2 improvement cycles
 
 ---
 
-## Part V: API Response Format
-
-### 5.1 Success Response
-
-```typescript
-{
-  success: true,
-  result: {
-    toonplay: {
-      scene_id: "scene_abc123",
-      scene_title: "The Last Garden - Act of Compassion",
-      total_panels: 10,
-      panels: [
-        {
-          panel_number: 1,
-          shot_type: "establishing_shot",
-          description: "Wide view of destroyed city, dust and rubble, single patch of green in center",
-          characters_visible: [],
-          character_poses: {},
-          setting_focus: "Ruined cityscape with emerging garden",
-          lighting: "Harsh midday sun creating stark shadows",
-          camera_angle: "high angle",
-          narrative: "Three months after the siege.",
-          dialogue: [],
-          sfx: [],
-          mood: "Desolate but hopeful"
-        },
-        // ... 9 more panels
-      ],
-      pacing_notes: "Start slow with establishing shot, build momentum through dialogue, climax at panel 8 with revelation",
-      narrative_arc: "Setup → Growing tension → Emotional revelation → Resolution"
-    },
-    panels: [
-      {
-        id: "panel_xyz789",
-        panel_number: 1,
-        imageUrl: "https://blob.vercel-storage.com/...",
-        imageVariants: {
-          imageId: "img_123",
-          originalUrl: "https://blob.vercel-storage.com/...",
-          variants: [
-            { format: "avif", size: "mobile_1x", url: "..." },
-            { format: "avif", size: "mobile_2x", url: "..." },
-            { format: "jpeg", size: "mobile_1x", url: "..." },
-            { format: "jpeg", size: "mobile_2x", url: "..." }
-          ],
-          generatedAt: "2025-11-14T10:30:00Z"
-        },
-        toonplaySpec: { /* panel specification */ }
-      }
-      // ... 9 more panels
-    ],
-    evaluation: {
-      weighted_score: 3.4,
-      passes: true,
-      iterations: 1,
-      category_scores: {
-        narrative_fidelity: 4,
-        visual_transformation: 3,
-        webtoon_pacing: 3,
-        script_formatting: 4
-      },
-      metrics: {
-        narration_percentage: 10,           // <5% target - slightly over
-        internal_monologue_percentage: 10,  // <10% target - at limit
-        dialogue_presence: 80,              // ~70% target - good
-        shot_type_distribution: {
-          establishing_shot: 1,
-          wide_shot: 2,
-          medium_shot: 4,
-          close_up: 2,
-          extreme_close_up: 1
-        },
-        text_overlay_validation: true,      // 100% required - passed
-        dialogue_length_compliance: true    // All <150 chars - passed
-      },
-      recommendations: [
-        "Consider reducing narration panels (currently 10%, target <5%)",
-        "Internal monologue at limit - use sparingly"
-      ],
-      final_report: "Toonplay successfully balances visual storytelling with strategic internal monologue. Narrative fidelity excellent (4/5), preserving core themes. Visual transformation good (3/5), though could externalize a few more moments. Webtoon pacing solid (3/5) with clear rhythm. Script formatting excellent (4/5), production-ready. Overall: 3.4/5.0 - Effective webtoon adaptation."
-    },
-    metadata: {
-      modelId: "gemini-2.5-flash-lite",
-      tokensUsed: 2400,
-      generationTime: 8500
-    }
-  }
-}
-```
-
-### 5.2 Error Response Examples
-
-**Scene Not Found**:
-```typescript
-{
-  success: false,
-  error: {
-    code: "SCENE_NOT_FOUND",
-    message: "Scene with ID 'scene_abc123' does not exist",
-    details: { sceneId: "scene_abc123" }
-  }
-}
-```
-
-**Generation Failed**:
-```typescript
-{
-  success: false,
-  error: {
-    code: "GENERATION_FAILED",
-    message: "AI model failed to generate valid toonplay",
-    details: {
-      reason: "Invalid JSON schema response",
-      modelError: "..."
-    }
-  }
-}
-```
-
----
-
-## Part VI: Related Documentation
+## Part V: Related Documentation
 
 **Specification & Concepts**:
 - `toonplay-specification.md` - Core concepts, visual grammar, adaptation principles

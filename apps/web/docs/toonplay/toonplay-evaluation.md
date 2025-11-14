@@ -281,7 +281,58 @@ interface EvaluationResult {
 | **standard** | Moderate (~15s) | Automated + AI category scoring | Default production use |
 | **thorough** | Slow (~45s) | All metrics + detailed AI analysis | Quality assurance, debugging |
 
-### 3.3 Category Scoring Rubric
+### 3.3 Automatic Metrics Calculation
+
+**Implementation** (`src/lib/services/toonplay-evaluator.ts`):
+
+```typescript
+function calculateAutomaticMetrics(toonplay: ComicToonplay) {
+  const totalPanels = toonplay.panels.length;
+
+  // 1. Narration percentage (<5% target)
+  const panelsWithNarration = toonplay.panels.filter(p => p.narrative).length;
+  const narrationPercentage = (panelsWithNarration / totalPanels) * 100;
+
+  // 2. Internal monologue percentage (<10% target)
+  const panelsWithInternalMonologue = toonplay.panels.filter(p =>
+    p.narrative && isInternalMonologue(p.narrative)
+  ).length;
+  const internalMonologuePercentage = (panelsWithInternalMonologue / totalPanels) * 100;
+
+  // 3. Dialogue presence (~70% target)
+  const panelsWithDialogue = toonplay.panels.filter(p => p.dialogue.length > 0).length;
+  const dialoguePresence = (panelsWithDialogue / totalPanels) * 100;
+
+  // 4. Text overlay validation (100% required)
+  const panelsWithText = toonplay.panels.filter(p =>
+    p.dialogue.length > 0 || p.narrative
+  ).length;
+  const textOverlayValidation = panelsWithText === totalPanels;
+
+  // 5. Shot type distribution
+  const shotTypeDistribution = {};
+  for (const panel of toonplay.panels) {
+    shotTypeDistribution[panel.shot_type] =
+      (shotTypeDistribution[panel.shot_type] || 0) + 1;
+  }
+
+  // 6. Dialogue length compliance (all <150 chars)
+  const dialogueLengthCompliance = toonplay.panels.every(panel =>
+    panel.dialogue.every(d => d.text.length <= 150)
+  );
+
+  return {
+    narration_percentage: narrationPercentage,
+    internal_monologue_percentage: internalMonologuePercentage,
+    dialogue_presence: dialoguePresence,
+    shot_type_distribution: shotTypeDistribution,
+    text_overlay_validation: textOverlayValidation,
+    dialogue_length_compliance: dialogueLengthCompliance
+  };
+}
+```
+
+### 3.4 Category Scoring Rubric
 
 #### Category 1: Narrative Fidelity & Distillation (1-5 scale)
 
