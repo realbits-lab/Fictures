@@ -11,11 +11,11 @@ import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
     type Character,
-    insertPartSchema,
     type Part,
     type Setting,
     type Story,
 } from "@/lib/schemas/zod/ai";
+import { insertPartSchema } from "@/lib/schemas/zod/generated";
 import { characters, parts, settings, stories } from "@/lib/schemas/database";
 import { generatePart } from "../generators/part-generator";
 import type {

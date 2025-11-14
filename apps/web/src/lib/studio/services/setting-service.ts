@@ -79,6 +79,8 @@ export class SettingService {
                 name: settingData.name || "Unnamed Setting",
                 summary: settingData.summary || null,
                 adversityElements: settingData.adversityElements || null,
+                virtueElements: settingData.virtueElements || null,
+                consequenceElements: settingData.consequenceElements || null,
                 symbolicMeaning: settingData.symbolicMeaning || null,
                 cycleAmplification: settingData.cycleAmplification || null,
                 mood: settingData.mood || null,

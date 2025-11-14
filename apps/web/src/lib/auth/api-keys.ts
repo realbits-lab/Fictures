@@ -1,5 +1,6 @@
 import { createHash, randomBytes } from "crypto";
 import { nanoid } from "nanoid";
+import bcrypt from "bcryptjs";
 
 // API key scopes - define what actions each scope allows
 export const API_SCOPES = {
@@ -61,10 +62,13 @@ export function generateApiKey(): {
 }
 
 /**
- * Hash an API key using SHA-256
+ * Hash an API key using bcrypt for secure storage
+ * This matches the verification in dual-auth.ts
  */
-export function hashApiKey(key: string): string {
-    return createHash("sha256").update(key).digest("hex");
+export async function hashApiKey(key: string): Promise<string> {
+    // Use cost factor 10 for reasonable security/performance balance
+    const saltRounds = 10;
+    return await bcrypt.hash(key, saltRounds);
 }
 
 /**

@@ -12,10 +12,10 @@ import { db } from "@/lib/db";
 import {
     type Chapter,
     type Character,
-    insertChapterSchema,
     type Part,
     type Story,
 } from "@/lib/schemas/zod/ai";
+import { insertChapterSchema } from "@/lib/schemas/zod/generated";
 import { chapters, characters, parts, stories } from "@/lib/schemas/database";
 import { generateChapter } from "../generators/chapter-generator";
 import type {

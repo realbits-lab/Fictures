@@ -454,9 +454,7 @@ class AIServerProvider extends TextGenerationProvider {
 
         const response = await fetch(`${this.config.url}/api/v1/text/stream`, {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
+            headers: this.buildHeaders(),
             body: JSON.stringify({
                 prompt: fullPrompt,
                 max_tokens: request.maxTokens ?? 2048,
