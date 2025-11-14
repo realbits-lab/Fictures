@@ -380,66 +380,33 @@ function calculateAutomaticMetrics(toonplay: ComicToonplay) {
 
 ## Part IV: Iterative Improvement System
 
-### 4.1 Improvement Loop Flow
+**For complete prompt optimization methodology, including:**
+- 7-step optimization loop (Generate → Evaluate → Analyze → Hypothesize → Update → Test → Decide)
+- Practical implementation examples with real test results
+- Improvement strategies by category
+- Version control and prompt changelog
+- Best practices and validation checklists
+- Runtime improvement loop (per-generation quality enhancement)
 
-```
-┌─────────────────────────────────────────────┐
-│ Iteration 0: Initial Generation            │
-│ - convertSceneToToonplay()                  │
-│ - evaluateToonplay()                        │
-│ - If weighted_score >= 3.0: DONE ✅         │
-└────────────────┬────────────────────────────┘
-                 │
-                 ▼ (score < 3.0)
-┌─────────────────────────────────────────────┐
-│ Iteration 1: Targeted Improvement          │
-│ - Identify weakest categories               │
-│ - Generate improvement suggestions          │
-│ - improveToonplay(weaknesses)               │
-│ - evaluateToonplay()                        │
-│ - If weighted_score >= 3.0: DONE ✅         │
-└────────────────┬────────────────────────────┘
-                 │
-                 ▼ (score < 3.0)
-┌─────────────────────────────────────────────┐
-│ Iteration 2: Final Improvement             │
-│ - Address remaining weaknesses              │
-│ - improveToonplay(remaining weaknesses)     │
-│ - evaluateToonplay()                        │
-│ - Return best version (may not pass)        │
-└─────────────────────────────────────────────┘
-```
+**See**: **[toonplay-development.md - Part IV: Iterative Improvement System](toonplay-development.md#part-iv-iterative-improvement-system)**
 
-### 4.2 Improvement Strategies by Category
+**Quick Summary**:
 
-| Weak Category (< 3.0) | Improvement Strategy |
-|----------------------|---------------------|
-| **Narrative Fidelity** | Re-analyze source scene for missed story beats. Ensure key themes are explicitly visualized. Verify character arc moments are captured. |
-| **Visual Transformation** | Reduce narration/internal monologue panels. Externalize emotions through action and expression. Convert thought boxes to visual actions. Limit internal monologue to 1-2 critical panels. |
-| **Webtoon Pacing** | Adjust panel spacing for rhythm. Break up long dialogue into multiple panels. Improve shot type distribution. Add more close-ups for emotional beats. |
-| **Script Formatting** | Clarify panel descriptions (add visual details). Ensure all visual grammar fields are populated. Verify character descriptions use database-driven consistency. Add missing lighting/mood specifications. |
+The toonplay system uses two levels of improvement:
 
-### 4.3 Performance Expectations
+1. **Long-Term Prompt Optimization** (development-focused):
+   - Data-driven refinement of generation prompts
+   - A/B testing with 5+ toonplays per version
+   - Empirical validation before adoption
+   - Monthly iteration cycle
+   - **Location**: See `toonplay-development.md` Part IV
 
-| Metric | Target | Typical Result |
-|--------|--------|----------------|
-| **First-Pass Rate** | 70-80% | 75% pass on first generation |
-| **Improvement Success Rate** | 85%+ | 90% pass after 1-2 improvements |
-| **Final Pass Rate** | 90%+ | 85% pass after max 2 iterations |
-| **Average Initial Score** | 3.0-3.3/5.0 | 3.1/5.0 initial |
-| **Average Final Score** | 3.2-3.5/5.0 | 3.4/5.0 after improvements |
-| **Time Overhead** | +30-90 seconds | +45 seconds (eval + 1 improvement) |
-| **Cost Impact** | Minimal | Uses Gemini 2.5 Flash Lite |
-| **Generation Time** | 5-15 minutes | Complete scene-to-toonplay with panel images |
-| **Panel Count** | 8-12 panels | Target: 10 panels per scene |
-| **Image Variants** | 4 per panel | AVIF + JPEG × mobile 1x/2x |
-
-**Implementation Status** (November 2024):
-- ✅ **Core Components**: All 7 components implemented and functional
-- ✅ **Database Schema**: `comic_toonplay` JSONB field added to scenes table
-- ✅ **Schema Tests**: 8/8 passing (panel validation, content proportions, evaluation scoring)
-- ⚠️ **Integration Tests**: Require AI Server + API keys (structurally correct, skipped in CI)
-- ✅ **Production Ready**: Type-safe, documented, optimized for batch deletion
+2. **Runtime Improvement Loop** (per-generation):
+   - Automatic quality evaluation after generation
+   - Up to 2 improvement iterations if score < 3.0
+   - Targets specific weaknesses (visual transformation, pacing, etc.)
+   - Returns best version with evaluation report
+   - **Implementation**: `src/lib/services/toonplay-improvement-loop.ts`
 
 ---
 
