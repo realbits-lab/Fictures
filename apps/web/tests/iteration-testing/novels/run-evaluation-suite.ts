@@ -583,13 +583,16 @@ function aggregateMetrics(
     }
 
     // Average scores across all stories
+    // Scores are 0-4 scale, so we normalize to 0-1 by dividing by 4
+    const MAX_SCORE = 4;
     for (const result of results) {
         for (const [principle, score] of Object.entries(
             result.corePrincipleScores,
         )) {
             if (aggregated[principle]) {
+                // Normalize score to 0-1 range, then average
                 aggregated[principle].cycleCompleteness +=
-                    score / results.length;
+                    score / MAX_SCORE / results.length;
             }
         }
     }
