@@ -76,12 +76,33 @@ API keys are managed through the web application at `/settings/api-keys`:
 
 The AI server queries the same `api_keys` table, validating keys by prefix matching and bcrypt hash verification.
 
+### Storing API Keys Locally
+
+For local development and testing, store your API key in the `.auth/user.json` file:
+
+**File Structure (.auth/user.json):**
+```json
+{
+  "apiKey": "sk_test_your_actual_api_key_here",
+  "email": "user@example.com"
+}
+```
+
+**Important:**
+- Create the `.auth` directory if it doesn't exist
+- The `.auth` directory should be in your `.gitignore` to prevent committing credentials
+- The `apiKey` field contains your API key from the web app
+- All code examples in this documentation use `.auth/user.json` for API key storage
+
 ### Example Request
 
 ```bash
+# Load API key from .auth/user.json
+API_KEY=$(cat .auth/user.json | jq -r '.apiKey')
+
 curl -X POST "http://localhost:8000/api/v1/images/generate" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY_HERE" \
+  -H "Authorization: Bearer $API_KEY" \
   -d '{
     "prompt": "A beautiful sunset over mountains",
     "width": 1024,
@@ -231,9 +252,12 @@ Generate text using vLLM with Gemma model.
 
 **cURL Example:**
 ```bash
+# Load API key from .auth/user.json
+API_KEY=$(cat .auth/user.json | jq -r '.apiKey')
+
 curl -X POST "http://localhost:8000/api/v1/text/generate" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer $API_KEY" \
   -d '{
     "prompt": "Write a haiku about programming",
     "max_tokens": 50,
@@ -245,10 +269,15 @@ curl -X POST "http://localhost:8000/api/v1/text/generate" \
 ```python
 import httpx
 import asyncio
-import os
+import json
+from pathlib import Path
 
 async def generate_text():
-    api_key = os.getenv("AI_SERVER_API_KEY")  # Store API key in environment
+    # Load API key from .auth/user.json
+    auth_path = Path(".auth/user.json")
+    with open(auth_path) as f:
+        auth_data = json.load(f)
+        api_key = auth_data.get("apiKey")
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -289,10 +318,14 @@ data: {"text": "Once upon a time, in a magical forest...", "model": "google/gemm
 import httpx
 import asyncio
 import json
-import os
+from pathlib import Path
 
 async def stream_text():
-    api_key = os.getenv("AI_SERVER_API_KEY")
+    # Load API key from .auth/user.json
+    auth_path = Path(".auth/user.json")
+    with open(auth_path) as f:
+        auth_data = json.load(f)
+        api_key = auth_data.get("apiKey")
 
     async with httpx.AsyncClient() as client:
         async with client.stream(
@@ -318,8 +351,14 @@ asyncio.run(stream_text())
 
 **JavaScript Fetch API Example:**
 ```javascript
+const fs = require('fs').promises;
+const path = require('path');
+
 async function streamText() {
-  const apiKey = process.env.AI_SERVER_API_KEY;  // Store API key securely
+  // Load API key from .auth/user.json
+  const authPath = path.join(process.cwd(), '.auth', 'user.json');
+  const authData = JSON.parse(await fs.readFile(authPath, 'utf-8'));
+  const apiKey = authData.ai_server_api_key;
 
   const response = await fetch('http://localhost:8000/api/v1/text/stream', {
     method: 'POST',
@@ -431,9 +470,12 @@ Generate image using Stable Diffusion XL.
 
 **cURL Example:**
 ```bash
+# Load API key from .auth/user.json
+API_KEY=$(cat .auth/user.json | jq -r '.apiKey')
+
 curl -X POST "http://localhost:8000/api/v1/images/generate" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer $API_KEY" \
   -d '{
     "prompt": "A beautiful sunset over mountains",
     "width": 1024,
@@ -451,11 +493,15 @@ python -c "import json, base64; data = json.load(open('response.json')); img = d
 import httpx
 import asyncio
 import base64
-import os
+import json
 from pathlib import Path
 
 async def generate_image():
-    api_key = os.getenv("AI_SERVER_API_KEY")
+    # Load API key from .auth/user.json
+    auth_path = Path(".auth/user.json")
+    with open(auth_path) as f:
+        auth_data = json.load(f)
+        api_key = auth_data.get("apiKey")
 
     async with httpx.AsyncClient(timeout=300.0) as client:
         response = await client.post(
@@ -486,8 +532,14 @@ asyncio.run(generate_image())
 
 **JavaScript Example:**
 ```javascript
+const fs = require('fs').promises;
+const path = require('path');
+
 async function generateImage() {
-  const apiKey = process.env.AI_SERVER_API_KEY;
+  // Load API key from .auth/user.json
+  const authPath = path.join(process.cwd(), '.auth', 'user.json');
+  const authData = JSON.parse(await fs.readFile(authPath, 'utf-8'));
+  const apiKey = authData.ai_server_api_key;
 
   const response = await fetch('http://localhost:8000/api/v1/images/generate', {
     method: 'POST',
@@ -508,12 +560,13 @@ async function generateImage() {
 
   const result = await response.json();
 
-  // Display image in browser
-  const img = document.createElement('img');
-  img.src = result.image_url;
-  document.body.appendChild(img);
+  // For Node.js: Save image to file
+  // Extract base64 data and save
+  const imageData = result.image_url.split(',')[1];
+  const imageBuffer = Buffer.from(imageData, 'base64');
+  await fs.writeFile('output.png', imageBuffer);
 
-  console.log(`Seed: ${result.seed}`);
+  console.log(`Image saved! Seed: ${result.seed}`);
 }
 
 generateImage();

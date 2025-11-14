@@ -7,11 +7,8 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import {
-    type Character,
-    insertCharacterSchema,
-    type Story,
-} from "@/lib/schemas/zod/ai";
+import { type Character, type Story } from "@/lib/schemas/zod/ai";
+import { insertCharacterSchema } from "@/lib/schemas/zod/generated";
 import { characters, stories } from "@/lib/schemas/database";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
@@ -88,6 +85,7 @@ export class CharacterService {
                 id: characterId,
                 storyId,
                 name: characterData.name || "Unnamed Character",
+                role: characterData.role || "supporting",
                 isMain: characterData.isMain ?? false,
                 summary: characterData.summary ?? null,
                 coreTrait: characterData.coreTrait ?? null,
