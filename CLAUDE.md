@@ -2,6 +2,21 @@
 
 This file provides guidance to Claude Code when working with this repository.
 
+## 🎯 Most Critical Documents for Claude Code
+
+When working on this project, these are the **TOP PRIORITY** documents to reference:
+
+1. **[Novel Specification (SSOT)](apps/web/docs/novels/novels-specification.md)** - The canonical data model - ALWAYS check this first for data structure questions
+2. **[Database Schema Code](apps/web/src/lib/schemas/database/index.ts)** - The executable schema that MUST follow the specification
+3. **[AI Server API Reference](apps/ai-server/docs/api/api-reference.md)** - Complete AI service API documentation (uses `.auth/user.json` for API keys)
+4. **[Web Development Guide](apps/web/CLAUDE.md)** - Essential Next.js development instructions
+5. **[AI Server Development Guide](apps/ai-server/CLAUDE.md)** - Essential Python service instructions
+6. **[Authentication API](apps/web/docs/api/authentication.md)** - Auth system documentation
+7. **[Performance Implementation](apps/web/docs/performance/IMPLEMENTATION-SUMMARY.md)** - Performance optimization guidelines
+8. **[UI Development Guide](apps/web/docs/ui/ui-development.md)** - Frontend development patterns
+
+⚠️ **REMEMBER**: Always check and update related documentation when making code changes (see Documentation Synchronization Policy below)
+
 ## Repository Information
 
 - **Repository**: https://github.com/realbits-lab/Fictures
@@ -65,6 +80,25 @@ cd apps/ai-server
 3. Redirect output to logs directory (e.g., `logs/dev-server.log`, `logs/ai-server.log`)
 
 This prevents port conflicts and ensures clean server startup.
+
+## Authentication & API Keys
+
+### Local API Key Storage
+
+Store API keys and authentication data in `.auth/user.json`:
+
+```json
+{
+  "apiKey": "sk_test_your_api_key_here",
+  "email": "user@example.com"
+}
+```
+
+**Important:**
+- Create `.auth` directory in project root if it doesn't exist
+- The `.auth` directory is in `.gitignore` to prevent committing credentials
+- All code examples use `.auth/user.json` for API key storage
+- See [AI Server API Reference](apps/ai-server/docs/api/api-reference.md) for usage examples
 
 ## Git and Repository Management
 
@@ -178,6 +212,103 @@ This approach is **mandatory** for:
 
 ---
 
+## 🔗 Quick Reference: Critical Documentation Links
+
+### 🎯 Primary Development Guides (Start Here)
+- **[📖 Web Development Guide](apps/web/CLAUDE.md)** - Complete Next.js development guide
+- **[🐍 AI Server Development Guide](apps/ai-server/CLAUDE.md)** - Python AI service guide
+- **[📚 Web Documentation Index](apps/web/docs/CLAUDE.md)** - Web docs organization
+- **[🔧 Scripts Guide](apps/web/scripts/CLAUDE.md)** - Development scripts guide
+
+### 🏗️ Architecture & Specifications
+
+#### Database & Schema (Source of Truth)
+- **[📋 Novel Specification (SSOT)](apps/web/docs/novels/novels-specification.md)** - Canonical data model documentation
+- **[💾 Database Schema Code](apps/web/src/lib/schemas/database/index.ts)** - Executable schema (follows spec)
+- **[🔄 Schema Synchronization Strategy](apps/web/docs/novels/schema-synchronization-strategy.md)** - Schema sync approach
+
+#### System Architecture
+- **[🏛️ Monorepo Architecture](docs/monorepo/architecture.md)** - Overall system design
+- **[🔐 Authentication Layer Pattern](docs/architecture/authentication-layer-pattern.md)** - Auth architecture
+- **[🖼️ Image Architecture](apps/web/docs/image/image-architecture.md)** - Image system design
+- **[🎭 Comics Architecture](apps/web/docs/comics/comics-architecture.md)** - Comics system design
+
+### 📡 API Documentation
+
+#### AI Server APIs
+- **[🤖 AI Server API Reference](apps/ai-server/docs/api/api-reference.md)** - Complete AI API docs
+- **[🔑 AI Authentication Guide](apps/ai-server/docs/general/authentication.md)** - AI server auth
+- **[⚙️ AI Server Architecture](apps/ai-server/docs/general/architecture.md)** - AI system design
+
+#### Web Application APIs
+- **[🔐 Authentication API](apps/web/docs/api/authentication.md)** - Auth endpoints
+- **[📝 Studio API](apps/web/docs/api/studio.md)** - Studio endpoints
+- **[🖼️ Images API](apps/web/docs/api/images.md)** - Image endpoints
+- **[⚡ Evaluation API](apps/web/docs/api/evaluation-api-structure.md)** - Quality evaluation
+- **[👤 Users API](apps/web/docs/api/users.md)** - User management
+
+### 🚀 Performance & Optimization
+
+- **[⚡ Performance Implementation Summary](apps/web/docs/performance/IMPLEMENTATION-SUMMARY.md)** - Performance overview
+- **[💾 Database Performance](apps/web/docs/performance/performance-database.md)** - DB optimization
+- **[🔄 Caching Strategies](apps/web/docs/performance/performance-caching.md)** - Cache implementation
+- **[📚 Novel Performance](apps/web/docs/performance/performance-novels.md)** - Novel optimization
+
+### 🎨 UI & Frontend
+
+- **[🎨 UI Specification](apps/web/docs/ui/ui-specification.md)** - UI design specs
+- **[💻 UI Development Guide](apps/web/docs/ui/ui-development.md)** - Frontend development
+- **[🎯 Theme System](apps/web/docs/ui/theme-system.md)** - Theming approach
+- **[📦 shadcn Component Guide](apps/web/docs/ui/shadcn-component-guide.md)** - Component library
+
+### 📚 Feature-Specific Documentation
+
+#### Novel Generation System
+- **[📖 Novel Development](apps/web/docs/novels/novels-development.md)** - Novel implementation
+- **[✅ Novel Evaluation](apps/web/docs/novels/novels-evaluation.md)** - Quality assessment
+- **[⚡ Novel Optimization](apps/web/docs/novels/novels-optimization.md)** - Performance tuning
+
+#### Studio & Agent System
+- **[🤖 Studio Agent Specification](apps/web/docs/studio/studio-agent-specification.md)** - Agent design
+- **[💻 Studio Agent Development](apps/web/docs/studio/studio-agent-development.md)** - Agent implementation
+- **[📊 Studio API Quick Reference](apps/web/docs/studio/studio-api-quick-reference.md)** - API shortcuts
+
+#### Community Features
+- **[👥 Community Specification](apps/web/docs/community/community-specification.md)** - Community design
+- **[⚡ Community Performance](apps/web/docs/community/community-performance-fix.md)** - Performance fixes
+
+### 🧪 Testing & Quality
+
+- **[🧪 Test Specification](apps/web/docs/test/test-specification.md)** - Testing strategy
+- **[✅ Test Development](apps/web/docs/test/test-development.md)** - Test implementation
+- **[📊 Cache Testing Guide](apps/web/docs/performance/cache-testing-guide.md)** - Cache validation
+
+### 🚀 Setup & Getting Started
+
+- **[🏁 Getting Started](docs/GETTING_STARTED.md)** - Project quickstart
+- **[📋 Setup Checklist](docs/monorepo/setup-checklist.md)** - Setup verification
+- **[🐍 Python Version Guide](apps/ai-server/docs/general/python-version-guide.md)** - Python setup
+- **[⚡ AI Server Quick Start](apps/ai-server/docs/general/quick-start.md)** - AI server setup
+
+### 🔧 Operational Guides
+
+- **[🔑 Google AI API Setup](docs/operation/google-ai-api-key-setup.md)** - API key configuration
+- **[🏗️ Environment Architecture](docs/operation/environment-architecture.md)** - Environment setup
+- **[🔐 Cross-System Authentication](docs/operation/cross-system-authentication.md)** - Multi-system auth
+
+### 📊 Analytics & Monitoring
+
+- **[📈 Google Analytics Setup](apps/web/docs/analysis/google-analytics-setup.md)** - GA4 configuration
+- **[📊 Vercel Analytics Setup](apps/web/docs/analysis/vercel-analytics-setup.md)** - Vercel analytics
+- **[💰 Google AdSense Guide](apps/web/docs/adsense/google-adsense-complete-guide.md)** - AdSense setup
+
+### 🔑 Authentication & Security
+
+- **[🔑 Authentication Profiles](apps/web/docs/auth/authentication-profiles.md)** - Auth configuration
+- **[📁 .auth/user.json](apps/web/.auth/user.json)** - Local auth storage (create if needed)
+
+---
+
 **For detailed workspace-specific guidance, refer to:**
-- 📖 **Web Development**: `apps/web/CLAUDE.md`
-- 🐍 **AI Server Development**: `apps/ai-server/CLAUDE.md`
+- 📖 **[Web Development](apps/web/CLAUDE.md)** - Complete web app guide
+- 🐍 **[AI Server Development](apps/ai-server/CLAUDE.md)** - Complete AI service guide
