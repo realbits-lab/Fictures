@@ -17,26 +17,23 @@ import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { getTestScene, TEST_SCENES } from "./config/test-scenes";
 import { ToonplayMetricsTracker } from "./src/metrics-tracker";
-import type {
-	ToonplayTestConfig,
-	ToonplayTestResult,
-} from "./src/types";
+import type { ToonplayTestResult } from "./src/types";
 
 // Parse command-line arguments
 const { values } = parseArgs({
-	args: process.argv.slice(2),
-	options: {
-		version: { type: "string", default: "v1.0" },
-		scenes: { type: "string" },
-		iterations: { type: "string", default: "5" },
-		mode: { type: "string", default: "standard" },
-		output: { type: "string" },
-		help: { type: "boolean", default: false },
-	},
+    args: process.argv.slice(2),
+    options: {
+        version: { type: "string", default: "v1.0" },
+        scenes: { type: "string" },
+        iterations: { type: "string", default: "5" },
+        mode: { type: "string", default: "standard" },
+        output: { type: "string" },
+        help: { type: "boolean", default: false },
+    },
 });
 
 if (values.help) {
-	console.log(`
+    console.log(`
 Run Toonplay Tests - Generate and evaluate toonplays for iteration testing
 
 Usage:
@@ -60,22 +57,22 @@ Examples:
   # Quick evaluation mode for rapid testing
   dotenv --file .env.local run pnpm exec tsx tests/iteration-testing/toonplay/run-toonplay-tests.ts --mode quick
   `);
-	process.exit(0);
+    process.exit(0);
 }
 
 // Configuration
 const PROMPT_VERSION = values.version || "v1.0";
 const EVALUATION_MODE =
-	(values.mode as "quick" | "standard" | "thorough") || "standard";
+    (values.mode as "quick" | "standard" | "thorough") || "standard";
 const ITERATIONS = parseInt(values.iterations || "5", 10);
 const TEST_SCENE_IDS = values.scenes
-	? values.scenes.split(",").map((s) => s.trim())
-	: TEST_SCENES.map((s) => s.id);
+    ? values.scenes.split(",").map((s) => s.trim())
+    : TEST_SCENES.map((s) => s.id);
 
 // Output configuration
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 const OUTPUT_FILE =
-	values.output || `results/${PROMPT_VERSION}/suite-${timestamp}.json`;
+    values.output || `results/${PROMPT_VERSION}/suite-${timestamp}.json`;
 
 console.log(`
 ═══════════════════════════════════════════════════════════════
@@ -94,363 +91,379 @@ console.log(`
  * Generate a story for the test scene (minimal 1 chapter, 1 scene)
  */
 async function generateStoryForScene(
-	sceneContent: string,
+    sceneContent: string,
 ): Promise<{ storyId: string; sceneId: string; generationTime: number }> {
-	console.log(`  → Generating test story...`);
+    console.log(`  → Generating test story...`);
 
-	const startTime = Date.now();
+    const startTime = Date.now();
 
-	// Get API key from auth file
-	const fsSync = require("node:fs");
-	let apiKey: string | undefined;
-	if (fsSync.existsSync(".auth/user.json")) {
-		const authData = JSON.parse(fsSync.readFileSync(".auth/user.json", "utf8"));
-		apiKey = authData.develop?.profiles?.writer?.apiKey;
-	}
+    // Get API key from auth file
+    const fsSync = require("node:fs");
+    let apiKey: string | undefined;
+    if (fsSync.existsSync(".auth/user.json")) {
+        const authData = JSON.parse(
+            fsSync.readFileSync(".auth/user.json", "utf8"),
+        );
+        apiKey = authData.develop?.profiles?.writer?.apiKey;
+    }
 
-	if (!apiKey) {
-		throw new Error(
-			"API key not found in .auth/user.json. Please ensure writer profile exists in develop environment.",
-		);
-	}
+    if (!apiKey) {
+        throw new Error(
+            "API key not found in .auth/user.json. Please ensure writer profile exists in develop environment.",
+        );
+    }
 
-	// Import authentication context functions
-	const { withAuth } = await import("@/lib/auth/server-context");
-	const { createApiKeyContext } = await import("@/lib/auth/context");
+    // Import authentication context functions
+    const { withAuth } = await import("@/lib/auth/server-context");
+    const { createApiKeyContext } = await import("@/lib/auth/context");
 
-	// Create authentication context
-	const authContext = createApiKeyContext(
-		apiKey,
-		"usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
-		"writer@fictures.xyz",
-		["stories:write", "images:write", "ai:use"],
-		{ requestId: `test-${Date.now()}`, timestamp: Date.now() },
-	);
+    // Create authentication context
+    const authContext = createApiKeyContext(
+        apiKey,
+        "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
+        "writer@fictures.xyz",
+        ["stories:write", "images:write", "ai:use"],
+        { requestId: `test-${Date.now()}`, timestamp: Date.now() },
+    );
 
-	// Wrap generation logic in authentication context
-	return await withAuth(authContext, async () => {
-		// Import generation services
-		const { storyService } = await import("@/lib/studio/services/story-service");
-		const { characterService } = await import(
-			"@/lib/studio/services/character-service"
-		);
-		const { settingService } = await import(
-			"@/lib/studio/services/setting-service"
-		);
-		const { partService } = await import("@/lib/studio/services/part-service");
-		const { chapterService } = await import(
-			"@/lib/studio/services/chapter-service"
-		);
-		const { sceneSummaryService } = await import(
-			"@/lib/studio/services/scene-summary-service"
-		);
-		const { sceneContentService } = await import(
-			"@/lib/studio/services/scene-content-service"
-		);
-		const { db } = await import("@/lib/db");
-		const { scenes } = await import("@/lib/schemas/database");
-		const { eq } = await import("drizzle-orm");
+    // Wrap generation logic in authentication context
+    return await withAuth(authContext, async () => {
+        // Import generation services
+        const { storyService } = await import(
+            "@/lib/studio/services/story-service"
+        );
+        const { characterService } = await import(
+            "@/lib/studio/services/character-service"
+        );
+        const { settingService } = await import(
+            "@/lib/studio/services/setting-service"
+        );
+        const { partService } = await import(
+            "@/lib/studio/services/part-service"
+        );
+        const { chapterService } = await import(
+            "@/lib/studio/services/chapter-service"
+        );
+        const { sceneSummaryService } = await import(
+            "@/lib/studio/services/scene-summary-service"
+        );
+        const { sceneContentService } = await import(
+            "@/lib/studio/services/scene-content-service"
+        );
+        const { db } = await import("@/lib/db");
+        const { scenes } = await import("@/lib/schemas/database");
+        const { eq } = await import("drizzle-orm");
 
-		try {
-			// 1. Generate minimal story foundation
-			console.log(`    • Generating story foundation...`);
-			const storyResult = await storyService.generateAndSave({
-				userId: "usr_QKl8WRbF-U2u4ymj",
-				userPrompt: sceneContent,
-				language: "en",
-			});
+        try {
+            // 1. Generate minimal story foundation
+            console.log(`    • Generating story foundation...`);
+            const storyResult = await storyService.generateAndSave({
+                userId: "usr_QKl8WRbF-U2u4ymj",
+                userPrompt: sceneContent,
+                language: "en",
+            });
 
-			const storyId = storyResult.story.id;
+            const storyId = storyResult.story.id;
 
-			// 2. Generate minimal characters (2 characters)
-			console.log(`    • Generating characters...`);
-			await characterService.generateAndSave({
-				userId: "usr_QKl8WRbF-U2u4ymj",
-				storyId,
-				characterCount: 2,
-			});
+            // 2. Generate minimal characters (2 characters)
+            console.log(`    • Generating characters...`);
+            await characterService.generateAndSave({
+                userId: "usr_QKl8WRbF-U2u4ymj",
+                storyId,
+                characterCount: 2,
+            });
 
-			// 3. Generate minimal settings (1 setting)
-			console.log(`    • Generating setting...`);
-			await settingService.generateAndSave({
-				userId: "usr_QKl8WRbF-U2u4ymj",
-				storyId,
-				settingCount: 1,
-			});
+            // 3. Generate minimal settings (1 setting)
+            console.log(`    • Generating setting...`);
+            await settingService.generateAndSave({
+                userId: "usr_QKl8WRbF-U2u4ymj",
+                storyId,
+                settingCount: 1,
+            });
 
-			// 4. Generate single part
-			console.log(`    • Generating part structure...`);
-			const partResult = await partService.generateAndSave({
-				userId: "usr_QKl8WRbF-U2u4ymj",
-				storyId,
-				partNumber: 1,
-			});
+            // 4. Generate single part
+            console.log(`    • Generating part structure...`);
+            const partResult = await partService.generateAndSave({
+                userId: "usr_QKl8WRbF-U2u4ymj",
+                storyId,
+                partNumber: 1,
+            });
 
-			// 5. Generate single chapter
-			console.log(`    • Generating chapter...`);
-			const chapterResult = await chapterService.generateAndSave({
-				userId: "usr_QKl8WRbF-U2u4ymj",
-				storyId,
-				partId: partResult.part.id,
-				chapterNumber: 1,
-			});
+            // 5. Generate single chapter
+            console.log(`    • Generating chapter...`);
+            const chapterResult = await chapterService.generateAndSave({
+                userId: "usr_QKl8WRbF-U2u4ymj",
+                storyId,
+                partId: partResult.part.id,
+                chapterNumber: 1,
+            });
 
-			// 6. Generate single scene summary
-			console.log(`    • Generating scene summary...`);
-			const sceneSummariesResult = await sceneSummaryService.generateAndSave({
-				userId: "usr_QKl8WRbF-U2u4ymj",
-				storyId,
-				chapterId: chapterResult.chapter.id,
-				sceneCount: 1,
-			});
+            // 6. Generate single scene summary
+            console.log(`    • Generating scene summary...`);
+            const sceneSummariesResult =
+                await sceneSummaryService.generateAndSave({
+                    userId: "usr_QKl8WRbF-U2u4ymj",
+                    storyId,
+                    chapterId: chapterResult.chapter.id,
+                    sceneCount: 1,
+                });
 
-			// 7. Generate scene content
-			console.log(`    • Generating scene content...`);
-			await sceneContentService.generateAndUpdate({
-				userId: "usr_QKl8WRbF-U2u4ymj",
-				sceneId: sceneSummariesResult.scenes[0].id,
-			});
+            // 7. Generate scene content
+            console.log(`    • Generating scene content...`);
+            await sceneContentService.generateAndUpdate({
+                userId: "usr_QKl8WRbF-U2u4ymj",
+                sceneId: sceneSummariesResult.scenes[0].id,
+            });
 
-			// Get the generated scene
-			const scene = await db.query.scenes.findFirst({
-				where: eq(scenes.id, sceneSummariesResult.scenes[0].id),
-			});
+            // Get the generated scene
+            const scene = await db.query.scenes.findFirst({
+                where: eq(scenes.id, sceneSummariesResult.scenes[0].id),
+            });
 
-			if (!scene || !scene.content) {
-				throw new Error("Scene content not generated");
-			}
+            if (!scene || !scene.content) {
+                throw new Error("Scene content not generated");
+            }
 
-			const generationTime = Date.now() - startTime;
-			console.log(
-				`    ✓ Story generated in ${(generationTime / 1000).toFixed(1)}s`,
-			);
+            const generationTime = Date.now() - startTime;
+            console.log(
+                `    ✓ Story generated in ${(generationTime / 1000).toFixed(1)}s`,
+            );
 
-			return {
-				storyId,
-				sceneId: scene.id,
-				generationTime,
-			};
-		} catch (error) {
-			console.error(`    ✗ Generation failed:`, error);
-			throw error;
-		}
-	});
+            return {
+                storyId,
+                sceneId: scene.id,
+                generationTime,
+            };
+        } catch (error) {
+            console.error(`    ✗ Generation failed:`, error);
+            throw error;
+        }
+    });
 }
 
 /**
  * Generate toonplay for a scene
  */
 async function generateToonplay(
-	sceneId: string,
+    sceneId: string,
 ): Promise<{ toonplayGenerationTime: number }> {
-	console.log(`  → Generating toonplay for scene ${sceneId}...`);
+    console.log(`  → Generating toonplay for scene ${sceneId}...`);
 
-	const startTime = Date.now();
+    const startTime = Date.now();
 
-	try {
-		// Call toonplay generation API
-		const response = await fetch("http://localhost:3000/studio/api/toonplay", {
-			method: "POST",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify({
-				sceneId,
-				evaluationMode: EVALUATION_MODE,
-			}),
-		});
+    try {
+        // Call toonplay generation API
+        const response = await fetch(
+            "http://localhost:3000/studio/api/toonplay",
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    sceneId,
+                    evaluationMode: EVALUATION_MODE,
+                }),
+            },
+        );
 
-		if (!response.ok) {
-			throw new Error(`Toonplay generation failed: ${response.statusText}`);
-		}
+        if (!response.ok) {
+            throw new Error(
+                `Toonplay generation failed: ${response.statusText}`,
+            );
+        }
 
-		const result = await response.json();
-		const toonplayGenerationTime = Date.now() - startTime;
+        const _result = await response.json();
+        const toonplayGenerationTime = Date.now() - startTime;
 
-		console.log(
-			`    ✓ Toonplay generated in ${(toonplayGenerationTime / 1000).toFixed(1)}s`,
-		);
+        console.log(
+            `    ✓ Toonplay generated in ${(toonplayGenerationTime / 1000).toFixed(1)}s`,
+        );
 
-		return { toonplayGenerationTime };
-	} catch (error) {
-		console.error(`    ✗ Toonplay generation failed:`, error);
-		throw error;
-	}
+        return { toonplayGenerationTime };
+    } catch (error) {
+        console.error(`    ✗ Toonplay generation failed:`, error);
+        throw error;
+    }
 }
 
 /**
  * Evaluate a toonplay
  */
 async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
-	console.log(`  → Evaluating toonplay for scene ${sceneId}...`);
+    console.log(`  → Evaluating toonplay for scene ${sceneId}...`);
 
-	const evalStartTime = Date.now();
+    const evalStartTime = Date.now();
 
-	try {
-		// Import database and schema
-		const { db } = await import("@/lib/db");
-		const { scenes, characters, settings, stories } = await import(
-			"@/lib/schemas/database"
-		);
-		const { eq } = await import("drizzle-orm");
+    try {
+        // Import database and schema
+        const { db } = await import("@/lib/db");
+        const { scenes, characters, settings, stories } = await import(
+            "@/lib/schemas/database"
+        );
+        const { eq } = await import("drizzle-orm");
 
-		// Get scene with toonplay
-		const scene = await db.query.scenes.findFirst({
-			where: eq(scenes.id, sceneId),
-		});
+        // Get scene with toonplay
+        const scene = await db.query.scenes.findFirst({
+            where: eq(scenes.id, sceneId),
+        });
 
-		if (!scene?.comicToonplay) {
-			throw new Error("Toonplay not found for scene");
-		}
+        if (!scene?.comicToonplay) {
+            throw new Error("Toonplay not found for scene");
+        }
 
-		// Get related data for evaluation
-		const story = await db.query.stories.findFirst({
-			where: eq(stories.id, scene.storyId),
-		});
+        // Get related data for evaluation
+        const story = await db.query.stories.findFirst({
+            where: eq(stories.id, scene.storyId),
+        });
 
-		if (!story) {
-			throw new Error("Story not found");
-		}
+        if (!story) {
+            throw new Error("Story not found");
+        }
 
-		const characterList = await db.query.characters.findMany({
-			where: eq(characters.storyId, scene.storyId),
-		});
+        const characterList = await db.query.characters.findMany({
+            where: eq(characters.storyId, scene.storyId),
+        });
 
-		const settingList = await db.query.settings.findMany({
-			where: eq(settings.storyId, scene.storyId),
-		});
+        const settingList = await db.query.settings.findMany({
+            where: eq(settings.storyId, scene.storyId),
+        });
 
-		const setting = settingList[0];
+        const setting = settingList[0];
 
-		if (!setting) {
-			throw new Error("Setting not found");
-		}
+        if (!setting) {
+            throw new Error("Setting not found");
+        }
 
-		// Import evaluator
-		const { evaluateToonplay } = await import(
-			"@/lib/services/toonplay-evaluator"
-		);
+        // Import evaluator
+        const { evaluateToonplay } = await import(
+            "@/lib/services/toonplay-evaluator"
+        );
 
-		// Evaluate toonplay
-		const evaluation = await evaluateToonplay({
-			toonplay: scene.comicToonplay,
-			sourceScene: scene,
-			characters: characterList,
-			setting,
-			storyGenre: story.genre || "Fantasy",
-			evaluationMode: EVALUATION_MODE,
-		});
+        // Evaluate toonplay
+        const evaluation = await evaluateToonplay({
+            toonplay: scene.comicToonplay,
+            sourceScene: scene,
+            characters: characterList,
+            setting,
+            storyGenre: story.genre || "Fantasy",
+            evaluationMode: EVALUATION_MODE,
+        });
 
-		const evaluationTime = Date.now() - evalStartTime;
+        const evaluationTime = Date.now() - evalStartTime;
 
-		console.log(
-			`    ✓ Evaluation complete in ${(evaluationTime / 1000).toFixed(1)}s`,
-		);
-		console.log(
-			`      Score: ${evaluation.weightedScore.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
-		);
+        console.log(
+            `    ✓ Evaluation complete in ${(evaluationTime / 1000).toFixed(1)}s`,
+        );
+        console.log(
+            `      Score: ${evaluation.weightedScore.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
+        );
 
-		// Create test result
-		const testResult: ToonplayTestResult = {
-			testId: `test-${Date.now()}`,
-			sceneId: scene.id,
-			sceneName: scene.title || "Untitled Scene",
-			promptVersion: PROMPT_VERSION,
-			timestamp: new Date().toISOString(),
-			toonplay: scene.comicToonplay,
-			evaluation,
-			metadata: {
-				generationTime: 0, // Will be filled by caller
-				evaluationTime,
-				totalTime: 0, // Will be filled by caller
-				iterations: 0, // Will be filled by caller
-				model: "gemini-2.0-flash-exp",
-				provider: "google",
-			},
-		};
+        // Create test result
+        const testResult: ToonplayTestResult = {
+            testId: `test-${Date.now()}`,
+            sceneId: scene.id,
+            sceneName: scene.title || "Untitled Scene",
+            promptVersion: PROMPT_VERSION,
+            timestamp: new Date().toISOString(),
+            toonplay: scene.comicToonplay,
+            evaluation,
+            metadata: {
+                generationTime: 0, // Will be filled by caller
+                evaluationTime,
+                totalTime: 0, // Will be filled by caller
+                iterations: 0, // Will be filled by caller
+                model: "gemini-2.0-flash-exp",
+                provider: "google",
+            },
+        };
 
-		return testResult;
-	} catch (error) {
-		console.error(`    ✗ Evaluation failed:`, error);
-		throw error;
-	}
+        return testResult;
+    } catch (error) {
+        console.error(`    ✗ Evaluation failed:`, error);
+        throw error;
+    }
 }
 
 /**
  * Main execution
  */
 async function main() {
-	const metricsTracker = new ToonplayMetricsTracker();
-	const startTime = Date.now();
+    const metricsTracker = new ToonplayMetricsTracker();
+    const startTime = Date.now();
 
-	// Process each test scene
-	for (const sceneId of TEST_SCENE_IDS) {
-		const testScene = getTestScene(sceneId);
-		if (!testScene) {
-			console.warn(`⚠ Unknown scene ID: ${sceneId}`);
-			continue;
-		}
+    // Process each test scene
+    for (const sceneId of TEST_SCENE_IDS) {
+        const testScene = getTestScene(sceneId);
+        if (!testScene) {
+            console.warn(`⚠ Unknown scene ID: ${sceneId}`);
+            continue;
+        }
 
-		console.log(`\n► Testing: ${testScene.name} (${sceneId})`);
-		console.log(`  Focus: ${testScene.focusAreas.join(", ")}`);
+        console.log(`\n► Testing: ${testScene.name} (${sceneId})`);
+        console.log(`  Focus: ${testScene.focusAreas.join(", ")}`);
 
-		// Generate multiple iterations
-		for (let i = 0; i < ITERATIONS; i++) {
-			console.log(`\n  Iteration ${i + 1}/${ITERATIONS}:`);
+        // Generate multiple iterations
+        for (let i = 0; i < ITERATIONS; i++) {
+            console.log(`\n  Iteration ${i + 1}/${ITERATIONS}:`);
 
-			try {
-				const iterationStartTime = Date.now();
+            try {
+                const iterationStartTime = Date.now();
 
-				// 1. Generate story and scene
-				const { storyId, sceneId: generatedSceneId, generationTime } =
-					await generateStoryForScene(testScene.sceneContent);
+                // 1. Generate story and scene
+                const {
+                    storyId,
+                    sceneId: generatedSceneId,
+                    generationTime,
+                } = await generateStoryForScene(testScene.sceneContent);
 
-				// 2. Generate toonplay
-				const { toonplayGenerationTime } =
-					await generateToonplay(generatedSceneId);
+                // 2. Generate toonplay
+                const { toonplayGenerationTime } =
+                    await generateToonplay(generatedSceneId);
 
-				// 3. Evaluate toonplay
-				const testResult = await evaluateToonplay(generatedSceneId);
+                // 3. Evaluate toonplay
+                const testResult = await evaluateToonplay(generatedSceneId);
 
-				// Update metadata
-				testResult.metadata.generationTime =
-					generationTime + toonplayGenerationTime;
-				testResult.metadata.totalTime = Date.now() - iterationStartTime;
-				testResult.metadata.iterations = i;
+                // Update metadata
+                testResult.metadata.generationTime =
+                    generationTime + toonplayGenerationTime;
+                testResult.metadata.totalTime = Date.now() - iterationStartTime;
+                testResult.metadata.iterations = i;
 
-				// Add to tracker
-				metricsTracker.addResult(testResult);
+                // Add to tracker
+                metricsTracker.addResult(testResult);
 
-				console.log(
-					`  ✓ Iteration ${i + 1} complete (${((Date.now() - iterationStartTime) / 1000).toFixed(1)}s total)`,
-				);
-			} catch (error) {
-				console.error(`  ✗ Iteration ${i + 1} failed:`, error);
-			}
-		}
-	}
+                console.log(
+                    `  ✓ Iteration ${i + 1} complete (${((Date.now() - iterationStartTime) / 1000).toFixed(1)}s total)`,
+                );
+            } catch (error) {
+                console.error(`  ✗ Iteration ${i + 1} failed:`, error);
+            }
+        }
+    }
 
-	// Get aggregated metrics
-	const aggregatedMetrics = metricsTracker.getAggregatedMetrics(PROMPT_VERSION);
+    // Get aggregated metrics
+    const aggregatedMetrics =
+        metricsTracker.getAggregatedMetrics(PROMPT_VERSION);
 
-	// Create output data
-	const outputData = {
-		version: PROMPT_VERSION,
-		testDate: new Date().toISOString(),
-		testScenes: TEST_SCENE_IDS,
-		evaluationMode: EVALUATION_MODE,
-		iterations: ITERATIONS,
-		toonplays: metricsTracker.getResults(),
-		aggregatedMetrics,
-	};
+    // Create output data
+    const outputData = {
+        version: PROMPT_VERSION,
+        testDate: new Date().toISOString(),
+        testScenes: TEST_SCENE_IDS,
+        evaluationMode: EVALUATION_MODE,
+        iterations: ITERATIONS,
+        toonplays: metricsTracker.getResults(),
+        aggregatedMetrics,
+    };
 
-	// Save results
-	const outputDir = path.dirname(OUTPUT_FILE);
-	await fs.mkdir(outputDir, { recursive: true });
-	await fs.writeFile(OUTPUT_FILE, JSON.stringify(outputData, null, 2));
+    // Save results
+    const outputDir = path.dirname(OUTPUT_FILE);
+    await fs.mkdir(outputDir, { recursive: true });
+    await fs.writeFile(OUTPUT_FILE, JSON.stringify(outputData, null, 2));
 
-	const totalTime = (Date.now() - startTime) / 1000 / 60;
+    const totalTime = (Date.now() - startTime) / 1000 / 60;
 
-	// Print summary
-	console.log(`
+    // Print summary
+    console.log(`
 ═══════════════════════════════════════════════════════════════
                       TEST COMPLETE
 ═══════════════════════════════════════════════════════════════
@@ -481,18 +494,18 @@ async function main() {
 
   Top Issues:
 ${aggregatedMetrics.failurePatterns
-	.slice(0, 5)
-	.map(
-		(p) =>
-			`  - [${p.priority.toUpperCase()}] ${p.description} (${p.frequency}/${aggregatedMetrics.totalTests})`,
-	)
-	.join("\n")}
+    .slice(0, 5)
+    .map(
+        (p) =>
+            `  - [${p.priority.toUpperCase()}] ${p.description} (${p.frequency}/${aggregatedMetrics.totalTests})`,
+    )
+    .join("\n")}
 
   Suggested Fixes:
 ${aggregatedMetrics.failurePatterns
-	.slice(0, 3)
-	.map((p) => `  - ${p.suggestedFix}`)
-	.join("\n")}
+    .slice(0, 3)
+    .map((p) => `  - ${p.suggestedFix}`)
+    .join("\n")}
 ═══════════════════════════════════════════════════════════════
 `);
 }

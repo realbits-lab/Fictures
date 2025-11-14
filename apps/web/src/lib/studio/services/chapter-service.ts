@@ -181,6 +181,17 @@ export class ChapterService {
             contributesToMacroArc:
                 generationResult.chapter.contributesToMacroArc?.trim() ||
                 "Advances the story arc",
+            characterArc: generationResult.chapter.characterArc || {
+                characterId: focusCharacterId,
+                microAdversity: {
+                    internal: "Confronts personal doubts",
+                    external: "Faces immediate challenge",
+                },
+                microVirtue: "Shows courage in adversity",
+                microConsequence: "Earns small victory",
+                microNewAdversity: "Creates next complication",
+            },
+            settingIds: storySettings.map((s) => s.id),
             focusCharacters: generationResult.chapter.focusCharacters || [],
             adversityType: generationResult.chapter.adversityType || "internal",
             virtueType: generationResult.chapter.virtueType || "courage",

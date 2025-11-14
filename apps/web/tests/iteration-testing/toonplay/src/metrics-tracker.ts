@@ -76,16 +76,19 @@ export class ToonplayMetricsTracker {
                 0,
             ) / totalTests;
         const averageDialoguePresence =
-            evaluations.reduce((sum, e) => sum + e.metrics.dialoguePresence, 0) /
-            totalTests;
+            evaluations.reduce(
+                (sum, e) => sum + e.metrics.dialoguePresence,
+                0,
+            ) / totalTests;
 
         // Calculate compliance rates
         const narrationComplianceRate =
-            evaluations.filter((e) => e.metrics.narrationPercentage < 5).length /
-            totalTests;
-        const internalMonologueComplianceRate =
-            evaluations.filter((e) => e.metrics.internalMonologuePercentage < 10)
+            evaluations.filter((e) => e.metrics.narrationPercentage < 5)
                 .length / totalTests;
+        const internalMonologueComplianceRate =
+            evaluations.filter(
+                (e) => e.metrics.internalMonologuePercentage < 10,
+            ).length / totalTests;
         const dialogueTargetRate =
             evaluations.filter(
                 (e) =>
@@ -129,21 +132,27 @@ export class ToonplayMetricsTracker {
                 0,
             ) / totalTests;
         const dialogueLengthComplianceRate =
-            evaluations.filter((e) => e.metrics.dialogueLengthCompliance).length /
-            totalTests;
+            evaluations.filter((e) => e.metrics.dialogueLengthCompliance)
+                .length / totalTests;
 
         // Calculate webtoon optimization
         const averageVerticalFlowQuality =
-            evaluations.reduce((sum, e) => sum + e.metrics.verticalFlowQuality, 0) /
-            totalTests;
+            evaluations.reduce(
+                (sum, e) => sum + e.metrics.verticalFlowQuality,
+                0,
+            ) / totalTests;
         const averagePanelPacingRhythm =
-            evaluations.reduce((sum, e) => sum + e.metrics.panelPacingRhythm, 0) /
-            totalTests;
+            evaluations.reduce(
+                (sum, e) => sum + e.metrics.panelPacingRhythm,
+                0,
+            ) / totalTests;
 
         // Calculate generation performance
         const averageGenerationTime =
-            this.results.reduce((sum, r) => sum + r.metadata.generationTime, 0) /
-            totalTests;
+            this.results.reduce(
+                (sum, r) => sum + r.metadata.generationTime,
+                0,
+            ) / totalTests;
         const averageIterations =
             this.results.reduce((sum, r) => sum + r.metadata.iterations, 0) /
             totalTests;
@@ -254,7 +263,9 @@ export class ToonplayMetricsTracker {
                 frequency: insufficientDialogue.length,
                 averageScore: avgDialogue,
                 priority:
-                    insufficientDialogue.length / totalTests > 0.5 ? "high" : "medium",
+                    insufficientDialogue.length / totalTests > 0.5
+                        ? "high"
+                        : "medium",
                 suggestedFix:
                     "Emphasize 70% dialogue target. Convert narration to dialogue wherever possible.",
             });
@@ -275,7 +286,8 @@ export class ToonplayMetricsTracker {
                 description: `Weak visual transformation (<3.5): ${avgScore.toFixed(2)} average`,
                 frequency: weakVisual.length,
                 averageScore: avgScore,
-                priority: weakVisual.length / totalTests > 0.5 ? "high" : "medium",
+                priority:
+                    weakVisual.length / totalTests > 0.5 ? "high" : "medium",
                 suggestedFix:
                     "Enhance panel description requirements. Mandate body language, expressions, environmental details.",
             });
@@ -296,7 +308,8 @@ export class ToonplayMetricsTracker {
                 description: `Poor webtoon pacing (<3.5): ${avgScore.toFixed(2)} average`,
                 frequency: poorPacing.length,
                 averageScore: avgScore,
-                priority: poorPacing.length / totalTests > 0.5 ? "high" : "medium",
+                priority:
+                    poorPacing.length / totalTests > 0.5 ? "high" : "medium",
                 suggestedFix:
                     "Add pacing rhythm guidance: establish → build → peak → release → transition.",
             });
@@ -313,7 +326,9 @@ export class ToonplayMetricsTracker {
                 frequency: descriptionIssues.length,
                 averageScore: 0,
                 priority:
-                    descriptionIssues.length / totalTests > 0.3 ? "medium" : "low",
+                    descriptionIssues.length / totalTests > 0.3
+                        ? "medium"
+                        : "low",
                 suggestedFix:
                     "Enforce 200-400 character requirement in prompt. Provide examples.",
             });
@@ -347,7 +362,8 @@ export class ToonplayMetricsTracker {
                 description: `Low shot variety (<5 types): ${avgVariety.toFixed(1)} average`,
                 frequency: lowVariety.length,
                 averageScore: avgVariety,
-                priority: lowVariety.length / totalTests > 0.3 ? "medium" : "low",
+                priority:
+                    lowVariety.length / totalTests > 0.3 ? "medium" : "low",
                 suggestedFix:
                     "Encourage variety: establishing, wide, medium, close-up, extreme close-up, special angles.",
             });
@@ -413,7 +429,7 @@ export function calculateStatisticalSignificance(
     return { pValue, confidenceLevel };
 }
 
-function approximatePValue(t: number, df: number): number {
+function approximatePValue(t: number, _df: number): number {
     // Simplified p-value approximation
     // For more accuracy, use a proper t-distribution library
     if (t < 1.96) return 0.05; // Not significant
