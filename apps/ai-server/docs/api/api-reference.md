@@ -358,7 +358,7 @@ async function streamText() {
   // Load API key from .auth/user.json
   const authPath = path.join(process.cwd(), '.auth', 'user.json');
   const authData = JSON.parse(await fs.readFile(authPath, 'utf-8'));
-  const apiKey = authData.ai_server_api_key;
+  const apiKey = authData.apiKey;
 
   const response = await fetch('http://localhost:8000/api/v1/text/stream', {
     method: 'POST',
@@ -539,7 +539,7 @@ async function generateImage() {
   // Load API key from .auth/user.json
   const authPath = path.join(process.cwd(), '.auth', 'user.json');
   const authData = JSON.parse(await fs.readFile(authPath, 'utf-8'));
-  const apiKey = authData.ai_server_api_key;
+  const apiKey = authData.apiKey;
 
   const response = await fetch('http://localhost:8000/api/v1/images/generate', {
     method: 'POST',
