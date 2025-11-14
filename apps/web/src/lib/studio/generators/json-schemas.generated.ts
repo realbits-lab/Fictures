@@ -12,12 +12,12 @@
 
 import { z } from "zod";
 import {
-    AiChapterZodSchema,
-    AiCharacterZodSchema,
-    AiPartZodSchema,
-    AiSceneSummaryZodSchema,
-    AiSettingZodSchema,
-    AiStoryZodSchema,
+	AiChapterZodSchema,
+	AiCharacterZodSchema,
+	AiPartZodSchema,
+	AiSceneSummaryZodSchema,
+	AiSettingZodSchema,
+	AiStoryZodSchema,
 } from "@/lib/schemas/ai";
 
 /**

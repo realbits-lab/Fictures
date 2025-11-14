@@ -9,19 +9,19 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, characters, parts, stories } from "@/lib/schemas/drizzle";
-import { generateChapter } from "../generators/chapter-generator";
-import type {
-    GeneratorChapterParams,
-    GeneratorChapterResult,
-} from "../generators/types";
 import {
     type Chapter,
     type Character,
     insertChapterSchema,
     type Part,
     type Story,
-} from "../generators/zod-schemas";
+} from "@/lib/schemas/ai";
+import { chapters, characters, parts, stories } from "@/lib/schemas/drizzle";
+import { generateChapter } from "../generators/chapter-generator";
+import type {
+    GeneratorChapterParams,
+    GeneratorChapterResult,
+} from "../generators/types";
 
 export interface ServiceChapterParams {
     storyId: string;

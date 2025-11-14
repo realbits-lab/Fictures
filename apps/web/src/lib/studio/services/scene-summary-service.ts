@@ -10,6 +10,15 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
+    type Chapter,
+    type Character,
+    insertSceneSchema,
+    type Part,
+    type Scene,
+    type Setting,
+    type Story,
+} from "@/lib/schemas/ai";
+import {
     chapters,
     characters,
     parts,
@@ -22,15 +31,6 @@ import type {
     GeneratorSceneSummaryParams,
     GeneratorSceneSummaryResult,
 } from "../generators/types";
-import {
-    type Chapter,
-    type Character,
-    insertSceneSchema,
-    type Part,
-    type Scene,
-    type Setting,
-    type Story,
-} from "../generators/zod-schemas";
 
 export interface ServiceSceneSummaryParams {
     storyId: string;

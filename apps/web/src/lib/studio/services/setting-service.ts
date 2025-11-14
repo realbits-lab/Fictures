@@ -7,17 +7,17 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
+import {
+    insertSettingSchema,
+    type Setting,
+    type Story,
+} from "@/lib/schemas/ai";
 import { settings, stories } from "@/lib/schemas/drizzle";
 import { generateSettings } from "../generators/settings-generator";
 import type {
     GeneratorSettingsParams,
     GeneratorSettingsResult,
 } from "../generators/types";
-import {
-    insertSettingSchema,
-    type Setting,
-    type Story,
-} from "../generators/zod-schemas";
 
 export interface ServiceSettingsParams {
     storyId: string;
