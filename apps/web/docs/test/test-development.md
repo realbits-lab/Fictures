@@ -98,6 +98,19 @@ dotenv --file .env.local run node scripts/remove-all-stories.mjs --dry-run
 - Community data (posts, likes, replies, bookmarks)
 - Analytics data (reading sessions, insights, events)
 
+**Toonplay Test Data:**
+```bash
+# Generate toonplay for test scene
+dotenv --file .env.local run node test-scripts/test-toonplay-generation.mjs SCENE_ID
+
+# Test toonplay evaluation
+dotenv --file .env.local run node test-scripts/test-toonplay-evaluation.mjs SCENE_ID
+
+# Options:
+# --mode quick|standard|thorough
+# --verbose (detailed output)
+```
+
 ### Test Data Verification
 
 **Verify Database:**
@@ -312,6 +325,16 @@ dotenv --file .env.local run node test-scripts/verify-image-urls.mjs
    - **TC-COMICS-FUNC-003**: Navigate panels
    - **TC-COMICS-FUNC-004**: Post/view comments
    - **TC-COMICS-FUNC-005**: Save reading progress
+
+3a. **Toonplay - Novel-to-Webtoon Generation** (30 min)
+   - **TC-TOONPLAY-FUNC-001**: Generate toonplay from scene (POST /studio/api/toonplay)
+   - **TC-TOONPLAY-FUNC-002**: Evaluate toonplay quality (weighted score >= 3.0/5.0)
+   - **TC-TOONPLAY-FUNC-003**: Iterative improvement loop (max 2 iterations)
+   - **TC-TOONPLAY-FUNC-004**: Generate 9:16 panel images (928×1664px)
+   - **TC-TOONPLAY-FUNC-005**: Create 4 image variants per panel (AVIF + JPEG × 1x/2x)
+   - **TC-TOONPLAY-FUNC-006**: Verify database-driven character consistency
+   - **TC-TOONPLAY-FUNC-007**: Validate content proportions (70% dialogue, <5% narration, <10% internal monologue)
+   - **TC-TOONPLAY-FUNC-008**: Update scene with toonplay data in database
 
 4. **Community - Social Features** (30 min)
    - **TC-COMMUNITY-FUNC-001**: Create post button (auth only)

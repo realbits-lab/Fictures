@@ -252,7 +252,6 @@ This approach is **mandatory** for:
 #### Database & Schema (Source of Truth)
 - **[📋 Novel Specification (SSOT)](apps/web/docs/novels/novels-specification.md)** - Canonical data model documentation
 - **[💾 Database Schema Code](apps/web/src/lib/schemas/database/index.ts)** - Executable schema (follows spec)
-- **[🔄 Schema Synchronization Strategy](apps/web/docs/novels/schema-synchronization-strategy.md)** - Schema sync approach
 
 #### System Architecture
 - **[🏛️ Monorepo Architecture](docs/monorepo/architecture.md)** - Overall system design

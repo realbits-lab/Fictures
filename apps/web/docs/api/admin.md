@@ -437,7 +437,6 @@ Errors are logged with details:
 
 ## Related Documentation
 
-- [Story Removal](../novels/novels-removal.md)
 - [User Management APIs](./users.md)
 - [Authentication APIs](./authentication.md)
 - [Database Schema](../../drizzle/schema.ts)

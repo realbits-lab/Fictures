@@ -16,7 +16,6 @@ This section provides a complete index of all feature documentation. Each direct
   - `novels-development.md` - API specs and system prompts
   - `novels-evaluation.md` - Validation and quality metrics
   - `novels-optimization.md` - Performance tuning
-  - `novels-removal.md` - Deletion workflows
 
 - **[toonplay/](toonplay/)** - Novel-to-Webtoon Adaptation System
   - `toonplay-specification.md` - Core concepts, visual grammar, and data model

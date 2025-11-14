@@ -625,7 +625,6 @@ The platform uses the Adversity-Triumph Engine for novel generation, creating em
 - **🔧 Development Guide**: [docs/novels/novels-development.md](docs/novels/novels-development.md) - API specs and system prompts
 - **🧪 Testing Guide**: [docs/novels/novels-evaluation.md](docs/novels/novels-evaluation.md) - Validation and quality metrics
 - **⚡ Optimization**: [docs/novels/novels-optimization.mdx](docs/novels/novels-optimization.mdx) - Performance tuning
-- **🗑️ Removal**: [docs/novels/novels-removal.mdx](docs/novels/novels-removal.mdx) - Deletion workflows
 
 **Quick Reference:**
 - **UI**: `/studio/new` - Novel creation page
@@ -811,7 +810,6 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
 - 🔧 **Development Guide**: `docs/novels/novels-development.md` - API specs and system prompts (now with dual auth)
 - 🧪 **Testing Guide**: `docs/novels/novels-evaluation.md` - Validation and quality metrics
 - ⚡ **Optimization**: `docs/novels/novels-optimization.md` - Performance and cost tuning
-- 🗑️ **Removal**: `docs/novels/novels-removal.md` - Deletion workflows
 - 🛠️ **Script**: `scripts/generate-minimal-story.mjs` - Production script for minimal story generation
 
 **Generation System:**

@@ -199,26 +199,30 @@ async function generateStory(
                 chapterNumber: 2,
             });
 
-            // 6. Generate scene summaries for chapter 1
+            // 6. Generate scene summaries for chapter 1 (one at a time)
             console.log(`    • Generating scene summaries...`);
-            const sceneSummariesResult =
-                await sceneSummaryService.generateAndSave({
+            const generatedScenes: Array<{ id: string }> = [];
+            const scenesToGenerate = 5;
+
+            for (let i = 0; i < scenesToGenerate; i++) {
+                const sceneResult = await sceneSummaryService.generateAndSave({
                     userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                     storyId,
                     chapterId: chapter1Result.chapter.id,
-                    sceneCount: 5,
                 });
+                generatedScenes.push({ id: sceneResult.scene.id });
+            }
 
             // 7. Generate scene content for first 3 scenes (for testing)
             console.log(`    • Generating scene content...`);
             for (
                 let i = 0;
-                i < Math.min(3, sceneSummariesResult.scenes.length);
+                i < Math.min(3, generatedScenes.length);
                 i++
             ) {
-                await sceneContentService.generateAndUpdate({
+                await sceneContentService.generateAndSave({
                     userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
-                    sceneId: sceneSummariesResult.scenes[i].id,
+                    sceneId: generatedScenes[i].id,
                 });
             }
 
