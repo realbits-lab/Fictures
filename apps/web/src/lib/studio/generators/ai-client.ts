@@ -366,8 +366,12 @@ class AIServerProvider extends TextGenerationProvider {
 
         // Get API key from authentication context
         const apiKey = getApiKey();
+        console.log("[AIServerProvider] buildHeaders - API key from context:", apiKey ? `${apiKey.substring(0, 10)}...` : "null");
+
         if (apiKey) {
             headers["x-api-key"] = apiKey;
+        } else {
+            console.log("[AIServerProvider] WARNING: No API key found in authentication context!");
         }
 
         return headers;
