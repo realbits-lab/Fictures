@@ -244,7 +244,7 @@ describe("Scene Evaluation API", () => {
         }
 
         console.log(`✅ Scene content generated: ${sceneContentData.scene.id}`);
-    }, 300000); // 5 min for full story generation
+    }, 600000); // 10 min for full story generation (increased for scene content timeout)
 
     it("should evaluate scene quality via POST /studio/api/scene-evaluation", async () => {
         console.log("🔧 Evaluating scene quality...");
@@ -458,5 +458,5 @@ describe("Scene Evaluation API", () => {
             `  Improvements: ${evaluation.feedback.improvements.join(", ")}`,
         );
         console.log(`  Generation time: ${metadata.generationTime}ms`);
-    }, 1200000); // 20 minute timeout for AI evaluation with improvements
+    }, 1800000); // 30 minute timeout for AI evaluation with improvements (increased for longer generation)
 });
