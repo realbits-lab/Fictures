@@ -489,7 +489,7 @@ class TextGenerationService:
                         if retry_count == 0:  # Only for first attempt
                             allocated_buffer = token_allocation - max_tokens
                             # How many tokens beyond max_tokens did we actually use?
-                            tokens_beyond_max = max(0, tokens_used - max_tokens)
+                            tokens_beyond_max = max(0, output_tokens - max_tokens)
                             # Buffer efficiency = (tokens used beyond max) / (buffer allocated) * 100
                             buffer_efficiency = (tokens_beyond_max / allocated_buffer * 100) if allocated_buffer > 0 else 0
 
@@ -502,7 +502,7 @@ class TextGenerationService:
                             logger.info(f"  Base max_tokens: {max_tokens}")
                             logger.info(f"  Buffer allocated: {allocated_buffer} tokens")
                             logger.info(f"  Total allocated: {token_allocation} tokens")
-                            logger.info(f"  Tokens used: {tokens_used} tokens")
+                            logger.info(f"  Tokens used: {output_tokens} tokens")
                             logger.info(f"  Tokens beyond max_tokens: {tokens_beyond_max} tokens")
                             logger.info(f"  Buffer utilization: {buffer_utilization:.1f}%")
                             logger.info(f"  Buffer unused: {tokens_unused_in_buffer} tokens")
@@ -539,7 +539,7 @@ class TextGenerationService:
                         logger.error(f"  Error: {e}")
                         logger.error(f"  Error position: char {e.pos} (line {e.lineno}, col {e.colno})")
                         logger.error(f"  Token allocation: {token_allocation}")
-                        logger.error(f"  Tokens used: {tokens_used} ({token_utilization:.1f}%)")
+                        logger.error(f"  Tokens used: {output_tokens} ({token_utilization:.1f}%)")
 
                         # Show context around error
                         if e.pos and e.pos > 0:
