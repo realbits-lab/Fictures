@@ -655,6 +655,7 @@ export const scenes = pgTable(
 
         // === COMIC FORMAT ===
         comicStatus: comicStatus("comic_status").default("none").notNull(),
+        comicToonplay: jsonb("comic_toonplay"), // Complete toonplay specification (AiComicToonplayType)
         comicPublishedAt: timestamp("comic_published_at", { mode: "string" }),
         comicPublishedBy: text("comic_published_by"),
         comicUnpublishedAt: timestamp("comic_unpublished_at", {

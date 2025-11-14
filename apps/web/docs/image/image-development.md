@@ -1,0 +1,533 @@
+# Image Development Guide: API & Implementation
+
+## Overview
+
+This document provides implementation specifications for the image generation and optimization system, including API endpoints, provider integration, and optimization pipeline.
+
+**Related Documents:**
+- 📖 **Specification** (`image-specification.md`): Core concepts, data model, and architecture
+- 🧪 **Evaluation Guide** (`image-evaluation.md`): Quality metrics, performance benchmarks
+
+---
+
+## Part I: API Endpoints
+
+### 1.1 Generate Image
+
+**Endpoint**: `POST /api/images/generate`
+
+**Purpose**: Generate story illustration with automatic optimization
+
+**Authentication**: NextAuth.js session or API key with `images:write` scope
+
+**Request Body**:
+```typescript
+{
+  prompt: string;                  // Required: Image description
+  storyId: string;                 // Required: Story context
+  imageType?: StoryImageType;      // Optional: 'story' | 'character' | 'setting' | 'scene' | 'comic-panel'
+  chapterId?: string;              // Optional: Chapter context
+  sceneId?: string;                // Optional: Scene context
+  style?: 'vivid' | 'natural';     // Optional: Generation style
+  quality?: 'standard' | 'hd';     // Optional: Image quality
+  seed?: number;                   // Optional: Reproducible results
+  aspectRatio?: AspectRatio;       // Optional: Override automatic ratio
+}
+```
+
+**Response**:
+```typescript
+{
+  success: true,
+  imageType: "scene",
+  imageId: "img_1234567890_abc123",
+  originalUrl: "https://blob.vercel-storage.com/...",
+  blobUrl: "https://blob.vercel-storage.com/...",
+  dimensions: {
+    width: 1024,
+    height: 576
+  },
+  size: 300000,
+  aspectRatio: "16:9",
+  model: "gemini-2.5-flash",
+  provider: "gemini",
+  optimizedSet: {
+    imageId: "opt_1234567890_abc123",
+    originalUrl: "https://...",
+    variants: [
+      {
+        format: "avif",
+        device: "mobile",
+        resolution: "1x",
+        width: 672,
+        height: 384,
+        url: "https://...",
+        size: 10240
+      },
+      // ... 3 more variants
+    ],
+    generatedAt: "2025-01-07T12:00:00.000Z"
+  },
+  isPlaceholder: false
+}
+```
+
+**Example Request**:
+```typescript
+const response = await fetch('/api/images/generate', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    prompt: 'A mysterious forest at twilight, cinematic widescreen composition',
+    storyId: 'story_123',
+    imageType: 'scene',
+  }),
+});
+
+const data = await response.json();
+console.log('Image URL:', data.originalUrl);
+console.log('Optimized variants:', data.optimizedSet.variants.length);
+```
+
+**Error Responses**:
+```typescript
+// 401 Unauthorized
+{ error: "Unauthorized", message: "No valid session or API key" }
+
+// 400 Bad Request
+{ error: "Missing required field: prompt" }
+
+// 500 Internal Server Error
+{ error: "Image generation failed", details: "..." }
+```
+
+---
+
+## Part II: Service Layer
+
+### 2.1 Generate Story Image
+
+**File**: `src/lib/services/image-generation.ts`
+
+**Function**:
+```typescript
+export async function generateStoryImage(
+  params: GenerateStoryImageParams
+): Promise<StoryImageGenerationResult>
+```
+
+**Process**:
+```
+1. Determine aspect ratio (automatic by image type)
+2. Generate image using AI provider
+   ├─ Gemini 2.5 Flash (cloud API)
+   └─ AI Server (self-hosted)
+3. Upload original to Vercel Blob
+4. Create 4 optimized variants
+   ├─ AVIF mobile 1x (resize + convert)
+   ├─ AVIF mobile 2x (convert only)
+   ├─ JPEG mobile 1x (resize + convert)
+   └─ JPEG mobile 2x (convert only)
+5. Upload all variants to Vercel Blob
+6. Return URLs + metadata
+```
+
+**Usage**:
+```typescript
+import { generateStoryImage } from '@/lib/services/image-generation';
+
+const result = await generateStoryImage({
+  prompt: 'Ancient library with towering bookshelves, magical atmosphere',
+  storyId: 'story_abc123',
+  imageType: 'setting',
+});
+
+// Save to database
+await db.update(settings)
+  .set({
+    imageUrl: result.url,
+    imageVariants: result.optimizedSet,
+  })
+  .where(eq(settings.id, settingId));
+```
+
+### 2.2 Optimize Image
+
+**File**: `src/lib/services/image-optimization.ts`
+
+**Function**:
+```typescript
+export async function optimizeImage(
+  originalImageUrl: string,
+  imageId: string,
+  storyId: string,
+  imageType: StoryImageType,
+  sceneId?: string
+): Promise<OptimizedImageSet>
+```
+
+**Implementation**:
+```typescript
+async function optimizeImage(
+  originalImageUrl: string,
+  imageId: string,
+  storyId: string,
+  imageType: StoryImageType
+): Promise<OptimizedImageSet> {
+  console.log('[Image Optimization] Starting 4-variant optimization');
+
+  // Download original image
+  const imageBuffer = await downloadImage(originalImageUrl);
+  const variants: ImageVariant[] = [];
+
+  // Generate 4 variants (2 formats × 2 sizes)
+  for (const format of IMAGE_FORMATS) {
+    for (const [device, resolutions] of Object.entries(IMAGE_SIZES)) {
+      for (const [resolution, config] of Object.entries(resolutions)) {
+        const { width, height, noResize } = config;
+
+        // Process image
+        let processedBuffer: Buffer;
+        if (noResize) {
+          // Mobile 2x: Convert format only (no resize)
+          processedBuffer = await sharp(imageBuffer)
+            [format]({ quality: QUALITY_SETTINGS[format] })
+            .toBuffer();
+        } else {
+          // Mobile 1x: Resize + convert
+          processedBuffer = await sharp(imageBuffer)
+            .resize(width, height, { fit: 'cover' })
+            [format]({ quality: QUALITY_SETTINGS[format] })
+            .toBuffer();
+        }
+
+        // Upload to Vercel Blob
+        const path = getBlobPath(
+          `stories/${storyId}/${imageType}/${format}/${width}x${height}/${imageId}.${format}`
+        );
+        const blob = await put(path, processedBuffer, {
+          access: 'public',
+          contentType: `image/${format}`,
+        });
+
+        variants.push({
+          format,
+          device,
+          resolution,
+          width,
+          height,
+          url: blob.url,
+          size: processedBuffer.length,
+        });
+
+        console.log(`[Image Optimization] ✓ Generated ${format} ${width}x${height}`);
+      }
+    }
+  }
+
+  console.log(`[Image Optimization] Complete! Generated 4/4 variants`);
+
+  return {
+    imageId,
+    originalUrl: originalImageUrl,
+    variants,
+    generatedAt: new Date().toISOString(),
+  };
+}
+```
+
+---
+
+## Part III: Provider Integration
+
+### 3.1 Gemini 2.5 Flash
+
+**File**: `src/lib/ai/providers/gemini-image.ts`
+
+**Configuration**:
+```typescript
+// src/lib/ai/image-config.ts
+gemini: {
+  '1:1': { width: 1024, height: 1024 },
+  '16:9': { width: 1024, height: 576 },
+  '9:16': { width: 576, height: 1024 },
+  '2:3': { width: 683, height: 1024 },
+}
+```
+
+**API Call**:
+```typescript
+const response = await fetch(
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-exp:generateContent`,
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-goog-api-key': process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
+    },
+    body: JSON.stringify({
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        temperature: 1.0,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+        responseMimeType: 'image/jpeg',
+        responseModalities: ['image'],
+        aspectRatio: aspectRatio, // '1:1', '16:9', '9:16', '2:3'
+      }
+    })
+  }
+);
+```
+
+### 3.2 AI Server (Qwen-Image-Lightning)
+
+**File**: `src/lib/ai/providers/ai-server-image.ts`
+
+**Configuration**:
+```typescript
+// src/lib/ai/image-config.ts
+'ai-server': {
+  '1:1': { width: 1328, height: 1328 },
+  '16:9': { width: 1664, height: 928 },
+  '9:16': { width: 928, height: 1664 },
+  '2:3': { width: 1024, height: 1536 },
+}
+```
+
+**API Call**:
+```typescript
+const response = await fetch(`${AI_SERVER_IMAGE_URL}/generate`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    prompt,
+    width: dimensions.width,
+    height: dimensions.height,
+    num_inference_steps: 4, // Lightning model
+    guidance_scale: 7.5,
+  }),
+  signal: AbortSignal.timeout(AI_SERVER_IMAGE_TIMEOUT),
+});
+```
+
+---
+
+## Part IV: Frontend Integration
+
+### 4.1 OptimizedImage Component
+
+**File**: `src/components/optimized-image.tsx`
+
+**Usage**:
+```tsx
+import { OptimizedImage } from '@/components/optimized-image';
+
+<OptimizedImage
+  imageUrl={story.imageUrl}
+  imageVariants={story.imageVariants}
+  alt="Story cover"
+  priority={true}  // Above-fold images
+  sizes="100vw"
+/>
+```
+
+**Implementation**:
+```tsx
+export function OptimizedImage({
+  imageUrl,
+  imageVariants,
+  alt,
+  priority = false,
+  sizes = '100vw',
+  className,
+}: OptimizedImageProps) {
+  if (!imageVariants || !imageVariants.variants.length) {
+    return <Image src={imageUrl} alt={alt} fill className={className} />;
+  }
+
+  // Group variants by format
+  const avifVariants = imageVariants.variants.filter(v => v.format === 'avif');
+  const jpegVariants = imageVariants.variants.filter(v => v.format === 'jpeg');
+
+  return (
+    <picture>
+      {/* AVIF primary */}
+      <source
+        type="image/avif"
+        srcSet={avifVariants.map(v => `${v.url} ${v.width}w`).join(', ')}
+        sizes={sizes}
+      />
+      {/* JPEG fallback */}
+      <source
+        type="image/jpeg"
+        srcSet={jpegVariants.map(v => `${v.url} ${v.width}w`).join(', ')}
+        sizes={sizes}
+      />
+      {/* Default img element */}
+      <Image
+        src={imageUrl}
+        alt={alt}
+        fill
+        className={className}
+        priority={priority}
+        sizes={sizes}
+      />
+    </picture>
+  );
+}
+```
+
+### 4.2 Helper Components
+
+```tsx
+// Story cover image
+export function StoryCoverImage({ story, priority = false }: Props) {
+  return (
+    <OptimizedImage
+      imageUrl={story.imageUrl}
+      imageVariants={story.imageVariants}
+      alt={story.title}
+      priority={priority}
+      sizes="(max-width: 768px) 100vw, 100vw"
+    />
+  );
+}
+
+// Character portrait
+export function CharacterImage({ character, className }: Props) {
+  return (
+    <OptimizedImage
+      imageUrl={character.imageUrl}
+      imageVariants={character.imageVariants}
+      alt={character.name}
+      className={className}
+      sizes="(max-width: 768px) 50vw, 33vw"
+    />
+  );
+}
+```
+
+---
+
+## Part V: Testing
+
+### 5.1 Test Image Generation
+
+**Script**: `scripts/test-imagen-generation.mjs`
+
+**Usage**:
+```bash
+dotenv --file .env.local run node scripts/test-imagen-generation.mjs
+```
+
+**Expected Output**:
+```
+[Image Generation] Starting story image generation...
+[Image Generation] Using provider: gemini
+[Image Generation] Aspect ratio: 16:9
+[Image Generation] ✓ Image generated (1024×576)
+[Image Generation] ✓ Original uploaded
+[Image Optimization] Processing 4 variants...
+[Image Optimization] ✓ Generated avif 672x384 (10KB)
+[Image Optimization] ✓ Generated avif 1344x768 (20KB)
+[Image Optimization] ✓ Generated jpeg 672x384 (30KB)
+[Image Optimization] ✓ Generated jpeg 1344x768 (55KB)
+[Image Optimization] Complete! Total: 115KB
+```
+
+### 5.2 Unit Tests
+
+```typescript
+describe('Image Generation', () => {
+  it('should select correct aspect ratio for image type', () => {
+    expect(getAspectRatioForImageType('story')).toBe('16:9');
+    expect(getAspectRatioForImageType('character')).toBe('1:1');
+    expect(getAspectRatioForImageType('comic-panel')).toBe('9:16');
+  });
+
+  it('should generate 4 variants', async () => {
+    const result = await generateStoryImage({
+      prompt: 'test image',
+      storyId: 'test',
+      imageType: 'scene',
+    });
+
+    expect(result.optimizedSet.variants).toHaveLength(4);
+    expect(result.optimizedSet.variants.filter(v => v.format === 'avif')).toHaveLength(2);
+    expect(result.optimizedSet.variants.filter(v => v.format === 'jpeg')).toHaveLength(2);
+  });
+});
+```
+
+---
+
+## Part VI: Prompt Engineering
+
+### 6.1 Effective Prompts
+
+**✅ Good**:
+```
+"A cyberpunk city street at night with neon signs reflecting on rain-soaked pavement,
+dramatic lighting from overhead signs, moody atmosphere, cinematic widescreen composition"
+
+"Ancient library interior with towering bookshelves reaching into darkness,
+magical glowing books floating, dust particles visible in shafts of light,
+mysterious atmosphere, square composition for portrait"
+```
+
+**❌ Poor**:
+```
+"A city" (too vague)
+"Cool scene" (not descriptive)
+"Make it look good" (no visual details)
+```
+
+### 6.2 Prompt Components
+
+**Structure**:
+1. **Subject**: What is the main focus?
+2. **Setting**: Where does this take place?
+3. **Mood/Atmosphere**: What emotion should it convey?
+4. **Lighting**: How is the scene lit?
+5. **Composition**: Cinematic hints for aspect ratio
+
+**Example Breakdown**:
+```
+Subject: "A young warrior standing at cliff edge"
+Setting: "overlooking vast fantasy kingdom below"
+Mood: "epic, determined, hopeful"
+Lighting: "golden hour sunset, dramatic backlighting"
+Composition: "cinematic widescreen, rule of thirds"
+
+Combined:
+"A young warrior standing at cliff edge overlooking vast fantasy kingdom below,
+epic and determined mood, golden hour sunset with dramatic backlighting,
+cinematic widescreen composition"
+```
+
+---
+
+## Conclusion
+
+The image development system provides:
+
+1. **Simple API**: Single endpoint for all image types
+2. **Automatic Optimization**: 4 variants generated automatically
+3. **Dual Provider Support**: Gemini (cloud) + AI Server (self-hosted)
+4. **Frontend Components**: Ready-to-use React components
+5. **Environment Isolation**: Separate dev/prod storage
+
+**Key Features**:
+- ✅ Type-based aspect ratio selection
+- ✅ Provider-specific configurations
+- ✅ Automatic 4-variant optimization
+- ✅ Graceful fallback to placeholders
+- ✅ Responsive image loading
+
+**Next Steps:**
+- See `image-specification.md` for core concepts and architecture
+- See `image-evaluation.md` for quality metrics and benchmarks

@@ -55,6 +55,33 @@ Fictures/
 
 ## Development Workflow
 
+### ✅ Code Quality Verification (MANDATORY)
+
+**CRITICAL: After completing ANY code changes, you MUST run type checks and linting.**
+
+This is a **mandatory** step for all code modifications:
+
+1. **After making changes in `apps/web/`**:
+   ```bash
+   cd apps/web
+   pnpm type-check    # Run TypeScript type checking
+   pnpm lint          # Run Biome linting
+   ```
+
+2. **After making changes in `apps/ai-server/`**:
+   ```bash
+   cd apps/ai-server
+   # Run Python type checking and linting as appropriate
+   ```
+
+**Why This Matters**:
+- Catches type errors immediately
+- Ensures code quality standards
+- Prevents broken code from being committed
+- Maintains codebase consistency
+
+**Exception**: Only skip validation if the user explicitly says "skip type check" or "don't run lint"
+
 ### Working in apps/web/
 ```bash
 cd apps/web
