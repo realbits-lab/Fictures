@@ -259,3 +259,198 @@ This section provides detailed metric descriptions organized by generation phase
 | **Scene Content Quality** | Overall assessment of individual scene execution using database summary field | Composite score ≥3.5/4.0 averaging all scene content metrics, summary demonstrates proper word count, cycle alignment, and emotional resonance | Composite score ≥3.0/4.0, summary shows phase-appropriate content and emotional impact | AI evaluation: Holistic review of scene content summary field for word count compliance, cycle phase alignment, and emotional resonance achievement |
 
 ---
+
+## Part III: Evaluation APIs
+
+### 3.1 API Implementation
+
+The metrics defined in this document are implemented as RESTful APIs under `/api/evaluation/`.
+
+**Location**: `apps/web/src/app/api/evaluation/`
+
+**Documentation**:
+- API Reference: `/api/evaluation/README.md`
+- Implementation Guide: `novels-development.md` (Part IV)
+- Detailed Specs: `docs/api/evaluation-api-structure.md`
+
+### 3.2 Available Endpoints
+
+**7 Core Evaluation Endpoints**:
+
+| API Endpoint | Metrics Evaluated | Section Reference |
+|--------------|-------------------|-------------------|
+| `POST /api/evaluation/story` | Moral Framework Clarity, Thematic Coherence, Genre Consistency | §2.1 Story Generation |
+| `POST /api/evaluation/characters` | Character Depth, Jeong System, Voice Distinctiveness | §2.2 Characters Generation |
+| `POST /api/evaluation/settings` | Symbolic Meaning, Sensory Details, Cycle Amplification | §2.3 Settings Generation |
+| `POST /api/evaluation/part` | Cycle Coherence, Conflict Definition, Seed Tracking | §2.4 Part Generation |
+| `POST /api/evaluation/chapter` | Single-Cycle Focus, Seed Tracking, Adversity Connection, Stakes Escalation, Momentum | §2.5 Chapter Generation |
+| `POST /api/evaluation/scene-summary` | Phase Distribution, Emotional Beat, Pacing Rhythm | §2.6 Scene Summary |
+| `POST /api/evaluation/scene-content` | Word Count Compliance, Cycle Alignment, Emotional Resonance | §2.7 Scene Content |
+
+**Evaluation Modes**:
+- `quick` - Automated metrics only (fast)
+- `standard` - Balanced automated + AI evaluation (default)
+- `thorough` - Comprehensive AI analysis (slower, detailed)
+
+### 3.3 Metric Scoring
+
+All metrics use standardized scoring:
+
+**Score Scales**:
+- **1-4 Scale**: AI evaluations (1=Weak, 2=Developing, 3=Effective, 4=Exceptional)
+- **0-100 Scale**: Percentage-based metrics (automated)
+- **Pass/Fail**: Boolean metrics (automated)
+
+**Pass Criteria**:
+- **Target**: Ideal score (aspire to achieve)
+- **Threshold**: Minimum passing score (must exceed)
+- **Passed**: `score >= threshold`
+
+**Example**:
+```json
+{
+  "moralFrameworkClarity": {
+    "score": 3.5,
+    "target": 3.0,
+    "threshold": 2.0,
+    "passed": true,
+    "feedback": "Moral Framework Clarity",
+    "method": "ai-evaluation"
+  }
+}
+```
+
+### 3.4 Response Format
+
+All evaluation endpoints return:
+
+```typescript
+{
+  evaluationId: string;        // Unique ID (e.g., "eval_1234567890_abc123")
+  timestamp: string;           // ISO 8601 timestamp
+  evaluationMode: string;      // "quick" | "standard" | "thorough"
+  overallScore: number;        // Average of all metric scores
+  passed: boolean;             // true if all metrics pass thresholds
+  metrics: {
+    [metricName]: {
+      score: number,           // Actual score achieved
+      target: number,          // Target score (from tables above)
+      threshold: number,       // Minimum passing score (from tables)
+      passed: boolean,         // score >= threshold
+      feedback: string,        // Metric description
+      method: string,          // "automated" | "ai-evaluation"
+      details?: object         // Metric-specific additional data
+    }
+  },
+  recommendations?: string[]   // Improvement suggestions (if failed)
+}
+```
+
+### 3.5 Usage Example
+
+**Evaluate Story Metrics** (§2.1):
+```bash
+curl -X POST http://localhost:3000/api/evaluation/story \
+  -H "Content-Type: application/json" \
+  -d '{
+    "storyId": "story_abc123",
+    "evaluationMode": "standard"
+  }'
+```
+
+**Response**:
+```json
+{
+  "evaluationId": "story_1731596400_xyz789",
+  "storyId": "story_abc123",
+  "timestamp": "2025-11-14T10:00:00.000Z",
+  "evaluationMode": "standard",
+  "overallScore": 3.67,
+  "passed": true,
+  "metrics": {
+    "moralFrameworkClarity": {
+      "score": 4,
+      "target": 3,
+      "threshold": 2,
+      "passed": true,
+      "feedback": "Moral Framework Clarity",
+      "method": "ai-evaluation",
+      "details": {
+        "virtuesIdentified": ["courage", "compassion", "honesty"],
+        "causalLogicPresent": true
+      }
+    },
+    "thematicCoherence": {
+      "score": 4,
+      "target": 4,
+      "threshold": 3,
+      "passed": true,
+      "feedback": "Thematic Coherence",
+      "method": "ai-evaluation"
+    },
+    "genreConsistency": {
+      "score": 3,
+      "target": 4,
+      "threshold": 3,
+      "passed": true,
+      "feedback": "Genre Consistency",
+      "method": "ai-evaluation"
+    }
+  },
+  "recommendations": []
+}
+```
+
+### 3.6 Batch Evaluation
+
+Evaluate multiple items at once:
+
+```bash
+# Batch evaluate all characters in a story
+curl -X POST http://localhost:3000/api/evaluation/characters \
+  -H "Content-Type: application/json" \
+  -d '{
+    "characterIds": ["char_1", "char_2", "char_3"],
+    "storyId": "story_abc123",
+    "evaluationMode": "thorough"
+  }'
+```
+
+### 3.7 Integration with Core Principles
+
+The evaluation APIs validate the **5 Core Principles** from `novels-specification.md`:
+
+1. **Cyclic Structure** - Validated by: part, chapter, scene-summary endpoints
+2. **Intrinsic Motivation** - Validated by: character, scene-content endpoints
+3. **Earned Consequence** - Validated by: chapter, part endpoints (seed tracking)
+4. **Character Transformation** - Validated by: character endpoint
+5. **Emotional Resonance** - Validated by: scene-content, scene-summary endpoints
+
+**Future Enhancement**:
+`POST /api/evaluation/core-principles/all` will provide comprehensive validation of all 5 principles for a complete story.
+
+### 3.8 Automated Quality Assurance
+
+The evaluation APIs enable automated quality loops during generation:
+
+```typescript
+// 1. Generate content
+const scene = await generateScene(params);
+
+// 2. Evaluate quality
+const evaluation = await fetch('/api/evaluation/scene-content', {
+  method: 'POST',
+  body: JSON.stringify({ sceneId: scene.id })
+}).then(r => r.json());
+
+// 3. Improve if needed
+if (!evaluation.passed) {
+  await improveScene(scene.id, evaluation.recommendations);
+}
+```
+
+This ensures all generated content meets the quality thresholds defined in this document before being shown to users.
+
+---
+
+---

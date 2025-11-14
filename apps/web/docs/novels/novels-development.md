@@ -1305,4 +1305,149 @@ For complete testing metrics, evaluation frameworks, and success criteria, see:
 
 ---
 
+## Part IV: Evaluation APIs
+
+### 4.7 Evaluation API Overview
+
+The evaluation APIs provide automated quality assessment for all phases of novel generation based on the metrics defined in `novels-evaluation.md`.
+
+**Base URL**: `/api/evaluation/`
+
+**Documentation**: See `/api/evaluation/README.md` for complete API reference.
+
+### 4.8 Available Endpoints
+
+**7 Core Evaluation Types**:
+
+| Endpoint | Evaluates | Key Metrics |
+|----------|-----------|-------------|
+| `POST /api/evaluation/story` | Story-level quality | Moral Framework Clarity, Thematic Coherence, Genre Consistency |
+| `POST /api/evaluation/characters` | Character quality (batch) | Character Depth, Jeong System, Voice Distinctiveness |
+| `POST /api/evaluation/settings` | Setting quality (batch) | Symbolic Meaning, Sensory Details, Cycle Amplification |
+| `POST /api/evaluation/part` | Part structure | Cycle Coherence, Conflict Definition, Seed Tracking |
+| `POST /api/evaluation/chapter` | Chapter quality | Single-Cycle Focus, Seed Tracking, Stakes Escalation, Momentum |
+| `POST /api/evaluation/scene-summary` | Scene summary | Phase Distribution, Emotional Beat, Pacing Rhythm |
+| `POST /api/evaluation/scene-content` | Scene content | Word Count Compliance, Cycle Alignment, Emotional Resonance |
+
+**Evaluation Modes**:
+- `quick` - Fast automated metrics only
+- `standard` - Balanced (default)
+- `thorough` - Comprehensive with AI analysis
+
+### 4.9 Response Format
+
+All evaluation endpoints return standardized responses:
+
+```typescript
+{
+  evaluationId: string;        // Unique evaluation ID
+  timestamp: string;           // ISO timestamp
+  evaluationMode: string;      // "quick" | "standard" | "thorough"
+  overallScore: number;        // Average score (0-4 scale)
+  passed: boolean;             // All thresholds met
+  metrics: {                   // Individual metric results
+    [metricName]: {
+      score: number;           // Actual score
+      target: number;          // Target score
+      threshold: number;       // Minimum passing score
+      passed: boolean;         // score >= threshold
+      feedback: string;        // Metric description
+      method: string;          // "automated" | "ai-evaluation"
+      details?: {...}          // Metric-specific data
+    }
+  },
+  recommendations?: string[]   // Improvement suggestions
+}
+```
+
+### 4.10 Usage Examples
+
+**Evaluate Story**:
+```typescript
+const response = await fetch('/api/evaluation/story', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    storyId: 'story_123',
+    evaluationMode: 'standard'
+  })
+});
+
+const result = await response.json();
+// result.overallScore: 3.5
+// result.passed: true
+// result.metrics.moralFrameworkClarity.score: 4
+```
+
+**Batch Evaluate Characters**:
+```typescript
+const response = await fetch('/api/evaluation/characters', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    characterIds: ['char_1', 'char_2', 'char_3'],
+    storyId: 'story_123',
+    evaluationMode: 'thorough'
+  })
+});
+
+const result = await response.json();
+// result.results[0].characterName: "Alice"
+// result.results[0].overallScore: 3.8
+// result.overallPassed: true
+```
+
+**Evaluate Scene Content**:
+```typescript
+const response = await fetch('/api/evaluation/scene-content', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ sceneId: 'scene_123' })
+});
+
+const result = await response.json();
+// result.metrics.wordCountCompliance.withinRange: true
+// result.metrics.emotionalResonance.emotionIntensity: 3.2
+```
+
+### 4.11 Integration with Generation Pipeline
+
+Evaluation APIs can be integrated into the generation pipeline for automated quality assurance:
+
+1. **After Story Generation**: Evaluate moral framework and thematic coherence
+2. **After Characters**: Batch evaluate all characters for depth and voice
+3. **After Settings**: Batch evaluate symbolic meaning and sensory richness
+4. **After Chapters**: Evaluate cycle coherence and seed tracking
+5. **After Scenes**: Evaluate word count, alignment, and emotional resonance
+
+**Automated Quality Loop**:
+```typescript
+// Generate scene
+const scene = await generateScene(params);
+
+// Evaluate quality
+const evaluation = await evaluateSceneContent({ sceneId: scene.id });
+
+// Improve if needed
+if (!evaluation.passed) {
+  await improveScene(scene.id, evaluation.recommendations);
+}
+```
+
+### 4.12 Future Enhancements (Phase 2)
+
+Planned features:
+- **Batch Operations**: `/api/evaluation/batch/` - Evaluate multiple types
+- **Story Pipeline**: `/api/evaluation/batch/{storyId}` - Full story evaluation
+- **Reports**: `/api/evaluation/report/{storyId}` - Comprehensive reports
+- **Core Principles**: `/api/evaluation/core-principles/all` - Validate 5 principles
+- **History**: `/api/evaluation/story/{storyId}/history` - Track improvements
+- **Comparison**: `/api/evaluation/report/compare` - Compare multiple stories
+
+---
+
+**End of Part IV: Evaluation APIs**
+
+---
+
 **End of Part III: Iterative Improvement Methodology**

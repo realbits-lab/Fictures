@@ -1,0 +1,270 @@
+================================================================================
+COMPLETE TYPE FILES REFERENCE - QUICK LOOKUP
+================================================================================
+
+GLOBAL SHARED TYPES
+================================================================================
+File Path                           Lines   Purpose
+─────────────────────────────────────────────────────────────────────────────
+src/types/index.ts                   154   Type org index + re-exports
+src/types/reading-history.ts          67   Reading history tracking types
+src/types/next-auth.d.ts              ?    NextAuth augmentation (not read)
+                                    ─────
+SUBTOTAL                             221
+
+API LAYER TYPES
+================================================================================
+File Path                           Lines   Purpose
+─────────────────────────────────────────────────────────────────────────────
+src/app/api/studio/types.ts          404   Story generation API contracts
+                                        8   Zod validation schemas mixed in
+src/app/api/evaluation/types.ts      476   Evaluation API contracts
+                                        0   Zod validation schemas (none)
+                                    ─────
+SUBTOTAL                             880
+
+SERVICE LAYER TYPES
+================================================================================
+File Path                           Lines   Purpose
+─────────────────────────────────────────────────────────────────────────────
+src/lib/studio/generators/types.ts   495   Generator function contracts
+                                    ─────
+SUBTOTAL                             495
+
+DOMAIN LAYER TYPES
+================================================================================
+File Path                           Lines   Purpose
+─────────────────────────────────────────────────────────────────────────────
+src/lib/ai/types/image.ts             68   Image generation domain types
+                                    ─────
+SUBTOTAL                              68
+
+VALIDATION & QUALITY SCHEMAS
+================================================================================
+
+Evaluation Schemas (101 lines)
+─────────────────────────────────────────────────────────────────────────────
+src/lib/schemas/evaluation/index.ts          Re-exports from below
+src/lib/schemas/evaluation/metrics.ts     96 Evaluation scoring framework
+src/lib/schemas/evaluation/results.ts     72 Evaluation result structures
+src/lib/schemas/evaluation/requests.ts    38 Evaluation request parameters
+src/lib/schemas/evaluation/story-evaluation.ts 101 Story-specific evaluation
+                                         ─────
+Subtotal: 101 + 101 = 202 lines
+
+Improvement Schemas (74 lines)
+─────────────────────────────────────────────────────────────────────────────
+src/lib/schemas/improvement/index.ts         Re-exports from below
+src/lib/schemas/improvement/change-log.ts 10 Change tracking
+src/lib/schemas/improvement/requests.ts   34 Improvement request parameters
+src/lib/schemas/improvement/results.ts    30 Improvement result structures
+                                         ─────
+Subtotal: 74 lines
+
+Validation Schemas (64 lines)
+─────────────────────────────────────────────────────────────────────────────
+src/lib/schemas/validation/index.ts          Re-exports from below
+src/lib/schemas/validation/full-validation.ts 16 Complete validation
+src/lib/schemas/validation/requests.ts    16 Validation request parameters
+src/lib/schemas/validation/results.ts     32 Validation result structures
+                                         ─────
+Subtotal: 64 lines
+
+Nested Zod Schemas (133 lines)
+─────────────────────────────────────────────────────────────────────────────
+src/lib/schemas/nested-zod/index.ts       32 Exports all nested schemas
+src/lib/schemas/nested-zod/personality.ts 23 Character personality
+src/lib/schemas/nested-zod/physical-description.ts 33 Character appearance
+src/lib/schemas/nested-zod/voice-style.ts 33 Character voice patterns
+src/lib/schemas/nested-zod/setting-elements.ts 133 Setting sensory details
+                                         ─────
+Subtotal: 133 lines
+
+AI Schemas (674 lines)
+─────────────────────────────────────────────────────────────────────────────
+src/lib/schemas/ai/index.ts              674 Story, Character, Setting, Part,
+                                             Chapter, Scene AI schemas
+                                         ─────
+Subtotal: 674 lines
+
+Generated Zod Schemas (376 lines)
+─────────────────────────────────────────────────────────────────────────────
+src/lib/schemas/generated-zod/index.ts   376 Auto-generated insert/select
+                                             schemas from Drizzle
+                                         ─────
+Subtotal: 376 lines
+
+Database Schema (1843 lines)
+─────────────────────────────────────────────────────────────────────────────
+src/lib/schemas/drizzle/index.ts       1843 Drizzle ORM table definitions
+                                             SINGLE SOURCE OF TRUTH
+                                         ─────
+Subtotal: 1843 lines
+
+SCHEMAS TOTAL: 202 + 74 + 64 + 133 + 674 + 376 + 1843 = 3366 lines
+
+================================================================================
+MASTER TABLE - ALL TYPE FILES
+================================================================================
+
+LAYER         FILE                                    LINES  SCHEMAS  PURPOSE
+─────────────────────────────────────────────────────────────────────────────
+SHARED        src/types/index.ts                       154      0    Type index
+SHARED        src/types/reading-history.ts              67      0    Reading history
+API           src/app/api/studio/types.ts              404      8    Studio API
+API           src/app/api/evaluation/types.ts          476      0    Evaluation API
+SERVICE       src/lib/studio/generators/types.ts       495      0    Generators
+DOMAIN        src/lib/ai/types/image.ts                 68      0    Image types
+SCHEMA        src/lib/schemas/evaluation/*             202      Y    Evaluation validation
+SCHEMA        src/lib/schemas/improvement/*             74      Y    Improvement validation
+SCHEMA        src/lib/schemas/validation/*              64      Y    Data validation
+SCHEMA        src/lib/schemas/nested-zod/*             133      Y    Nested components
+SCHEMA        src/lib/schemas/ai/index.ts              674      Y    AI schemas
+SCHEMA        src/lib/schemas/generated-zod/index.ts   376      Y    Generated schemas
+SCHEMA        src/lib/schemas/drizzle/index.ts        1843      Y    DB definitions (SSOT)
+─────────────────────────────────────────────────────────────────────────────
+TOTAL                                                 4929     20+   All type definitions
+
+================================================================================
+TYPE FILE DEPENDENCY GRAPH
+================================================================================
+
+DATABASE LAYER (SSOT)
+src/lib/schemas/drizzle/index.ts (1843 lines)
+    ↓ (createInsertSchema/createSelectSchema)
+src/lib/schemas/generated-zod/index.ts (376 lines)
+    ↓ (.pick() + .extend())
+src/lib/schemas/ai/index.ts (674 lines)
+    ↓ (infer types)
+Used by: /src/app/api/studio/types.ts, services, components
+
+EVALUATION & QUALITY LAYERS
+src/lib/schemas/evaluation/*.ts (202 lines)
+    ↓ (infer types)
+src/types/index.ts (re-exports)
+    ↓
+Used by: /src/app/api/evaluation/types.ts(?), services
+
+NESTED COMPONENTS (REUSED)
+src/lib/schemas/nested-zod/*.ts (133 lines)
+    ↓ (used by)
+src/lib/schemas/ai/index.ts
+src/lib/schemas/generated-zod/index.ts
+src/lib/schemas/drizzle/index.ts
+
+API CONTRACTS
+src/app/api/studio/types.ts
+    ├── Imports from: src/lib/schemas/generated-zod
+    ├── Imports from: src/lib/constants/
+    └── Defines: Zod schemas (SHOULD BE IN src/lib/schemas/studio/)
+
+src/app/api/evaluation/types.ts
+    ├── Standalone (no schema imports)
+    └── May duplicate: src/lib/schemas/evaluation/
+
+GENERATORS (SERVICE LAYER)
+src/lib/studio/generators/types.ts
+    ├── Imports from: src/lib/schemas/ai
+    ├── Imports from: src/lib/schemas/generated-zod
+    └── Defines: Generator*Params, Generator*Result types
+
+================================================================================
+CRITICAL LOCATIONS FOR REFACTORING
+================================================================================
+
+1. TYPE DUPLICATION HOTSPOT
+   - /src/app/api/evaluation/types.ts (476 lines)
+   - /src/lib/schemas/evaluation/ (202 lines)
+   - CONFLICT: Unknown which is authoritative
+   - ACTION: Audit usage, establish single SSOT
+
+2. SCHEMA LOCATION ISSUE
+   - /src/app/api/studio/types.ts contains 8 Zod schemas
+   - SHOULD BE: /src/lib/schemas/studio/
+   - IMPACT: Violates separation of concerns
+   - ACTION: Move all Zod schemas to lib/schemas/
+
+3. EVALUATION/VALIDATION SCHEMAS
+   - /src/lib/schemas/evaluation/ (202 lines)
+   - /src/lib/schemas/validation/ (64 lines)
+   - /src/lib/schemas/improvement/ (74 lines)
+   - QUESTION: Are these used or redundant?
+   - ACTION: Audit actual usage in routes
+
+4. RE-EXPORT COMPLEXITY
+   - /src/types/index.ts re-exports evaluation/validation types
+   - But /src/app/api/evaluation/types.ts defines evaluation types
+   - QUESTION: Which should consumers import from?
+   - ACTION: Document and enforce import paths
+
+================================================================================
+SCHEMA USAGE AUDIT CHECKLIST
+================================================================================
+
+Evaluate which schemas are actually used:
+□ evaluationMetricsSchema - used where?
+□ evaluationResultSchema - used where?
+□ analysisPointSchema - used where?
+□ categoryAnalysisSchema - used where?
+□ validationResultSchema - used where?
+□ validationRequestSchema - used where?
+□ improvementRequestSchema - used where?
+□ improvementResultSchema - used where?
+
+If any are unused:
+□ Remove redundant schema definitions
+□ Move SSOT to appropriate location (likely API types)
+□ Update imports in all consumers
+
+If all are used:
+□ Consolidate to single location
+□ Establish clear SSOT
+□ Document usage
+
+================================================================================
+RECOMMENDED DIRECTORY STRUCTURE (FUTURE)
+================================================================================
+
+src/lib/schemas/
+├── index.ts                         # Central SSOT documentation
+├── drizzle/
+│   └── index.ts                     # Database definitions (SSOT)
+├── generated-zod/
+│   └── index.ts                     # Auto-generated (do not edit)
+├── ai/
+│   └── index.ts                     # AI-generated fields
+├── studio/                          # ← NEW: Move studio schemas here
+│   ├── story.ts
+│   ├── character.ts
+│   ├── setting.ts
+│   ├── part.ts
+│   ├── chapter.ts
+│   ├── scene.ts
+│   └── index.ts
+├── evaluation/                      # Consolidate ALL evaluation here
+│   ├── metrics.ts
+│   ├── results.ts
+│   ├── requests.ts
+│   └── index.ts
+├── validation/                      # Consolidate ALL validation here
+│   ├── results.ts
+│   ├── requests.ts
+│   └── index.ts
+├── improvement/                     # Consolidate ALL improvement here
+│   ├── results.ts
+│   ├── requests.ts
+│   └── index.ts
+└── nested-zod/
+    ├── personality.ts
+    ├── physical-description.ts
+    ├── voice-style.ts
+    ├── setting-elements.ts
+    └── index.ts
+
+src/app/api/studio/
+└── types.ts                         # ONLY TypeScript types (import schemas from lib/schemas/studio/)
+
+src/app/api/evaluation/
+└── types.ts                         # ONLY TypeScript types (import schemas from lib/schemas/evaluation/)
+
+================================================================================
