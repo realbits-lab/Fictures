@@ -14,7 +14,7 @@ import {
     chapters as chaptersTable,
     scenes as scenesTable,
     stories as storiesTable,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/drizzle";
 
 export async function GET(
     request: NextRequest,

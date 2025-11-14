@@ -9,7 +9,7 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, parts, settings, stories } from "@/lib/db/schema";
+import { characters, parts, settings, stories } from "@/lib/schemas/drizzle";
 import { generatePart } from "../generators/part-generator";
 import type {
     GeneratorPartParams,

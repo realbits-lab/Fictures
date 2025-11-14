@@ -6,7 +6,7 @@ import {
     publishingSchedules,
     scenes,
     scheduledPublications,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/drizzle";
 
 interface CreateScheduleParams {
     storyId: string;

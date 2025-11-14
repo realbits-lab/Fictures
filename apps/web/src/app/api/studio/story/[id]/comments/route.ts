@@ -6,7 +6,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { getCache } from "@/lib/cache/redis-cache";
 import { db } from "@/lib/db";
-import { comments, stories, users } from "@/lib/db/schema";
+import { comments, stories, users } from "@/lib/schemas/drizzle";
 
 export const runtime = "nodejs";
 

@@ -49,20 +49,22 @@
 
 import type { z } from "zod";
 import type { ChapterArcPosition } from "@/lib/constants/arc-positions";
-import type { OptimizedImageSet } from "@/lib/services/image-generation";
 import type {
     AiChapterType,
     AiCharacterType,
     AiPartType,
     AiSceneSummaryType,
     AiSettingType,
+} from "@/lib/schemas/ai";
+import type {
     Chapter,
     Character,
     Part,
     Scene,
     Setting,
     Story,
-} from "./zod-schemas";
+} from "@/lib/schemas/generated-zod";
+import type { OptimizedImageSet } from "@/lib/services/image-generation";
 
 // ============================================================================
 // AI Provider Types

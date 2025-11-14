@@ -51,7 +51,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "@/lib/studio/generators/zod-schemas";
+} from "@/lib/schemas/generated-zod";
 
 // ============================================================================
 // Story Generation

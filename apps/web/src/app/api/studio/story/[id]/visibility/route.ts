@@ -2,7 +2,7 @@ import { and, eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { stories } from "@/lib/db/schema";
+import { stories } from "@/lib/schemas/drizzle";
 
 interface RouteParams {
     id: string;

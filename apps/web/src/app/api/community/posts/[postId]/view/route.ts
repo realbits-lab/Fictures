@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { communityPosts, postViews } from "@/lib/db/schema";
+import { communityPosts, postViews } from "@/lib/schemas/drizzle";
 
 /**
  * POST /api/community/posts/[postId]/view

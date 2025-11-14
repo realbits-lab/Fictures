@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, scenes, stories } from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/schemas/drizzle";
 
 // GET /api/scenes/[id]/write - Get scene data for writing
 export async function GET(

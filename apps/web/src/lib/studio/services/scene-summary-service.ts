@@ -16,7 +16,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/drizzle";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
     GeneratorSceneSummaryParams,

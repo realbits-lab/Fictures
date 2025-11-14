@@ -7,7 +7,7 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, stories } from "@/lib/db/schema";
+import { characters, stories } from "@/lib/schemas/drizzle";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
     GeneratorCharactersParams,

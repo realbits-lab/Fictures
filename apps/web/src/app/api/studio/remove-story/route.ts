@@ -28,7 +28,7 @@ import {
     sceneViews,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/drizzle";
 import { getEnvironmentPrefix } from "@/lib/utils/blob-path";
 
 export const maxDuration = 60; // Allow up to 60 seconds for complete cleanup

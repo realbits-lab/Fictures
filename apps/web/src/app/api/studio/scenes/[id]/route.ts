@@ -9,7 +9,7 @@ import {
 } from "@/lib/cache/unified-invalidation";
 import { db } from "@/lib/db";
 import { RelationshipManager } from "@/lib/db/relationships";
-import { chapters, scenes, stories } from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/schemas/drizzle";
 
 export const runtime = "nodejs";
 

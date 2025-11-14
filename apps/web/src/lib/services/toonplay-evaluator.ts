@@ -18,7 +18,7 @@ import { gateway } from "@ai-sdk/gateway";
 import { generateObject } from "ai";
 import { z } from "zod";
 import type { ComicToonplay } from "@/lib/ai/toonplay-converter";
-import type { characters, scenes, settings } from "@/lib/db/schema";
+import type { characters, scenes, settings } from "@/lib/schemas/drizzle";
 
 // ============================================
 // EVALUATION SCHEMA

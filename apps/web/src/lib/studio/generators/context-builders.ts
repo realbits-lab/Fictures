@@ -14,13 +14,13 @@
  */
 
 import type {
-    Chapter,
-    Character,
-    Part,
-    Scene,
-    Setting,
-    Story,
-} from "./zod-schemas";
+	Chapter,
+	Character,
+	Part,
+	Scene,
+	Setting,
+	Story,
+} from "@/lib/schemas/generated-zod";
 
 // =============================================================================
 // Story Context Builders (Phase 1)

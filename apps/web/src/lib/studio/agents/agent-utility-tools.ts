@@ -2,7 +2,7 @@ import { tool } from "ai";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { apiKeys } from "@/lib/db/schema";
+import { apiKeys } from "@/lib/schemas/drizzle";
 import {
     getStudioAgentChat,
     updateStudioAgentChatPhase,

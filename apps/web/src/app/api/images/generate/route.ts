@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, scenes, stories } from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/schemas/drizzle";
 import {
     buildStoryImagePrompt,
     generateStoryImage,

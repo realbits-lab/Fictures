@@ -10,7 +10,7 @@ import {
 } from "@/lib/cache/unified-invalidation";
 import { db } from "@/lib/db";
 import { getStoryWithStructure } from "@/lib/db/queries";
-import { characters, settings, stories } from "@/lib/db/schema";
+import { characters, settings, stories } from "@/lib/schemas/drizzle";
 
 export async function GET(
     request: NextRequest,

@@ -8,8 +8,8 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import type { characters, scenes, settings } from "@/lib/db/schema";
-import { comicPanels, scenes as scenesTable } from "@/lib/db/schema";
+import type { characters, scenes, settings } from "@/lib/schemas/drizzle";
+import { comicPanels, scenes as scenesTable } from "@/lib/schemas/drizzle";
 import {
     buildPanelCharacterPrompts,
     extractKeyPhysicalTraits,

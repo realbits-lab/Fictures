@@ -4,7 +4,7 @@ import * as yaml from "js-yaml";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { RelationshipManager } from "@/lib/db/relationships";
-import { characters, parts, settings, stories } from "@/lib/db/schema";
+import { characters, parts, settings, stories } from "@/lib/schemas/drizzle";
 import { generateStoryImage } from "@/lib/services/image-generation";
 import { AI_MODELS } from "./config";
 import type {

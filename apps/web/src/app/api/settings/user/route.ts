@@ -3,7 +3,7 @@ import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { userPreferences } from "@/lib/db/schema";
+import { userPreferences } from "@/lib/schemas/drizzle";
 
 export const runtime = "nodejs";
 

@@ -16,7 +16,7 @@ import type {
 import {
     type AiSceneImprovementType,
     AiSceneImprovementZodSchema,
-} from "./zod-schemas";
+} from "@/lib/schemas/ai";
 
 /**
  * Evaluate and iteratively improve a scene

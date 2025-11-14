@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { chapters, scenes, stories } from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/schemas/drizzle";
 
 /**
  * GET /api/test/cache-performance/stories

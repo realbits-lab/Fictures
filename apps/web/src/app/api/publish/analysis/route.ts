@@ -2,7 +2,7 @@ import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, stories } from "@/lib/db/schema";
+import { chapters, stories } from "@/lib/schemas/drizzle";
 
 export async function GET(request: NextRequest) {
     try {

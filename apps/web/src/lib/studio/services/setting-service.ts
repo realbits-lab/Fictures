@@ -7,7 +7,7 @@
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { settings, stories } from "@/lib/db/schema";
+import { settings, stories } from "@/lib/schemas/drizzle";
 import { generateSettings } from "../generators/settings-generator";
 import type {
     GeneratorSettingsParams,

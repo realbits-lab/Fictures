@@ -20,7 +20,7 @@
 import { eq } from "drizzle-orm";
 import { GENRE } from "@/lib/constants/genres";
 import { db } from "@/lib/db";
-import { chapters, scenes, stories } from "@/lib/db/schema";
+import { chapters, scenes, stories } from "@/lib/schemas/drizzle";
 import { improveScene } from "../generators/scene-improvement-generator";
 import type {
     GeneratorSceneImprovementParams,

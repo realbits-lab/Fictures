@@ -29,14 +29,14 @@ import { STORY_TONES } from "@/lib/constants/tones";
 
 // Import Zod-derived types for nested JSON schemas (SSOT for nested structures)
 import type {
-    AdversityElementsType,
-    ConsequenceElementsType,
-    PersonalityType,
-    PhysicalDescriptionType,
-    SensoryType,
-    VirtueElementsType,
-    VoiceStyleType,
-} from "@/lib/studio/generators/zod-schemas";
+	AdversityElementsType,
+	ConsequenceElementsType,
+	PersonalityType,
+	PhysicalDescriptionType,
+	SensoryType,
+	VirtueElementsType,
+	VoiceStyleType,
+} from "@/lib/schemas/nested-zod";
 
 export const adversityType = pgEnum(
     "adversity_type",

@@ -13,7 +13,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/drizzle";
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
     GeneratorSceneContentParams,

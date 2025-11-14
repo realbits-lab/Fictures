@@ -4,17 +4,6 @@
 
 This document outlines a comprehensive evaluation strategy for the novels generation system using the Adversity-Triumph Engine. The evaluation framework is **directly synchronized with the Core Principles** defined in the specification, ensuring that all testing validates the fundamental principles of the narrative engine.
 
-**Key Features:**
-- **Perfect 1:1 Core Principle Mapping**: Each Core Principle has dedicated Evaluation Objective, Success Criteria table, and Qualitative Rubric
-- **AI-Based Evaluation**: All metrics evaluated by AI models, enabling automated quality assessment at scale
-- **Unified Table Format**: All metrics use consistent 5-column format (Metric | Description | Target | Threshold | Method)
-- **Quantitative & Qualitative Framework**: Comprehensive measurement across structure, quality, and emotional impact
-- **Iterative Improvement**: Data-driven prompt optimization based on Core Principle adherence
-
-**Document Structure:**
-- **Part I (Testing Objectives)**: Evaluation objectives, success criteria tables, and qualitative framework
-- **Part II (Metrics & Evaluation)**: Detailed metric descriptions by generation phase
-
 **Related Documents:**
 - 📖 **Specification** (`novels-specification.md`): Core Principles (section 1.5), data model, and theoretical foundation
 - 📋 **Development Guide** (`novels-development.md`): API implementations and prompt specifications

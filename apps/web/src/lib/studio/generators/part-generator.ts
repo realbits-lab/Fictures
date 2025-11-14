@@ -22,7 +22,7 @@ import type {
     GeneratorPartResult,
     PartPromptParams,
 } from "./types";
-import { type AiPartType, AiPartZodSchema } from "./zod-schemas";
+import { type AiPartType, AiPartZodSchema } from "@/lib/schemas/ai";
 
 /**
  * Generate ONE next story part with full context

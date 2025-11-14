@@ -10,7 +10,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
-import type { Scene } from "@/lib/studio/generators/zod-schemas";
+import type { Scene } from "@/lib/schemas/generated-zod";
 import { sceneImprovementService } from "@/lib/studio/services";
 import type {
     ApiSceneImprovementErrorResponse,

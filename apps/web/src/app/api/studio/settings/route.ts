@@ -12,7 +12,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
-import { settings, stories } from "@/lib/db/schema";
+import { settings, stories } from "@/lib/schemas/drizzle";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import { settingService } from "@/lib/studio/services";
 import type {

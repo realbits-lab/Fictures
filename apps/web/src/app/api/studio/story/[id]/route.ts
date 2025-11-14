@@ -14,7 +14,7 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/drizzle";
 
 export const runtime = "nodejs";
 
