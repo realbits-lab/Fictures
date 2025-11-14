@@ -606,7 +606,7 @@ tail -100 logs/dev-server.log | grep -E "(StoryCache|Write API)"
 
 ## 📊 Database Schema (Adversity-Triumph Engine)
 
-**Complete schema:** `src/lib/db/schema.ts`
+**Complete schema:** `src/lib/schemas/database/index.ts`
 
 - **stories:** imageUrl, imageVariants, summary, tone, moralFramework, partIds, chapterIds, sceneIds
 - **chapters:** Adversity-Triumph cycle (arcPosition, adversityType, virtueType, seedsPlanted, seedsResolved)

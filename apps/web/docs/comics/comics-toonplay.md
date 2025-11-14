@@ -75,7 +75,7 @@ Every panel in a toonplay must specify:
 | **Panel Number** | Sequential identifier | `panel_number: number` |
 | **Shot Type** | Camera framing | `shot_type: enum` (establishing_shot, wide_shot, medium_shot, close_up, etc.) |
 | **Description** | Visual instructions for AI/artist | `description: string` (200-400 chars) |
-| **Characters Visible** | Who appears in frame | `characters_visible: string[]` |
+| **Characters Visible** | Who appears in frame (character IDs from database) | `characters_visible: string[]` |
 | **Character Poses** | Specific body language per character | `character_poses: { [character_id]: string }` |
 | **Setting Focus** | Which part of setting is emphasized | `setting_focus: string` |
 | **Lighting** | Mood and atmosphere | `lighting: string` |
@@ -240,6 +240,9 @@ const prompt = `Professional ${genre} comic panel, ${shotType}, ${cameraAngle}.
 SCENE: ${settingFocus}. ${settingAtmosphere}.
 
 CHARACTERS: ${characterPrompts}
+// characterPrompts built from database: characters.physical_description
+// Format: age + appearance + distinctiveFeatures + style
+// Example: "20-year-old male hunter, short black hair with glowing blue eyes, wearing a black trench coat"
 
 LIGHTING: ${lighting}
 
@@ -260,7 +263,9 @@ VISUAL STYLE:
 - Similar to Naver COMIC/Webtoon quality
 
 CRITICAL CHARACTER CONSISTENCY:
-Maintain exact character appearances - ${keyTraits}`;
+Maintain exact character appearances from database - ${keyTraits}
+// keyTraits sourced from characters.physical_description (age, appearance, distinctiveFeatures, style)
+`;
 ```
 
 ### Visual Grammar Lexicon
@@ -284,23 +289,65 @@ This table provides the **technical cinematography commands** used in panel desc
 
 ### Character Consistency Rules
 
-**CRITICAL**: For multi-panel stories, character traits must be **identical** across all prompts.
+**CRITICAL**: For multi-panel stories, character traits must be **identical** across all prompts to prevent visual drift.
 
-✅ **GOOD** (Consistent):
+#### Database-Driven Character Descriptions
+
+All character visual descriptions MUST be sourced from the `characters` table in the database:
+
 ```typescript
-characterPrompts = "A 20-year-old male hunter, short black hair, glowing blue eyes, wearing a black trench coat"
-// Use this EXACT string in every panel where this character appears
+// Database Schema: characters table
+{
+  id: string;
+  name: string;
+  physical_description: {
+    age: string;              // "mid-30s", "elderly", "young adult", "20 years old"
+    appearance: string;       // Overall physical look
+    distinctiveFeatures: string;  // Memorable visual details
+    style: string;            // How they dress/present themselves
+  }
+}
 ```
 
-❌ **BAD** (Inconsistent - causes visual drift):
+**Character Prompt Generation** (`buildPanelCharacterPrompts()` function):
+
+The function constructs consistent character descriptions by combining fields from `physical_description`:
+
 ```typescript
-Panel 1: "young man in a jacket"
-Panel 2: "male hunter in a coat"
-Panel 3: "guy with dark hair wearing black"
+// Example: Constructing character prompt from database
+const character = await db.characters.findUnique({ where: { id: characterId } });
+const { age, appearance, distinctiveFeatures, style } = character.physical_description;
+
+// Build consistent prompt string
+const characterPrompt = `${age} ${appearance}, ${distinctiveFeatures}, ${style}`;
+// Result: "20-year-old male hunter, short black hair with glowing blue eyes, wearing a black trench coat"
+```
+
+✅ **GOOD** (Database-Driven Consistency):
+```typescript
+// Panel 1, 2, 3, etc. - ALL panels use the EXACT same prompt from database
+characterPrompt = buildCharacterPrompt(character.physical_description);
+// "A 20-year-old male hunter, short black hair, glowing blue eyes, wearing a black trench coat"
+
+// This EXACT string is used in every panel where this character appears
+```
+
+❌ **BAD** (Manual/Inconsistent - causes visual drift):
+```typescript
+Panel 1: "young man in a jacket"  // Missing key traits
+Panel 2: "male hunter in a coat"  // Different phrasing
+Panel 3: "guy with dark hair wearing black"  // Lost distinctive features
 // Different words = AI generates different-looking characters
 ```
 
-This is handled automatically in `buildPanelCharacterPrompts()` function.
+**Implementation Requirements**:
+1. **ALWAYS** fetch character data from `characters` table before generating comic panels
+2. **NEVER** manually write character descriptions - use database `physical_description` field
+3. **Construct prompts** by combining: `age + appearance + distinctiveFeatures + style`
+4. **Reuse exact string** across all panels featuring that character
+5. **Cache** character prompts at scene level to avoid repeated database queries
+
+This is handled automatically in `buildPanelCharacterPrompts()` function in `comic-panel-generator.ts`.
 
 ---
 
@@ -543,7 +590,12 @@ Each category scores 1 (Poor) to 5 (Excellent). Final score is weighted average.
 - `src/lib/ai/toonplay-converter.ts` - Core toonplay generation
 - `src/lib/services/toonplay-evaluator.ts` - Quality evaluation rubric (NEW)
 - `src/lib/services/toonplay-improvement-loop.ts` - Iterative improvement system (NEW)
-- `src/lib/ai/comic-panel-generator.ts` - Image generation pipeline
+- `src/lib/ai/comic-panel-generator.ts` - Image generation pipeline (includes `buildPanelCharacterPrompts()`)
+
+**Database Integration**:
+- `drizzle/schema.ts` - Database schema with `characters` table
+- `characters.physical_description` field (JSONB): `{ age, appearance, distinctiveFeatures, style }`
+- Character prompts built from database ensure visual consistency across all panels
 
 ### Process Flow (Updated with Quality Evaluation)
 
@@ -576,8 +628,11 @@ Each category scores 1 (Poor) to 5 (Excellent). Final score is weighted average.
       - Detailed rubric breakdown
    ↓
 3. generateComicPanels()
+   - Fetches character data from database (characters table)
+   - Builds character prompts from physical_description (age + appearance + distinctiveFeatures + style)
+   - Caches character prompts for consistency across all panels
    - Iterates through toonplay.panels
-   - Builds image prompt for each panel using visual grammar
+   - Builds image prompt for each panel using visual grammar + database character descriptions
    - Generates images via Gemini 2.5 Flash Image (1344×768, 7:4)
    - Creates 4 optimized variants (AVIF, JPEG × 2 sizes)
    ↓
@@ -624,11 +679,55 @@ comic_toonplay JSONB  -- Stores the generated toonplay specification
 - ✅ Debugging (compare toonplay vs actual panels)
 - ✅ Versioning (track what toonplay generated current panels)
 
+### Character Consistency Implementation
+
+**Database-Driven Character Prompts**:
+
+To ensure perfect visual consistency across all panels, character descriptions are sourced from the database:
+
+1. **Data Source**: `characters` table, `physical_description` field (JSONB)
+   ```typescript
+   // Database field structure
+   physical_description: {
+     age: string;              // "mid-30s", "20 years old", "elderly"
+     appearance: string;       // Overall physical look
+     distinctiveFeatures: string;  // Memorable visual details
+     style: string;            // Clothing/presentation style
+   }
+   ```
+
+2. **Character Prompt Construction** (`buildPanelCharacterPrompts()` function):
+   ```typescript
+   // Pseudo-code implementation
+   async function buildPanelCharacterPrompts(characterIds: string[]): Promise<string> {
+     const characters = await db.characters.findMany({
+       where: { id: { in: characterIds } }
+     });
+
+     return characters.map(char => {
+       const { age, appearance, distinctiveFeatures, style } = char.physical_description;
+       return `${age} ${appearance}, ${distinctiveFeatures}, ${style}`;
+     }).join('; ');
+   }
+   ```
+
+3. **Caching Strategy**:
+   - Character prompts are built once per scene
+   - Cached for reuse across all panels in that scene
+   - Ensures identical descriptions in every panel
+
+4. **Why This Matters**:
+   - AI image generators are highly sensitive to prompt wording
+   - Even minor variations ("young man" vs "20-year-old male") cause visual drift
+   - Database-driven approach guarantees exact string matching
+   - Prevents character appearance inconsistencies across panels
+
 ### Related Documentation
 
 - **Generation System**: `docs/comics/comics-generation.md`
 - **Architecture**: `docs/comics/comics-architecture.md`
 - **Image Optimization**: `docs/image/image-optimization.mdx`
+- **Character Schema**: `docs/novels/novels-specification.md` - Character data model
 - **Codebase Structure**: `src/lib/ai/` directory
 
 ---
@@ -650,12 +749,13 @@ SHOT_TYPE. CAMERA_ANGLE. [Subject with consistent traits] [action/pose], [emotio
 [Setting context]. [Lighting description].
 ```
 
-**Example**:
+**Example** (using database-driven character description):
 ```
-CLOSE-UP. Low angle. The 20-year-old male hunter, short black hair, glowing blue eyes,
-wearing a black trench coat, clutches his chest, fearful. In a dark alley.
+CLOSE-UP. Low angle. [Character from DB: 20-year-old male hunter, short black hair with glowing blue eyes, wearing a black trench coat], clutches his chest, fearful. In a dark alley.
 Harsh overhead fluorescent light creating shadows.
 ```
+
+**Character description source**: `characters.physical_description` (age + appearance + distinctiveFeatures + style)
 
 ### Common Mistakes to Avoid
 
@@ -786,5 +886,7 @@ For questions or clarifications, refer to:
 - **Implementation**: `src/lib/ai/toonplay-converter.ts`
 - **Evaluation**: `src/lib/services/toonplay-evaluator.ts` (NEW)
 - **Improvement Loop**: `src/lib/services/toonplay-improvement-loop.ts` (NEW)
-- **Generation**: `src/lib/ai/comic-panel-generator.ts`
-- **Schema**: `src/lib/db/schema.ts` (scenes.comicToonplay)
+- **Generation**: `src/lib/ai/comic-panel-generator.ts` (includes `buildPanelCharacterPrompts()`)
+- **Database Schema**: `drizzle/schema.ts`
+  - `scenes.comic_toonplay` (JSONB) - Stores toonplay specification
+  - `characters.physical_description` (JSONB) - Character visual data for consistency

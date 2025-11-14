@@ -41,14 +41,14 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import * as schema from "../src/lib/db/schema";
+import * as schema from "../src/lib/schemas/database";
 import {
     chapters,
     characters,
     scenes,
     settings,
     stories,
-} from "../src/lib/db/schema";
+} from "../src/lib/schemas/database";
 import { loadProfile } from "../src/lib/utils/auth-loader";
 import { getEnvDisplayName } from "../src/lib/utils/environment";
 

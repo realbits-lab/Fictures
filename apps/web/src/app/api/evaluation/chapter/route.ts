@@ -6,7 +6,7 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { chapters } from "@/lib/db/schema";
+import { chapters } from "@/lib/schemas/database";
 import type {
     ChapterEvaluationRequest,
     ChapterEvaluationResponse,

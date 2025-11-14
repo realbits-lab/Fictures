@@ -743,12 +743,12 @@ const result = await generateStory({
 
 **3-Layer Type Structure**:
 
-1. **API Layer Types** (`src/app/api/studio/types.ts`)
+1. **API Layer Types** (`src/lib/schemas/api/studio.ts`)
    - `Api{Entity}Request` - HTTP request body
    - `Api{Entity}Response` - HTTP success response
    - `Api{Entity}ErrorResponse` - HTTP error response
 
-2. **Generator Layer Types** (`src/lib/studio/generators/types.ts`)
+2. **Generator Layer Types** (`src/lib/schemas/services/generators.ts`)
    - `Generator{Entity}Params` - Generator function parameters
    - `Generator{Entity}Result` - Generator function return value
    - `{Entity}PromptParams` - Prompt template variables

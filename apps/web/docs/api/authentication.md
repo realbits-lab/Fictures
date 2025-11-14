@@ -530,4 +530,4 @@ Authentication profiles are stored in `.auth/user.json`:
   - `src/lib/auth.ts` - NextAuth v5 configuration
   - `src/lib/auth/dual-auth.ts` - Dual authentication middleware
   - `src/lib/db/index.ts` - Database connection
-  - `src/lib/db/schema.ts` - Schema exports
+  - `src/lib/schemas/database/index.ts` - Schema exports

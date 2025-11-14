@@ -11,7 +11,7 @@ import {
     scenes,
     settings,
     stories,
-} from "../src/lib/db/schema";
+} from "../src/lib/schemas/database";
 
 async function resetTables(): Promise<void> {
     console.log("🔄 Resetting all story tables...\n");

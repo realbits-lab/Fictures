@@ -13,7 +13,7 @@
 import { eq, inArray } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { apiKeys, users } from "../src/lib/db/schema";
+import { apiKeys, users } from "../src/lib/schemas/database";
 import { loadAuthData } from "../src/lib/utils/auth-loader";
 import {
     getEnvDisplayName,

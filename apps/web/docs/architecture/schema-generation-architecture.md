@@ -19,7 +19,7 @@ JSON schemas (Gemini structured output)
 
 ### Layer 1: Database Schema (SSOT)
 
-**File:** `src/lib/db/schema.ts`
+**File:** `src/lib/schemas/database/index.ts`
 
 **Purpose:** Single source of truth for all data structures
 
@@ -56,7 +56,7 @@ export const characters = pgTable("characters", {
 ```typescript
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { characters } from "@/lib/db/schema";
+import { characters } from "@/lib/schemas/database";
 
 // Refine JSON fields with nested Zod schemas
 const personalitySchema = z.object({
@@ -203,7 +203,7 @@ The schema generation happens automatically through TypeScript imports and expor
 
 **Example:** Add `backstory` field to characters
 
-**Step 1:** Update Drizzle schema (`src/lib/db/schema.ts`)
+**Step 1:** Update Drizzle schema (`src/lib/schemas/database/index.ts`)
 ```typescript
 export const characters = pgTable("characters", {
   // ... existing fields
@@ -318,7 +318,7 @@ import { CharacterJsonSchema } from "./json-schemas.generated";
 
 ### 1. Never Edit Generated Files Manually
 - `zod-schemas.ts` and `json-schemas.generated.ts` are auto-generated
-- Edit `src/lib/db/schema.ts` instead
+- Edit `src/lib/schemas/database/index.ts` instead
 - Refinements for JSON fields go in the generated files (but are template-based)
 
 ### 2. Use Zod Validation in API Routes
@@ -397,6 +397,6 @@ export const insertCharacterSchema = createInsertSchema(characters, {
 - **drizzle-zod Plugin:** https://orm.drizzle.team/docs/zod
 - **Zod Documentation:** https://zod.dev/
 - **zod-to-json-schema:** https://github.com/StefanTerdell/zod-to-json-schema
-- **Database Schema:** `src/lib/db/schema.ts`
+- **Database Schema:** `src/lib/schemas/database/index.ts`
 - **Generated Zod Schemas:** `src/lib/studio/generators/zod-schemas.ts`
 - **Generated JSON Schemas:** `src/lib/studio/generators/json-schemas.generated.ts`

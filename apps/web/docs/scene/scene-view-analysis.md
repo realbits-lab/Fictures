@@ -441,7 +441,7 @@ Potential additions for future iterations:
 
 - **Scene View Tracking**: `docs/scene-view-tracking.md`
 - **Migration**: `drizzle/0031_add_format_to_scene_views.sql`
-- **Database Schema**: `src/lib/db/schema.ts`
+- **Database Schema**: `src/lib/schemas/database/index.ts`
 - **API Implementation**: `src/app/api/stories/[storyId]/scene-stats/route.ts`
 
 ## Summary

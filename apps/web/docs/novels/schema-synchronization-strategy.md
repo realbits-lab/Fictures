@@ -9,7 +9,7 @@
 
 This document outlines the synchronization strategy between three critical components:
 1. **Specification** (`docs/novels/novels-specification.md`) - The authoritative design document
-2. **Database Schema** (`src/lib/db/schema.ts` + Drizzle migrations) - The data layer
+2. **Database Schema** (`src/lib/schemas/database/index.ts` + Drizzle migrations) - The data layer
 3. **Generation Code** (`src/lib/novels/` + `src/app/studio/api/novels/`) - The implementation
 
 **Core Principle**: **Documentation-First Development** - The specification document is the single source of truth, and all code must synchronize with it.
@@ -46,7 +46,7 @@ This document outlines the synchronization strategy between three critical compo
 │    a. Create migration SQL                           │
 │       drizzle/NNNN_description.sql                   │
 │    b. Update schema.ts                               │
-│       src/lib/db/schema.ts                           │
+│       src/lib/schemas/database/index.ts                           │
 │    c. Generate migration                             │
 │       pnpm db:generate                               │
 │    d. Run migration                                  │
@@ -99,7 +99,7 @@ This document outlines the synchronization strategy between three critical compo
 
 **Update Frequency**: Before any schema or code changes
 
-### 2.2 Database Schema (`src/lib/db/schema.ts`)
+### 2.2 Database Schema (`src/lib/schemas/database/index.ts`)
 
 **Role**: Data persistence layer
 **Contains**:
@@ -384,7 +384,7 @@ For now, synchronization is manual:
 ### For Adding a New Field
 
 - [ ] 1. Update `docs/novels/novels-specification.md` with field definition
-- [ ] 2. Add field to `src/lib/db/schema.ts`
+- [ ] 2. Add field to `src/lib/schemas/database/index.ts`
 - [ ] 3. Run `pnpm db:generate` to create migration
 - [ ] 4. Review generated SQL in `drizzle/` directory
 - [ ] 5. Run `pnpm db:migrate` to apply migration

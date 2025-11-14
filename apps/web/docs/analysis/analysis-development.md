@@ -204,7 +204,7 @@ dotenv --file .env.local run pnpm db:migrate
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { stories, analysisEvents } from '@/lib/db/schema';
+import { stories, analysisEvents } from '@/lib/schemas/database';
 import { eq, and, gte, desc, count, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -269,7 +269,7 @@ export async function GET(request: NextRequest) {
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { stories, analysisEvents, readingSessions } from '@/lib/db/schema';
+import { stories, analysisEvents, readingSessions } from '@/lib/schemas/database';
 import { eq, and, gte, lte, desc, count, avg, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
@@ -432,7 +432,7 @@ import {
   readingSessions,
   sceneEvaluations,
   users,
-} from '@/lib/db/schema';
+} from '@/lib/schemas/database';
 import { eq, and, gte, lte, desc, sql, count, avg, sum } from 'drizzle-orm';
 
 interface TimeRange {
@@ -702,7 +702,7 @@ export async function getStoryAnalytics(
 ```typescript
 import { nanoid } from 'nanoid';
 import { db } from '@/lib/db';
-import { analysisEvents } from '@/lib/db/schema';
+import { analysisEvents } from '@/lib/schemas/database';
 
 interface TrackEventParams {
   eventType: string;
@@ -997,7 +997,7 @@ export function EventTracker({
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { analysisEvents, sql } from '@/lib/db/schema';
+import { analysisEvents, sql } from '@/lib/schemas/database';
 import { eq, gte, lte } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {

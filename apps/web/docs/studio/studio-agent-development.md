@@ -462,7 +462,7 @@ export async function checkUserApiKeyScope(userId: string, requiredScope: ApiSco
 import { tool } from 'ai';
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { stories, characters, settings, parts, chapters, scenes } from '@/lib/db/schema';
+import { stories, characters, settings, parts, chapters, scenes } from '@/lib/schemas/database';
 import { eq } from 'drizzle-orm';
 
 // === STORY CRUD TOOLS ===
@@ -919,7 +919,7 @@ export const generationTools = {
 import { tool } from 'ai';
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { stories, characters, settings, parts, chapters, scenes } from '@/lib/db/schema';
+import { stories, characters, settings, parts, chapters, scenes } from '@/lib/schemas/database';
 import { eq } from 'drizzle-orm';
 
 export const checkPrerequisitesTool = tool({
@@ -1558,7 +1558,7 @@ export async function GET(
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { db } from '@/lib/db';
-import { stories } from '@/lib/db/schema';
+import { stories } from '@/lib/schemas/database';
 import { StudioHeader } from '@/components/studio/studio-header';
 import { CreateNewStoryButton } from '@/components/studio/create-new-story-button';
 

@@ -49,7 +49,7 @@ import {
     storyInsights,
     storyLikes,
     studioAgentChats,
-} from "../src/lib/db/schema";
+} from "../src/lib/schemas/database";
 
 interface DeletionStats {
     stories: number;

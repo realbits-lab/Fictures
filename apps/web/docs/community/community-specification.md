@@ -213,7 +213,7 @@ CREATE INDEX idx_post_views_created ON post_views(created_at);
 
 ### 6. Update Drizzle Schema
 
-**Location:** `src/lib/db/schema.ts`
+**Location:** `src/lib/schemas/database/index.ts`
 
 ```typescript
 import { pgTable, text, timestamp, integer, boolean, json, uuid, varchar } from 'drizzle-orm/pg-core';
@@ -932,7 +932,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { put } from '@vercel/blob';
 import { db } from '@/lib/db';
-import { postImages } from '@/lib/db/schema';
+import { postImages } from '@/lib/schemas/database';
 import { nanoid } from 'nanoid';
 
 export async function POST(request: NextRequest) {
@@ -1061,7 +1061,7 @@ export async function POST(request: NextRequest) {
 // src/app/api/community/stats/route.ts
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { stories, communityPosts, communityReplies, users } from '@/lib/db/schema';
+import { stories, communityPosts, communityReplies, users } from '@/lib/schemas/database';
 import { eq, gte, sql } from 'drizzle-orm';
 
 export async function GET() {
@@ -1131,7 +1131,7 @@ export async function GET() {
 // src/app/api/community/story/[storyId]/posts/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { communityPosts, users, postLikes } from '@/lib/db/schema';
+import { communityPosts, users, postLikes } from '@/lib/schemas/database';
 import { eq, desc, sql } from 'drizzle-orm';
 import { auth } from '@/lib/auth';
 
@@ -1269,7 +1269,7 @@ export async function GET(
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { communityPosts } from '@/lib/db/schema';
+import { communityPosts } from '@/lib/schemas/database';
 import { nanoid } from 'nanoid';
 
 export async function POST(request: NextRequest) {
@@ -1377,7 +1377,7 @@ export async function POST(request: NextRequest) {
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { communityReplies, communityPosts } from '@/lib/db/schema';
+import { communityReplies, communityPosts } from '@/lib/schemas/database';
 import { eq, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
@@ -1545,7 +1545,7 @@ export async function GET(
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { postLikes, communityPosts } from '@/lib/db/schema';
+import { postLikes, communityPosts } from '@/lib/schemas/database';
 import { eq, and, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
@@ -1647,7 +1647,7 @@ export async function POST(
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { postViews, communityPosts } from '@/lib/db/schema';
+import { postViews, communityPosts } from '@/lib/schemas/database';
 import { eq, and, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import crypto from 'crypto';
@@ -2193,7 +2193,7 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { stories, users, communityPosts } from '@/lib/db/schema';
+import { stories, users, communityPosts } from '@/lib/schemas/database';
 import { eq, desc, sql } from 'drizzle-orm';
 import { CreatePostForm } from '@/components/community/CreatePostForm';
 import { CommunityPostsList } from '@/components/community/CommunityPostsList';

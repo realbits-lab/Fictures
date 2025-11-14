@@ -6,7 +6,7 @@
 import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { settings } from "@/lib/db/schema";
+import { settings } from "@/lib/schemas/database";
 import type {
     SettingEvaluationRequest,
     SettingEvaluationResponse,

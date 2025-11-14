@@ -6,7 +6,7 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { stories } from "@/lib/db/schema";
+import { stories } from "@/lib/schemas/database";
 import type { StoryEvaluationRequest, StoryEvaluationResponse } from "../types";
 import {
     calculateOverallScore,

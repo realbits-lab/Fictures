@@ -25,7 +25,7 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { apiKeys, users } from "../src/lib/db/schema";
+import { apiKeys, users } from "../src/lib/schemas/database";
 import { type AuthData, saveAuthData } from "../src/lib/utils/auth-loader";
 
 // PBKDF2 password hashing (matching src/lib/auth/password.ts)

@@ -6,7 +6,7 @@
 import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { characters } from "@/lib/db/schema";
+import { characters } from "@/lib/schemas/database";
 import type {
     CharacterEvaluationRequest,
     CharacterEvaluationResponse,
