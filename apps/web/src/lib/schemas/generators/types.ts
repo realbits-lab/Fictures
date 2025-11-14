@@ -464,7 +464,7 @@ export interface EvaluateSceneResult {
 }
 
 // ============================================================================
-// Images Generator
+// Images Generator (High-level bulk generation)
 // ============================================================================
 
 export interface GenerateImagesParams {
@@ -485,6 +485,45 @@ export interface GenerateImagesResult {
         variants: any;
     }[];
     metadata: ArrayGeneratorMetadata;
+}
+
+// ============================================================================
+// Image Generator (Core - single image generation)
+// ============================================================================
+
+/**
+ * Image type for story assets
+ */
+export type GeneratorImageType =
+    | "story"
+    | "character"
+    | "setting"
+    | "scene"
+    | "comic-panel";
+
+/**
+ * Parameters for single image generation (generator layer)
+ */
+export interface GeneratorImageParams {
+    prompt: string;
+    aspectRatio: import("@/lib/schemas/domain/image").AspectRatio;
+    seed?: number;
+    imageType: GeneratorImageType;
+}
+
+/**
+ * Result from single image generation (generator layer)
+ */
+export interface GeneratorImageResult {
+    imageUrl: string; // Direct URL from AI provider
+    imageBuffer: ArrayBuffer; // Image data for upload
+    width: number;
+    height: number;
+    size: number;
+    aspectRatio: import("@/lib/schemas/domain/image").AspectRatio;
+    model: string;
+    provider: "gemini" | "ai-server";
+    generationTime: number;
 }
 
 // ============================================================================

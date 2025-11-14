@@ -67,20 +67,31 @@ export async function POST(
             },
         });
 
-        if (
-            !scene ||
-            !scene.chapter ||
-            !("story" in scene.chapter) ||
-            !scene.chapter.story
-        ) {
+        if (!scene || !scene.chapter) {
             return NextResponse.json(
                 { error: "Scene not found" },
                 { status: 404 },
             );
         }
 
+        // Type assertion for nested query result
+        type SceneWithChapterAndStory = typeof scene & {
+            chapter: NonNullable<typeof scene.chapter> & {
+                story: NonNullable<NonNullable<typeof scene.chapter>["story"]>;
+            };
+        };
+
+        const sceneWithStory = scene as SceneWithChapterAndStory;
+
+        if (!sceneWithStory.chapter.story) {
+            return NextResponse.json(
+                { error: "Story not found" },
+                { status: 404 },
+            );
+        }
+
         // Extract story for type safety
-        const story = scene.chapter.story;
+        const story = sceneWithStory.chapter.story;
 
         // Verify ownership (allow story owner or manager/admin)
         const isOwner = story.authorId === session.user.id;

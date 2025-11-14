@@ -12,7 +12,7 @@ import type {
     AiComicPanelSpecType,
     AiComicToonplayType,
 } from "@/lib/schemas/ai/ai-toonplay";
-import type { Character, Setting } from "@/lib/schemas/zod/ai";
+import type { Character, Setting } from "@/lib/schemas/database";
 import {
     generateStoryImage,
     type StoryImageGenerationResult,

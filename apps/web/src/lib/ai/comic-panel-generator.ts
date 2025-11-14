@@ -258,9 +258,8 @@ export async function generateComicPanels(
                 imageResult = await generateStoryImage({
                     prompt: promptToUse,
                     storyId: story.story_id,
-                    imageType: "panel",
+                    imageType: "comic-panel",
                     sceneId: sceneId,
-                    panelNumber: panelSpec.panel_number,
                     style: "vivid",
                     quality: "standard",
                 });
@@ -315,8 +314,8 @@ export async function generateComicPanels(
                 mood: panelSpec.mood,
                 generated_at: new Date().toISOString(),
             } as any,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         });
 
         generatedPanels.push({
@@ -366,7 +365,7 @@ export async function generateComicPanels(
         .set({
             comicStatus: "draft",
             comicToonplay: toonplay as any, // Store the generated toonplay specification
-            comicGeneratedAt: new Date(),
+            comicGeneratedAt: new Date().toISOString(),
             comicPanelCount: generatedPanels.length,
         })
         .where(eq(scenesTable.id, sceneId));

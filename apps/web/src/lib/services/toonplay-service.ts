@@ -8,7 +8,7 @@
  */
 
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
-import type { Character, Scene, Setting, Story } from "@/lib/schemas/zod/ai";
+import type { Character, Scene, Setting, Story } from "@/lib/schemas/database";
 import {
     type GeneratedPanelResult,
     generateComicPanels,
@@ -68,7 +68,7 @@ export async function generateCompleteToonplay(params: {
 
     const totalStartTime: number = Date.now();
 
-    console.log("[toonplay-service] =€ Starting complete toonplay generation");
+    console.log("[toonplay-service] =ï¿½ Starting complete toonplay generation");
     console.log(
         `[toonplay-service] Scene: ${scene.title}, Story: ${story.title}`,
     );

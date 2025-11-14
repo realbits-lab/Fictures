@@ -38,3 +38,40 @@ export function usePageCache<T>(key: string, defaultValue: T) {
 
     return { data, updateCache, clearCache };
 }
+
+/**
+ * Hook for fetching published stories for comics browsing
+ */
+export function usePublishedStories() {
+    const [stories, setStories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchStories = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch("/api/comics/published");
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch published stories");
+                }
+
+                const data = await response.json();
+                setStories(data.stories || []);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err.message
+                        : "Failed to load stories",
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStories();
+    }, []);
+
+    return { stories, loading, error };
+}
