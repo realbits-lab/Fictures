@@ -1,28 +1,24 @@
 /**
- * Studio API Request/Response Type Definitions
+ * Studio API Types & Validation Schemas
  *
  * Layer: API (HTTP Contracts)
  * Used by: src/app/api/studio/* routes
  * Related:
- * - AI types: src/lib/studio/generators/zod-schemas.ts
- * - Service types: src/lib/studio/generators/types.ts (TBD)
+ * - AI types: src/lib/schemas/ai
+ * - Service types: src/lib/studio/generators/types.ts
  * - Domain types: src/lib/ai/types/image.ts
  * - Global types: src/types/index.ts
  *
  * ## Purpose
  * Defines the HTTP API contract for all Studio generator endpoints.
- * These types represent the data exchanged between client and server.
+ * Includes both TypeScript types and Zod validation schemas.
  *
  * ## Naming Convention
- * Follows layer-based naming pattern: Api{Entity}{Suffix}
- *
- * Type Suffixes:
- * - Request: HTTP request body (what client sends)
- * - Response: HTTP success response (what server returns on success)
- * - ErrorResponse: HTTP error response (what server returns on error)
+ * - Types: Api{Entity}{Suffix} (ApiStoryRequest, ApiStoryResponse, ApiStoryErrorResponse)
+ * - Schemas: generate{Entity}Schema (generateStorySchema, generateCharactersSchema)
  *
  * ## Architecture
- * API Layer (this file) → Service Layer (generators/types.ts - TBD) → Generator Layer → AI Layer (Zod schemas)
+ * API Layer (this file) → Service Layer (generators/types.ts) → Generator Layer → AI Layer (Zod schemas)
  *
  * API types are mapped to service types in route handlers:
  * - ApiStoryRequest → ServiceStoryParams (service input)
@@ -42,8 +38,11 @@
  * - POST /api/studio/scene-improvement - Improve scene quality
  */
 
+import { z } from "zod";
 import type { StoryGenre } from "@/lib/constants/genres";
+import { STORY_GENRES } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
+import { STORY_TONES } from "@/lib/constants/tones";
 import type {
     Chapter,
     Character,
@@ -328,3 +327,77 @@ export interface ApiSceneImprovementErrorResponse {
     error: string;
     details?: unknown;
 }
+
+// ============================================================================
+// Validation Schemas (Zod)
+// ============================================================================
+
+/**
+ * Validation schema for generating a story
+ */
+export const generateStorySchema = z.object({
+    userPrompt: z.string().min(1),
+    language: z.string().optional().default("English"),
+    preferredGenre: z.enum(STORY_GENRES).optional(),
+    preferredTone: z.enum(STORY_TONES).optional(),
+});
+
+/**
+ * Validation schema for generating characters
+ */
+export const generateCharactersSchema = z.object({
+    storyId: z.string(),
+    characterCount: z.number().min(1).max(10).optional().default(3),
+    language: z.string().optional().default("English"),
+});
+
+/**
+ * Validation schema for generating settings
+ */
+export const generateSettingsSchema = z.object({
+    storyId: z.string(),
+    settingCount: z.number().min(1).max(10).optional().default(3),
+});
+
+/**
+ * Validation schema for generating parts
+ */
+export const generatePartsSchema = z.object({
+    storyId: z.string(),
+    partsCount: z.number().min(1).max(10).optional().default(3),
+    language: z.string().optional().default("English"),
+});
+
+/**
+ * Validation schema for generating chapters
+ */
+export const generateChaptersSchema = z.object({
+    storyId: z.string(),
+    chaptersPerPart: z.number().min(1).max(10).optional().default(3),
+    language: z.string().optional().default("English"),
+});
+
+/**
+ * Validation schema for generating scene summaries
+ */
+export const generateSceneSummariesSchema = z.object({
+    storyId: z.string(),
+    scenesPerChapter: z.number().min(1).max(10).optional().default(3),
+    language: z.string().optional().default("English"),
+});
+
+/**
+ * Validation schema for generating scene content
+ */
+export const generateSceneContentSchema = z.object({
+    sceneId: z.string(),
+    language: z.string().optional().default("English"),
+});
+
+/**
+ * Validation schema for improving scene quality
+ */
+export const improveSceneSchema = z.object({
+    sceneId: z.string(),
+    maxIterations: z.number().min(1).max(3).optional().default(2),
+});

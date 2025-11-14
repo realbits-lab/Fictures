@@ -17,7 +17,7 @@ import type {
     ApiSceneImprovementRequest,
     ApiSceneImprovementResponse,
 } from "../types";
-import { improveSceneSchema } from "../validation-schemas";
+import { improveSceneSchema } from "../types";
 
 export const runtime = "nodejs";
 

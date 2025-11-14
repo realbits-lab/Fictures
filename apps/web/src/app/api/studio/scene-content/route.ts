@@ -16,7 +16,7 @@ import type {
     ApiSceneContentRequest,
     ApiSceneContentResponse,
 } from "../types";
-import { generateSceneContentSchema } from "../validation-schemas";
+import { generateSceneContentSchema } from "../types";
 
 export const runtime = "nodejs";
 
