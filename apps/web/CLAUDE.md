@@ -74,6 +74,46 @@ const path = getBlobPath('stories/123/image.png');
   - This ensures code changes are picked up and prevents stale cached code from running
 - Use proper environment variable loading with `dotenv --file .env.local run` prefix
 
+**Runtime Module Loading - TypeScript File Limitation:**
+
+⚠️ **CRITICAL**: Next.js cannot `require()` TypeScript files at runtime in production builds
+
+**Problem:**
+- Using `require()` to dynamically load `.ts` files will fail with `MODULE_NOT_FOUND` error
+- This occurs even if the file exists and has correct exports
+- Next.js dev server caches module resolution and may not pick up new files without restart
+
+**Solution:**
+1. **Use `.js` files for runtime-loaded modules** (preferred for dynamic loading)
+2. **Restart dev server after adding new dynamically-loaded files**
+3. **Clear Next.js cache** (`.next/`) to ensure fresh module resolution
+
+**Example - Prompt Version System:**
+```typescript
+// ❌ WRONG: Cannot require TypeScript files at runtime
+const { partPromptV1_1 } = require("../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.ts");
+
+// ✅ CORRECT: Use .js files for runtime require()
+const { partPromptV1_1 } = require("../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js");
+```
+
+**When This Applies:**
+- Dynamic `require()` calls in production code
+- Runtime module loading (not import statements)
+- Files loaded conditionally based on parameters/config
+- Plugin systems or version-based prompt loading
+
+**Steps to Fix MODULE_NOT_FOUND for .ts files:**
+1. Rename `.ts` file to `.js` (keep TypeScript syntax if compatible)
+2. Update `require()` statement to use `.js` extension
+3. Restart dev server: `fuser -k 3000/tcp && rm -rf .next && pnpm dotenv -e .env.local -- pnpm dev`
+4. Clear logs and re-run tests
+
+**Alternative Approaches:**
+- Use ES6 dynamic `import()` instead of `require()` (async)
+- Pre-compile TypeScript files to JavaScript during build
+- Use build-time code generation instead of runtime loading
+
 **File Organization Guidelines:**
 - **Test Files**: Decide directory based on test purpose and longevity
   - **`test-tests/`**: Temporary test files for quick testing, debugging, or one-time exploration
