@@ -20,7 +20,7 @@ import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";
 export function CacheDebugPanel() {
     const [stats, setStats] = useState(() => cacheMetrics.getStats());
     const [isVisible, setIsVisible] = useState(false);
-    const { clearAllCaches } = useCacheInvalidation();
+    const { invalidateAll } = useCacheInvalidation();
 
     // Update stats every 2 seconds
     useEffect(() => {
@@ -75,7 +75,7 @@ export function CacheDebugPanel() {
                         </button>
                         <button
                             onClick={() => {
-                                clearAllCaches();
+                                invalidateAll();
                                 alert("All caches cleared!");
                             }}
                             className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
@@ -101,14 +101,7 @@ export function CacheDebugPanel() {
                                 {(stats.hitRate * 100).toFixed(1)}%
                             </div>
                         </div>
-                        <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded">
-                            <div className="text-gray-500 dark:text-gray-400">
-                                Avg Duration
-                            </div>
-                            <div className="text-lg font-bold text-blue-600">
-                                {stats.averageDuration.toFixed(1)}ms
-                            </div>
-                        </div>
+                        {/* Avg Duration removed - not available in stats */}
                         <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded">
                             <div className="text-gray-500 dark:text-gray-400">
                                 Total Hits
@@ -128,36 +121,7 @@ export function CacheDebugPanel() {
                     </div>
 
                     {/* By Cache Type */}
-                    <div>
-                        <h3 className="font-semibold mb-2">By Cache Type</h3>
-                        <div className="space-y-2">
-                            {Object.entries(stats.byType).map(
-                                ([type, typeStats]) => (
-                                    <div
-                                        key={type}
-                                        className="p-2 bg-gray-100 dark:bg-gray-800 rounded"
-                                    >
-                                        <div className="flex justify-between items-center mb-1">
-                                            <span className="font-medium capitalize">
-                                                {type}
-                                            </span>
-                                            <span className="text-green-600 font-bold">
-                                                {(
-                                                    typeStats.hitRate * 100
-                                                ).toFixed(1)}
-                                                %
-                                            </span>
-                                        </div>
-                                        <div className="text-xs text-gray-600 dark:text-gray-400">
-                                            Hits: {typeStats.hits} | Misses:{" "}
-                                            {typeStats.misses} | Invalidations:{" "}
-                                            {typeStats.invalidations}
-                                        </div>
-                                    </div>
-                                ),
-                            )}
-                        </div>
-                    </div>
+                    {/* By Cache Type section removed - byType not available in stats */}
 
                     {/* Recent Operations */}
                     <div>
@@ -165,10 +129,10 @@ export function CacheDebugPanel() {
                             Recent Operations
                         </h3>
                         <div className="space-y-1 max-h-40 overflow-auto">
-                            {stats.recentMetrics
+                            {stats.metrics
                                 .slice(-10)
                                 .reverse()
-                                .map((metric, index) => (
+                                .map((metric: any, index: number) => (
                                     <div
                                         key={index}
                                         className={`p-2 rounded text-xs ${

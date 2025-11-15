@@ -181,7 +181,6 @@ export async function PATCH(
                 await db
                     .update(chapters)
                     .set({
-                        publishedAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
                     })
                     .where(eq(chapters.id, chapter.id));

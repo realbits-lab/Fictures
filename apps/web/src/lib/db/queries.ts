@@ -200,12 +200,12 @@ export async function updateStory(
         title: string;
         summary: string;
         genre: string;
-        status: "writing" | "published";
+        status: "draft" | "published";
     }>,
 ) {
     const [updatedStory] = await db
         .update(stories)
-        .set({ ...(data as any), updatedAt: new Date() })
+        .set({ ...(data as any), updatedAt: new Date().toISOString() })
         .where(and(eq(stories.id, storyId), eq(stories.authorId, userId)))
         .returning();
 

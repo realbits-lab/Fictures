@@ -31,8 +31,8 @@ interface Comment {
     replyCount: number;
     isEdited: boolean;
     isDeleted: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
     replies?: Comment[];
 }
 

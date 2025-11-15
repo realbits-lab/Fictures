@@ -100,11 +100,11 @@ export async function POST(request: Request) {
             }
         }
 
-        // 5. Fetch story
+        // 5. Fetch story (from chapter)
         const storyResult = await db
             .select()
             .from(stories)
-            .where(eq(stories.id, scene.storyId))
+            .where(eq(stories.id, chapter.storyId))
             .limit(1);
 
         if (storyResult.length === 0) {
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
             .update(scenes)
             .set({
                 comicToonplay: result.toonplay,
-                comicStatus: "completed",
+                comicStatus: "published" as const,
                 comicPanelCount: result.panels.length,
                 updatedAt: new Date().toISOString(),
             })
@@ -197,7 +197,7 @@ export async function POST(request: Request) {
                     error: {
                         code: "VALIDATION_ERROR",
                         message: "Invalid request parameters",
-                        details: error.errors,
+                        details: (error as any).errors || error.message,
                     },
                 },
                 { status: 400 },
