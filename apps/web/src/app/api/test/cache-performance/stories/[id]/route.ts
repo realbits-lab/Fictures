@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/schemas/database";
@@ -21,7 +21,7 @@ const CACHE_CONFIG = {
  * - Layer 1: SWR memory (handled by client)
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {

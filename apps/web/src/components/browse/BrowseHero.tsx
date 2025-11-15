@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 export function BrowseHero() {
     return (
         <div className="bg-gradient-to-b from-purple-50 to-white dark:from-gray-900 dark:to-gray-950 py-16">

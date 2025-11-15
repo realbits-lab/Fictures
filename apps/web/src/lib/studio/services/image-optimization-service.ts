@@ -124,7 +124,7 @@ async function generateVariant(
     imageBuffer: Buffer,
     width: number,
     height: number,
-    format: ImageFormat,
+    _format: ImageFormat,
     quality: number,
     noResize: boolean = false,
 ): Promise<{ buffer: Buffer; size: number }> {

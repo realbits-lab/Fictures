@@ -7,7 +7,7 @@ import { db } from "@/lib/db";
 export const POST = requireScopes("admin:all")(
     withAuthentication(async (request: NextRequest) => {
         try {
-            const auth = getAuth();
+            const _auth = getAuth();
 
             const body = await request.json();
             const { query } = body;
@@ -26,7 +26,7 @@ export const POST = requireScopes("admin:all")(
             console.log("🗑️ Executing database cleanup:", query);
 
             // Execute the query
-            const result = await db.execute(sql.raw(query));
+            const _result = await db.execute(sql.raw(query));
 
             console.log("✅ Database cleanup completed");
 

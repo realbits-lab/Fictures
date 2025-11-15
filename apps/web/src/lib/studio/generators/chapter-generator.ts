@@ -9,6 +9,11 @@
  * Database operations are handled by the caller (API route).
  */
 
+import type {
+    ChapterPromptParams,
+    GeneratorChapterParams,
+    GeneratorChapterResult,
+} from "@/lib/schemas/generators/types";
 import { type AiChapterType, AiChapterZodSchema } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import {
@@ -19,11 +24,6 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    ChapterPromptParams,
-    GeneratorChapterParams,
-    GeneratorChapterResult,
-} from "@/lib/schemas/generators/types";
 
 /**
  * Generate ONE next chapter with full context
@@ -59,9 +59,16 @@ export async function generateChapter(
     console.log(`[chapter-generator] ========== PART DATA DEBUG ==========`);
     console.log(`[chapter-generator] Part ID: ${part.id}`);
     console.log(`[chapter-generator] Part title: ${part.title}`);
-    console.log(`[chapter-generator] Part.characterArcs type: ${typeof part.characterArcs}`);
-    console.log(`[chapter-generator] Part.characterArcs value:`, part.characterArcs);
-    console.log(`[chapter-generator] Part.settingIds type: ${typeof part.settingIds}`);
+    console.log(
+        `[chapter-generator] Part.characterArcs type: ${typeof part.characterArcs}`,
+    );
+    console.log(
+        `[chapter-generator] Part.characterArcs value:`,
+        part.characterArcs,
+    );
+    console.log(
+        `[chapter-generator] Part.settingIds type: ${typeof part.settingIds}`,
+    );
     console.log(`[chapter-generator] Part.settingIds value:`, part.settingIds);
     console.log(`[chapter-generator] ======================================`);
 

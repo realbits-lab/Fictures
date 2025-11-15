@@ -8,8 +8,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
 import { getApiKey } from "@/lib/auth/server-context";
-import { loadProfile } from "@/lib/utils/auth-loader";
-import { promptManager } from "./prompt-manager";
 import type {
     GenerationOptions,
     ModelProvider,
@@ -17,6 +15,7 @@ import type {
     TextGenerationRequest,
     TextGenerationResponse,
 } from "@/lib/schemas/generators/types";
+import { promptManager } from "./prompt-manager";
 
 /**
  * Environment configuration
@@ -366,12 +365,17 @@ class AIServerProvider extends TextGenerationProvider {
 
         // Get API key from authentication context
         const apiKey = getApiKey();
-        console.log("[AIServerProvider] buildHeaders - API key from context:", apiKey ? `${apiKey.substring(0, 10)}...` : "null");
+        console.log(
+            "[AIServerProvider] buildHeaders - API key from context:",
+            apiKey ? `${apiKey.substring(0, 10)}...` : "null",
+        );
 
         if (apiKey) {
             headers["x-api-key"] = apiKey;
         } else {
-            console.log("[AIServerProvider] WARNING: No API key found in authentication context!");
+            console.log(
+                "[AIServerProvider] WARNING: No API key found in authentication context!",
+            );
         }
 
         return headers;

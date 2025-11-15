@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { scenes } from "@/lib/schemas/database";
 
 export async function GET(
-    request: Request,
+    _request: Request,
     context: { params: Promise<{ id: string; sceneId: string }> },
 ) {
     const params = await context.params;

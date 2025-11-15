@@ -6,11 +6,11 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { scenes } from "@/lib/schemas/database";
 import type {
     SceneContentEvaluationRequest,
     SceneContentEvaluationResponse,
 } from "@/lib/schemas/api/evaluation";
+import { scenes } from "@/lib/schemas/database";
 import {
     calculateOverallScore,
     countWords,

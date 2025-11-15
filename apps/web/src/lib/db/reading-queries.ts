@@ -1,7 +1,7 @@
-import { asc, eq, inArray } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { invalidateCache, withCache } from "@/lib/cache/redis-cache";
-import { db } from "./index";
 import { chapters, parts, scenes, stories } from "@/lib/schemas/database";
+import { db } from "./index";
 
 /**
  * ⚡ Strategy 3: Smart Data Reduction

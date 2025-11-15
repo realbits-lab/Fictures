@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { unpublishScene } from "@/lib/services/scene-publishing";
 
 export async function POST(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ sceneId: string }> },
 ) {
     try {

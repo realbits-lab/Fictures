@@ -158,9 +158,7 @@ export function getEndpointScopes(path: string): PermissionScope[] {
 
     // Pattern matching (e.g., /api/users/:id)
     for (const [pattern, scopes] of Object.entries(ENDPOINT_SCOPES)) {
-        const regex = new RegExp(
-            "^" + pattern.replace(/:[^/]+/g, "[^/]+") + "$",
-        );
+        const regex = new RegExp(`^${pattern.replace(/:[^/]+/g, "[^/]+")}$`);
         if (regex.test(path)) {
             return scopes;
         }

@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { getPublishedStories } from "@/lib/db/queries";
 

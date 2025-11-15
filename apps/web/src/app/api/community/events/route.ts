@@ -1,4 +1,3 @@
-import { auth } from "@/lib/auth";
 import { CHANNELS, getRedisSubscriber } from "@/lib/redis/client";
 
 export const runtime = "nodejs";

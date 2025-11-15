@@ -1,5 +1,4 @@
 import { and, eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -9,7 +8,7 @@ export const runtime = "nodejs";
 
 // POST /api/stories/[id]/like - Toggle like on a story
 export async function POST(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {

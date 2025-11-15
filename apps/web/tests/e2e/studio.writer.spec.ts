@@ -53,7 +53,7 @@ test.describe("Studio Page - Writer", () => {
                 .first();
 
             if (await storyCard.isVisible()) {
-                const storyId = await storyCard.getAttribute("data-story-id");
+                const _storyId = await storyCard.getAttribute("data-story-id");
                 await storyCard.click();
                 await page.waitForLoadState("networkidle");
 

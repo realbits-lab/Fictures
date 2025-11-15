@@ -22,7 +22,7 @@ import type {
 export default function CommunityPage() {
     const { data: session } = useSession();
     const [newStoryCount, setNewStoryCount] = useState(0);
-    const [recentlyPublishedStories, setRecentlyPublishedStories] = useState<
+    const [_recentlyPublishedStories, setRecentlyPublishedStories] = useState<
         string[]
     >([]);
 

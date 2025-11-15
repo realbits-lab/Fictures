@@ -419,8 +419,8 @@ body {
 
 /* Custom layout adjustments */
 aside[class*="fixed"] {
-	top: 64px !important;
-	background-color: rgb(var(--background)) !important;
+	top: 64px;
+	background-color: rgb(var(--background));
 }
 
 body {

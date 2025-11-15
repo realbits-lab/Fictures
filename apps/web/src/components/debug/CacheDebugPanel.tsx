@@ -12,7 +12,7 @@
  * Note: Only available in development mode (NODE_ENV=development)
  */
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { cacheMetrics } from "@/lib/cache/cache-metrics";
 import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";

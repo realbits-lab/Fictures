@@ -1,14 +1,12 @@
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
     analysisEvents,
-    chapters,
     comments,
     sceneEvaluations,
-    scenes,
     stories,
     storyInsights,
 } from "@/lib/schemas/database";

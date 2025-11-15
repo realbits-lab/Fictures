@@ -1,16 +1,12 @@
-import { and, avg, count, desc, eq, gte, lte, sql, sum } from "drizzle-orm";
+import { and, avg, count, desc, eq, gte, lte, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
     analysisEvents,
     chapters,
-    comments,
-    communityPosts,
-    communityReplies,
     readingSessions,
     sceneEvaluations,
     scenes,
     stories,
-    users,
 } from "@/lib/schemas/database";
 
 // ============================================================================

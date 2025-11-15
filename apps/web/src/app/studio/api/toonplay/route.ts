@@ -87,7 +87,7 @@ export async function POST(request: Request) {
         const chapter = chapterResult[0];
 
         // 4. Fetch part (optional)
-        let part = null;
+        let _part = null;
         if (chapter.partId) {
             const partResult = await db
                 .select()
@@ -96,7 +96,7 @@ export async function POST(request: Request) {
                 .limit(1);
 
             if (partResult.length > 0) {
-                part = partResult[0];
+                _part = partResult[0];
             }
         }
 

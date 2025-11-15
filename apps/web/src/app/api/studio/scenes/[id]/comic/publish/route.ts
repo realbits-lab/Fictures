@@ -11,7 +11,7 @@ export const runtime = "nodejs";
  * Publish comic panels for a scene
  */
 export async function POST(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {

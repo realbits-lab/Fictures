@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
@@ -69,7 +68,7 @@ export function StoryGrid({
     const [readingHistory, setReadingHistory] = useState<Set<string>>(
         new Set(),
     );
-    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+    const [_isLoadingHistory, setIsLoadingHistory] = useState(true);
 
     // Determine reading format based on pageType
     const format: ReadingFormat = pageType === "comics" ? "comic" : "novel";
@@ -182,7 +181,6 @@ export function StoryGrid({
                 return (b.viewCount || 0) - (a.viewCount || 0);
             case "rating":
                 return (b.rating || 0) - (a.rating || 0);
-            case "latest":
             default:
                 return (
                     new Date(b.createdAt).getTime() -

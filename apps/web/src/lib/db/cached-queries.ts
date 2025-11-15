@@ -1,9 +1,9 @@
 import { asc, eq } from "drizzle-orm";
+import * as schema from "@/lib/schemas/database";
 import { measureAsync } from "../cache/performance-logger";
 import { getCache, invalidateCache, withCache } from "../cache/redis-cache";
 import { db } from "./index";
 import * as queries from "./queries";
-import * as schema from "@/lib/schemas/database";
 
 const CACHE_TTL = {
     PUBLISHED_CONTENT: 3600, // 1 hour for published (shared by all users) - Extended from 10min for better performance

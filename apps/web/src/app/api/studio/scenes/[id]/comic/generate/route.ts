@@ -144,7 +144,7 @@ async function handlePOST(
         });
 
         // Use the first setting or create a default one
-        const primarySetting = storySettings[0] || {
+        const _primarySetting = storySettings[0] || {
             id: "default",
             name: "Default Setting",
             summary: "A generic setting",
@@ -340,4 +340,6 @@ async function handlePOST(
 }
 
 // Export with authentication wrappers
-export const POST = requireScopes("stories:write")(withAuthentication(handlePOST));
+export const POST = requireScopes("stories:write")(
+    withAuthentication(handlePOST),
+);

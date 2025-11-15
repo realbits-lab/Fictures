@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
 interface ThemeSelectorProps {

@@ -1,5 +1,4 @@
 import { and, eq, sql } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
@@ -15,7 +14,7 @@ import { communityPosts, postLikes } from "@/lib/schemas/database";
  * Toggle like on a community post
  */
 export async function POST(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ postId: string }> },
 ) {
     try {

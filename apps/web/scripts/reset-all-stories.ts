@@ -28,8 +28,8 @@
  *   - admin:all scope on manager account
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import { loadProfile } from "../src/lib/utils/auth-loader";
 import { getEnvDisplayName } from "../src/lib/utils/environment";
 

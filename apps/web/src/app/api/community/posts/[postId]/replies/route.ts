@@ -8,14 +8,18 @@ import {
     invalidateEntityCache,
 } from "@/lib/cache/unified-invalidation";
 import { db } from "@/lib/db";
-import { communityPosts, communityReplies, users } from "@/lib/schemas/database";
+import {
+    communityPosts,
+    communityReplies,
+    users,
+} from "@/lib/schemas/database";
 
 /**
  * GET /api/community/posts/[postId]/replies
  * Get all replies for a specific post
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ postId: string }> },
 ) {
     try {

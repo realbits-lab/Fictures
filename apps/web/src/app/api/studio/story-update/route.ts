@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
 // Apply improvements to database
 async function applyImprovements(
     improvementResult: any,
-    userId: string,
+    _userId: string,
 ): Promise<any> {
     const updateResults = {
         story: null as any,

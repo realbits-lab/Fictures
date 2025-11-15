@@ -2,7 +2,6 @@
  * Reset All Story Tables - Direct Database Approach
  */
 
-import { sql } from "drizzle-orm";
 import { db } from "../src/lib/db";
 import {
     chapters,

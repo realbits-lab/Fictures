@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
 import { type Comment, useComments } from "@/lib/hooks/use-comments";
 import { cn } from "@/lib/utils/cn";
 import { CommentForm } from "./CommentForm";

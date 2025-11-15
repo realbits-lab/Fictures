@@ -10,8 +10,8 @@
 
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getCache } from "@/lib/cache/redis-cache";
-import { db } from "./index";
 import { chapters, parts, stories } from "@/lib/schemas/database";
+import { db } from "./index";
 
 // Cache TTL configuration
 const CACHE_TTL = {

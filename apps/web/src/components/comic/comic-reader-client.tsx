@@ -7,11 +7,9 @@
 
 "use client";
 
-import { AlertCircle } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ComicViewer } from "@/components/comic/comic-viewer";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useChapterScenes } from "@/hooks/useChapterScenes";
 import { useStoryReader } from "@/hooks/useStoryReader";
 
@@ -109,9 +107,9 @@ export function ComicReaderClient({
     const currentSceneIndex = allScenes.findIndex(
         (item) => item.scene.id === selectedSceneId,
     );
-    const prevScene =
+    const _prevScene =
         currentSceneIndex > 0 ? allScenes[currentSceneIndex - 1] : null;
-    const nextScene =
+    const _nextScene =
         currentSceneIndex < allScenes.length - 1
             ? allScenes[currentSceneIndex + 1]
             : null;
@@ -368,7 +366,7 @@ export function ComicReaderClient({
                                 Scenes
                             </h2>
                             <div className="space-y-1">
-                                {allScenes.map((item, index) => {
+                                {allScenes.map((item, _index) => {
                                     const isSelected =
                                         item.scene.id === selectedSceneId;
                                     return (

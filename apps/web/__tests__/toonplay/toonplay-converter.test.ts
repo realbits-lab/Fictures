@@ -4,18 +4,19 @@
  * Tests for scene-to-toonplay conversion
  */
 
-import { describe, expect, it } from "@jest/globals";
 import fs from "node:fs";
 import path from "node:path";
+import { describe, expect, it } from "@jest/globals";
+import { auth } from "@/lib/auth/context";
 import type { Character, Scene, Setting, Story } from "@/lib/schemas/database";
 import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
-import { auth } from "@/lib/auth/context";
 
 describe("Toonplay Converter", () => {
     // Load API key from .auth/user.json
     const authFilePath = path.join(process.cwd(), ".auth/user.json");
     const authData = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
-    const environment = process.env.NODE_ENV === "production" ? "main" : "develop";
+    const environment =
+        process.env.NODE_ENV === "production" ? "main" : "develop";
     const writerApiKey = authData[environment].profiles.writer.apiKey;
 
     // Setup authentication context before all tests

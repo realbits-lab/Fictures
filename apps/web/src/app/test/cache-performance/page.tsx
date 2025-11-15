@@ -9,7 +9,7 @@
  * 3. Redis Cache (server-side, 10 min)
  */
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 
 // Cache configuration matching production settings

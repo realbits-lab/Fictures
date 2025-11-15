@@ -8,7 +8,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React from "react";
 import { StoryGrid } from "@/components/browse/StoryGrid";
 import {
     BackgroundValidationIndicator,

@@ -12,7 +12,7 @@ import { getCommunityPosts } from "@/lib/db/cached-queries";
  * - localStorage: 1 hour
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ storyId: string }> },
 ) {
     const perfLogger = getPerformanceLogger();

@@ -8,7 +8,7 @@ import { readingHistory } from "@/lib/schemas/database";
 const FORMAT = "novel" as const;
 
 // GET /api/novels/history - Fetch user's novel reading history
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const session = await auth();
 

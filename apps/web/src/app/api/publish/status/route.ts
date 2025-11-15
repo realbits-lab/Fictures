@@ -1,10 +1,10 @@
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { chapters, stories } from "@/lib/schemas/database";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const session = await auth();
 
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Get user's stories and chapters for scheduling
-        const userStories = await db
+        const _userStories = await db
             .select()
             .from(stories)
             .where(eq(stories.authorId, session.user.id))
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
                       shortTitle:
                           readyToPublish.title?.substring(0, 20) || "Untitled",
                       preview:
-                          readyToPublish.summary?.substring(0, 150) + "..." ||
+                          `${readyToPublish.summary?.substring(0, 150)}...` ||
                           "No preview available",
                       scheduledTime: "Tomorrow at 2:00 PM",
                       communityPoll: '"What happens next?"',

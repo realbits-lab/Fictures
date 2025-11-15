@@ -12,7 +12,7 @@ export { ComicViewer } from "./comic-viewer";
 export { DialogueBubble, DialogueBubbleGroup } from "./dialogue-bubble";
 export { PanelRenderer, PanelRendererSkeleton } from "./panel-renderer";
 export {
-    ProgressiveComicPanel,
     getRecommendedInitialLoadCount,
+    ProgressiveComicPanel,
 } from "./progressive-comic-panel";
 export { SFXText, SFXTextGroup } from "./sfx-text";

@@ -1,5 +1,4 @@
-import { and, eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/schemas/database";
 
@@ -34,8 +33,8 @@ export async function publishScene(params: PublishSceneParams): Promise<void> {
     }
 
     const scene = sceneData.scenes;
-    const chapter = sceneData.chapters;
-    const story = sceneData.stories;
+    const _chapter = sceneData.chapters;
+    const _story = sceneData.stories;
 
     // Validate content if required
     if (validateContent) {

@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Badge,
-    Button,
     Card,
     CardContent,
     CardHeader,
@@ -153,7 +152,7 @@ export function StoryTreeArchitecture({
     const getProgressPercentage = (
         wordCount: number,
         targetWordCount: number,
-        chapter?: Chapter,
+        _chapter?: Chapter,
     ) => {
         // Since scenes no longer have status, use word count progress
         // Fallback to word count progress

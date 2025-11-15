@@ -16,7 +16,6 @@ import {
     cleanupTestStories,
     createTestPost,
     createTestStory,
-    generateMinimalStoryData,
 } from "../helpers/test-data";
 
 setup.describe("Test Data Setup", () => {

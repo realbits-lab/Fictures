@@ -11,17 +11,10 @@
  * - Fallback to in-memory cache when Redis unavailable
  */
 
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { getStoryWithStructure } from "../db/queries";
-import {
-    chapters,
-    characters,
-    parts,
-    scenes,
-    settings,
-    stories,
-} from "../db/schema";
+import { characters, settings } from "../db/schema";
 import { getCache } from "./redis-cache";
 
 // Cache TTL Configuration
@@ -130,7 +123,7 @@ export async function getCachedStoryStructure(
  */
 async function buildStoryStructure(
     storyId: string,
-    userId?: string,
+    _userId?: string,
 ): Promise<CachedStoryStructure | null> {
     // Get story with full hierarchy using existing query
     const story = await getStoryWithStructure(storyId, true);
@@ -274,7 +267,7 @@ export async function invalidateCacheForEntity(
     entityId: string,
     storyId: string,
 ): Promise<void> {
-    const cache = getCache();
+    const _cache = getCache();
 
     // Invalidate the full story structure
     await invalidateStoryCache(storyId);

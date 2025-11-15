@@ -6,8 +6,11 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import type {
+    StoryEvaluationRequest,
+    StoryEvaluationResponse,
+} from "@/lib/schemas/api/evaluation";
 import { stories } from "@/lib/schemas/database";
-import type { StoryEvaluationRequest, StoryEvaluationResponse } from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,

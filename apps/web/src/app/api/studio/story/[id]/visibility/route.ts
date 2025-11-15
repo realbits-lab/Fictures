@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -126,7 +126,7 @@ export async function PUT(
 
 // GET endpoint to check current visibility status
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<RouteParams> },
 ) {
     try {

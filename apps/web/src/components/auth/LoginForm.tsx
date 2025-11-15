@@ -72,7 +72,7 @@ export function LoginForm() {
                 // Navigate to trigger password save prompt
                 window.location.href = "/";
             }
-        } catch (error) {
+        } catch (_error) {
             setError("An error occurred during sign in");
             // Restore show password state on error
             if (wasShowingPassword && passwordInput) {
@@ -103,7 +103,7 @@ export function LoginForm() {
                 router.push("/");
                 router.refresh();
             }
-        } catch (error) {
+        } catch (_error) {
             setError("An error occurred during sign in");
         } finally {
             setIsGoogleLoading(false);

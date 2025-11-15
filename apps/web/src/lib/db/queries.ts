@@ -1,10 +1,5 @@
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import type { ApiScope } from "../auth/api-keys";
-import { generateApiKeyId } from "../auth/api-keys";
-import { hashPassword } from "../auth/password";
-import { db } from "./index";
-import { RelationshipManager } from "./relationships";
 import {
     apiKeys,
     chapters,
@@ -17,6 +12,11 @@ import {
     userStats,
     users,
 } from "@/lib/schemas/database";
+import type { ApiScope } from "../auth/api-keys";
+import { generateApiKeyId } from "../auth/api-keys";
+import { hashPassword } from "../auth/password";
+import { db } from "./index";
+import { RelationshipManager } from "./relationships";
 
 // User authentication queries
 export async function findUserByEmail(email: string) {
@@ -228,7 +228,7 @@ export async function updateStory(
 // Chapters queries
 export async function createChapter(
     storyId: string,
-    authorId: string,
+    _authorId: string,
     data: {
         title: string;
         partId?: string;

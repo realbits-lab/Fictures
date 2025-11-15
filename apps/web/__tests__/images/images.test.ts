@@ -16,46 +16,43 @@ import fs from "node:fs";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import {
-	chapters,
-	characters,
-	parts,
-	scenes,
-	settings,
-	stories,
-	users,
-} from "@/lib/schemas/database";
 import type { ApiImagesResponse } from "@/lib/schemas/api/studio";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+    users,
+} from "@/lib/schemas/database";
 import type { ImageVariant } from "@/lib/studio/services/image-optimization-service";
 
 // ============================================================================
 // Test Configuration
 // ============================================================================
 
-const AUTH_FILE_PATH: string = path.resolve(
-	__dirname,
-	"../../.auth/user.json",
-);
+const AUTH_FILE_PATH: string = path.resolve(__dirname, "../../.auth/user.json");
 
 const API_BASE_URL: string = "http://localhost:3000";
 const API_ENDPOINT: string = "/api/studio/images";
 
 interface AuthData {
-	develop: {
-		profiles: {
-			writer: {
-				email: string;
-				password: string;
-				apiKey: string;
-			};
-		};
-	};
+    develop: {
+        profiles: {
+            writer: {
+                email: string;
+                password: string;
+                apiKey: string;
+            };
+        };
+    };
 }
 
 interface ApiImagesRequest {
-	prompt: string;
-	contentId: string;
-	imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
+    prompt: string;
+    contentId: string;
+    imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
 }
 
 let authData: AuthData;
@@ -91,7 +88,9 @@ beforeAll(async () => {
         .limit(1);
 
     if (writerUser.length === 0) {
-        throw new Error(`Writer user not found: ${writerEmail}. Run setup-auth-users.ts first.`);
+        throw new Error(
+            `Writer user not found: ${writerEmail}. Run setup-auth-users.ts first.`,
+        );
     }
 
     writerUserId = writerUser[0].id;
@@ -112,162 +111,191 @@ beforeAll(async () => {
     testScene3Id = "scene_test_003";
 
     // Create test story
-    await db.insert(stories).values({
-        id: testStoryId,
-        authorId: writerUserId,
-        title: "Test Story for Image Generation",
-        summary: "A test story for image generation tests",
-        genre: "Fantasy",
-        tone: "hopeful",
-        language: "en",
-        targetAudience: "general",
-        userPrompt: "A test story",
-        moralFramework: {
-            adversity: { type: "external-conflict", description: "Test adversity" },
-            virtue: { virtue: "courage", description: "Test virtue" },
-            consequence: { type: "character-growth", description: "Test consequence" }
-        },
-    }).onConflictDoNothing();
+    await db
+        .insert(stories)
+        .values({
+            id: testStoryId,
+            authorId: writerUserId,
+            title: "Test Story for Image Generation",
+            summary: "A test story for image generation tests",
+            genre: "Fantasy",
+            tone: "hopeful",
+            language: "en",
+            targetAudience: "general",
+            userPrompt: "A test story",
+            moralFramework: {
+                adversity: {
+                    type: "external-conflict",
+                    description: "Test adversity",
+                },
+                virtue: { virtue: "courage", description: "Test virtue" },
+                consequence: {
+                    type: "character-growth",
+                    description: "Test consequence",
+                },
+            },
+        })
+        .onConflictDoNothing();
 
     // Create test character
-    await db.insert(characters).values({
-        id: testCharacterId,
-        storyId: testStoryId,
-        name: "Test Character",
-        role: "protagonist",
-        summary: "A test character for image generation",
-        coreTrait: "courage",
-        internalFlaw: "Fears failure because of past mistakes",
-        externalGoal: "Prove their worth to the kingdom",
-        backstory: "A brave hero with a mysterious past",
-        personality: {
-            traits: ["brave", "curious"],
-            mannerisms: ["speaks softly"],
-            quirks: ["always smiles"]
-        },
-        physicalDescription: {
-            age: "young adult",
-            build: "average",
-            height: "average",
-            features: ["brown hair", "blue eyes"]
-        },
-        voiceStyle: {
-            tone: "warm",
-            vocabulary: "simple",
-            speechPatterns: ["direct"]
-        }
-    }).onConflictDoNothing();
+    await db
+        .insert(characters)
+        .values({
+            id: testCharacterId,
+            storyId: testStoryId,
+            name: "Test Character",
+            role: "protagonist",
+            summary: "A test character for image generation",
+            coreTrait: "courage",
+            internalFlaw: "Fears failure because of past mistakes",
+            externalGoal: "Prove their worth to the kingdom",
+            backstory: "A brave hero with a mysterious past",
+            personality: {
+                traits: ["brave", "curious"],
+                mannerisms: ["speaks softly"],
+                quirks: ["always smiles"],
+            },
+            physicalDescription: {
+                age: "young adult",
+                build: "average",
+                height: "average",
+                features: ["brown hair", "blue eyes"],
+            },
+            voiceStyle: {
+                tone: "warm",
+                vocabulary: "simple",
+                speechPatterns: ["direct"],
+            },
+        })
+        .onConflictDoNothing();
 
     // Create test setting
-    await db.insert(settings).values({
-        id: testSettingId,
-        storyId: testStoryId,
-        name: "Test Setting",
-        summary: "A test setting for image generation",
-        adversityElements: {
-            physicalObstacles: ["rocky terrain"],
-            scarcityFactors: ["limited resources"],
-            dangerSources: ["wild beasts"],
-            socialDynamics: ["isolated community"]
-        },
-        virtueElements: {
-            witnessElements: ["ancient monuments"],
-            contrastElements: ["harsh environment"],
-            opportunityElements: ["hidden sanctuaries"],
-            sacredSpaces: ["temple ruins"]
-        },
-        consequenceElements: {
-            transformativeElements: ["seasonal changes"],
-            rewardSources: ["natural springs"],
-            revelationTriggers: ["old inscriptions"],
-            communityResponses: ["gathering places"]
-        },
-        symbolicMeaning: "A place of trial and transformation",
-        mood: "mysterious and hopeful",
-        emotionalResonance: "wonder",
-        sensory: {
-            sight: ["golden light", "ancient ruins"],
-            sound: ["wind chimes", "rustling leaves"],
-            smell: ["fresh air", "wildflowers"],
-            touch: ["cool stone", "soft grass"],
-            taste: []
-        },
-        architecturalStyle: "Ancient ruins with natural overgrowth",
-        visualReferences: ["ancient temples", "overgrown ruins"],
-        colorPalette: ["golden", "green", "blue"]
-    }).onConflictDoNothing();
+    await db
+        .insert(settings)
+        .values({
+            id: testSettingId,
+            storyId: testStoryId,
+            name: "Test Setting",
+            summary: "A test setting for image generation",
+            adversityElements: {
+                physicalObstacles: ["rocky terrain"],
+                scarcityFactors: ["limited resources"],
+                dangerSources: ["wild beasts"],
+                socialDynamics: ["isolated community"],
+            },
+            virtueElements: {
+                witnessElements: ["ancient monuments"],
+                contrastElements: ["harsh environment"],
+                opportunityElements: ["hidden sanctuaries"],
+                sacredSpaces: ["temple ruins"],
+            },
+            consequenceElements: {
+                transformativeElements: ["seasonal changes"],
+                rewardSources: ["natural springs"],
+                revelationTriggers: ["old inscriptions"],
+                communityResponses: ["gathering places"],
+            },
+            symbolicMeaning: "A place of trial and transformation",
+            mood: "mysterious and hopeful",
+            emotionalResonance: "wonder",
+            sensory: {
+                sight: ["golden light", "ancient ruins"],
+                sound: ["wind chimes", "rustling leaves"],
+                smell: ["fresh air", "wildflowers"],
+                touch: ["cool stone", "soft grass"],
+                taste: [],
+            },
+            architecturalStyle: "Ancient ruins with natural overgrowth",
+            visualReferences: ["ancient temples", "overgrown ruins"],
+            colorPalette: ["golden", "green", "blue"],
+        })
+        .onConflictDoNothing();
 
     // Create test part
-    await db.insert(parts).values({
-        id: testPartId,
-        storyId: testStoryId,
-        title: "Test Part",
-        summary: "A test part for chapters",
-        characterArcs: [],
-        orderIndex: 0,
-    }).onConflictDoNothing();
+    await db
+        .insert(parts)
+        .values({
+            id: testPartId,
+            storyId: testStoryId,
+            title: "Test Part",
+            summary: "A test part for chapters",
+            characterArcs: [],
+            orderIndex: 0,
+        })
+        .onConflictDoNothing();
 
     // Create test chapter
-    await db.insert(chapters).values({
-        id: testChapterId,
-        storyId: testStoryId,
-        partId: testPartId,
-        characterId: testCharacterId,
-        title: "Test Chapter",
-        summary: "A test chapter for scenes",
-        arcPosition: "middle",
-        contributesToMacroArc: "Tests the protagonist's core trait through adversity",
-        adversityType: "external",
-        virtueType: "courage",
-        connectsToPreviousChapter: "Initial adversity presents challenge to the character",
-        createsNextAdversity: "Character's action leads to new complication",
-        orderIndex: 0,
-    }).onConflictDoNothing();
+    await db
+        .insert(chapters)
+        .values({
+            id: testChapterId,
+            storyId: testStoryId,
+            partId: testPartId,
+            characterId: testCharacterId,
+            title: "Test Chapter",
+            summary: "A test chapter for scenes",
+            arcPosition: "middle",
+            contributesToMacroArc:
+                "Tests the protagonist's core trait through adversity",
+            adversityType: "external",
+            virtueType: "courage",
+            connectsToPreviousChapter:
+                "Initial adversity presents challenge to the character",
+            createsNextAdversity:
+                "Character's action leads to new complication",
+            orderIndex: 0,
+        })
+        .onConflictDoNothing();
 
     // Create test scenes
-    await db.insert(scenes).values([
-        {
-            id: testScene1Id,
-            storyId: testStoryId,
-            chapterId: testChapterId,
-            settingId: testSettingId,
-            title: "Test Scene 1",
-            summary: "First test scene for image generation",
-            cyclePhase: "adversity",
-            emotionalBeat: "tension",
-            dialogueVsDescription: "50% dialogue, 50% description",
-            suggestedLength: "medium",
-            orderIndex: 0,
-        },
-        {
-            id: testScene2Id,
-            storyId: testStoryId,
-            chapterId: testChapterId,
-            settingId: testSettingId,
-            title: "Test Scene 2",
-            summary: "Second test scene for comic panel",
-            cyclePhase: "virtue",
-            emotionalBeat: "hope",
-            dialogueVsDescription: "60% dialogue, 40% description",
-            suggestedLength: "medium",
-            orderIndex: 1,
-        },
-        {
-            id: testScene3Id,
-            storyId: testStoryId,
-            chapterId: testChapterId,
-            settingId: testSettingId,
-            title: "Test Scene 3",
-            summary: "Third test scene for metadata testing",
-            cyclePhase: "consequence",
-            emotionalBeat: "relief",
-            dialogueVsDescription: "40% dialogue, 60% description",
-            suggestedLength: "medium",
-            orderIndex: 2,
-        },
-    ]).onConflictDoNothing();
+    await db
+        .insert(scenes)
+        .values([
+            {
+                id: testScene1Id,
+                storyId: testStoryId,
+                chapterId: testChapterId,
+                settingId: testSettingId,
+                title: "Test Scene 1",
+                summary: "First test scene for image generation",
+                cyclePhase: "adversity",
+                emotionalBeat: "tension",
+                dialogueVsDescription: "50% dialogue, 50% description",
+                suggestedLength: "medium",
+                orderIndex: 0,
+            },
+            {
+                id: testScene2Id,
+                storyId: testStoryId,
+                chapterId: testChapterId,
+                settingId: testSettingId,
+                title: "Test Scene 2",
+                summary: "Second test scene for comic panel",
+                cyclePhase: "virtue",
+                emotionalBeat: "hope",
+                dialogueVsDescription: "60% dialogue, 40% description",
+                suggestedLength: "medium",
+                orderIndex: 1,
+            },
+            {
+                id: testScene3Id,
+                storyId: testStoryId,
+                chapterId: testChapterId,
+                settingId: testSettingId,
+                title: "Test Scene 3",
+                summary: "Third test scene for metadata testing",
+                cyclePhase: "consequence",
+                emotionalBeat: "relief",
+                dialogueVsDescription: "40% dialogue, 60% description",
+                suggestedLength: "medium",
+                orderIndex: 2,
+            },
+        ])
+        .onConflictDoNothing();
 
-    console.log("✓ Test setup complete - using writer API key and test database records");
+    console.log(
+        "✓ Test setup complete - using writer API key and test database records",
+    );
 });
 
 // Cleanup test data after all tests
@@ -352,7 +380,8 @@ describe("Images System Integration", () => {
         // Assert - Dimensions (16:9 = 1664x928 or 1344x768)
         expect(result.dimensions.width).toBeGreaterThan(1000);
         expect(result.dimensions.height).toBeGreaterThan(500);
-        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
+        const aspectRatioValue: number =
+            result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(1.7);
         expect(aspectRatioValue).toBeLessThan(1.8);
 
@@ -371,7 +400,9 @@ describe("Images System Integration", () => {
         // Assert - Optimized variants
         expect(result.optimizedSet).toBeDefined();
         expect(result.optimizedSet.imageId).toBeDefined();
-        expect(result.optimizedSet.originalUrl).toContain("blob.vercel-storage.com");
+        expect(result.optimizedSet.originalUrl).toContain(
+            "blob.vercel-storage.com",
+        );
         expect(Array.isArray(result.optimizedSet.variants)).toBe(true);
         expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
 
@@ -410,7 +441,8 @@ describe("Images System Integration", () => {
         // Assert - Dimensions (1:1 = 1024x1024)
         expect(result.dimensions.width).toBeGreaterThan(900);
         expect(result.dimensions.height).toBeGreaterThan(900);
-        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
+        const aspectRatioValue: number =
+            result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(0.95);
         expect(aspectRatioValue).toBeLessThan(1.05);
 
@@ -434,7 +466,8 @@ describe("Images System Integration", () => {
         expect(result.aspectRatio).toBe("1:1");
 
         // Assert - Square dimensions
-        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
+        const aspectRatioValue: number =
+            result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(0.95);
         expect(aspectRatioValue).toBeLessThan(1.05);
     }, 60000);
@@ -454,7 +487,8 @@ describe("Images System Integration", () => {
         expect(result.aspectRatio).toBe("16:9");
 
         // Assert - Widescreen dimensions
-        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
+        const aspectRatioValue: number =
+            result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(1.7);
         expect(aspectRatioValue).toBeLessThan(1.8);
     }, 60000);
@@ -474,10 +508,13 @@ describe("Images System Integration", () => {
         expect(result.aspectRatio).toBe("9:16");
 
         // Assert - Portrait dimensions (taller than wide)
-        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
+        const aspectRatioValue: number =
+            result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(0.55);
         expect(aspectRatioValue).toBeLessThan(0.58);
-        expect(result.dimensions.height).toBeGreaterThan(result.dimensions.width);
+        expect(result.dimensions.height).toBeGreaterThan(
+            result.dimensions.width,
+        );
     }, 60000);
 
     it("should include comprehensive metadata in results", async () => {

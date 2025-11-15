@@ -29,7 +29,7 @@ const updateStorySchema = z.object({
 
 // GET /api/stories/[id] - Get story details with chapters
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {
@@ -102,7 +102,7 @@ export async function PATCH(
 
 // DELETE /api/stories/[id] - Delete story and all related data
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {
@@ -223,7 +223,7 @@ export async function DELETE(
 
             postIds = storyCommunityPosts.map((p) => p.id);
             console.log(`Found ${postIds.length} community posts to delete`);
-        } catch (error) {
+        } catch (_error) {
             console.log(
                 "⚠️ Community posts table not found - skipping community data deletion",
             );

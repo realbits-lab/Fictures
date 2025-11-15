@@ -176,12 +176,15 @@ async function generateStory(
             });
 
             // 4. Generate part (single part for test)
-            console.log(`    • Generating part structure (version: ${PROMPT_VERSION})...`);
+            console.log(
+                `    • Generating part structure (version: ${PROMPT_VERSION})...`,
+            );
             const partResult = await partService.generateAndSave({
                 userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                 storyId,
                 partNumber: 1,
-                promptVersion: PROMPT_VERSION !== "v1.0" ? PROMPT_VERSION : undefined, // Pass version for A/B testing
+                promptVersion:
+                    PROMPT_VERSION !== "v1.0" ? PROMPT_VERSION : undefined, // Pass version for A/B testing
             });
 
             // 5. Generate 2 chapters for testing
@@ -216,11 +219,7 @@ async function generateStory(
 
             // 7. Generate scene content for first 3 scenes (for testing)
             console.log(`    • Generating scene content...`);
-            for (
-                let i = 0;
-                i < Math.min(3, generatedScenes.length);
-                i++
-            ) {
+            for (let i = 0; i < Math.min(3, generatedScenes.length); i++) {
                 await sceneContentService.generateAndSave({
                     userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                     sceneId: generatedScenes[i].id,
@@ -430,77 +429,112 @@ function calculateCorePrincipleScores(
     // CYCLIC STRUCTURE - Combination of chapter and part level metrics
     const cyclicMetrics: number[] = [];
     if (evaluationResults.chapter?.metrics?.singleCycleFocus?.score) {
-        cyclicMetrics.push(evaluationResults.chapter.metrics.singleCycleFocus.score);
+        cyclicMetrics.push(
+            evaluationResults.chapter.metrics.singleCycleFocus.score,
+        );
     }
     if (evaluationResults.part?.metrics?.cycleCoherence?.score) {
         cyclicMetrics.push(evaluationResults.part.metrics.cycleCoherence.score);
     }
     if (evaluationResults.sceneContent?.metrics?.cycleAlignment?.score) {
-        cyclicMetrics.push(evaluationResults.sceneContent.metrics.cycleAlignment.score);
+        cyclicMetrics.push(
+            evaluationResults.sceneContent.metrics.cycleAlignment.score,
+        );
     }
     if (cyclicMetrics.length > 0) {
-        scores.cyclicStructure = cyclicMetrics.reduce((a, b) => a + b, 0) / cyclicMetrics.length;
+        scores.cyclicStructure =
+            cyclicMetrics.reduce((a, b) => a + b, 0) / cyclicMetrics.length;
     }
 
     // INTRINSIC MOTIVATION - Story-level moral framework + character virtues
     const motivationMetrics: number[] = [];
     if (evaluationResults.story?.metrics?.moralFrameworkClarity?.score) {
-        motivationMetrics.push(evaluationResults.story.metrics.moralFrameworkClarity.score);
+        motivationMetrics.push(
+            evaluationResults.story.metrics.moralFrameworkClarity.score,
+        );
     }
     // TODO: Add characters evaluation when available
     // if (evaluationResults.characters?.metrics?.genuineVirtue?.score) {
     //     motivationMetrics.push(evaluationResults.characters.metrics.genuineVirtue.score);
     // }
     if (motivationMetrics.length > 0) {
-        scores.intrinsicMotivation = motivationMetrics.reduce((a, b) => a + b, 0) / motivationMetrics.length;
+        scores.intrinsicMotivation =
+            motivationMetrics.reduce((a, b) => a + b, 0) /
+            motivationMetrics.length;
     }
 
     // EARNED CONSEQUENCE - Part-level seed tracking + chapter adversity connection
     const consequenceMetrics: number[] = [];
     if (evaluationResults.part?.metrics?.earnedLuckTracking?.score) {
-        consequenceMetrics.push(evaluationResults.part.metrics.earnedLuckTracking.score);
+        consequenceMetrics.push(
+            evaluationResults.part.metrics.earnedLuckTracking.score,
+        );
     }
     if (evaluationResults.chapter?.metrics?.adversityConnection?.score) {
-        consequenceMetrics.push(evaluationResults.chapter.metrics.adversityConnection.score);
+        consequenceMetrics.push(
+            evaluationResults.chapter.metrics.adversityConnection.score,
+        );
     }
     if (evaluationResults.chapter?.metrics?.seedTrackingCompleteness?.score) {
         // Normalize from 0-100 to 0-4 scale
-        consequenceMetrics.push(evaluationResults.chapter.metrics.seedTrackingCompleteness.score / 25);
+        consequenceMetrics.push(
+            evaluationResults.chapter.metrics.seedTrackingCompleteness.score /
+                25,
+        );
     }
     if (consequenceMetrics.length > 0) {
-        scores.earnedConsequence = consequenceMetrics.reduce((a, b) => a + b, 0) / consequenceMetrics.length;
+        scores.earnedConsequence =
+            consequenceMetrics.reduce((a, b) => a + b, 0) /
+            consequenceMetrics.length;
     }
 
     // CHARACTER TRANSFORMATION - Chapter-level stakes escalation + transition quality
     const transformationMetrics: number[] = [];
     if (evaluationResults.chapter?.metrics?.stakesEscalation?.score) {
-        transformationMetrics.push(evaluationResults.chapter.metrics.stakesEscalation.score);
+        transformationMetrics.push(
+            evaluationResults.chapter.metrics.stakesEscalation.score,
+        );
     }
-    if (evaluationResults.chapter?.metrics?.resolutionAdversityTransition?.score) {
-        transformationMetrics.push(evaluationResults.chapter.metrics.resolutionAdversityTransition.score);
+    if (
+        evaluationResults.chapter?.metrics?.resolutionAdversityTransition?.score
+    ) {
+        transformationMetrics.push(
+            evaluationResults.chapter.metrics.resolutionAdversityTransition
+                .score,
+        );
     }
     // TODO: Add character arc evaluation when available
     // if (evaluationResults.characters?.metrics?.arcProgression?.score) {
     //     transformationMetrics.push(evaluationResults.characters.metrics.arcProgression.score);
     // }
     if (transformationMetrics.length > 0) {
-        scores.characterTransformation = transformationMetrics.reduce((a, b) => a + b, 0) / transformationMetrics.length;
+        scores.characterTransformation =
+            transformationMetrics.reduce((a, b) => a + b, 0) /
+            transformationMetrics.length;
     }
 
     // EMOTIONAL RESONANCE - Scene content emotional metrics + story thematic coherence
     const resonanceMetrics: number[] = [];
     if (evaluationResults.sceneContent?.metrics?.emotionalResonance?.score) {
-        resonanceMetrics.push(evaluationResults.sceneContent.metrics.emotionalResonance.score);
+        resonanceMetrics.push(
+            evaluationResults.sceneContent.metrics.emotionalResonance.score,
+        );
     }
     if (evaluationResults.story?.metrics?.thematicCoherence?.score) {
-        resonanceMetrics.push(evaluationResults.story.metrics.thematicCoherence.score);
+        resonanceMetrics.push(
+            evaluationResults.story.metrics.thematicCoherence.score,
+        );
     }
     if (evaluationResults.chapter?.metrics?.narrativeMomentum?.score) {
         // Normalize from 0-100 to 0-4 scale
-        resonanceMetrics.push(evaluationResults.chapter.metrics.narrativeMomentum.score / 25);
+        resonanceMetrics.push(
+            evaluationResults.chapter.metrics.narrativeMomentum.score / 25,
+        );
     }
     if (resonanceMetrics.length > 0) {
-        scores.emotionalResonance = resonanceMetrics.reduce((a, b) => a + b, 0) / resonanceMetrics.length;
+        scores.emotionalResonance =
+            resonanceMetrics.reduce((a, b) => a + b, 0) /
+            resonanceMetrics.length;
     }
 
     return scores;

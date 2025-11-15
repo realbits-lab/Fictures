@@ -8,6 +8,11 @@
  * Database operations are handled by the caller (API route).
  */
 
+import type {
+    CharacterPromptParams,
+    GeneratorCharactersParams,
+    GeneratorCharactersResult,
+} from "@/lib/schemas/generators/types";
 import {
     type AiCharacterType,
     AiCharacterZodSchema,
@@ -15,11 +20,6 @@ import {
 import { createTextGenerationClient } from "./ai-client";
 import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    CharacterPromptParams,
-    GeneratorCharactersParams,
-    GeneratorCharactersResult,
-} from "@/lib/schemas/generators/types";
 
 /**
  * Generate character profiles for a story

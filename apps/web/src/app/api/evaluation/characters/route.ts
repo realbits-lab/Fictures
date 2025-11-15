@@ -6,12 +6,12 @@
 import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { characters } from "@/lib/schemas/database";
 import type {
     CharacterEvaluationRequest,
     CharacterEvaluationResponse,
     CharacterEvaluationResult,
 } from "@/lib/schemas/api/evaluation";
+import { characters } from "@/lib/schemas/database";
 import {
     calculateOverallScore,
     createErrorResponse,

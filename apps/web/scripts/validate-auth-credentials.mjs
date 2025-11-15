@@ -22,10 +22,9 @@
  *   node scripts/validate-auth-credentials.mjs --fix
  */
 
-import crypto from "crypto";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,9 +33,9 @@ const __dirname = path.dirname(__filename);
 const AUTH_FILE_PATH = path.join(__dirname, "../.auth/user.json");
 const PASSWORD_LENGTH = 24;
 <<<<<<< HEAD
-const API_KEY_MIN_LENGTH = 16; // Minimum length without 'fic_' prefix
-const API_KEY_MAX_LENGTH = 64; // Maximum length without 'fic_' prefix (generous limit)
-const API_KEY_PREFIX = "fic_";
+const _API_KEY_MIN_LENGTH = 16; // Minimum length without 'fic_' prefix
+const _API_KEY_MAX_LENGTH = 64; // Maximum length without 'fic_' prefix (generous limit)
+const _API_KEY_PREFIX = "fic_";
 =======
 const API_KEY_MIN_LENGTH = 40; // Minimum length without 'fic_' prefix (base64url encoded)
 const API_KEY_MAX_LENGTH = 50; // Maximum length without 'fic_' prefix (base64url encoded)
@@ -323,11 +322,11 @@ function validateCredentials(options = {}) {
 					...emailValidation,
 				},
 				password: {
-					value: creds.password.slice(0, 4) + "..." + creds.password.slice(-4), // Partially masked
+					value: `${creds.password.slice(0, 4)}...${creds.password.slice(-4)}`, // Partially masked
 					...passwordValidation,
 				},
 				apiKey: {
-					value: creds.apiKey.slice(0, 8) + "..." + creds.apiKey.slice(-4), // Partially masked
+					value: `${creds.apiKey.slice(0, 8)}...${creds.apiKey.slice(-4)}`, // Partially masked
 					...apiKeyValidation,
 				},
 				overall: {
@@ -455,7 +454,7 @@ function displayResults(results, verbose = false) {
  * Generate credentials (for auto-fix)
  */
 function generateCredentials() {
-	const { execSync } = require("child_process");
+	const { execSync } = require("node:child_process");
 	const output = execSync("node scripts/generate-auth-credentials.mjs --all", {
 		cwd: path.join(__dirname, ".."),
 		encoding: "utf-8",

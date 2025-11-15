@@ -35,11 +35,11 @@
  *   - At least one story in the database
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import { Pool } from "@neondatabase/serverless";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
-import fs from "fs";
-import path from "path";
 import sharp from "sharp";
 import * as schema from "../src/lib/schemas/database";
 import {

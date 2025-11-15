@@ -10,9 +10,8 @@ import { asc, eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, comicPanels, scenes, stories } from "@/lib/schemas/database";
+import { comicPanels, scenes } from "@/lib/schemas/database";
 import {
-    COMIC_CONSTANTS,
     calculateTotalHeight,
     estimateReadingTime,
 } from "@/lib/services/comic-layout";
@@ -23,7 +22,7 @@ interface RouteContext {
     }>;
 }
 
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
     try {
         const { sceneId } = await context.params;
 

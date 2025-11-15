@@ -255,7 +255,7 @@ async function generatePanels(sceneId, scene) {
                         } else if (event.type === "error") {
                             throw new Error(event.message);
                         }
-                    } catch (parseError) {
+                    } catch (_parseError) {
                         if (isVerbose) {
                             console.log(
                                 `   Warning: Could not parse event: ${data}`,

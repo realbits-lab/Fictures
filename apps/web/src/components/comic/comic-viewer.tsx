@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useSceneView } from "@/hooks/useSceneView";
-import { PanelRenderer, PanelRendererSkeleton } from "./panel-renderer";
 import {
     getRecommendedInitialLoadCount,
     ProgressiveComicPanel,

@@ -297,7 +297,7 @@ export function usePrefetchStory() {
 /**
  * Hook for managing reading position/progress (future enhancement)
  */
-export function useReadingProgress(storyId: string, chapterId: string | null) {
+export function useReadingProgress(storyId: string, _chapterId: string | null) {
     return useMemo(
         () => ({
             // Placeholder for reading progress tracking

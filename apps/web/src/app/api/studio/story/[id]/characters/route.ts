@@ -1,14 +1,13 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { characters as charactersTable, stories } from "@/lib/schemas/database";
+import { characters as charactersTable } from "@/lib/schemas/database";
 
 export const runtime = "nodejs";
 
 // GET /api/stories/[id]/characters - Get characters for a story
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {

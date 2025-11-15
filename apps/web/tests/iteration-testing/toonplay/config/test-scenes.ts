@@ -140,11 +140,7 @@ Thomas looked at Sarah in the front row—the woman whose company he'd nearly de
 "I won't let you down," Thomas whispered. "Not again."
 
 The gavel fell.`,
-        focusAreas: [
-            "scene-variety",
-            "tension-building",
-            "emotional-payoff",
-        ],
+        focusAreas: ["scene-variety", "tension-building", "emotional-payoff"],
         description:
             "Comprehensive test - combines dialogue, emotion, atmosphere, and multiple characters",
         expectedPanelCount: { min: 10, max: 12 },

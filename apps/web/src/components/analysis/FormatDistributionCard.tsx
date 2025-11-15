@@ -9,7 +9,6 @@
 
 "use client";
 
-import React from "react";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { FormatDistribution } from "@/components/ui/format-distribution";

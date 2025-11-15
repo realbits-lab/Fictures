@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -9,14 +8,7 @@ import { CommunityPostsList } from "@/components/community/CommunityPostsList";
 import { CommunityStorySidebar } from "@/components/community/CommunityStorySidebar";
 import { CreatePostForm } from "@/components/community/CreatePostForm";
 import { MainLayout } from "@/components/layout";
-import {
-    Badge,
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui";
+import { Badge, Button, Card, CardContent } from "@/components/ui";
 import { useProtectedAction } from "@/hooks/useProtectedAction";
 import {
     useCommunityPosts,

@@ -188,7 +188,7 @@ export class ServerAuthStore implements AuthStore {
         return getAuthSafe();
     }
 
-    setAuth(context: AuthContext): void {
+    setAuth(_context: AuthContext): void {
         // AsyncLocalStorage doesn't support direct setting outside of run()
         // This method should not be used with AsyncLocalStorage
         throw new AuthenticationError(

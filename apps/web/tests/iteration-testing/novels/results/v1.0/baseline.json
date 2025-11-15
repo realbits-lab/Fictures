@@ -1,71 +1,71 @@
 {
-  "version": "v1.0",
-  "testDate": "2025-11-14T13:36:30.163Z",
-  "testPrompts": [
-    "last-garden",
-    "broken-healer",
-    "thiefs-gift",
-    "silent-painter"
-  ],
-  "evaluationMode": "standard",
-  "iterations": 5,
-  "stories": [],
-  "aggregatedMetrics": {
-    "cyclicStructure": {
-      "cycleCompleteness": 0,
-      "chapterCycleFocus": 0,
-      "phaseCoverage": 0,
-      "resolutionAdversityTransition": 0,
-      "stakesEscalation": 0,
-      "narrativeMomentum": 0,
-      "nestedCycleAlignment": 0,
-      "causalChainContinuity": 0,
-      "forwardMomentum": 0
+    "version": "v1.0",
+    "testDate": "2025-11-14T13:36:30.163Z",
+    "testPrompts": [
+        "last-garden",
+        "broken-healer",
+        "thiefs-gift",
+        "silent-painter"
+    ],
+    "evaluationMode": "standard",
+    "iterations": 5,
+    "stories": [],
+    "aggregatedMetrics": {
+        "cyclicStructure": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "intrinsicMotivation": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "earnedConsequence": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "characterTransformation": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "emotionalResonance": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        }
     },
-    "intrinsicMotivation": {
-      "cycleCompleteness": 0,
-      "chapterCycleFocus": 0,
-      "phaseCoverage": 0,
-      "resolutionAdversityTransition": 0,
-      "stakesEscalation": 0,
-      "narrativeMomentum": 0,
-      "nestedCycleAlignment": 0,
-      "causalChainContinuity": 0,
-      "forwardMomentum": 0
-    },
-    "earnedConsequence": {
-      "cycleCompleteness": 0,
-      "chapterCycleFocus": 0,
-      "phaseCoverage": 0,
-      "resolutionAdversityTransition": 0,
-      "stakesEscalation": 0,
-      "narrativeMomentum": 0,
-      "nestedCycleAlignment": 0,
-      "causalChainContinuity": 0,
-      "forwardMomentum": 0
-    },
-    "characterTransformation": {
-      "cycleCompleteness": 0,
-      "chapterCycleFocus": 0,
-      "phaseCoverage": 0,
-      "resolutionAdversityTransition": 0,
-      "stakesEscalation": 0,
-      "narrativeMomentum": 0,
-      "nestedCycleAlignment": 0,
-      "causalChainContinuity": 0,
-      "forwardMomentum": 0
-    },
-    "emotionalResonance": {
-      "cycleCompleteness": 0,
-      "chapterCycleFocus": 0,
-      "phaseCoverage": 0,
-      "resolutionAdversityTransition": 0,
-      "stakesEscalation": 0,
-      "narrativeMomentum": 0,
-      "nestedCycleAlignment": 0,
-      "causalChainContinuity": 0,
-      "forwardMomentum": 0
-    }
-  },
-  "failurePatterns": []
+    "failurePatterns": []
 }

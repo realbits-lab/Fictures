@@ -12,13 +12,13 @@ import {
     type AiComicToonplayType,
     AiComicToonplayZodSchema,
 } from "@/lib/schemas/ai/ai-toonplay";
-import { createTextGenerationClient } from "./ai-client";
-import { promptManager } from "./prompt-manager";
 import type {
     GeneratorToonplayParams,
     GeneratorToonplayResult,
     ToonplayPromptParams,
 } from "@/lib/schemas/generators/types";
+import { createTextGenerationClient } from "./ai-client";
+import { promptManager } from "./prompt-manager";
 
 /**
  * Convert a narrative scene to webtoon toonplay specification

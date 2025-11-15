@@ -7,7 +7,7 @@
  * - Supports filtering, sorting, and pagination
  */
 
-import { and, asc, desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
@@ -25,11 +25,11 @@ export async function GET(
         const { searchParams } = new URL(request.url);
 
         // Query parameters
-        const format = searchParams.get("format") || "all"; // all, novel, comic
+        const _format = searchParams.get("format") || "all"; // all, novel, comic
         const sortBy = searchParams.get("sortBy") || "views"; // views, novel, comic, recent
         const order = searchParams.get("order") || "desc"; // asc, desc
-        const limit = parseInt(searchParams.get("limit") || "10");
-        const offset = parseInt(searchParams.get("offset") || "0");
+        const limit = parseInt(searchParams.get("limit") || "10", 10);
+        const offset = parseInt(searchParams.get("offset") || "0", 10);
 
         // Verify story exists
         const story = await db

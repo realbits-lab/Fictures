@@ -10,9 +10,9 @@
  * - reader@fictures.xyz: Reader role (stories:read scope) - Read-only access
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import { expect, type Page } from "@playwright/test";
-import fs from "fs";
-import path from "path";
 
 export interface AuthProfile {
     email: string;
@@ -151,7 +151,7 @@ export async function logout(page: Page): Promise<void> {
  */
 export async function isAuthenticated(page: Page): Promise<boolean> {
     // Try to access a protected route and check if redirected
-    const response = await page.goto("/studio");
+    const _response = await page.goto("/studio");
     const url = page.url();
 
     // If redirected to login, user is not authenticated

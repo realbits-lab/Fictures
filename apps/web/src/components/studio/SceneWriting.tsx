@@ -1,14 +1,7 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
-import {
-    Badge,
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui";
+import { useCallback, useEffect, useState } from "react";
+import { Badge, Button, Card, CardContent } from "@/components/ui";
 
 interface SceneWritingProps {
     initialContent?: string;

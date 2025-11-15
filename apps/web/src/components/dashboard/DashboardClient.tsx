@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { StoryGrid } from "@/components/browse/StoryGrid";
@@ -9,15 +8,11 @@ import {
     StoryGridSkeleton,
     StoryLoadingError,
 } from "@/components/common";
-import { Button, SkeletonLoader } from "@/components/ui";
+import { SkeletonLoader } from "@/components/ui";
 import { useUserStories } from "@/lib/hooks/use-page-cache";
 
-import { StoryCard } from "./StoryCard";
-import { StoryTableView } from "./story-table-view";
-import { ViewToggle } from "./view-toggle";
-
 export function DashboardClient() {
-    const [view, setView] = useState<"card" | "table">("card");
+    const [_view, _setView] = useState<"card" | "table">("card");
     const { data: session } = useSession();
     const {
         data,

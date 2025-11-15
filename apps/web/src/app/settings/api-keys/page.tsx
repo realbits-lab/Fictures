@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
     Button,
@@ -86,7 +86,7 @@ export default function ApiKeysPage() {
         if (session?.user?.id) {
             fetchApiKeys();
         }
-    }, [session?.user?.id]);
+    }, [session?.user?.id, fetchApiKeys]);
 
     // Show loading state for unauthenticated users AFTER all hooks
     if (!session?.user?.id) {

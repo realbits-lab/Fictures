@@ -1,5 +1,4 @@
 import { and, desc, eq } from "drizzle-orm";
-import { db } from "./index";
 import {
     type NewStudioAgentChat,
     type NewStudioAgentMessage,
@@ -10,6 +9,7 @@ import {
     studioAgentMessages,
     studioAgentToolExecutions,
 } from "@/lib/schemas/database";
+import { db } from "./index";
 
 // ==============================================================================
 // STUDIO AGENT CHAT OPERATIONS
@@ -157,7 +157,7 @@ export async function getStudioAgentMessages(
 export async function getStudioAgentMessagesPaginated(
     chatId: string,
     limit: number = 50,
-    cursor?: string,
+    _cursor?: string,
 ) {
     const query = db
         .select()

@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React from "react";
 import {
     Badge,
     Button,
@@ -9,7 +8,6 @@ import {
     CardContent,
     CardHeader,
     CardTitle,
-    Progress,
     Skeleton,
     SkeletonLoader,
 } from "@/components/ui";

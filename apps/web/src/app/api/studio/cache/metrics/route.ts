@@ -36,7 +36,6 @@ function parseTimeRange(range: TimeRange): number {
             return 7 * 24 * 60 * 60 * 1000;
         case "30d":
             return 30 * 24 * 60 * 60 * 1000;
-        case "all":
         default:
             return Infinity;
     }

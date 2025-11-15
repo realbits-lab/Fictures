@@ -6,9 +6,9 @@
  * Adds the comic_toonplay JSONB column to scenes table
  */
 
-import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 import { sql } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/neon-http";
 
 async function applyMigration() {
     console.log("🔄 Applying comic_toonplay migration...");

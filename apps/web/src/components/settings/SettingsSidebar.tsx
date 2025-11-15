@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import React from "react";
 import { Card, CardContent } from "@/components/ui";
 import { cn } from "@/lib/utils/cn";
 

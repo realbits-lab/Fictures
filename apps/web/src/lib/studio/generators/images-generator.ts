@@ -14,17 +14,23 @@
  */
 
 import { getApiKey } from "@/lib/auth/server-context";
+import type { AspectRatio } from "@/lib/schemas/domain/image";
 import type {
     GeneratorImageParams,
     GeneratorImageResult,
 } from "@/lib/schemas/generators/types";
-import type { AspectRatio } from "@/lib/schemas/domain/image";
 
 /**
  * Get dimensions for aspect ratio
  */
-function getImageDimensions(aspectRatio: AspectRatio): { width: number; height: number } {
-    const dimensionsMap: Record<AspectRatio, { width: number; height: number }> = {
+function getImageDimensions(aspectRatio: AspectRatio): {
+    width: number;
+    height: number;
+} {
+    const dimensionsMap: Record<
+        AspectRatio,
+        { width: number; height: number }
+    > = {
         "1:1": { width: 1024, height: 1024 },
         "16:9": { width: 1664, height: 936 },
         "9:16": { width: 928, height: 1664 },
@@ -67,19 +73,30 @@ export async function generateImage(
     const apiKey = getApiKey();
 
     if (!apiKey) {
-        console.error("[images-generator] ERROR: No API key found in authentication context!");
+        console.error(
+            "[images-generator] ERROR: No API key found in authentication context!",
+        );
         throw new Error("No API key available for AI server image generation");
     }
 
-    console.log("[images-generator] API key from context:", apiKey.substring(0, 10) + "...");
+    console.log(
+        "[images-generator] API key from context:",
+        `${apiKey.substring(0, 10)}...`,
+    );
 
     // 2. Get dimensions for aspect ratio
     const dimensions = getImageDimensions(aspectRatio);
-    console.log(`[images-generator] Dimensions: ${dimensions.width}×${dimensions.height}`);
+    console.log(
+        `[images-generator] Dimensions: ${dimensions.width}×${dimensions.height}`,
+    );
 
     // 3. Call AI server directly
-    const aiServerUrl = process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
-    const timeout = parseInt(process.env.AI_SERVER_IMAGE_TIMEOUT || "120000", 10);
+    const aiServerUrl =
+        process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
+    const timeout = parseInt(
+        process.env.AI_SERVER_IMAGE_TIMEOUT || "120000",
+        10,
+    );
 
     console.log(`[images-generator] Calling AI server: ${aiServerUrl}`);
 

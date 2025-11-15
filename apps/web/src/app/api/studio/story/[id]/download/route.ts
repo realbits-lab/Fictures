@@ -16,7 +16,7 @@ import {
 export const GET = requireScopes("stories:read")(
     withAuthentication(
         async (
-            request: NextRequest,
+            _request: NextRequest,
             context: { params: Promise<{ id: string }> },
         ) => {
             const params = await context.params;
@@ -54,7 +54,7 @@ export const GET = requireScopes("stories:read")(
                 const [
                     storyParts,
                     storyChapters,
-                    storyScenes,
+                    _storyScenes,
                     storyCharacters,
                     storySettings,
                 ] = await Promise.all([
@@ -384,7 +384,7 @@ export const GET = requireScopes("stories:read")(
                                     const sceneImage = (
                                         (scene as any).hnsData as any
                                     ).scene_image;
-                                    if (sceneImage && sceneImage.url) {
+                                    if (sceneImage?.url) {
                                         html += `
           <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
                                     }
@@ -464,7 +464,7 @@ export const GET = requireScopes("stories:read")(
                                 const sceneImage = (
                                     (scene as any).hnsData as any
                                 ).scene_image;
-                                if (sceneImage && sceneImage.url) {
+                                if (sceneImage?.url) {
                                     html += `
         <img src="${sceneImage.url}" alt="Scene ${sceneNum}: ${scene.title}" class="scene-image" />`;
                                 }

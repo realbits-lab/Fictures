@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import * as yaml from "js-yaml";
 import { type NextRequest, NextResponse } from "next/server";
@@ -53,7 +53,7 @@ export async function GET(
                             parsedContent = JSON.parse(
                                 (character as any).content,
                             );
-                        } catch (jsonError) {
+                        } catch (_jsonError) {
                             // If JSON parsing fails, try YAML parsing
                             // First convert \n literal strings to actual newlines
                             const cleanedContent = (
@@ -145,7 +145,7 @@ export async function GET(
 
         // Parse HNS data (Hierarchical Narrative Schema) - the primary story structure data
         let parsedHnsData = null;
-        const parsedStoryData = null;
+        const _parsedStoryData = null;
 
         // Use hnsData as the primary source (it follows the HNS schema)
         if ((storyWithStructure as any).hnsData) {
@@ -340,7 +340,7 @@ export async function PATCH(
 
         console.log(
             "📦 Saving HNS data for database:",
-            JSON.stringify(hnsData).substring(0, 200) + "...",
+            `${JSON.stringify(hnsData).substring(0, 200)}...`,
         );
 
         // Update the story with the new HNS data

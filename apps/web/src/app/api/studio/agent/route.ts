@@ -7,8 +7,6 @@ import {
     getStudioAgentChat,
     getStudioAgentMessages,
     saveStudioAgentMessage,
-    saveToolExecution,
-    updateToolExecution,
 } from "@/lib/db/studio-agent-operations";
 import { studioAgentTools } from "@/lib/studio/agents/agent-tools";
 
@@ -177,7 +175,7 @@ export async function POST(request: NextRequest) {
                 userId,
                 storyId: storyContext?.storyId || null,
                 agentType: agentType as "generation" | "editing",
-                title: messageContent.slice(0, 50) + "...",
+                title: `${messageContent.slice(0, 50)}...`,
                 context: storyContext,
             });
         }
@@ -206,7 +204,7 @@ export async function POST(request: NextRequest) {
         const allMessages = [...uiMessages, userMessage];
 
         // Save user message
-        const savedUserMessage = await saveStudioAgentMessage({
+        const _savedUserMessage = await saveStudioAgentMessage({
             chatId: chat.id,
             role: "user",
             content: messageContent,

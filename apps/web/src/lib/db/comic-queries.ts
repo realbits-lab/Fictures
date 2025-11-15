@@ -1,7 +1,13 @@
 import { and, asc, eq } from "drizzle-orm";
 import { invalidateCache, withCache } from "@/lib/cache/redis-cache";
+import {
+    chapters,
+    comicPanels,
+    parts,
+    scenes,
+    stories,
+} from "@/lib/schemas/database";
 import { db } from "./index";
-import { chapters, comicPanels, parts, scenes, stories } from "@/lib/schemas/database";
 
 /**
  * ⚡ Comic-Optimized Database Queries
@@ -208,7 +214,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
         if (!panelsByScene.has(panel.sceneId)) {
             panelsByScene.set(panel.sceneId, []);
         }
-        panelsByScene.get(panel.sceneId)!.push(panel);
+        panelsByScene.get(panel.sceneId)?.push(panel);
     }
 
     // Filter scenes by chapter and attach panels
@@ -217,7 +223,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
         if (!scenesByChapter.has(scene.chapterId)) {
             scenesByChapter.set(scene.chapterId, []);
         }
-        scenesByChapter.get(scene.chapterId)!.push({
+        scenesByChapter.get(scene.chapterId)?.push({
             ...scene,
             comicPanels: panelsByScene.get(scene.id) || [],
         });

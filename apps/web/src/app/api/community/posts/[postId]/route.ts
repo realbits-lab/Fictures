@@ -9,7 +9,7 @@ import { communityPosts } from "@/lib/schemas/database";
  * Delete a community post (soft delete)
  */
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ postId: string }> },
 ) {
     try {

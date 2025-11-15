@@ -13,8 +13,8 @@ import type {
     AiComicToonplayType,
 } from "@/lib/schemas/ai/ai-toonplay";
 import type { Character, Setting } from "@/lib/schemas/database";
-import { generateImage } from "@/lib/studio/generators/images-generator";
 import type { GeneratorImageResult } from "@/lib/schemas/generators/types";
+import { generateImage } from "@/lib/studio/generators/images-generator";
 
 /**
  * Parameters for comic panel generation
@@ -188,7 +188,7 @@ export async function generateComicPanels(
 function buildPanelImagePrompt(
     panel: AiComicPanelSpecType,
     characterPromptCache: Map<string, string>,
-    settingsMap: Map<string, Setting>,
+    _settingsMap: Map<string, Setting>,
     genre: string,
 ): string {
     // 1. Get character descriptions from cache

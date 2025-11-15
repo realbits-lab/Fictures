@@ -1,14 +1,13 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { settings as settingsTable, stories } from "@/lib/schemas/database";
+import { settings as settingsTable } from "@/lib/schemas/database";
 
 export const runtime = "nodejs";
 
 // GET /api/stories/[id]/settings - Get settings/places for a story
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {

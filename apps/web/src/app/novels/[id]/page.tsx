@@ -2,10 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MainLayout } from "@/components/layout";
 import { ChapterReaderClient } from "@/components/novels/ChapterReaderClient";
-import {
-    ChapterListSkeleton,
-    StoryHeaderSkeleton,
-} from "@/components/novels/ReadingSkeletons";
+import { StoryHeaderSkeleton } from "@/components/novels/ReadingSkeletons";
 import { getStoryForReading } from "@/lib/db/reading-queries";
 
 interface ReadPageProps {

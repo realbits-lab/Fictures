@@ -6,7 +6,7 @@ import { chapters, scenes, stories } from "@/lib/schemas/database";
 
 // GET /api/scenes/[id]/write - Get scene data for writing
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {

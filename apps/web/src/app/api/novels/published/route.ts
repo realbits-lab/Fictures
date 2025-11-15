@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { getPublishedStories } from "@/lib/db/queries";
 
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
         );
 
         // Build response
-        const responseStart = performance.now();
+        const _responseStart = performance.now();
 
         const response = {
             stories: publishedStories,
@@ -79,8 +79,8 @@ export async function GET(request: NextRequest) {
         // Check if client has the same version
         const clientETag = request.headers.get("if-none-match");
         console.log(`[${reqId}] 🔍 Checking client ETag:`, {
-            clientETag: clientETag?.substring(0, 8) + "..." || "none",
-            serverETag: etag.substring(0, 8) + "...",
+            clientETag: `${clientETag?.substring(0, 8)}...` || "none",
+            serverETag: `${etag.substring(0, 8)}...`,
             match: clientETag === etag,
         });
 
@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
         console.log(`[${reqId}] 📚 Response summary:`, {
             storiesCount: publishedStories.length,
             responseSize: `${responseSizeKB} KB`,
-            etag: etag.substring(0, 8) + "...",
+            etag: `${etag.substring(0, 8)}...`,
             cacheControl: "public, max-age=1800",
         });
 

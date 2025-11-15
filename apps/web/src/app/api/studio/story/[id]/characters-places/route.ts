@@ -12,7 +12,7 @@ export const runtime = "nodejs";
 
 // GET /api/stories/[id]/characters-places - Get characters and places for a story
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {

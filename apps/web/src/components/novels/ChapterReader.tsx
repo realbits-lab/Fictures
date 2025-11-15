@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LikeDislikeButton } from "./LikeDislikeButton";
 
 interface Scene {
@@ -610,13 +610,13 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                                             `📖 Rendering ${selectedChapter.scenes.length} scenes for chapter: ${selectedChapter.title}`,
                                         )}
                                         {selectedChapter.scenes.map(
-                                            (scene, index) => (
+                                            (scene, _index) => (
                                                 <section
                                                     key={scene.id}
                                                     className="mb-8"
                                                 >
-                                                    {selectedChapter.scenes!
-                                                        .length > 1 && (
+                                                    {selectedChapter.scenes
+                                                        ?.length > 1 && (
                                                         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
                                                             {scene.title}
                                                         </h3>

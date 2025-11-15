@@ -8,25 +8,22 @@
  */
 
 import type {
+    EvaluationError,
+    SceneContentEvaluationRequest,
+    SceneContentEvaluationResponse,
+} from "@/lib/schemas/api/evaluation";
+import type {
     ApiChapterRequest,
     ApiChapterResponse,
     ApiCharactersRequest,
     ApiPartRequest,
     ApiPartResponse,
     ApiSceneContentRequest,
-    ApiSceneImprovementErrorResponse,
-    ApiSceneImprovementRequest,
-    ApiSceneImprovementResponse,
     ApiSceneSummaryRequest,
     ApiSceneSummaryResponse,
     ApiSettingsRequest,
     ApiStoryRequest,
 } from "@/lib/schemas/api/studio";
-import type {
-    SceneContentEvaluationRequest,
-    SceneContentEvaluationResponse,
-    EvaluationError,
-} from "@/lib/schemas/api/evaluation";
 import { loadWriterAuth } from "../helpers/auth-loader";
 
 // Load writer authentication
@@ -269,9 +266,8 @@ describe("Scene Evaluation API", () => {
         );
 
         // 3. Parse response data with proper typing
-        const data:
-            | SceneContentEvaluationResponse
-            | EvaluationError = await response.json();
+        const data: SceneContentEvaluationResponse | EvaluationError =
+            await response.json();
 
         // 4. Log error if request failed
         if (!response.ok) {
@@ -434,7 +430,8 @@ describe("Scene Evaluation API", () => {
             successData;
         const {
             metadata,
-        }: { metadata: SceneContentEvaluationResponse["metadata"] } = successData;
+        }: { metadata: SceneContentEvaluationResponse["metadata"] } =
+            successData;
 
         expect(evaluation.score).toBeGreaterThan(0);
         expect(metadata.generationTime).toBeGreaterThan(0);

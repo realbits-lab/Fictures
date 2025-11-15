@@ -9,6 +9,11 @@
  * Database operations are handled by the caller (service/API layer).
  */
 
+import type {
+    GeneratorPartParams,
+    GeneratorPartResult,
+    PartPromptParams,
+} from "@/lib/schemas/generators/types";
 import { type AiPartType, AiPartZodSchema } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
 import {
@@ -18,11 +23,6 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    GeneratorPartParams,
-    GeneratorPartResult,
-    PartPromptParams,
-} from "@/lib/schemas/generators/types";
 
 /**
  * Generate ONE next story part with full context

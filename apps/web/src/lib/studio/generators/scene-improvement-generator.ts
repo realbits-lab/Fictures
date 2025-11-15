@@ -8,15 +8,15 @@
  * Database operations are handled by the caller (API route).
  */
 
+import type {
+    GeneratorSceneImprovementParams,
+    GeneratorSceneImprovementResult,
+} from "@/lib/schemas/generators/types";
 import {
     type AiSceneImprovementType,
     AiSceneImprovementZodSchema,
 } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
-import type {
-    GeneratorSceneImprovementParams,
-    GeneratorSceneImprovementResult,
-} from "@/lib/schemas/generators/types";
 
 /**
  * Evaluate and iteratively improve a scene

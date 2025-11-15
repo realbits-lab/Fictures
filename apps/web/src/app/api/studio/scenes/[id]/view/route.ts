@@ -170,7 +170,7 @@ export async function POST(
  * - Get view statistics for a scene
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     context: { params: Promise<{ id: string }> },
 ) {
     try {

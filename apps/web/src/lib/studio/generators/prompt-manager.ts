@@ -1211,10 +1211,16 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
             let templateKey: string;
 
             if (version === "v1.1") {
-                promptPath = path.resolve(__dirname, "../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js");
+                promptPath = path.resolve(
+                    __dirname,
+                    "../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js",
+                );
                 templateKey = "partPromptV1_1";
             } else if (version === "v1.2") {
-                promptPath = path.resolve(__dirname, "../../../tests/iteration-testing/novels/prompts/v1.2/part-prompt.js");
+                promptPath = path.resolve(
+                    __dirname,
+                    "../../../tests/iteration-testing/novels/prompts/v1.2/part-prompt.js",
+                );
                 templateKey = "partPromptV1_2";
             } else {
                 throw new Error(`Unknown prompt version: ${version}`);

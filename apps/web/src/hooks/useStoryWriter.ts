@@ -188,8 +188,8 @@ export function usePrefetchStoryWriter() {
  */
 export function useWritingProgress(
     storyId: string,
-    chapterId: string | null,
-    sceneId: string | null,
+    _chapterId: string | null,
+    _sceneId: string | null,
 ) {
     return useMemo(
         () => ({
@@ -277,7 +277,7 @@ export function useWritingProgress(
                     const drafts = [];
                     for (let i = 0; i < localStorage.length; i++) {
                         const key = localStorage.key(i);
-                        if (key && key.startsWith(`draft-${storyId}-`)) {
+                        if (key?.startsWith(`draft-${storyId}-`)) {
                             try {
                                 const data = JSON.parse(
                                     localStorage.getItem(key) || "{}",

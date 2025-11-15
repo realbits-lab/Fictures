@@ -1,5 +1,5 @@
 import { tool } from "ai";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { STORY_TONES } from "@/lib/constants/tones";
 import { db } from "@/lib/db";

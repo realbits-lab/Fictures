@@ -1,5 +1,5 @@
+import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { createHash, randomBytes } from "crypto";
 import { nanoid } from "nanoid";
 
 // API key scopes - define what actions each scope allows

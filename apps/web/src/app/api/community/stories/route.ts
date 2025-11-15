@@ -1,4 +1,4 @@
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { getCommunityStoriesOptimized } from "@/lib/db/cached-queries";
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
         });
 
         // Build response with metadata
-        const responseStart = performance.now();
+        const _responseStart = performance.now();
         const lastUpdated = new Date();
 
         const response = {
@@ -67,8 +67,8 @@ export async function GET(request: NextRequest) {
         // Check if client has the same version
         const clientETag = request.headers.get("if-none-match");
         console.log(`[${reqId}] 🔍 Checking client ETag:`, {
-            clientETag: clientETag?.substring(0, 8) + "..." || "none",
-            serverETag: etag.substring(0, 8) + "...",
+            clientETag: `${clientETag?.substring(0, 8)}...` || "none",
+            serverETag: `${etag.substring(0, 8)}...`,
             match: clientETag === etag,
         });
 

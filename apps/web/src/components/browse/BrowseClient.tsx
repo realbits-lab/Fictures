@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     BackgroundValidationIndicator,
     StoryGridSkeleton,
@@ -65,7 +65,7 @@ export function BrowseClient() {
                 `[BrowseClient] 👋 Component unmounted after ${totalTime}ms`,
             );
         };
-    }, []);
+    }, [cacheHealth, data, error, isLoading, isValidating, stories.length]);
 
     // Track data loading stages
     useEffect(() => {

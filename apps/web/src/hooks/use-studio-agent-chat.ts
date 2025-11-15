@@ -19,7 +19,7 @@ export function useStudioAgentChat({
 }: UseStudioAgentChatProps) {
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [historyLoaded, setHistoryLoaded] = useState(false);
-    const [currentChatId, setCurrentChatId] = useState<string | undefined>(
+    const [currentChatId, _setCurrentChatId] = useState<string | undefined>(
         chatId,
     );
 

@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/schemas/database";
@@ -8,7 +8,7 @@ import { chapters, scenes, stories } from "@/lib/schemas/database";
  *
  * Returns list of test stories for cache performance testing
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const startTime = Date.now();
 

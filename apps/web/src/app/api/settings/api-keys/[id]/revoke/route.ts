@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 export const POST = requireScopes("admin:all")(
     withAuthentication(
         async (
-            request: NextRequest,
+            _request: NextRequest,
             { params }: { params: Promise<{ id: string }> },
         ) => {
             try {

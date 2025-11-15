@@ -17,7 +17,7 @@ if (!connectionString) {
 }
 
 const client = postgres(connectionString, { max: 1 });
-const db = drizzle(client);
+const _db = drizzle(client);
 
 console.log("🔄 Running database schema migrations...\n");
 

@@ -9,12 +9,7 @@ import {
 } from "@/lib/auth/api-keys";
 import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
-import {
-    createApiKey,
-    deleteApiKey,
-    getUserApiKeys,
-    updateApiKey,
-} from "@/lib/db/queries";
+import { createApiKey, getUserApiKeys } from "@/lib/db/queries";
 
 export const runtime = "nodejs";
 
@@ -24,7 +19,7 @@ const createApiKeySchema = z.object({
     expiresAt: z.string().datetime().optional().nullable(),
 });
 
-const updateApiKeySchema = z.object({
+const _updateApiKeySchema = z.object({
     name: z.string().min(1).max(255).optional(),
     scopes: z.array(z.string()).optional(),
     expiresAt: z.string().datetime().optional().nullable(),

@@ -2,7 +2,7 @@
 
 import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
-import React, { useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils/cn";
 import { CommentForm } from "./CommentForm";
 import { LikeDislikeButton } from "./LikeDislikeButton";

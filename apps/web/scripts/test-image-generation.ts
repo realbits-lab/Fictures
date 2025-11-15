@@ -21,8 +21,8 @@
  *   - IMAGE_GENERATION_PROVIDER=ai-server in .env.local
  */
 
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 import sharp from "sharp";
 import { loadProfile } from "../src/lib/utils/auth-loader";
 import { getEnvDisplayName } from "../src/lib/utils/environment";
@@ -259,7 +259,7 @@ async function main() {
         }
 
         // Summary
-        console.log("\n" + "=".repeat(60));
+        console.log(`\n${"=".repeat(60)}`);
         console.log("✅ Test Complete!");
         console.log(`   Total tests: ${totalTests}`);
         console.log(`   ✅ Passed: ${passed}`);

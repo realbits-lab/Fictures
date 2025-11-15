@@ -10,7 +10,7 @@ import {
  * Get all messages for a chat session
  */
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ chatId: string }> },
 ) {
     try {
