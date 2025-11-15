@@ -132,9 +132,29 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         },
     );
 
-    // 7. Override AI-generated cyclePhase with our calculated value
-    // This ensures consistent phase assignment based on scene index
-    sceneData.cyclePhase = cyclePhase;
+    // 7. Validate cycle phase ordering
+    // Check if AI-generated phase follows the correct sequence
+    const phaseOrder: CyclePhase[] = [
+        "setup",
+        "adversity",
+        "virtue",
+        "consequence",
+        "transition",
+    ];
+    const aiPhaseIndex = phaseOrder.indexOf(sceneData.cyclePhase);
+    const expectedPhaseIndex = phaseOrder.indexOf(cyclePhase);
+
+    // Validate ordering (AI can be at same phase or later, but not earlier)
+    if (aiPhaseIndex < expectedPhaseIndex) {
+        console.warn(
+            `[scene-summary-generator] ⚠️ AI-generated cyclePhase "${sceneData.cyclePhase}" is earlier than expected "${cyclePhase}" for scene ${sceneIndex + 1}. Using expected phase.`,
+        );
+        sceneData.cyclePhase = cyclePhase;
+    } else {
+        console.log(
+            `[scene-summary-generator] ✓ AI-generated cyclePhase "${sceneData.cyclePhase}" is valid (expected minimum: "${cyclePhase}")`,
+        );
+    }
 
     // 8. Calculate total generation time
     const totalTime = Date.now() - startTime;
@@ -144,7 +164,7 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         {
             title: sceneData.title,
             cyclePhase: sceneData.cyclePhase,
-            calculatedPhase: cyclePhase,
+            minimumExpectedPhase: cyclePhase,
             generationTime: totalTime,
         },
     );
