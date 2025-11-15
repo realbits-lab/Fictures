@@ -24,7 +24,10 @@ const validateApiKeySchema = z.object({
 export const validateApiKey = tool({
     summary: "Validate user API key for Studio Agent operations",
     parameters: validateApiKeySchema,
-    execute: async ({ userId, requiredScopes = [] }: z.infer<typeof validateApiKeySchema>) => {
+    execute: async ({
+        userId,
+        requiredScopes = [],
+    }: z.infer<typeof validateApiKeySchema>) => {
         // Get user's API keys
         const userKeys = await db
             .select()
@@ -80,30 +83,37 @@ export const validateApiKey = tool({
     },
 });
 
+const updatePhaseProgressSchema = z.object({
+    chatId: z.string().describe("The chat session ID"),
+    phase: z
+        .enum([
+            "story-summary",
+            "characters",
+            "settings",
+            "parts",
+            "chapters",
+            "scene-summaries",
+            "scene-content",
+            "evaluation",
+            "images",
+        ])
+        .describe("The current phase"),
+    completed: z.boolean().describe("Whether the phase is completed"),
+    progressPercent: z
+        .number()
+        .optional()
+        .describe("Progress percentage (0-100) within the phase"),
+});
+
 export const updatePhaseProgress = tool({
     summary: "Update story generation phase progress in chat session",
-    parameters: z.object({
-        chatId: z.string().describe("The chat session ID"),
-        phase: z
-            .enum([
-                "story-summary",
-                "characters",
-                "settings",
-                "parts",
-                "chapters",
-                "scene-summaries",
-                "scene-content",
-                "evaluation",
-                "images",
-            ])
-            .describe("The current phase"),
-        completed: z.boolean().describe("Whether the phase is completed"),
-        progressPercent: z
-            .number()
-            .optional()
-            .describe("Progress percentage (0-100) within the phase"),
-    }),
-    execute: async ({ chatId, phase, completed, progressPercent }) => {
+    parameters: updatePhaseProgressSchema,
+    execute: async ({
+        chatId,
+        phase,
+        completed,
+        progressPercent,
+    }: z.infer<typeof updatePhaseProgressSchema>) => {
         try {
             // Update chat phase
             await updateStudioAgentChatPhase(chatId, phase, completed);
