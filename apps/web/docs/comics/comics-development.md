@@ -12,27 +12,58 @@ This document provides comprehensive implementation specifications for the comic
 
 ## Part I: Code Architecture
 
-### 1.1 Directory Structure
+### 1.1 Architectural Layers
+
+The comics generation system follows a **strict layered architecture** separating concerns into four distinct layers:
+
+**Layer 1: API Layer** (`src/app/api/`)
+- **Purpose**: HTTP endpoint handling, request validation, response formatting
+- **Database Operations**: Read/write allowed
+- **Responsibilities**: Authentication, authorization, SSE streaming, error responses
+- **Type Convention**: `Api{Entity}Request`, `Api{Entity}Response`, `Api{Entity}ErrorResponse`
+
+**Layer 2: Service Layer** (`src/lib/studio/services/`)
+- **Purpose**: Orchestration of generation + persistence workflows
+- **Database Operations**: Write allowed (combines generator output + database save)
+- **Key Pattern**: `generateAndSave()` methods combining generator calls with database operations
+- **Responsibilities**: Transaction management, data transformation, business logic coordination
+- **Type Convention**: `Service{Entity}Params`, `Service{Entity}Result`
+
+**Layer 3: Generator Layer** (`src/lib/studio/generators/`)
+- **Purpose**: Pure generation logic for AI-powered content creation
+- **Database Operations**: ❌ **NONE** - Generators do NOT read or write to database
+- **Responsibilities**: AI client calls, prompt assembly, structured output validation
+- **Key Principle**: **Pure functions** - same input always produces same output (excluding AI randomness)
+- **Type Convention**: `Generator{Entity}Params`, `Generator{Entity}Result`
+
+**Layer 4: AI Layer** (`src/lib/schemas/ai/`)
+- **Purpose**: Structured output schemas for AI model validation
+- **Source**: Defines Zod schemas for AI-generated data
+- **Responsibilities**: Type safety, JSON schema generation, data validation
+- **Type Convention**: `Ai{Entity}ZodSchema`, `Ai{Entity}Type`, `Ai{Entity}JsonSchema`
+
+### 1.2 Directory Structure
 
 ```
 src/
 ├── lib/
-│   ├── ai/
-│   │   └── comic-panel-generator.ts       # Legacy generator (to be deprecated)
 │   ├── studio/
-│   │   ├── generators/
-│   │   │   ├── toonplay-converter.ts      # Phase 1: Prose → Toonplay
-│   │   │   ├── comic-panel-generator.ts   # Phase 2: Toonplay → Images
+│   │   ├── generators/                    # LAYER 3: Pure generation logic
+│   │   │   ├── toonplay-converter.ts      # Phase 1: Prose → Toonplay (NO DB)
+│   │   │   ├── comic-panel-generator.ts   # Phase 2: Toonplay → Images (NO DB)
 │   │   │   ├── ai-client.ts              # Text generation client
 │   │   │   ├── prompt-manager.ts         # System/user prompt management
 │   │   │   └── types.ts                  # Generator type definitions
 │   │   └── services/
-│   │       └── comic-service.ts           # Orchestration layer (future)
+│   │       └── comic-service.ts           # LAYER 2: Orchestration (future)
 │   ├── schemas/
-│   │   ├── ai/
-│   │   │   └── ai-toonplay.ts            # Toonplay Zod schemas (SSOT)
-│   │   └── database/
-│   │       └── index.ts                  # Drizzle schema (comic panels)
+│   │   ├── nested-zod/                    # Hand-written Zod SSOT for nested JSON
+│   │   ├── database/                      # Hand-written Drizzle SSOT for tables
+│   │   │   └── index.ts                  # Comic panels table schema
+│   │   ├── generated-zod/                 # Auto-generated Zod from Drizzle
+│   │   │   └── index.ts                  # Generated validators
+│   │   └── ai/                            # LAYER 4: AI-specific schemas (derived)
+│   │       └── ai-toonplay.ts            # Toonplay Zod schemas for AI structured output
 │   ├── db/
 │   │   └── comic-queries.ts              # Comic-specific database queries
 │   └── services/
@@ -45,9 +76,9 @@ src/
 │           └── scenes/
 │               └── [id]/
 │                   └── comic/
-│                       ├── generate/route.ts   # POST: Generate panels
-│                       ├── publish/route.ts    # POST: Publish comic
-│                       └── unpublish/route.ts  # POST: Unpublish comic
+│                       ├── generate/route.ts   # LAYER 1: POST Generate panels
+│                       ├── publish/route.ts    # LAYER 1: POST Publish comic
+│                       └── unpublish/route.ts  # LAYER 1: POST Unpublish comic
 └── components/
     └── comic/
         ├── comic-viewer.tsx                    # Panel display component
@@ -55,37 +86,161 @@ src/
         └── comic-status-card.tsx               # Publishing status UI
 ```
 
-### 1.2 Type Naming Convention
+### 1.3 Schema Architecture
+
+**Schema Organization** follows the centralized schema pattern:
+
+**nested-zod/** (Hand-written SSOT for nested JSON)
+- **Purpose**: Define complex nested JSON structures using Zod
+- **Examples**: `ai-toonplay.ts` (toonplay structure), panel specifications
+- **Usage**: AI structured output validation, API request/response validation
+- **SSOT**: Manually maintained schemas for non-database data structures
+
+**database/** (Hand-written SSOT for database tables)
+- **Purpose**: Define database tables using Drizzle ORM
+- **File**: `src/lib/schemas/database/index.ts`
+- **Examples**: `scenes`, `comicPanels`, `stories` tables
+- **SSOT**: Single source of truth for all database schema definitions
+- **Generated Output**: `drizzle/schema.ts` (auto-generated by Drizzle Kit - DO NOT EDIT)
+
+**generated-zod/** (Auto-generated Zod from Drizzle)
+- **Purpose**: Zod validators auto-generated from Drizzle schemas using drizzle-zod
+- **Source**: Generated from `src/lib/schemas/database/index.ts`
+- **Usage**: Database insert/update validation, API request validation
+- **Generation**: Run `pnpm db:generate` to regenerate
+- **DO NOT EDIT**: Always regenerate from source schema
+
+**ai/** (AI-specific schemas derived from nested-zod)
+- **Purpose**: Schemas specifically for AI structured output validation
+- **Source**: Derived from or references `nested-zod/` schemas
+- **Examples**: `ai-toonplay.ts` uses toonplay schema from `nested-zod/`
+- **Usage**: AI model structured output, JSON schema generation for AI calls
+
+### 1.4 Type Naming Convention
 
 **Layer-Based Pattern**: `{Layer}{Entity}{Suffix}`
 
-**Layer Prefixes:**
-- `Api` - HTTP layer (API routes)
-- `Service` - Orchestration layer (business logic)
-- `Generator` - Core generation logic
-- `Ai` - AI output layer (Zod schemas)
+| Layer | Prefix | Request/Params | Response/Result | Schema | Type | Error |
+|-------|--------|----------------|-----------------|--------|------|-------|
+| **API Layer** | `Api` | `Request` | `Response` | - | - | `ErrorResponse` |
+| **Service Layer** | `Service` | `Params` | `Result` | - | - | - |
+| **Generator Layer** | `Generator` | `Params` | `Result` | - | - | - |
+| **AI Layer** | `Ai` | - | - | `ZodSchema` | `Type` | - |
 
-**Suffixes:**
-- `Request` - HTTP request body (API layer)
-- `Response` - HTTP response body (API layer)
-- `Params` - Function parameters (Service/Generator)
-- `Result` - Function return type (Service/Generator)
-- `Type` - TypeScript type (AI layer - from Zod)
-- `ZodSchema` - Zod schema (AI layer - SSOT)
+**Examples:**
 
-**Example:**
 ```typescript
-// API Layer
-type ApiComicGenerateRequest = { targetPanelCount?: number };
-type ApiComicGenerateResponse = { success: boolean; panels: ComicPanel[] };
+// ============================================================================
+// API Layer (HTTP endpoints)
+// ============================================================================
 
-// Generator Layer
-type GeneratorToonplayParams = { scene: Scene; story: Story };
-type GeneratorToonplayResult = { toonplay: AiComicToonplayType };
+// Request body types
+type ApiComicGenerateRequest = {
+  targetPanelCount?: number;
+  regenerate?: boolean;
+};
 
-// AI Layer
-const AiComicToonplayZodSchema = z.object({ ... });
+// Response body types
+type ApiComicGenerateResponse = {
+  success: boolean;
+  message: string;
+  scene: {
+    id: string;
+    comicStatus: "draft" | "published";
+    comicPanelCount: number;
+  };
+  result: {
+    toonplay: AiComicToonplayType;
+    panels: ComicPanel[];
+  };
+};
+
+// Error response types
+type ApiComicGenerateErrorResponse = {
+  error: string;
+  message?: string;
+};
+
+// ============================================================================
+// Service Layer (orchestration + persistence)
+// ============================================================================
+
+// Service function parameters
+type ServiceToonplayParams = {
+  sceneId: string;
+  targetPanelCount?: number;
+  regenerate?: boolean;
+};
+
+// Service function results
+type ServiceToonplayResult = {
+  toonplay: AiComicToonplayType;
+  panels: ComicPanel[];
+  evaluation: AiToonplayEvaluationType;
+  metadata: {
+    generationTime: number;
+    savedToDatabase: boolean;
+  };
+};
+
+// ============================================================================
+// Generator Layer (pure generation - NO DATABASE)
+// ============================================================================
+
+// Generator function parameters
+type GeneratorToonplayParams = {
+  scene: Scene;
+  story: Story;
+  characters: Character[];
+  settings: Setting[];
+  language?: string;
+};
+
+// Generator function results
+type GeneratorToonplayResult = {
+  toonplay: AiComicToonplayType;
+  metadata: {
+    generationTime: number;
+    panelCount: number;
+    language: string;
+  };
+};
+
+// Generator for panel images
+type GeneratorPanelImageParams = {
+  panel: AiComicPanelSpecType;
+  characters: Character[];
+  settings: Setting[];
+  storyGenre: string;
+};
+
+type GeneratorPanelImageResult = {
+  imageUrl: string;
+  imageVariants: ImageVariantSet;
+  metadata: {
+    generationTime: number;
+    prompt: string;
+  };
+};
+
+// ============================================================================
+// AI Layer (structured output schemas)
+// ============================================================================
+
+// Zod schema definitions (SSOT)
+const AiComicToonplayZodSchema = z.object({
+  scene_id: z.string(),
+  scene_title: z.string(),
+  total_panels: z.number(),
+  panels: z.array(AiComicPanelSpecZodSchema),
+});
+
+// TypeScript types derived from Zod
 type AiComicToonplayType = z.infer<typeof AiComicToonplayZodSchema>;
+type AiComicPanelSpecType = z.infer<typeof AiComicPanelSpecZodSchema>;
+
+// JSON Schema for AI structured output (generated from Zod)
+const AiComicToonplayJsonSchema = zodToJsonSchema(AiComicToonplayZodSchema);
 ```
 
 ---
@@ -689,135 +844,32 @@ Style: Clean comic linework, vibrant colors, semi-realistic proportions,
 NO text, NO speech bubbles, NO sound effects in the image.
 ```
 
-### 4.3 Image Generation Code
+### 4.3 Image Generation & Optimization
 
-**Service**: `src/lib/services/image-generation.ts`
+**For complete image generation and optimization documentation, see:**
 
-**Function**:
-```typescript
-export async function generateComicPanelImage(
-  prompt: string,
-  options: ImageGenerationOptions
-): Promise<ImageGenerationResult> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-exp:generateContent`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-goog-api-key': process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          temperature: 1.0,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1024,
-          responseMimeType: 'image/jpeg',
-          responseModalities: ['image'],
-          aspectRatio: '16:9',  // 7:4 is close to 16:9
-        }
-      })
-    }
-  );
+📖 **[Image System Documentation](../image/)**
+- **[image-specification.md](../image/image-specification.md)** - Image system specifications and architecture
+- **[image-development.md](../image/image-development.md)** - Implementation guide and API documentation
+- **[image-evaluation.md](../image/image-evaluation.md)** - Quality evaluation and testing strategies
 
-  const data = await response.json();
-  const imageBase64 = data.candidates[0].content.parts[0].inlineData.data;
-  const imageBuffer = Buffer.from(imageBase64, 'base64');
+**Quick Reference for Comic Panels:**
 
-  return {
-    imageBuffer,
-    format: 'image/jpeg',
-    width: 1344,
-    height: 768,
-  };
-}
-```
+**Image Generation**:
+- **Service**: `src/lib/services/image-generation.ts`
+- **Model**: Gemini 2.5 Flash
+- **Format**: 1344×768 (7:4 aspect ratio)
+- **Prompt**: Built from panel specification (shot type, characters, setting, mood)
 
-### 4.4 Image Optimization
-
-**Service**: `src/lib/services/image-optimization.ts`
-
-**Process**:
-1. Original image uploaded to Vercel Blob (1344×768 PNG)
-2. Generate 4 optimized variants:
-   - AVIF mobile 1x: 672×384
-   - AVIF mobile 2x: 1344×768 (uses original)
-   - JPEG mobile 1x: 672×384
-   - JPEG mobile 2x: 1344×768 (uses original)
-3. Upload all variants to Vercel Blob
-4. Return `imageVariants` object for database storage
-
-**Code**:
-```typescript
-export async function optimizeComicPanelImage(
-  originalBuffer: Buffer,
-  storyId: string,
-  sceneId: string,
-  panelNumber: number
-): Promise<ImageOptimizationResult> {
-  const imageId = `panel-${panelNumber}`;
-  const basePath = `stories/${storyId}/comics/${sceneId}`;
-
-  // 1. Upload original
-  const originalUrl = await uploadToVercelBlob(
-    originalBuffer,
-    `${basePath}/${imageId}.png`
-  );
-
-  // 2. Generate variants
-  const variants: ImageVariant[] = [];
-
-  // AVIF mobile 1x (672×384)
-  const avif1x = await sharp(originalBuffer)
-    .resize(672, 384)
-    .avif({ quality: 80 })
-    .toBuffer();
-  const avif1xUrl = await uploadToVercelBlob(
-    avif1x,
-    `${basePath}/panel/avif/672x384/${imageId}.avif`
-  );
-  variants.push({ url: avif1xUrl, format: 'avif', width: 672, height: 384 });
-
-  // AVIF mobile 2x (1344×768) - uses original
-  const avif2xUrl = await uploadToVercelBlob(
-    await sharp(originalBuffer).avif({ quality: 80 }).toBuffer(),
-    `${basePath}/panel/avif/1344x768/${imageId}.avif`
-  );
-  variants.push({ url: avif2xUrl, format: 'avif', width: 1344, height: 768 });
-
-  // JPEG mobile 1x (672×384)
-  const jpeg1x = await sharp(originalBuffer)
-    .resize(672, 384)
-    .jpeg({ quality: 85 })
-    .toBuffer();
-  const jpeg1xUrl = await uploadToVercelBlob(
-    jpeg1x,
-    `${basePath}/panel/jpeg/672x384/${imageId}.jpeg`
-  );
-  variants.push({ url: jpeg1xUrl, format: 'jpeg', width: 672, height: 384 });
-
-  // JPEG mobile 2x (1344×768) - uses original
-  const jpeg2xUrl = await uploadToVercelBlob(
-    await sharp(originalBuffer).jpeg({ quality: 85 }).toBuffer(),
-    `${basePath}/panel/jpeg/1344x768/${imageId}.jpeg`
-  );
-  variants.push({ url: jpeg2xUrl, format: 'jpeg', width: 1344, height: 768 });
-
-  return {
-    imageUrl: originalUrl,
-    imageVariants: {
-      imageId,
-      originalUrl,
-      variants,
-      generatedAt: new Date().toISOString(),
-    },
-  };
-}
-```
+**Image Optimization**:
+- **Service**: `src/lib/services/image-optimization.ts`
+- **Variants**: 4 optimized versions per panel
+  - AVIF mobile 1x: 672×384
+  - AVIF mobile 2x: 1344×768
+  - JPEG mobile 1x: 672×384
+  - JPEG mobile 2x: 1344×768
+- **Storage**: Vercel Blob with environment-prefixed paths
+- **Result**: `imageUrl` (original) + `imageVariants` (optimized set)
 
 ---
 
