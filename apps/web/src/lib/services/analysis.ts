@@ -126,15 +126,15 @@ function getPreviousTimeRange(
 // ============================================================================
 
 /**
- * Get analytics for all stories owned by a user
+ * Get analysis for all stories owned by a user
  *
- * Returns basic analytics for each story to display on the analytics landing page.
+ * Returns basic analysis for each story to display on the analysis landing page.
  *
  * @param userId - User ID who owns the stories
- * @param timeRange - Time period for analytics (default: 30d)
- * @returns Array of story analytics
+ * @param timeRange - Time period for analysis (default: 30d)
+ * @returns Array of story analysis
  */
-export async function getStoriesAnalytics(
+export async function getStoriesAnalysis(
     userId: string,
     timeRange: "7d" | "30d" | "90d" = "30d",
 ): Promise<StoryListAnalytics[]> {
@@ -188,16 +188,16 @@ export async function getStoriesAnalytics(
 }
 
 /**
- * Get comprehensive analytics for a single story
+ * Get comprehensive analysis for a single story
  *
- * Returns detailed analytics including quality scores, engagement, retention, and trends.
+ * Returns detailed analysis including quality scores, engagement, retention, and trends.
  *
  * @param storyId - Story ID to analyze
  * @param userId - User ID who owns the story (for verification)
- * @param timeRange - Time period for analytics (default: 30d)
- * @returns Detailed story analytics
+ * @param timeRange - Time period for analysis (default: 30d)
+ * @returns Detailed story analysis
  */
-export async function getStoryAnalytics(
+export async function getStoryAnalysis(
     storyId: string,
     userId: string,
     timeRange: "7d" | "30d" | "90d" = "30d",

@@ -137,11 +137,11 @@ async function resolveAuthentication(
 export function withAuthentication<P = any>(
     handler: (
         request: NextRequest,
-        context?: P,
+        context: P,
     ) => Promise<NextResponse | Response>,
     options: AuthMiddlewareOptions = {},
-): (request: NextRequest, context?: P) => Promise<NextResponse | Response> {
-    return async (request: NextRequest, context?: P) => {
+): (request: NextRequest, context: P) => Promise<NextResponse | Response> {
+    return async (request: NextRequest, context: P) => {
         const {
             requiredScopes = [],
             allowAnonymous = false,
@@ -249,11 +249,11 @@ export function requireScopes(...scopes: string[]) {
     return <P = any>(
         handler: (
             request: NextRequest,
-            context?: P,
+            context: P,
         ) => Promise<NextResponse | Response>,
     ): ((
         request: NextRequest,
-        context?: P,
+        context: P,
     ) => Promise<NextResponse | Response>) =>
         withAuthentication(handler, { requiredScopes: scopes });
 }
@@ -281,9 +281,9 @@ export function requireScopes(...scopes: string[]) {
 export function optionalAuth<P = any>(
     handler: (
         request: NextRequest,
-        context?: P,
+        context: P,
     ) => Promise<NextResponse | Response>,
-): (request: NextRequest, context?: P) => Promise<NextResponse | Response> {
+): (request: NextRequest, context: P) => Promise<NextResponse | Response> {
     return withAuthentication(handler, { allowAnonymous: true });
 }
 

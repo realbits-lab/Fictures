@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getStoryAnalysis } from "@/lib/services/analysis";
+import { getStoriesAnalysis } from "@/lib/services/analysis";
 
 export async function GET(request: NextRequest) {
     try {
@@ -17,10 +17,9 @@ export async function GET(request: NextRequest) {
         const timeRange = (searchParams.get("range") || "30d") as
             | "7d"
             | "30d"
-            | "90d"
-            | "all";
+            | "90d";
 
-        const analysis = await getStoryAnalysis(session.user.id, timeRange);
+        const analysis = await getStoriesAnalysis(session.user.id, timeRange);
 
         return NextResponse.json(analysis);
     } catch (error) {
