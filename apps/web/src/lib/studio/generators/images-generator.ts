@@ -28,6 +28,8 @@ import type {
  * 3. Fetches image data
  * 4. Returns image data (NO upload, NO database save)
  *
+ * Now uses authentication context instead of passing API keys as parameters.
+ *
  * @param params - Image generation parameters
  * @returns Image generation result (caller handles upload/save)
  */
@@ -44,7 +46,7 @@ export async function generateImage(
         `[images-generator] Prompt preview: ${prompt.substring(0, 100)}...`,
     );
 
-    // 1. Create AI client
+    // 1. Create AI client (API key from auth context)
     const client = createImageGenerationClient();
     const providerType: string = client.getProviderType();
 

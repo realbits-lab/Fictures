@@ -1,8 +1,11 @@
 /**
  * AI Server Image Provider
  * Calls the FastAPI AI server for image generation (Qwen-Image-Lightning v2.0)
+ *
+ * Now uses authentication context instead of passing API keys as parameters.
  */
 
+import { getApiKey } from "@/lib/auth/server-context";
 import { getImageDimensions } from "../image-config";
 import type {
     ImageGenerationRequest,
@@ -12,7 +15,6 @@ import type {
 export interface AIServerConfig {
     url: string;
     timeout: number;
-    apiKey?: string;
 }
 
 export class AIServerImageProvider {
@@ -22,25 +24,37 @@ export class AIServerImageProvider {
         this.config = config;
     }
 
+    /**
+     * Build headers with API key from authentication context
+     */
+    private buildHeaders(): Record<string, string> {
+        const headers: Record<string, string> = {
+            "Content-Type": "application/json",
+        };
+
+        // Get API key from authentication context
+        const apiKey = getApiKey();
+        console.log("[AIServerImageProvider] buildHeaders - API key from context:", apiKey ? `${apiKey.substring(0, 10)}...` : "null");
+
+        if (apiKey) {
+            headers["x-api-key"] = apiKey;
+        } else {
+            console.log("[AIServerImageProvider] WARNING: No API key found in authentication context!");
+        }
+
+        return headers;
+    }
+
     async generate(
         request: ImageGenerationRequest,
     ): Promise<ImageGenerationResponse> {
         const dimensions = getImageDimensions("ai-server", request.aspectRatio);
 
-        const headers: Record<string, string> = {
-            "Content-Type": "application/json",
-        };
-
-        // Add API key if provided
-        if (this.config.apiKey) {
-            headers["Authorization"] = `Bearer ${this.config.apiKey}`;
-        }
-
         const response = await fetch(
             `${this.config.url}/api/v1/images/generate`,
             {
                 method: "POST",
-                headers,
+                headers: this.buildHeaders(),
                 body: JSON.stringify({
                     prompt: request.prompt,
                     width: dimensions.width,

@@ -48,12 +48,14 @@ abstract class ImageGenerationProvider {
 /**
  * Image Generation Wrapper
  * Provides unified interface for all image generation operations
+ *
+ * Now uses authentication context instead of passing API keys as parameters.
  */
 class ImageGenerationWrapper {
     private provider: ImageGenerationProvider;
     private providerType: ImageProvider;
 
-    constructor(apiKey?: string) {
+    constructor() {
         const config = getConfig();
         this.providerType = config.provider;
 
@@ -63,10 +65,7 @@ class ImageGenerationWrapper {
             ) as unknown as ImageGenerationProvider;
         } else if (this.providerType === "ai-server") {
             this.provider = new AIServerImageProvider(
-                {
-                    ...config.aiServer,
-                    apiKey,
-                },
+                config.aiServer,
             ) as unknown as ImageGenerationProvider;
         } else {
             throw new Error(`Unsupported provider: ${this.providerType}`);
@@ -94,11 +93,11 @@ class ImageGenerationWrapper {
 export { ImageGenerationWrapper };
 
 /**
- * Create a new image generation client with optional API key
- * @param apiKey - Optional API key for AI server authentication
+ * Create a new image generation client
+ * API key automatically retrieved from authentication context
  */
-export function createImageGenerationClient(apiKey?: string): ImageGenerationWrapper {
-    return new ImageGenerationWrapper(apiKey);
+export function createImageGenerationClient(): ImageGenerationWrapper {
+    return new ImageGenerationWrapper();
 }
 
 /**
