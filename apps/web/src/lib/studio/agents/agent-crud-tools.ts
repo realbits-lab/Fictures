@@ -112,13 +112,15 @@ export const updateStory = tool({
 // PART CRUD TOOLS
 // ==============================================================================
 
+const getPartSchema = z.object({
+    partId: z.string().describe("The part ID to retrieve"),
+});
+
 export const getPart = tool({
     summary:
         "Get part details including title, summary, orderIndex, and character arcs",
-    parameters: z.object({
-        partId: z.string().describe("The part ID to retrieve"),
-    }),
-    execute: async ({ partId }) => {
+    parameters: getPartSchema,
+    execute: async ({ partId }: z.infer<typeof getPartSchema>) => {
         const [part] = await db
             .select()
             .from(parts)
@@ -145,18 +147,24 @@ export const getPart = tool({
     },
 });
 
+const createPartSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    authorId: z.string().describe("The author user ID"),
+    title: z.string().describe("Part title"),
+    summary: z.string().optional().describe("Part summary"),
+    orderIndex: z.number().describe("Order index (0, 1, 2 for acts 1, 2, 3)"),
+});
+
 export const createPart = tool({
     summary: "Create a new part in a story",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        authorId: z.string().describe("The author user ID"),
-        title: z.string().describe("Part title"),
-        summary: z.string().optional().describe("Part summary"),
-        orderIndex: z
-            .number()
-            .describe("Order index (0, 1, 2 for acts 1, 2, 3)"),
-    }),
-    execute: async ({ storyId, authorId, title, summary, orderIndex }) => {
+    parameters: createPartSchema,
+    execute: async ({
+        storyId,
+        authorId,
+        title,
+        summary,
+        orderIndex,
+    }: z.infer<typeof createPartSchema>) => {
         const [part] = await db
             .insert(parts)
             .values({
@@ -181,17 +189,19 @@ export const createPart = tool({
     },
 });
 
+const updatePartSchema = z.object({
+    partId: z.string().describe("The part ID to update"),
+    updates: z.object({
+        title: z.string().optional().describe("Part title"),
+        summary: z.string().optional().describe("Part summary"),
+        orderIndex: z.number().optional().describe("Order index"),
+    }),
+});
+
 export const updatePart = tool({
     summary: "Update part details",
-    parameters: z.object({
-        partId: z.string().describe("The part ID to update"),
-        updates: z.object({
-            title: z.string().optional().describe("Part title"),
-            summary: z.string().optional().describe("Part summary"),
-            orderIndex: z.number().optional().describe("Order index"),
-        }),
-    }),
-    execute: async ({ partId, updates }) => {
+    parameters: updatePartSchema,
+    execute: async ({ partId, updates }: z.infer<typeof updatePartSchema>) => {
         const [updated] = await db
             .update(parts)
             .set({
@@ -213,12 +223,14 @@ export const updatePart = tool({
     },
 });
 
+const deletePartSchema = z.object({
+    partId: z.string().describe("The part ID to delete"),
+});
+
 export const deletePart = tool({
     summary: "Delete a part and all its chapters and scenes (cascade delete)",
-    parameters: z.object({
-        partId: z.string().describe("The part ID to delete"),
-    }),
-    execute: async ({ partId }) => {
+    parameters: deletePartSchema,
+    execute: async ({ partId }: z.infer<typeof deletePartSchema>) => {
         await db.delete(parts).where(eq(parts.id, partId));
 
         return {
@@ -232,12 +244,14 @@ export const deletePart = tool({
 // CHAPTER CRUD TOOLS
 // ==============================================================================
 
+const getChapterSchema = z.object({
+    chapterId: z.string().describe("The chapter ID to retrieve"),
+});
+
 export const getChapter = tool({
     summary: "Get chapter details including all metadata fields",
-    parameters: z.object({
-        chapterId: z.string().describe("The chapter ID to retrieve"),
-    }),
-    execute: async ({ chapterId }) => {
+    parameters: getChapterSchema,
+    execute: async ({ chapterId }: z.infer<typeof getChapterSchema>) => {
         const [chapter] = await db
             .select()
             .from(chapters)
@@ -257,12 +271,10 @@ export const getChapter = tool({
                 storyId: chapter.storyId,
                 partId: chapter.partId,
                 orderIndex: chapter.orderIndex,
-                status: chapter.status,
-                purpose: chapter.purpose,
-                hook: chapter.hook,
+                characterId: chapter.characterId,
                 arcPosition: chapter.arcPosition,
-                adversityType: chapter.adversityType,
-                virtueType: chapter.virtueType,
+                contributesToMacroArc: chapter.contributesToMacroArc,
+                characterArc: chapter.characterArc,
                 createdAt: chapter.createdAt,
                 updatedAt: chapter.updatedAt,
             },
@@ -270,16 +282,18 @@ export const getChapter = tool({
     },
 });
 
+const createChapterSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    authorId: z.string().describe("The author user ID"),
+    partId: z.string().optional().describe("The part ID (optional)"),
+    title: z.string().describe("Chapter title"),
+    summary: z.string().optional().describe("Chapter summary"),
+    orderIndex: z.number().describe("Order index within part or story"),
+});
+
 export const createChapter = tool({
     summary: "Create a new chapter in a story or part",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        authorId: z.string().describe("The author user ID"),
-        partId: z.string().optional().describe("The part ID (optional)"),
-        title: z.string().describe("Chapter title"),
-        summary: z.string().optional().describe("Chapter summary"),
-        orderIndex: z.number().describe("Order index within part or story"),
-    }),
+    parameters: createChapterSchema,
     execute: async ({
         storyId,
         authorId,
@@ -287,7 +301,7 @@ export const createChapter = tool({
         title,
         summary,
         orderIndex,
-    }) => {
+    }: z.infer<typeof createChapterSchema>) => {
         const [chapter] = await db
             .insert(chapters)
             .values({
@@ -314,27 +328,29 @@ export const createChapter = tool({
     },
 });
 
+const updateChapterSchema = z.object({
+    chapterId: z.string().describe("The chapter ID to update"),
+    updates: z.object({
+        title: z.string().optional().describe("Chapter title"),
+        summary: z.string().optional().describe("Chapter summary"),
+        status: z
+            .enum(["writing", "published"])
+            .optional()
+            .describe("Chapter status"),
+        purpose: z.string().optional().describe("Chapter purpose"),
+        hook: z.string().optional().describe("Chapter hook"),
+        characterFocus: z.string().optional().describe("Main character focus"),
+        orderIndex: z.number().optional().describe("Order index"),
+    }),
+});
+
 export const updateChapter = tool({
     summary: "Update chapter details and metadata",
-    parameters: z.object({
-        chapterId: z.string().describe("The chapter ID to update"),
-        updates: z.object({
-            title: z.string().optional().describe("Chapter title"),
-            summary: z.string().optional().describe("Chapter summary"),
-            status: z
-                .enum(["writing", "published"])
-                .optional()
-                .describe("Chapter status"),
-            purpose: z.string().optional().describe("Chapter purpose"),
-            hook: z.string().optional().describe("Chapter hook"),
-            characterFocus: z
-                .string()
-                .optional()
-                .describe("Main character focus"),
-            orderIndex: z.number().optional().describe("Order index"),
-        }),
-    }),
-    execute: async ({ chapterId, updates }) => {
+    parameters: updateChapterSchema,
+    execute: async ({
+        chapterId,
+        updates,
+    }: z.infer<typeof updateChapterSchema>) => {
         const [updated] = await db
             .update(chapters)
             .set({
@@ -359,12 +375,14 @@ export const updateChapter = tool({
     },
 });
 
+const deleteChapterSchema = z.object({
+    chapterId: z.string().describe("The chapter ID to delete"),
+});
+
 export const deleteChapter = tool({
     summary: "Delete a chapter and all its scenes (cascade delete)",
-    parameters: z.object({
-        chapterId: z.string().describe("The chapter ID to delete"),
-    }),
-    execute: async ({ chapterId }) => {
+    parameters: deleteChapterSchema,
+    execute: async ({ chapterId }: z.infer<typeof deleteChapterSchema>) => {
         await db.delete(chapters).where(eq(chapters.id, chapterId));
 
         return {
@@ -378,12 +396,14 @@ export const deleteChapter = tool({
 // SCENE CRUD TOOLS
 // ==============================================================================
 
+const getSceneSchema = z.object({
+    sceneId: z.string().describe("The scene ID to retrieve"),
+});
+
 export const getScene = tool({
     summary: "Get scene details including content and all metadata",
-    parameters: z.object({
-        sceneId: z.string().describe("The scene ID to retrieve"),
-    }),
-    execute: async ({ sceneId }) => {
+    parameters: getSceneSchema,
+    execute: async ({ sceneId }: z.infer<typeof getSceneSchema>) => {
         const [scene] = await db
             .select()
             .from(scenes)
@@ -407,11 +427,12 @@ export const getScene = tool({
                 cyclePhase: scene.cyclePhase,
                 emotionalBeat: scene.emotionalBeat,
                 characterFocus: scene.characterFocus,
+                settingId: scene.settingId,
                 sensoryAnchors: scene.sensoryAnchors,
                 dialogueVsDescription: scene.dialogueVsDescription,
                 suggestedLength: scene.suggestedLength,
-                visibility: scene.visibility,
-                viewCount: scene.viewCount,
+                novelStatus: scene.novelStatus,
+                comicStatus: scene.comicStatus,
                 createdAt: scene.createdAt,
                 updatedAt: scene.updatedAt,
             },
@@ -419,16 +440,24 @@ export const getScene = tool({
     },
 });
 
+const createSceneSchema = z.object({
+    chapterId: z.string().describe("The chapter ID"),
+    title: z.string().describe("Scene title"),
+    content: z.string().optional().describe("Scene content"),
+    summary: z.string().optional().describe("Scene summary"),
+    orderIndex: z.number().describe("Order index within chapter"),
+});
+
 export const createScene = tool({
     summary: "Create a new scene in a chapter",
-    parameters: z.object({
-        chapterId: z.string().describe("The chapter ID"),
-        title: z.string().describe("Scene title"),
-        content: z.string().optional().describe("Scene content"),
-        summary: z.string().optional().describe("Scene summary"),
-        orderIndex: z.number().describe("Order index within chapter"),
-    }),
-    execute: async ({ chapterId, title, content, summary, orderIndex }) => {
+    parameters: createSceneSchema,
+    execute: async ({
+        chapterId,
+        title,
+        content,
+        summary,
+        orderIndex,
+    }: z.infer<typeof createSceneSchema>) => {
         const [scene] = await db
             .insert(scenes)
             .values({
@@ -454,39 +483,38 @@ export const createScene = tool({
     },
 });
 
+const updateSceneSchema = z.object({
+    sceneId: z.string().describe("The scene ID to update"),
+    updates: z.object({
+        title: z.string().optional().describe("Scene title"),
+        content: z.string().optional().describe("Scene content"),
+        summary: z.string().optional().describe("Scene summary"),
+        orderIndex: z.number().optional().describe("Order index"),
+        cyclePhase: z
+            .enum(["setup", "adversity", "virtue", "consequence", "transition"])
+            .optional(),
+        emotionalBeat: z
+            .enum([
+                "fear",
+                "hope",
+                "tension",
+                "relief",
+                "elevation",
+                "catharsis",
+                "despair",
+                "joy",
+            ])
+            .optional(),
+    }),
+});
+
 export const updateScene = tool({
     summary: "Update scene content and metadata",
-    parameters: z.object({
-        sceneId: z.string().describe("The scene ID to update"),
-        updates: z.object({
-            title: z.string().optional().describe("Scene title"),
-            content: z.string().optional().describe("Scene content"),
-            summary: z.string().optional().describe("Scene summary"),
-            orderIndex: z.number().optional().describe("Order index"),
-            cyclePhase: z
-                .enum([
-                    "setup",
-                    "adversity",
-                    "virtue",
-                    "consequence",
-                    "transition",
-                ])
-                .optional(),
-            emotionalBeat: z
-                .enum([
-                    "fear",
-                    "hope",
-                    "tension",
-                    "relief",
-                    "elevation",
-                    "catharsis",
-                    "despair",
-                    "joy",
-                ])
-                .optional(),
-        }),
-    }),
-    execute: async ({ sceneId, updates }) => {
+    parameters: updateSceneSchema,
+    execute: async ({
+        sceneId,
+        updates,
+    }: z.infer<typeof updateSceneSchema>) => {
         const [updated] = await db
             .update(scenes)
             .set({
@@ -511,12 +539,14 @@ export const updateScene = tool({
     },
 });
 
+const deleteSceneSchema = z.object({
+    sceneId: z.string().describe("The scene ID to delete"),
+});
+
 export const deleteScene = tool({
     summary: "Delete a scene",
-    parameters: z.object({
-        sceneId: z.string().describe("The scene ID to delete"),
-    }),
-    execute: async ({ sceneId }) => {
+    parameters: deleteSceneSchema,
+    execute: async ({ sceneId }: z.infer<typeof deleteSceneSchema>) => {
         await db.delete(scenes).where(eq(scenes.id, sceneId));
 
         return {
@@ -530,13 +560,15 @@ export const deleteScene = tool({
 // CHARACTER CRUD TOOLS
 // ==============================================================================
 
+const getCharacterSchema = z.object({
+    characterId: z.string().describe("The character ID to retrieve"),
+});
+
 export const getCharacter = tool({
     summary:
         "Get character details including all personality and arc information",
-    parameters: z.object({
-        characterId: z.string().describe("The character ID to retrieve"),
-    }),
-    execute: async ({ characterId }) => {
+    parameters: getCharacterSchema,
+    execute: async ({ characterId }: z.infer<typeof getCharacterSchema>) => {
         const [character] = await db
             .select()
             .from(characters)
@@ -572,16 +604,24 @@ export const getCharacter = tool({
     },
 });
 
+const createCharacterSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    name: z.string().describe("Character name"),
+    isMain: z.boolean().optional().describe("Is this a main character?"),
+    role: z.string().optional().describe("Character role"),
+    summary: z.string().optional().describe("Character summary"),
+});
+
 export const createCharacter = tool({
     summary: "Create a new character in a story",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        name: z.string().describe("Character name"),
-        isMain: z.boolean().optional().describe("Is this a main character?"),
-        role: z.string().optional().describe("Character role"),
-        summary: z.string().optional().describe("Character summary"),
-    }),
-    execute: async ({ storyId, name, isMain, role, summary }) => {
+    parameters: createCharacterSchema,
+    execute: async ({
+        storyId,
+        name,
+        isMain,
+        role,
+        summary,
+    }: z.infer<typeof createCharacterSchema>) => {
         const [character] = await db
             .insert(characters)
             .values({
@@ -606,23 +646,28 @@ export const createCharacter = tool({
     },
 });
 
+const updateCharacterSchema = z.object({
+    characterId: z.string().describe("The character ID to update"),
+    updates: z.object({
+        name: z.string().optional().describe("Character name"),
+        isMain: z.boolean().optional().describe("Is main character"),
+        role: z.string().optional().describe("Character role"),
+        archetype: z.string().optional().describe("Character archetype"),
+        summary: z.string().optional().describe("Character summary"),
+        storyline: z.string().optional().describe("Character storyline"),
+        coreTrait: z.string().optional().describe("Core moral virtue"),
+        internalFlaw: z.string().optional().describe("Internal flaw"),
+        externalGoal: z.string().optional().describe("External goal"),
+    }),
+});
+
 export const updateCharacter = tool({
     summary: "Update character details and personality",
-    parameters: z.object({
-        characterId: z.string().describe("The character ID to update"),
-        updates: z.object({
-            name: z.string().optional().describe("Character name"),
-            isMain: z.boolean().optional().describe("Is main character"),
-            role: z.string().optional().describe("Character role"),
-            archetype: z.string().optional().describe("Character archetype"),
-            summary: z.string().optional().describe("Character summary"),
-            storyline: z.string().optional().describe("Character storyline"),
-            coreTrait: z.string().optional().describe("Core moral virtue"),
-            internalFlaw: z.string().optional().describe("Internal flaw"),
-            externalGoal: z.string().optional().describe("External goal"),
-        }),
-    }),
-    execute: async ({ characterId, updates }) => {
+    parameters: updateCharacterSchema,
+    execute: async ({
+        characterId,
+        updates,
+    }: z.infer<typeof updateCharacterSchema>) => {
         const [updated] = await db
             .update(characters)
             .set({
@@ -647,12 +692,14 @@ export const updateCharacter = tool({
     },
 });
 
+const deleteCharacterSchema = z.object({
+    characterId: z.string().describe("The character ID to delete"),
+});
+
 export const deleteCharacter = tool({
     summary: "Delete a character",
-    parameters: z.object({
-        characterId: z.string().describe("The character ID to delete"),
-    }),
-    execute: async ({ characterId }) => {
+    parameters: deleteCharacterSchema,
+    execute: async ({ characterId }: z.infer<typeof deleteCharacterSchema>) => {
         await db.delete(characters).where(eq(characters.id, characterId));
 
         return {
@@ -666,13 +713,15 @@ export const deleteCharacter = tool({
 // SETTING CRUD TOOLS
 // ==============================================================================
 
+const getSettingSchema = z.object({
+    settingId: z.string().describe("The setting ID to retrieve"),
+});
+
 export const getSetting = tool({
     summary:
         "Get setting details including mood, sensory details, and visual style",
-    parameters: z.object({
-        settingId: z.string().describe("The setting ID to retrieve"),
-    }),
-    execute: async ({ settingId }) => {
+    parameters: getSettingSchema,
+    execute: async ({ settingId }: z.infer<typeof getSettingSchema>) => {
         const [setting] = await db
             .select()
             .from(settings)
@@ -703,22 +752,29 @@ export const getSetting = tool({
     },
 });
 
+const createSettingSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    name: z.string().describe("Setting name"),
+    summary: z.string().optional().describe("Setting description"),
+    mood: z.string().optional().describe("Setting mood"),
+});
+
 export const createSetting = tool({
     summary: "Create a new setting in a story",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        name: z.string().describe("Setting name"),
-        summary: z.string().optional().describe("Setting description"),
-        mood: z.string().optional().describe("Setting mood"),
-    }),
-    execute: async ({ storyId, name, description, mood }) => {
+    parameters: createSettingSchema,
+    execute: async ({
+        storyId,
+        name,
+        summary,
+        mood,
+    }: z.infer<typeof createSettingSchema>) => {
         const [setting] = await db
             .insert(settings)
             .values({
                 id: `setting_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 storyId,
                 name,
-                summary: description || null,
+                summary: summary || null,
                 mood: mood || null,
             })
             .returning();
@@ -734,26 +790,31 @@ export const createSetting = tool({
     },
 });
 
+const updateSettingSchema = z.object({
+    settingId: z.string().describe("The setting ID to update"),
+    updates: z.object({
+        name: z.string().optional().describe("Setting name"),
+        summary: z.string().optional().describe("Setting description"),
+        mood: z.string().optional().describe("Setting mood"),
+        architecturalStyle: z
+            .string()
+            .optional()
+            .describe("Architectural style"),
+        symbolicMeaning: z.string().optional().describe("Symbolic meaning"),
+        emotionalResonance: z
+            .string()
+            .optional()
+            .describe("Emotional resonance"),
+    }),
+});
+
 export const updateSetting = tool({
     summary: "Update setting details",
-    parameters: z.object({
-        settingId: z.string().describe("The setting ID to update"),
-        updates: z.object({
-            name: z.string().optional().describe("Setting name"),
-            summary: z.string().optional().describe("Setting description"),
-            mood: z.string().optional().describe("Setting mood"),
-            architecturalStyle: z
-                .string()
-                .optional()
-                .describe("Architectural style"),
-            symbolicMeaning: z.string().optional().describe("Symbolic meaning"),
-            emotionalResonance: z
-                .string()
-                .optional()
-                .describe("Emotional resonance"),
-        }),
-    }),
-    execute: async ({ settingId, updates }) => {
+    parameters: updateSettingSchema,
+    execute: async ({
+        settingId,
+        updates,
+    }: z.infer<typeof updateSettingSchema>) => {
         const [updated] = await db
             .update(settings)
             .set({
@@ -778,12 +839,14 @@ export const updateSetting = tool({
     },
 });
 
+const deleteSettingSchema = z.object({
+    settingId: z.string().describe("The setting ID to delete"),
+});
+
 export const deleteSetting = tool({
     summary: "Delete a setting",
-    parameters: z.object({
-        settingId: z.string().describe("The setting ID to delete"),
-    }),
-    execute: async ({ settingId }) => {
+    parameters: deleteSettingSchema,
+    execute: async ({ settingId }: z.infer<typeof deleteSettingSchema>) => {
         await db.delete(settings).where(eq(settings.id, settingId));
 
         return {
