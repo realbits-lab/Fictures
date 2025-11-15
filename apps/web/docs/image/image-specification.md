@@ -2,9 +2,9 @@
 
 ## Executive Summary
 
-This document specifies the image generation and optimization system for Fictures, covering dual-provider support (Gemini + AI Server), automatic aspect ratio selection, and 4-variant mobile-first optimization.
+This document specifies the image generation and optimization system for Fictures, covering dual-provider support (Gemini + AI Server), automatic aspect ratio selection, and 2-variant AVIF-only mobile-first optimization.
 
-**Core Principle**: Generate high-quality story illustrations with automatic optimization for mobile-first web delivery, supporting multiple AI providers with provider-specific configurations.
+**Core Principle**: Generate high-quality story illustrations with automatic AVIF optimization for mobile-first web delivery, supporting multiple AI providers with unified variant dimensions.
 
 **Related Documents:**
 - 📋 **Development Guide** (`image-development.md`): API specifications, provider integration, optimization pipeline
@@ -33,11 +33,9 @@ Generate Image (provider-specific dimensions)
          ↓
 Upload Original to Vercel Blob (PNG format)
          ↓
-Automatic 4-Variant Optimization
-   ├─ AVIF mobile 1x (50% of original)
-   ├─ AVIF mobile 2x (original size, format conversion only)
-   ├─ JPEG mobile 1x (50% of original)
-   └─ JPEG mobile 2x (original size, format conversion only)
+Automatic 2-Variant AVIF Optimization
+   ├─ AVIF mobile 1x (resize to unified dimensions + convert)
+   └─ AVIF mobile 2x (resize to unified dimensions + convert)
          ↓
 Upload All Variants to Vercel Blob
          ↓
@@ -152,16 +150,17 @@ gemini: {
 
 ## Part III: Optimization System
 
-### 3.1 4-Variant Mobile-First Strategy
+### 3.1 2-Variant Mobile-First Strategy
 
-**Philosophy**: Comics have many panels per scene. Generate fewer, higher-quality variants focused on mobile devices.
+**Philosophy**: Comics have many panels per scene. Generate minimal, high-quality AVIF variants focused on mobile devices.
 
 **Unified Variant Sizing Strategy**:
 - **All providers use the same variant dimensions** (based on Qwen sizes)
-- **Mobile 1x**: 50% of Qwen dimensions (resize + format conversion)
-- **Mobile 2x**: 100% of Qwen dimensions (resize + format conversion)
+- **Mobile 1x**: 50% of Qwen dimensions (resize + AVIF conversion)
+- **Mobile 2x**: 100% of Qwen dimensions (resize + AVIF conversion)
 - **Desktop**: Uses Mobile 2x variant (no separate desktop variants)
 - **Backend processing**: Gemini images resized to match Qwen variant dimensions
+- **Format**: AVIF only (no JPEG fallback needed - 93.8% browser support)
 
 **Why Unified Sizing?**
 - ✅ **Client simplicity**: Browser handles consistent dimensions across all images
@@ -169,6 +168,12 @@ gemini: {
 - ✅ **Component simplicity**: No provider-specific size handling needed
 - ✅ **Future-proof**: Migration to Qwen requires no client code changes
 - ✅ **Backend flexibility**: Variant generation controlled server-side
+
+**Why AVIF Only?**
+- ✅ **Modern browsers**: 93.8% support (Chrome 85+, Edge 85+, Firefox 93+, Safari 16+)
+- ✅ **Best compression**: 50% smaller than JPEG, superior quality
+- ✅ **Simplicity**: 2 variants instead of 4 (50% reduction in storage/bandwidth)
+- ✅ **Performance**: Faster optimization pipeline (2 conversions vs 4)
 
 **Unified Variant Dimensions by Aspect Ratio**:
 
@@ -183,15 +188,11 @@ gemini: {
 ```
 Qwen Original (1664×928 PNG):
      ├─ AVIF Mobile 1x: 832×464 (50% downscale + convert)
-     ├─ AVIF Mobile 2x: 1664×928 (format convert only)
-     ├─ JPEG Mobile 1x: 832×464 (50% downscale + convert)
-     └─ JPEG Mobile 2x: 1664×928 (format convert only)
+     └─ AVIF Mobile 2x: 1664×928 (format convert only)
 
 Gemini Original (1024×576 PNG):
      ├─ AVIF Mobile 1x: 832×464 (0.81x downscale + convert)
-     ├─ AVIF Mobile 2x: 1664×928 (1.625x upscale + convert)
-     ├─ JPEG Mobile 1x: 832×464 (0.81x downscale + convert)
-     └─ JPEG Mobile 2x: 1664×928 (1.625x upscale + convert)
+     └─ AVIF Mobile 2x: 1664×928 (1.625x upscale + convert)
 
 Desktop Strategy: Always uses Mobile 2x (1664×928)
 ```
@@ -204,19 +205,21 @@ Desktop Strategy: Always uses Mobile 2x (1664×928)
 
 ### 3.2 Format Selection
 
-**Format Priority**:
+**AVIF-Only Strategy**:
 
-1. **AVIF** (Primary)
-   - 50% smaller than JPEG
-   - 93.8% browser support (2025)
-   - Best compression for photographic images
+**Primary Format**: AVIF
+- 50% smaller than JPEG with superior quality
+- 93.8% browser support (Chrome 85+, Edge 85+, Firefox 93+, Safari 16+)
+- Best compression for photographic images
+- Excellent detail preservation for story illustrations
 
-2. **JPEG** (Fallback)
-   - 100% browser support
-   - Universal compatibility
-   - Baseline for older browsers
+**No JPEG Fallback**:
+- Modern browsers dominate the market (93.8% support)
+- Safari 16+ adoption complete across macOS 13+ and iOS 16+
+- Benefits outweigh 6.2% legacy browser compatibility
+- Simpler implementation, reduced storage costs
 
-**Combined Coverage**: 100% (AVIF primary + JPEG fallback)
+**Browser Coverage**: 93.8% native AVIF support
 
 ### 3.3 Responsive Loading
 
@@ -240,17 +243,15 @@ Desktop Strategy: Always uses Mobile 2x (1664×928)
     "
     sizes="100vw"
   />
-  <source
-    type="image/jpeg"
-    srcset="
-      /path/832x464.jpeg 832w,
-      /path/1664x928.jpeg 1664w
-    "
-    sizes="100vw"
-  />
-  <img src="/path/1664x928.jpeg" alt="..." />
+  <img src="/path/1664x928.avif" alt="..." />
 </picture>
 ```
+
+**Benefits of AVIF-Only**:
+- ✅ **Simpler HTML**: Single `<source>` element
+- ✅ **Faster parsing**: Browser evaluates fewer sources
+- ✅ **Better performance**: Smaller file sizes, faster loading
+- ✅ **Consistent quality**: All users get best compression
 
 **Note**: These dimensions are consistent whether the original was generated by Qwen or Gemini.
 
@@ -268,7 +269,7 @@ Desktop Strategy: Always uses Mobile 2x (1664×928)
   imageVariants: {                  // Optimized variants metadata
     imageId: string;
     originalUrl: string;
-    variants: ImageVariant[];       // 4 variants (AVIF + JPEG × 2 sizes)
+    variants: ImageVariant[];       // 2 variants (AVIF only × 2 sizes)
     generatedAt: string;
   } | null;
 }
@@ -278,7 +279,7 @@ Desktop Strategy: Always uses Mobile 2x (1664×928)
 
 ```typescript
 interface ImageVariant {
-  format: 'avif' | 'jpeg';
+  format: 'avif';                   // AVIF only
   device: 'mobile';                 // Mobile only (desktop uses mobile 2x)
   resolution: '1x' | '2x';
   width: number;
@@ -321,13 +322,10 @@ Environment Prefix: {environment}/
 
 stories/{storyId}/{imageType}/
   ├── original/
-  │   └── {imageId}.png                  (Original: Qwen or Gemini size)
-  ├── avif/
-  │   ├── {width}x{height}/{imageId}.avif        (Mobile 1x - unified size)
-  │   └── {width}x{height}/{imageId}.avif       (Mobile 2x / Desktop - unified size)
-  └── jpeg/
-      ├── {width}x{height}/{imageId}.jpeg        (Mobile 1x - unified size)
-      └── {width}x{height}/{imageId}.jpeg       (Mobile 2x / Desktop - unified size)
+  │   └── {imageId}.png                          (Original: Qwen or Gemini size)
+  └── avif/
+      ├── {width}x{height}/{imageId}.avif        (Mobile 1x - unified size)
+      └── {width}x{height}/{imageId}.avif        (Mobile 2x / Desktop - unified size)
 
 Unified Variant Dimensions:
   - 16:9: 832×464 (1x), 1664×928 (2x)
@@ -335,32 +333,29 @@ Unified Variant Dimensions:
   - 9:16: 464×832 (1x), 928×1664 (2x)
 ```
 
-**Path Examples (Unified Sizing)**:
+**Path Examples (Unified Sizing, AVIF-Only)**:
 
 ```
 Story Cover (16:9 - Any Provider):
 develop/stories/abc123/story/original/img_xyz789.png          (Qwen: 1664×928 OR Gemini: 1024×576)
 develop/stories/abc123/story/avif/832x464/img_xyz789.avif     (Mobile 1x - unified)
 develop/stories/abc123/story/avif/1664x928/img_xyz789.avif    (Mobile 2x/Desktop - unified)
-develop/stories/abc123/story/jpeg/832x464/img_xyz789.jpeg     (Mobile 1x - unified)
-develop/stories/abc123/story/jpeg/1664x928/img_xyz789.jpeg    (Mobile 2x/Desktop - unified)
 
 Character Portrait (1:1 - Any Provider):
-develop/stories/abc123/character/original/char_abc456.png     (Qwen: 1328×1328 OR Gemini: 1024×1024)
-develop/stories/abc123/character/avif/664x664/char_abc456.avif     (Mobile 1x - unified)
-develop/stories/abc123/character/avif/1328x1328/char_abc456.avif   (Mobile 2x/Desktop - unified)
-develop/stories/abc123/character/jpeg/664x664/char_abc456.jpeg     (Mobile 1x - unified)
-develop/stories/abc123/character/jpeg/1328x1328/char_abc456.jpeg   (Mobile 2x/Desktop - unified)
+develop/stories/abc123/character/original/char_abc456.png         (Qwen: 1328×1328 OR Gemini: 1024×1024)
+develop/stories/abc123/character/avif/664x664/char_abc456.avif    (Mobile 1x - unified)
+develop/stories/abc123/character/avif/1328x1328/char_abc456.avif  (Mobile 2x/Desktop - unified)
 
 Comic Panel (9:16 - Any Provider):
-develop/stories/abc123/comics/scene_def456/panel/original/panel-1.png      (Qwen: 928×1664 OR Gemini: 576×1024)
-develop/stories/abc123/comics/scene_def456/panel/avif/464x832/panel-1.avif     (Mobile 1x - unified)
-develop/stories/abc123/comics/scene_def456/panel/avif/928x1664/panel-1.avif    (Mobile 2x/Desktop - unified)
-develop/stories/abc123/comics/scene_def456/panel/jpeg/464x832/panel-1.jpeg     (Mobile 1x - unified)
-develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg    (Mobile 2x/Desktop - unified)
+develop/stories/abc123/comics/scene_def456/panel/original/panel-1.png     (Qwen: 928×1664 OR Gemini: 576×1024)
+develop/stories/abc123/comics/scene_def456/panel/avif/464x832/panel-1.avif    (Mobile 1x - unified)
+develop/stories/abc123/comics/scene_def456/panel/avif/928x1664/panel-1.avif   (Mobile 2x/Desktop - unified)
 ```
 
-**Key Point**: Variant paths are identical regardless of which provider generated the original image.
+**Key Points**:
+- Variant paths are identical regardless of which provider generated the original image
+- AVIF-only strategy: No JPEG variants in storage structure
+- 50% reduction in blob storage paths (2 variants instead of 4)
 
 ### 5.2 Environment-Aware Paths
 
@@ -399,13 +394,11 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg    (
 - **1:1**: Mobile 1x (664×664), Mobile 2x (1328×1328)
 - **9:16**: Mobile 1x (464×832), Mobile 2x (928×1664)
 
-**Optimized File Sizes (16:9 Example)**:
+**Optimized File Sizes (16:9 Example, AVIF-Only)**:
 - AVIF mobile 1x (832×464): **~15KB**
 - AVIF mobile 2x (1664×928): **~30KB**
-- JPEG mobile 1x (832×464): **~45KB**
-- JPEG mobile 2x (1664×928): **~80KB**
 
-**Total Storage Per Image**: ~170KB for all 4 variants
+**Total Storage Per Image**: ~45KB for 2 AVIF variants (73% reduction from 4-variant system)
 
 **Loading Speed Comparison (16:9)**:
 
@@ -415,35 +408,43 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg    (
 | Mobile 4G (2 Mbps) | 1.8s | **0.06s** | **0.12s** | **93-96% faster** |
 | Desktop Wi-Fi (10 Mbps) | 0.4s | **0.01s** | **0.02s** | **95-97% faster** |
 
+**AVIF-Only Benefits**:
+- ✅ **Smaller total size**: 45KB (2 variants) vs 170KB (4 variants)
+- ✅ **Faster optimization**: 2 conversions vs 4 (50% faster pipeline)
+- ✅ **Same user experience**: Modern browsers get optimal AVIF quality
+
 **Note**: Performance is consistent regardless of which provider (Qwen or Gemini) generated the original image.
 
 ### 6.3 Storage Impact
 
-**Unified Variant Storage** (~170KB per image, regardless of provider):
+**Unified Variant Storage (AVIF-Only)** (~45KB per image, regardless of provider):
 - AVIF mobile 1x: ~15KB
 - AVIF mobile 2x: ~30KB
-- JPEG mobile 1x: ~45KB
-- JPEG mobile 2x: ~80KB
-- **Total per image**: ~170KB variants + original PNG
+- **Total per image**: ~45KB variants + original PNG
 
 **Per Scene (10 comic panels)**:
-- Variants only: 10 × 170KB = **1.7MB**
+- Variants only: 10 × 45KB = **450KB** (73% reduction from 4-variant system)
 - Originals (Qwen): 10 × 450KB = 4.5MB
 - Originals (Gemini): 10 × 300KB = 3MB
-- **Total with Qwen**: ~6.2MB
-- **Total with Gemini**: ~4.7MB
+- **Total with Qwen**: ~5MB
+- **Total with Gemini**: ~3.5MB
 
 **Per Story (50 scenes, 500 panel images)**:
-- Variants (unified): 500 × 170KB = **85MB**
+- Variants (AVIF-only): 500 × 45KB = **22.5MB** (73% reduction from 4-variant: 85MB → 22.5MB)
 - Originals (Qwen): 500 × 450KB = 225MB
 - Originals (Gemini): 500 × 300KB = 150MB
-- **Total with Qwen**: ~310MB
-- **Total with Gemini**: ~235MB
+- **Total with Qwen**: ~247.5MB (20% reduction from 4-variant: 310MB → 247.5MB)
+- **Total with Gemini**: ~172.5MB (27% reduction from 4-variant: 235MB → 172.5MB)
 
 **Vercel Blob Pricing** ($0.15/GB/month):
-- 100 images: 17MB = **$0.003/month**
-- 1,000 images: 170MB = **$0.026/month**
-- 10,000 images: 1.7GB = **$0.26/month**
+- 100 images: 4.5MB = **$0.0007/month** (76% cost reduction)
+- 1,000 images: 45MB = **$0.007/month** (73% cost reduction)
+- 10,000 images: 450MB = **$0.068/month** (74% cost reduction)
+
+**Storage Savings**:
+- ✅ **Per image**: 170KB → 45KB (73% reduction)
+- ✅ **10,000 images**: $0.26/month → $0.068/month (74% cost reduction)
+- ✅ **Simplicity**: Single format reduces complexity
 
 **Note**: Variant storage cost is identical regardless of provider, only original PNG storage differs.
 
@@ -457,11 +458,8 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg    (
 - Maintains photographic quality
 - Best compression-to-quality ratio
 - Suitable for story illustrations
-
-**JPEG Quality**: 85
-- Baseline fallback quality
-- Universal browser compatibility
-- Acceptable file size
+- Optimized for web delivery
+- Excellent detail preservation
 
 ### 7.2 Aspect Ratio Precision
 
@@ -482,16 +480,17 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg    (
 ### 7.3 Supported Browsers
 
 **AVIF Support** (93.8%):
-- ✅ Chrome 85+
-- ✅ Edge 85+
-- ✅ Firefox 93+
+- ✅ Chrome 85+ (September 2020)
+- ✅ Edge 85+ (September 2020)
+- ✅ Firefox 93+ (October 2021)
 - ✅ Safari 16+ (macOS 13+, iOS 16+)
-- ❌ Safari 15 and below (falls back to JPEG)
 
-**JPEG Support** (100%):
-- ✅ All browsers
+**Browser Coverage**: 93.8% native AVIF support
 
-**Combined Coverage**: 100% (AVIF primary, JPEG fallback)
+**Legacy Browsers** (6.2%):
+- Safari 15 and below (macOS 12 and below, iOS 15 and below)
+- Trade-off: 73% storage reduction outweighs 6.2% legacy support
+- Modern browsers dominate story reading platforms
 
 ---
 
@@ -563,19 +562,29 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg    (
 - **Storage**: $0.15 per GB/month
 - **Bandwidth**: $0.40 per GB transferred
 
-**Storage Cost (Unified Variants)**:
-- Per image: ~170KB (4 variants) + original PNG
-- 100 images: 17MB = **$0.003/month**
-- 1,000 images: 170MB = **$0.026/month**
-- 10,000 images: 1.7GB = **$0.26/month**
+**Storage Cost (AVIF-Only Variants)**:
+- Per image: ~45KB (2 AVIF variants) + original PNG
+- 100 images: 4.5MB = **$0.0007/month**
+- 1,000 images: 45MB = **$0.007/month**
+- 10,000 images: 450MB = **$0.068/month**
+
+**Storage Cost Comparison (10,000 images)**:
+- **4-Variant system**: 1.7GB = $0.26/month
+- **AVIF-Only system**: 450MB = $0.068/month
+- **Savings**: $0.192/month (74% reduction)
 
 **Bandwidth Cost Example (Story with 500 panels)**:
 - **Without optimization**: 500 × 450KB (Qwen PNG) = 225MB per view
-- **With unified AVIF variants**: 500 × 15-30KB = 7.5-15MB per view
+- **With AVIF-only variants**: 500 × 15-30KB = 7.5-15MB per view
 - **Bandwidth savings**: 93-96% reduction
 
 **1,000 Views Cost Comparison**:
 - Without optimization: 225GB × $0.40 = **$90/month**
 - With optimization: 15GB × $0.40 = **$6/month**
 - **Savings**: $84/month (93% reduction)
+
+**Total Cost Benefits (AVIF-Only)**:
+- ✅ **Storage**: 74% reduction vs 4-variant system
+- ✅ **Bandwidth**: 93-96% reduction vs unoptimized
+- ✅ **Simplicity**: Single format, easier maintenance
 
