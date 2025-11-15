@@ -176,12 +176,11 @@ export async function PATCH(
                 (scene) => scene.content && scene.content.trim().length > 0,
             );
 
-            if (allScenesHaveContent && chapter.status === "writing") {
-                // Update chapter status to published
+            if (allScenesHaveContent) {
+                // Update chapter timestamp when all scenes complete
                 await db
                     .update(chapters)
                     .set({
-                        status: "published",
                         publishedAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
                     })

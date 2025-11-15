@@ -88,7 +88,6 @@ async function fetchStoryWithComicPanels(storyId: string) {
                     partId: chapters.partId,
                     title: chapters.title,
                     summary: chapters.summary,
-                    status: chapters.status,
                     orderIndex: chapters.orderIndex,
                     // ❌ SKIPPED: arcPosition, adversityType, virtueType, seedsPlanted, seedsResolved (studio-only)
                 })
@@ -104,7 +103,6 @@ async function fetchStoryWithComicPanels(storyId: string) {
                     title: scenes.title,
                     summary: scenes.summary,
                     orderIndex: scenes.orderIndex,
-                    visibility: scenes.visibility,
                     comicStatus: scenes.comicStatus,
                     comicPanelCount: scenes.comicPanelCount,
                     comicGeneratedAt: scenes.comicGeneratedAt,
@@ -114,12 +112,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
                     // ❌ SKIPPED: cyclePhase, emotionalBeat (studio analysis fields)
                 })
                 .from(scenes)
-                .where(
-                    and(
-                        eq(scenes.visibility, "public"),
-                        eq(scenes.comicStatus, "published"),
-                    ),
-                )
+                .where(eq(scenes.comicStatus, "published"))
                 .orderBy(asc(scenes.orderIndex)),
         ]);
     } catch (error) {

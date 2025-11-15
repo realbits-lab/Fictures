@@ -136,7 +136,6 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
             storyId: chapters.storyId,
             id: chapters.id,
             orderIndex: chapters.orderIndex,
-            status: chapters.status,
         })
         .from(chapters)
         .where(inArray(chapters.storyId, storyIds))
@@ -244,7 +243,6 @@ export async function createChapter(
             title: data.title,
             // authorId not passed - accessed via story JOIN
             orderIndex: data.orderIndex,
-            status: "writing",
         },
         data.partId,
     );
@@ -533,15 +531,11 @@ export async function getStoryWithStructure(
 
             // Calculate dynamic chapter status
             const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
-            const finalStatus =
-                chapter.status === "published"
-                    ? "published"
-                    : dynamicChapterStatus;
 
             // Return ALL chapter fields from database
             return {
                 ...chapter,
-                status: finalStatus,
+                status: dynamicChapterStatus,
                 scenes: chapterScenes,
             };
         });
