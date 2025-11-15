@@ -338,7 +338,7 @@ export async function publishScene(
         .update(scenes)
         .set({
             publishedAt: now,
-            visibility: "public",
+            novelStatus: "published",
             publishedBy,
             unpublishedAt: null,
             unpublishedBy: null,
@@ -360,7 +360,7 @@ export async function unpublishScene(
         .update(scenes)
         .set({
             publishedAt: null,
-            visibility: "private",
+            novelStatus: "draft",
             unpublishedAt: now,
             unpublishedBy,
             updatedAt: now,
