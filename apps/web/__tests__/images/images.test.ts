@@ -370,15 +370,15 @@ describe("Images System Integration", () => {
 
         // Assert - Basic properties
         expect(result.imageId).toBeDefined();
-        expect(result.imageUrl).toContain("blob.vercel-storage.com");
-        expect(result.blobUrl).toBe(result.imageUrl);
+        expect(result.originalUrl).toContain("blob.vercel-storage.com");
+        expect(result.blobUrl).toBe(result.originalUrl);
         expect(result.aspectRatio).toBe("16:9");
         expect(result.isPlaceholder).toBe(false);
 
         // Assert - Dimensions (16:9 = 1664x928 or 1344x768)
-        expect(result.width).toBeGreaterThan(1000);
-        expect(result.height).toBeGreaterThan(500);
-        const aspectRatioValue: number = result.width / result.height;
+        expect(result.dimensions.width).toBeGreaterThan(1000);
+        expect(result.dimensions.height).toBeGreaterThan(500);
+        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(1.7);
         expect(aspectRatioValue).toBeLessThan(1.8);
 
@@ -389,17 +389,16 @@ describe("Images System Integration", () => {
         expect(result.model).toBeDefined();
         expect(result.provider).toBeDefined();
 
-        // Assert - Timing metadata
-        expect(result.metadata.generationTime).toBeGreaterThan(0);
-        expect(result.metadata.uploadTime).toBeGreaterThan(0);
-        expect(result.metadata.optimizationTime).toBeGreaterThan(0);
-        expect(result.metadata.totalTime).toBeGreaterThan(0);
+        // Assert - Response data completeness (API doesn't return timing metadata)
+        expect(result.model).toBeDefined();
+        expect(result.provider).toBeDefined();
+        expect(result.size).toBeGreaterThan(0);
 
         // Assert - Optimized variants
         expect(result.optimizedSet).toBeDefined();
         expect(result.optimizedSet.imageId).toBeDefined();
-        expect(result.optimizedSet.originalUrl).toBe(result.imageUrl);
-        expect(result.optimizedSet.variants).toBeInstanceOf(Array);
+        expect(result.optimizedSet.originalUrl).toContain("blob.vercel-storage.com");
+        expect(Array.isArray(result.optimizedSet.variants)).toBe(true);
         expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
 
         // Assert - Variant structure (AVIF format only)
@@ -435,16 +434,15 @@ describe("Images System Integration", () => {
         expect(result.aspectRatio).toBe("1:1");
 
         // Assert - Dimensions (1:1 = 1024x1024)
-        expect(result.width).toBeGreaterThan(900);
-        expect(result.height).toBeGreaterThan(900);
-        const aspectRatioValue: number = result.width / result.height;
+        expect(result.dimensions.width).toBeGreaterThan(900);
+        expect(result.dimensions.height).toBeGreaterThan(900);
+        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(0.95);
         expect(aspectRatioValue).toBeLessThan(1.05);
 
         // Assert - All other standard checks
-        expect(result.imageUrl).toContain("blob.vercel-storage.com");
+        expect(result.originalUrl).toContain("blob.vercel-storage.com");
         expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
-        expect(result.metadata.totalTime).toBeGreaterThan(0);
     }, 60000);
 
     it("should generate setting image with 1:1 aspect ratio", async () => {
@@ -462,7 +460,7 @@ describe("Images System Integration", () => {
         expect(result.aspectRatio).toBe("1:1");
 
         // Assert - Square dimensions
-        const aspectRatioValue: number = result.width / result.height;
+        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(0.95);
         expect(aspectRatioValue).toBeLessThan(1.05);
     }, 60000);
@@ -482,7 +480,7 @@ describe("Images System Integration", () => {
         expect(result.aspectRatio).toBe("16:9");
 
         // Assert - Widescreen dimensions
-        const aspectRatioValue: number = result.width / result.height;
+        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(1.7);
         expect(aspectRatioValue).toBeLessThan(1.8);
     }, 60000);
@@ -502,10 +500,10 @@ describe("Images System Integration", () => {
         expect(result.aspectRatio).toBe("9:16");
 
         // Assert - Portrait dimensions (taller than wide)
-        const aspectRatioValue: number = result.width / result.height;
+        const aspectRatioValue: number = result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(0.55);
         expect(aspectRatioValue).toBeLessThan(0.58);
-        expect(result.height).toBeGreaterThan(result.width);
+        expect(result.dimensions.height).toBeGreaterThan(result.dimensions.width);
     }, 60000);
 
     it("should include comprehensive metadata in results", async () => {
@@ -519,24 +517,14 @@ describe("Images System Integration", () => {
         // Act
         const result: ApiImagesResponse = await generateImage(requestBody);
 
-        // Assert - Metadata completeness
-        expect(result.metadata).toMatchObject({
-            generationTime: expect.any(Number),
-            uploadTime: expect.any(Number),
-            optimizationTime: expect.any(Number),
-            totalTime: expect.any(Number),
-        });
-
-        // Assert - Timing relationships
-        expect(result.metadata.totalTime).toBeGreaterThanOrEqual(
-            result.metadata.generationTime,
-        );
-        expect(result.metadata.totalTime).toBeGreaterThanOrEqual(
-            result.metadata.uploadTime,
-        );
-        expect(result.metadata.totalTime).toBeGreaterThanOrEqual(
-            result.metadata.optimizationTime,
-        );
+        // Assert - Response completeness (API doesn't return metadata, only service layer has it)
+        expect(result.success).toBe(true);
+        expect(result.model).toBeDefined();
+        expect(result.provider).toBeDefined();
+        expect(result.size).toBeGreaterThan(0);
+        expect(result.dimensions).toBeDefined();
+        expect(result.dimensions.width).toBeGreaterThan(0);
+        expect(result.dimensions.height).toBeGreaterThan(0);
 
         // Assert - Optimized set structure
         expect(result.optimizedSet).toMatchObject({

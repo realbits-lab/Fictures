@@ -101,6 +101,13 @@ cd apps/ai-server
 - **Web Server (Port 3000)**: Kill any process using port 3000 before running `pnpm dev` in `apps/web/`
 - **AI Server (Port 8000)**: Kill any process using port 8000 before running the server in `apps/ai-server/`
 
+**Process Management Principle**:
+- **ALWAYS kill processes by PID (process number), NEVER by process name**
+- Use `lsof -ti :PORT` to get PIDs, then `kill -9 PID` to terminate
+- Process names can match multiple unrelated processes and cause unintended termination
+- Example: `lsof -ti :3000 | xargs -r kill -9` (safe, targeted)
+- Never use: `pkill next` or `killall node` (dangerous, kills all matching processes)
+
 **Quick Start - Running Both Servers**:
 
 ```bash
