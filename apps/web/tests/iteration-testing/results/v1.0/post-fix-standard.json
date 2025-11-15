@@ -1,6 +1,6 @@
 {
   "version": "v1.0",
-  "testDate": "2025-11-14T23:39:30.035Z",
+  "testDate": "2025-11-15T00:56:13.118Z",
   "testPrompts": [
     "last-garden",
     "broken-healer",
@@ -9,10 +9,1735 @@
   ],
   "evaluationMode": "standard",
   "iterations": 4,
-  "stories": [],
+  "stories": [
+    {
+      "storyId": "story_4GrGNMD2m0D8MDMJ",
+      "prompt": "A story about a refugee woman who starts a garden in a destroyed city and the former enemy soldier who helps her without revealing his identity",
+      "promptVersion": "v1.0",
+      "generationTime": 437334,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763166581662_64f2pv8",
+          "storyId": "story_4GrGNMD2m0D8MDMJ",
+          "timestamp": "2025-11-15T00:29:41.662Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.67,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 3,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "perseverance",
+                  "kindness"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763166582005_j65w4ok",
+          "partId": "part_tIEbAVKSxjh6SpnZ",
+          "timestamp": "2025-11-15T00:29:42.005Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup"
+                ],
+                "phasesCount": 1,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763166582176_it69h2k",
+          "chapterId": "chapter_n_OLUdHbN3bs_1rZ",
+          "timestamp": "2025-11-15T00:29:42.176Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 0
+      },
+      "timestamp": "2025-11-15T00:29:42.265Z"
+    },
+    {
+      "storyId": "story_yEouo745EiQaJSqe",
+      "prompt": "A story about a refugee woman who starts a garden in a destroyed city and the former enemy soldier who helps her without revealing his identity",
+      "promptVersion": "v1.0",
+      "generationTime": 170144,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763166752726_0j0s7rr",
+          "storyId": "story_yEouo745EiQaJSqe",
+          "timestamp": "2025-11-15T00:32:32.726Z",
+          "evaluationMode": "standard",
+          "overallScore": 4,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 4,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "compassion",
+                  "perseverance",
+                  "kindness"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763166752919_fzkjirr",
+          "partId": "part_qrHfitwNpPQjre26",
+          "timestamp": "2025-11-15T00:32:32.919Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup"
+                ],
+                "phasesCount": 1,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763166753082_s2et37e",
+          "chapterId": "chapter_l5ZSLzq3Z16CTVrM",
+          "timestamp": "2025-11-15T00:32:33.082Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        },
+        "sceneContent": {
+          "evaluationId": "scene-content_1763166753257_6l44pt1",
+          "sceneId": "scene_wLvuDmPlDEHRh9rF",
+          "timestamp": "2025-11-15T00:32:33.257Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.57,
+          "passed": true,
+          "metrics": {
+            "wordCountCompliance": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Word Count Compliance",
+              "method": "automated",
+              "wordCount": 632,
+              "targetRange": {
+                "min": 300,
+                "max": 600
+              },
+              "withinRange": true
+            },
+            "cycleAlignment": {
+              "score": 3.5,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Cycle Alignment",
+              "method": "ai-evaluation",
+              "phaseElementsPresent": [
+                "conflict",
+                "virtue",
+                "consequence"
+              ],
+              "alignmentQuality": 3.5
+            },
+            "emotionalResonance": {
+              "score": 3.2,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Emotional Resonance",
+              "method": "ai-evaluation",
+              "emotionIntensity": 3.2,
+              "emotionAlignment": true
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 3.2
+      },
+      "timestamp": "2025-11-15T00:32:33.258Z"
+    },
+    {
+      "storyId": "story_hzoI3njrG4JOLdtA",
+      "prompt": "A story about a refugee woman who starts a garden in a destroyed city and the former enemy soldier who helps her without revealing his identity",
+      "promptVersion": "v1.0",
+      "generationTime": 167808,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763166921385_dysigbe",
+          "storyId": "story_hzoI3njrG4JOLdtA",
+          "timestamp": "2025-11-15T00:35:21.385Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.67,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 3,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "compassion",
+                  "perseverance"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763166921575_ficl6lv",
+          "partId": "part_T6MxRD8t3fNF0q1p",
+          "timestamp": "2025-11-15T00:35:21.575Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup"
+                ],
+                "phasesCount": 1,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763166921740_uwlbobo",
+          "chapterId": "chapter_x-hj8Y8bIShC516P",
+          "timestamp": "2025-11-15T00:35:21.740Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        },
+        "sceneContent": {
+          "evaluationId": "scene-content_1763166921918_f3l0quy",
+          "sceneId": "scene_3vMIatg-4D2lc8AG",
+          "timestamp": "2025-11-15T00:35:21.918Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.57,
+          "passed": true,
+          "metrics": {
+            "wordCountCompliance": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Word Count Compliance",
+              "method": "automated",
+              "wordCount": 633,
+              "targetRange": {
+                "min": 300,
+                "max": 600
+              },
+              "withinRange": true
+            },
+            "cycleAlignment": {
+              "score": 3.5,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Cycle Alignment",
+              "method": "ai-evaluation",
+              "phaseElementsPresent": [
+                "conflict",
+                "virtue",
+                "consequence"
+              ],
+              "alignmentQuality": 3.5
+            },
+            "emotionalResonance": {
+              "score": 3.2,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Emotional Resonance",
+              "method": "ai-evaluation",
+              "emotionIntensity": 3.2,
+              "emotionAlignment": true
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 3.2
+      },
+      "timestamp": "2025-11-15T00:35:21.919Z"
+    },
+    {
+      "storyId": "story_PNXjfQJ187KwDr5r",
+      "prompt": "A story about a refugee woman who starts a garden in a destroyed city and the former enemy soldier who helps her without revealing his identity",
+      "promptVersion": "v1.0",
+      "generationTime": 171935,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763167094179_coqjlxl",
+          "storyId": "story_PNXjfQJ187KwDr5r",
+          "timestamp": "2025-11-15T00:38:14.179Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.67,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 3,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "perseverance",
+                  "kindness"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763167094371_i7xq514",
+          "partId": "part_fd8xuiyOHWKK4RR7",
+          "timestamp": "2025-11-15T00:38:14.371Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup",
+                  "confrontation"
+                ],
+                "phasesCount": 2,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763167094537_zfg1kw7",
+          "chapterId": "chapter_E-yrxveiGY6CnlEZ",
+          "timestamp": "2025-11-15T00:38:14.537Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        },
+        "sceneContent": {
+          "evaluationId": "scene-content_1763167094714_2ustyb6",
+          "sceneId": "scene_cTdL9EikOTGXlr-w",
+          "timestamp": "2025-11-15T00:38:14.714Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.57,
+          "passed": true,
+          "metrics": {
+            "wordCountCompliance": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Word Count Compliance",
+              "method": "automated",
+              "wordCount": 638,
+              "targetRange": {
+                "min": 300,
+                "max": 600
+              },
+              "withinRange": true
+            },
+            "cycleAlignment": {
+              "score": 3.5,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Cycle Alignment",
+              "method": "ai-evaluation",
+              "phaseElementsPresent": [
+                "conflict",
+                "virtue",
+                "consequence"
+              ],
+              "alignmentQuality": 3.5
+            },
+            "emotionalResonance": {
+              "score": 3.2,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Emotional Resonance",
+              "method": "ai-evaluation",
+              "emotionIntensity": 3.2,
+              "emotionAlignment": true
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 3.2
+      },
+      "timestamp": "2025-11-15T00:38:14.715Z"
+    },
+    {
+      "storyId": "story_QwlJIrTftsXmTGNC",
+      "prompt": "A disgraced doctor with severe impostor syndrome treats patients in a free clinic, haunted by a past mistake",
+      "promptVersion": "v1.0",
+      "generationTime": 172978,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763167268009_ontg76m",
+          "storyId": "story_QwlJIrTftsXmTGNC",
+          "timestamp": "2025-11-15T00:41:08.009Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.67,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 3,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "compassion",
+                  "perseverance"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763167268200_jxgldiy",
+          "partId": "part_3JJXJXJRO3VoHh5N",
+          "timestamp": "2025-11-15T00:41:08.200Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup",
+                  "confrontation"
+                ],
+                "phasesCount": 2,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763167268362_pzzovvp",
+          "chapterId": "chapter_I-GlOBTn65w2ftTQ",
+          "timestamp": "2025-11-15T00:41:08.362Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        },
+        "sceneContent": {
+          "evaluationId": "scene-content_1763167268534_znb6eog",
+          "sceneId": "scene_Mk3qdyM5TpQBReml",
+          "timestamp": "2025-11-15T00:41:08.534Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.57,
+          "passed": true,
+          "metrics": {
+            "wordCountCompliance": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Word Count Compliance",
+              "method": "automated",
+              "wordCount": 623,
+              "targetRange": {
+                "min": 300,
+                "max": 600
+              },
+              "withinRange": true
+            },
+            "cycleAlignment": {
+              "score": 3.5,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Cycle Alignment",
+              "method": "ai-evaluation",
+              "phaseElementsPresent": [
+                "conflict",
+                "virtue",
+                "consequence"
+              ],
+              "alignmentQuality": 3.5
+            },
+            "emotionalResonance": {
+              "score": 3.2,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Emotional Resonance",
+              "method": "ai-evaluation",
+              "emotionIntensity": 3.2,
+              "emotionAlignment": true
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 3.2
+      },
+      "timestamp": "2025-11-15T00:41:08.535Z"
+    },
+    {
+      "storyId": "story_IIGPhXu8NFZVVyUc",
+      "prompt": "A disgraced doctor with severe impostor syndrome treats patients in a free clinic, haunted by a past mistake",
+      "promptVersion": "v1.0",
+      "generationTime": 169493,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763167438341_mtjpuzk",
+          "storyId": "story_IIGPhXu8NFZVVyUc",
+          "timestamp": "2025-11-15T00:43:58.341Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.67,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 3,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "compassion",
+                  "perseverance"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763167438533_647byvk",
+          "partId": "part_7EP1CfHYLZiJ1f3d",
+          "timestamp": "2025-11-15T00:43:58.533Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup"
+                ],
+                "phasesCount": 1,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763167438694_wkeb0gv",
+          "chapterId": "chapter_a1kSjk4O_D85ZvID",
+          "timestamp": "2025-11-15T00:43:58.694Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        },
+        "sceneContent": {
+          "evaluationId": "scene-content_1763167438867_4yyusg1",
+          "sceneId": "scene_qHlqNjtyw0rgbFfL",
+          "timestamp": "2025-11-15T00:43:58.867Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.57,
+          "passed": true,
+          "metrics": {
+            "wordCountCompliance": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Word Count Compliance",
+              "method": "automated",
+              "wordCount": 590,
+              "targetRange": {
+                "min": 300,
+                "max": 600
+              },
+              "withinRange": true
+            },
+            "cycleAlignment": {
+              "score": 3.5,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Cycle Alignment",
+              "method": "ai-evaluation",
+              "phaseElementsPresent": [
+                "conflict",
+                "virtue",
+                "consequence"
+              ],
+              "alignmentQuality": 3.5
+            },
+            "emotionalResonance": {
+              "score": 3.2,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Emotional Resonance",
+              "method": "ai-evaluation",
+              "emotionIntensity": 3.2,
+              "emotionAlignment": true
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 3.2
+      },
+      "timestamp": "2025-11-15T00:43:58.868Z"
+    },
+    {
+      "storyId": "story_5OA0gaZNNHeMs34Z",
+      "prompt": "A disgraced doctor with severe impostor syndrome treats patients in a free clinic, haunted by a past mistake",
+      "promptVersion": "v1.0",
+      "generationTime": 444032,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763167883225_1kg02hd",
+          "storyId": "story_5OA0gaZNNHeMs34Z",
+          "timestamp": "2025-11-15T00:51:23.225Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.67,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 3,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "compassion",
+                  "perseverance"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763167883420_b53pl1f",
+          "partId": "part_sSUK80egb1MOzlwk",
+          "timestamp": "2025-11-15T00:51:23.420Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup",
+                  "confrontation"
+                ],
+                "phasesCount": 2,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763167883587_c2i4xuu",
+          "chapterId": "chapter_256JtFn5gcYZMhd6",
+          "timestamp": "2025-11-15T00:51:23.587Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        },
+        "sceneContent": {
+          "evaluationId": "scene-content_1763167883766_jr6tolz",
+          "sceneId": "scene_QDAZMRqhZ3-P2Zye",
+          "timestamp": "2025-11-15T00:51:23.766Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.57,
+          "passed": true,
+          "metrics": {
+            "wordCountCompliance": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Word Count Compliance",
+              "method": "automated",
+              "wordCount": 597,
+              "targetRange": {
+                "min": 300,
+                "max": 600
+              },
+              "withinRange": true
+            },
+            "cycleAlignment": {
+              "score": 3.5,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Cycle Alignment",
+              "method": "ai-evaluation",
+              "phaseElementsPresent": [
+                "conflict",
+                "virtue",
+                "consequence"
+              ],
+              "alignmentQuality": 3.5
+            },
+            "emotionalResonance": {
+              "score": 3.2,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Emotional Resonance",
+              "method": "ai-evaluation",
+              "emotionIntensity": 3.2,
+              "emotionAlignment": true
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 3.2
+      },
+      "timestamp": "2025-11-15T00:51:23.767Z"
+    },
+    {
+      "storyId": "story_a2JkN2Dqk60qBj-j",
+      "prompt": "A disgraced doctor with severe impostor syndrome treats patients in a free clinic, haunted by a past mistake",
+      "promptVersion": "v1.0",
+      "generationTime": 288486,
+      "evaluationResults": {
+        "story": {
+          "evaluationId": "story_1763168172580_5oq0fra",
+          "storyId": "story_a2JkN2Dqk60qBj-j",
+          "timestamp": "2025-11-15T00:56:12.580Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.67,
+          "passed": true,
+          "metrics": {
+            "moralFrameworkClarity": {
+              "score": 3,
+              "target": 3,
+              "threshold": 2,
+              "passed": true,
+              "feedback": "Moral Framework Clarity",
+              "method": "ai-evaluation",
+              "details": {
+                "virtuesIdentified": [
+                  "compassion",
+                  "perseverance"
+                ],
+                "causalLogicPresent": true
+              }
+            },
+            "thematicCoherence": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Thematic Coherence",
+              "method": "ai-evaluation"
+            },
+            "genreConsistency": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Genre Consistency",
+              "method": "ai-evaluation"
+            }
+          },
+          "recommendations": []
+        },
+        "part": {
+          "evaluationId": "part_1763168172775_i2m2g4o",
+          "partId": "part_tHbp020JAf8Z9983",
+          "timestamp": "2025-11-15T00:56:12.776Z",
+          "evaluationMode": "standard",
+          "overallScore": 3,
+          "passed": false,
+          "metrics": {
+            "cycleCoherence": {
+              "score": 2,
+              "target": 4,
+              "threshold": 3,
+              "passed": false,
+              "feedback": "Cycle Coherence",
+              "method": "ai-evaluation",
+              "details": {
+                "phasesPresent": [
+                  "setup"
+                ],
+                "phasesCount": 1,
+                "allPhasesDistinct": false
+              }
+            },
+            "conflictDefinitionClarity": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Conflict Definition Clarity",
+              "method": "ai-evaluation",
+              "internalConflictPresent": true,
+              "externalConflictPresent": true
+            },
+            "earnedLuckTracking": {
+              "score": 3,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Earned Luck Tracking",
+              "method": "automated",
+              "seedsPlanted": 0,
+              "seedsResolved": 0,
+              "trackingTableExists": false
+            }
+          }
+        },
+        "chapter": {
+          "evaluationId": "chapter_1763168172942_6eim22l",
+          "chapterId": "chapter_TLQ7I2NRT4cJlusf",
+          "timestamp": "2025-11-15T00:56:12.942Z",
+          "evaluationMode": "standard",
+          "overallScore": 29.25,
+          "passed": true,
+          "metrics": {
+            "singleCycleFocus": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Single-Cycle Focus",
+              "method": "ai-evaluation",
+              "cycleCount": 1,
+              "focusedCharacters": 2
+            },
+            "seedTrackingCompleteness": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Seed Tracking Completeness",
+              "method": "automated",
+              "previousSeedsTracked": 0,
+              "totalPreviousSeeds": 0,
+              "trackingPercentage": 0
+            },
+            "adversityConnection": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Adversity Connection",
+              "method": "ai-evaluation",
+              "causalLinkExists": true,
+              "previousChapterReference": true
+            },
+            "stakesEscalation": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Stakes Escalation",
+              "method": "ai-evaluation",
+              "severityIncrease": true,
+              "severityScore": 4
+            },
+            "resolutionAdversityTransition": {
+              "score": 3.5,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Resolution-Adversity Transition",
+              "method": "ai-evaluation",
+              "transitionQuality": 3.5
+            },
+            "narrativeMomentum": {
+              "score": 80,
+              "target": 80,
+              "threshold": 60,
+              "passed": true,
+              "feedback": "Narrative Momentum",
+              "method": "ai-evaluation",
+              "momentumRating": 4
+            }
+          }
+        },
+        "sceneContent": {
+          "evaluationId": "scene-content_1763168173117_leqonm2",
+          "sceneId": "scene_VAS0Y4F7LS2xC1qO",
+          "timestamp": "2025-11-15T00:56:13.117Z",
+          "evaluationMode": "standard",
+          "overallScore": 3.57,
+          "passed": true,
+          "metrics": {
+            "wordCountCompliance": {
+              "score": 4,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Word Count Compliance",
+              "method": "automated",
+              "wordCount": 633,
+              "targetRange": {
+                "min": 300,
+                "max": 600
+              },
+              "withinRange": true
+            },
+            "cycleAlignment": {
+              "score": 3.5,
+              "target": 4,
+              "threshold": 3,
+              "passed": true,
+              "feedback": "Cycle Alignment",
+              "method": "ai-evaluation",
+              "phaseElementsPresent": [
+                "conflict",
+                "virtue",
+                "consequence"
+              ],
+              "alignmentQuality": 3.5
+            },
+            "emotionalResonance": {
+              "score": 3.2,
+              "target": 3,
+              "threshold": 2.5,
+              "passed": true,
+              "feedback": "Emotional Resonance",
+              "method": "ai-evaluation",
+              "emotionIntensity": 3.2,
+              "emotionAlignment": true
+            }
+          }
+        }
+      },
+      "corePrincipleScores": {
+        "cyclicStructure": 4,
+        "intrinsicMotivation": 0,
+        "earnedConsequence": 0,
+        "characterTransformation": 0,
+        "emotionalResonance": 3.2
+      },
+      "timestamp": "2025-11-15T00:56:13.118Z"
+    }
+  ],
   "aggregatedMetrics": {
     "cyclicStructure": {
-      "cycleCompleteness": 0,
+      "cycleCompleteness": 1,
       "chapterCycleFocus": 0,
       "phaseCoverage": 0,
       "resolutionAdversityTransition": 0,
@@ -56,7 +1781,7 @@
       "forwardMomentum": 0
     },
     "emotionalResonance": {
-      "cycleCompleteness": 0,
+      "cycleCompleteness": 0.7,
       "chapterCycleFocus": 0,
       "phaseCoverage": 0,
       "resolutionAdversityTransition": 0,
@@ -67,5 +1792,17 @@
       "forwardMomentum": 0
     }
   },
-  "failurePatterns": []
+  "failurePatterns": [
+    {
+      "category": "structural",
+      "description": "cycleCoherence failed",
+      "frequency": 8,
+      "affectedMetrics": [
+        "cycleCoherence"
+      ],
+      "rootCause": "To be analyzed",
+      "proposedFix": "To be determined",
+      "priority": "high"
+    }
+  ]
 }
