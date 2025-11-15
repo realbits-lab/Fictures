@@ -197,7 +197,7 @@ export class SceneSummaryService {
             autoPublish: false,
 
             // === COMIC FORMAT ===
-            comicStatus: "none",
+            comicStatus: "draft",
             comicPublishedAt: null,
             comicPublishedBy: null,
             comicUnpublishedAt: null,
