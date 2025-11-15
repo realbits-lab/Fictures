@@ -61,7 +61,7 @@ const updateStorySchema = z.object({
         title: z.string().optional().describe("Story title"),
         genre: z.string().optional().describe("Story genre"),
         status: z
-            .enum(["writing", "published"])
+            .enum(["draft", "published"])
             .optional()
             .describe("Story status"),
         summary: z
@@ -333,13 +333,18 @@ const updateChapterSchema = z.object({
     updates: z.object({
         title: z.string().optional().describe("Chapter title"),
         summary: z.string().optional().describe("Chapter summary"),
-        status: z
-            .enum(["writing", "published"])
+        characterId: z
+            .string()
             .optional()
-            .describe("Chapter status"),
-        purpose: z.string().optional().describe("Chapter purpose"),
-        hook: z.string().optional().describe("Chapter hook"),
-        characterFocus: z.string().optional().describe("Main character focus"),
+            .describe("Character whose arc this advances"),
+        arcPosition: z
+            .enum(["beginning", "middle", "climax", "resolution"])
+            .optional()
+            .describe("Arc position"),
+        contributesToMacroArc: z
+            .string()
+            .optional()
+            .describe("How this advances the macro arc"),
         orderIndex: z.number().optional().describe("Order index"),
     }),
 });
@@ -654,13 +659,21 @@ const updateCharacterSchema = z.object({
     updates: z.object({
         name: z.string().optional().describe("Character name"),
         isMain: z.boolean().optional().describe("Is main character"),
-        role: z.string().optional().describe("Character role"),
-        archetype: z.string().optional().describe("Character archetype"),
+        role: z
+            .enum([
+                "protagonist",
+                "deuteragonist",
+                "tritagonist",
+                "antagonist",
+                "supporting",
+            ])
+            .optional()
+            .describe("Character role"),
         summary: z.string().optional().describe("Character summary"),
-        storyline: z.string().optional().describe("Character storyline"),
         coreTrait: z.string().optional().describe("Core moral virtue"),
         internalFlaw: z.string().optional().describe("Internal flaw"),
         externalGoal: z.string().optional().describe("External goal"),
+        backstory: z.string().optional().describe("Character backstory"),
     }),
 });
 
@@ -757,8 +770,8 @@ export const getSetting = tool({
 const createSettingSchema = z.object({
     storyId: z.string().describe("The story ID"),
     name: z.string().describe("Setting name"),
-    summary: z.string().optional().describe("Setting description"),
-    mood: z.string().optional().describe("Setting mood"),
+    summary: z.string().describe("Setting description"),
+    symbolicMeaning: z.string().describe("Symbolic meaning"),
 });
 
 export const createSetting = tool({
@@ -768,7 +781,7 @@ export const createSetting = tool({
         storyId,
         name,
         summary,
-        mood,
+        symbolicMeaning,
     }: z.infer<typeof createSettingSchema>) => {
         const [setting] = await db
             .insert(settings)
@@ -776,8 +789,26 @@ export const createSetting = tool({
                 id: `setting_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 storyId,
                 name,
-                summary: summary || null,
-                mood: mood || null,
+                summary,
+                symbolicMeaning,
+                adversityElements: {
+                    physicalObstacles: [],
+                    scarcityFactors: [],
+                    dangerSources: [],
+                    socialDynamics: [],
+                },
+                virtueElements: {
+                    witnessElements: [],
+                    contrastElements: [],
+                    opportunityElements: [],
+                    sacredSpaces: [],
+                },
+                consequenceElements: {
+                    transformativeElements: [],
+                    rewardSources: [],
+                    revelationTriggers: [],
+                    communityResponses: [],
+                },
             })
             .returning();
 
@@ -797,16 +828,7 @@ const updateSettingSchema = z.object({
     updates: z.object({
         name: z.string().optional().describe("Setting name"),
         summary: z.string().optional().describe("Setting description"),
-        mood: z.string().optional().describe("Setting mood"),
-        architecturalStyle: z
-            .string()
-            .optional()
-            .describe("Architectural style"),
         symbolicMeaning: z.string().optional().describe("Symbolic meaning"),
-        emotionalResonance: z
-            .string()
-            .optional()
-            .describe("Emotional resonance"),
     }),
 });
 
