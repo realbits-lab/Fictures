@@ -211,16 +211,21 @@ export const generateChapters = tool({
     },
 });
 
+const generateSceneSummariesSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    chapterId: z
+        .string()
+        .optional()
+        .describe("Optional: generate scenes for specific chapter"),
+});
+
 export const generateSceneSummaries = tool({
     summary: "Generate scene summaries/outlines (Phase 6 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        chapterId: z
-            .string()
-            .optional()
-            .describe("Optional: generate scenes for specific chapter"),
-    }),
-    execute: async ({ storyId, chapterId }) => {
+    parameters: generateSceneSummariesSchema,
+    execute: async ({
+        storyId,
+        chapterId,
+    }: z.infer<typeof generateSceneSummariesSchema>) => {
         const requestBody: {
             storyId: string;
             chapterId?: string;
@@ -252,12 +257,16 @@ export const generateSceneSummaries = tool({
     },
 });
 
+const generateSceneContentSchema = z.object({
+    sceneId: z.string().describe("The scene ID to generate content for"),
+});
+
 export const generateSceneContent = tool({
     summary: "Generate full scene prose content (Phase 7 of 9)",
-    parameters: z.object({
-        sceneId: z.string().describe("The scene ID to generate content for"),
-    }),
-    execute: async ({ sceneId }) => {
+    parameters: generateSceneContentSchema,
+    execute: async ({
+        sceneId,
+    }: z.infer<typeof generateSceneContentSchema>) => {
         const requestBody: {
             sceneId: string;
         } = {
@@ -288,13 +297,15 @@ export const generateSceneContent = tool({
     },
 });
 
+const improveSceneSchema = z.object({
+    sceneId: z.string().describe("The scene ID to improve"),
+});
+
 export const improveScene = tool({
     summary:
         "Improve scene quality using Architectonics of Engagement (Phase 8 of 9)",
-    parameters: z.object({
-        sceneId: z.string().describe("The scene ID to improve"),
-    }),
-    execute: async ({ sceneId }) => {
+    parameters: improveSceneSchema,
+    execute: async ({ sceneId }: z.infer<typeof improveSceneSchema>) => {
         const requestBody: {
             sceneId: string;
         } = {
@@ -327,22 +338,26 @@ export const improveScene = tool({
     },
 });
 
+const generateImagesSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    imageType: z
+        .enum(["story", "character", "setting", "scene"])
+        .describe("Type of image to generate"),
+    entityId: z
+        .string()
+        .optional()
+        .describe("Optional: specific entity ID for character/setting/scene"),
+});
+
 export const generateImages = tool({
     summary:
         "Generate images for story elements using Gemini 2.5 Flash (Phase 9 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        imageType: z
-            .enum(["story", "character", "setting", "scene"])
-            .describe("Type of image to generate"),
-        entityId: z
-            .string()
-            .optional()
-            .describe(
-                "Optional: specific entity ID for character/setting/scene",
-            ),
-    }),
-    execute: async ({ storyId, imageType, entityId }) => {
+    parameters: generateImagesSchema,
+    execute: async ({
+        storyId,
+        imageType,
+        entityId,
+    }: z.infer<typeof generateImagesSchema>) => {
         const requestBody: {
             storyId: string;
             imageType: "story" | "character" | "setting" | "scene";

@@ -174,12 +174,16 @@ export const updatePhaseProgress = tool({
     },
 });
 
+const getGenerationProgressSchema = z.object({
+    chatId: z.string().describe("The chat session ID"),
+});
+
 export const getGenerationProgress = tool({
     summary: "Get current story generation progress and phase status",
-    parameters: z.object({
-        chatId: z.string().describe("The chat session ID"),
-    }),
-    execute: async ({ chatId }) => {
+    parameters: getGenerationProgressSchema,
+    execute: async ({
+        chatId,
+    }: z.infer<typeof getGenerationProgressSchema>) => {
         const chat = await getStudioAgentChat(chatId);
 
         if (!chat) {
