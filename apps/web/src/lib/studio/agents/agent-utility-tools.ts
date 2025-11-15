@@ -13,21 +13,23 @@ import { apiKeys } from "@/lib/schemas/database";
 // API key validation and progress tracking
 // ==============================================================================
 
+const validateApiKeySchema = z.object({
+    userId: z.string().describe("The user ID"),
+    requiredScopes: z
+        .array(z.string())
+        .optional()
+        .describe('Required scopes (e.g., ["ai:use", "stories:write"])'),
+});
+
 export const validateApiKey = tool({
     summary: "Validate user API key for Studio Agent operations",
-    parameters: z.object({
-        userId: z.string().describe("The user ID"),
-        requiredScopes: z
-            .array(z.string())
-            .optional()
-            .describe('Required scopes (e.g., ["ai:use", "stories:write"])'),
-    }),
-    execute: async ({ userId, requiredScopes = [] }) => {
+    parameters: validateApiKeySchema,
+    execute: async ({ userId, requiredScopes = [] }: z.infer<typeof validateApiKeySchema>) => {
         // Get user's API keys
         const userKeys = await db
             .select()
             .from(apiKeys)
-            .where(and(eq(apiKeys.userId, userId), eq(apiKeys.revoked, false)));
+            .where(and(eq(apiKeys.userId, userId), eq(apiKeys.isActive, true)));
 
         if (userKeys.length === 0) {
             return {
