@@ -24,6 +24,7 @@ type Chapter = InferSelectModel<typeof chapters>;
 type Part = InferSelectModel<typeof parts>;
 type Character = InferSelectModel<typeof characters>;
 type Setting = InferSelectModel<typeof settings>;
+type Scene = InferSelectModel<typeof scenes>;
 import { insertSceneSchema } from "@/lib/schemas/zod/generated";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
