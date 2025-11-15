@@ -47,7 +47,10 @@ export async function GET(_request: NextRequest, context: RouteContext) {
 
         // Check if story is published or user is owner/admin
         const session = await auth();
-        const story = (scene.chapter as any).story;
+        // Note: TypeScript doesn't infer nested 'with' relationships properly
+        const story = scene.chapter.story as
+            | typeof scene.chapter.story
+            | undefined;
 
         if (!story) {
             return new Response(JSON.stringify({ error: "Story not found" }), {

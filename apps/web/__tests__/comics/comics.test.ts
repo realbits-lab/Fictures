@@ -58,9 +58,9 @@ interface ComicPanel {
     panelNumber: number;
     shotType: string;
     imageUrl: string;
-    narrative: any;
-    dialogue: any;
-    sfx: any;
+    narrative: string | null;
+    dialogue: unknown;
+    sfx: unknown;
 }
 
 interface ApiComicsResponse {
@@ -75,9 +75,9 @@ interface ApiComicsResponse {
         comicVersion: number | null;
     };
     result: {
-        toonplay: any;
+        toonplay: unknown;
         panels: ComicPanel[];
-        evaluation: any;
+        evaluation: unknown;
         metadata: {
             generationTime: number;
             toonplayTime: number;

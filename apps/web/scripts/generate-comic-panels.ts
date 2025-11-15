@@ -60,7 +60,7 @@ if (!sceneId) {
 }
 
 // Load writer authentication from environment-aware auth
-let writer;
+let writer: ReturnType<typeof loadProfile>;
 try {
     writer = loadProfile("writer");
     if (!writer?.apiKey) {

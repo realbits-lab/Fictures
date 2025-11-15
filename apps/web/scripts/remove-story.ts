@@ -69,8 +69,8 @@ if (!storyId) {
 }
 
 // Load writer API key from environment-aware auth
-let profile;
-let apiKey;
+let profile: ReturnType<typeof loadProfile>;
+let apiKey: string;
 try {
     // Try writer first, fallback to manager
     try {

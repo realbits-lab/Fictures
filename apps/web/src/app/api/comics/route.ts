@@ -86,7 +86,10 @@ export const POST = requireScopes("stories:write")(
             }
 
             // Extract story for type safety
-            const story = (scene.chapter as any).story;
+            // Note: TypeScript doesn't infer nested 'with' relationships properly
+            const story = scene.chapter.story as
+                | typeof scene.chapter.story
+                | undefined;
 
             if (!story) {
                 return new Response(
@@ -170,7 +173,7 @@ export const POST = requireScopes("stories:write")(
             const encoder = new TextEncoder();
             const stream = new ReadableStream({
                 async start(controller) {
-                    const sendEvent = (data: any) => {
+                    const sendEvent = (data: Record<string, unknown>) => {
                         controller.enqueue(
                             encoder.encode(`data: ${JSON.stringify(data)}\n\n`),
                         );
@@ -185,10 +188,10 @@ export const POST = requireScopes("stories:write")(
                         // Generate panels using service layer
                         const result = await generateAndSaveComic({
                             sceneId,
-                            scene: scene as any,
-                            story: story as any,
-                            characters: storyCharacters as any,
-                            settings: storySettings as any,
+                            scene: scene as never,
+                            story: story as never,
+                            characters: storyCharacters as never,
+                            settings: storySettings as never,
                             targetPanelCount,
                             onProgress: (
                                 current: number,

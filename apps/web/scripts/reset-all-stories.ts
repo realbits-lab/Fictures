@@ -44,8 +44,8 @@ console.log("=".repeat(60));
 console.log();
 
 // Load manager API key from environment-aware auth
-let manager;
-let managerApiKey;
+let manager: ReturnType<typeof loadProfile>;
+let managerApiKey: string;
 try {
     manager = loadProfile("manager");
     managerApiKey = manager.apiKey;

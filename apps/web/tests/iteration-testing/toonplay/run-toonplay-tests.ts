@@ -431,7 +431,7 @@ async function main() {
 
                 // 1. Generate story and scene
                 const {
-                    storyId,
+                    storyId: _storyId,
                     sceneId: generatedSceneId,
                     generationTime,
                 } = await generateStoryForScene(testScene.sceneContent);
