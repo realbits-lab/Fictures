@@ -176,11 +176,12 @@ async function generateStory(
             });
 
             // 4. Generate part (single part for test)
-            console.log(`    • Generating part structure...`);
+            console.log(`    • Generating part structure (version: ${PROMPT_VERSION})...`);
             const partResult = await partService.generateAndSave({
                 userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                 storyId,
                 partNumber: 1,
+                promptVersion: PROMPT_VERSION !== "v1.0" ? PROMPT_VERSION : undefined, // Pass version for A/B testing
             });
 
             // 5. Generate 2 chapters for testing

@@ -1190,12 +1190,40 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
 
     /**
      * Get prompt for specific provider and type
+     *
+     * @param provider - Model provider (gemini or ai-server)
+     * @param promptType - Type of prompt (story, part, chapter, scene)
+     * @param variables - Variables to replace in user template
+     * @param version - Optional prompt version (e.g., "v1.1" for testing iterations)
      */
     getPrompt(
         provider: ModelProvider,
         promptType: PromptType,
         variables: Record<string, string> = {},
+        version?: string,
     ): { system: string; user: string } {
+        // Check if a versioned prompt is requested and available
+        if (version && promptType === "part" && version === "v1.1") {
+            // Load v1.1 part prompt for iteration testing
+            const { partPromptV1_1 } = require("../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt");
+            const template = partPromptV1_1;
+
+            // Replace variables in user template
+            let userPrompt = template.userTemplate;
+            Object.entries(variables).forEach(([key, value]) => {
+                userPrompt = userPrompt.replace(
+                    new RegExp(`\\{${key}\\}`, "g"),
+                    value,
+                );
+            });
+
+            return {
+                system: template.system,
+                user: userPrompt,
+            };
+        }
+
+        // Default: use standard prompts (v1.0)
         const template = this.prompts[provider][promptType];
 
         if (!template) {

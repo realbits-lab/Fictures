@@ -21,6 +21,8 @@ import type {
 export interface ServicePartParams {
     storyId: string;
     userId: string;
+    /** Optional prompt version for A/B testing (e.g., "v1.1") */
+    promptVersion?: string;
 }
 
 export interface ServicePartResult {
@@ -42,7 +44,7 @@ export class PartService {
     async generateAndSave(
         params: ServicePartParams,
     ): Promise<ServicePartResult> {
-        const { storyId, userId } = params;
+        const { storyId, userId, promptVersion } = params;
 
         console.log(
             "[part-service] 🎬 Generating next part with full context...",
@@ -110,6 +112,7 @@ export class PartService {
             settings: storySettings,
             previousParts,
             partIndex: nextPartIndex,
+            promptVersion, // Pass version for A/B testing
         };
 
         const generationResult: GeneratorPartResult =

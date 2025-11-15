@@ -285,6 +285,8 @@ export interface GeneratorPartParams {
     settings: Setting[];
     previousParts: Part[];
     partIndex: number;
+    /** Optional prompt version for A/B testing (e.g., "v1.1") */
+    promptVersion?: string;
 }
 
 export interface GeneratorPartResult {

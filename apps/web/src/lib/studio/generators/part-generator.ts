@@ -42,6 +42,7 @@ export async function generatePart(
         settings,
         previousParts,
         partIndex,
+        promptVersion,
     }: GeneratorPartParams = params;
 
     // 2. Create text generation client with API key
@@ -85,6 +86,7 @@ export async function generatePart(
         client.getProviderType(),
         "part",
         promptParams,
+        promptVersion, // Pass version for A/B testing
     );
 
     console.log(
