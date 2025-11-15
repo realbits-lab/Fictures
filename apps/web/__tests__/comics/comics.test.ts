@@ -15,6 +15,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { fetch as undiciFetch, Agent } from "undici";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -333,7 +334,15 @@ async function generateComicPanels(
     requestBody: ApiComicsRequest,
 ): Promise<ApiComicsResponse> {
     const apiEndpoint = `/api/studio/scenes/${requestBody.sceneId}/comic/generate`;
-    const response: Response = await fetch(`${API_BASE_URL}${apiEndpoint}`, {
+
+    // Create custom agent with extended headers timeout (10 minutes)
+    // This fixes the 300-second (5-minute) default headers timeout in undici
+    const agent = new Agent({
+        headersTimeout: 600000, // 10 minutes
+        bodyTimeout: 600000,
+    });
+
+    const response: Response = await undiciFetch(`${API_BASE_URL}${apiEndpoint}`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -343,6 +352,7 @@ async function generateComicPanels(
             targetPanelCount: requestBody.targetPanelCount,
             regenerate: false,
         }),
+        dispatcher: agent,
     });
 
     if (!response.ok) {
