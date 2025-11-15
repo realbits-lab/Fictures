@@ -184,8 +184,11 @@ async function validateImage(
     message: string;
 }> {
     const metadata = await sharp(buffer).metadata();
-    const width = metadata.width!;
-    const height = metadata.height!;
+    if (!metadata.width || !metadata.height) {
+        throw new Error("Unable to read image dimensions");
+    }
+    const width = metadata.width;
+    const height = metadata.height;
     const actualRatio = calculateAspectRatio(width, height);
 
     // AI server generates 1664×928 for 16:9, which is 52:29 ratio (very close to 16:9)

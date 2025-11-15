@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, type SQL, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
         }
 
         // Build query
-        const conditions: any[] = [];
+        const conditions: SQL[] = [];
 
         // Filter by story ownership
         conditions.push(

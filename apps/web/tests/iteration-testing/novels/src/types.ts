@@ -94,7 +94,7 @@ export interface MetricResult {
     passed: boolean;
     feedback: string;
     method: "automated" | "ai-evaluation";
-    details?: any;
+    details?: unknown;
 }
 
 // Test Results

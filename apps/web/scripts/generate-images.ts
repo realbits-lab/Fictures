@@ -53,7 +53,10 @@ import { loadProfile } from "../src/lib/utils/auth-loader";
 import { getEnvDisplayName } from "../src/lib/utils/environment";
 
 // Initialize database with schema
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL environment variable is required");
+}
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema });
 
 const BASE_URL = "http://localhost:3000";
@@ -127,7 +130,7 @@ console.log("=".repeat(60));
 console.log();
 
 // Load writer API key
-let writer;
+let writer: ReturnType<typeof loadProfile>;
 let writerApiKey: string;
 try {
     writer = loadProfile("writer");
@@ -190,8 +193,11 @@ async function validateImage(
     imageType: "story" | "character" | "setting" | "scene" | "comic-panel",
 ): Promise<ValidationResult> {
     const metadata = await sharp(buffer).metadata();
-    const width = metadata.width!;
-    const height = metadata.height!;
+    if (!metadata.width || !metadata.height) {
+        throw new Error("Unable to read image dimensions");
+    }
+    const width = metadata.width;
+    const height = metadata.height;
     const actualRatio = calculateAspectRatio(width, height);
 
     const spec = IMAGE_SPECIFICATIONS[imageType];
@@ -270,7 +276,7 @@ async function downloadImage(url: string, filepath: string): Promise<Buffer> {
 async function generateImage(params: {
     storyId: string;
     imageType: "story" | "character" | "setting" | "scene";
-    targetData: any;
+    targetData: unknown;
     chapterId?: string;
     sceneId?: string;
 }): Promise<string> {
@@ -302,7 +308,7 @@ async function main() {
         // Fetch story from database
         console.log("📖 Fetching story data from database...");
 
-        let story;
+        let story: Awaited<ReturnType<typeof db.query.stories.findFirst>>;
         if (storyIdArg) {
             story = await db.query.stories.findFirst({
                 where: eq(stories.id, storyIdArg),
@@ -365,9 +371,9 @@ async function main() {
                     console.log(
                         `      Aspect Ratio: ${validation.actualRatio} (expected ${validation.expectedSpec.aspectRatio})`,
                     );
-                    validation.errors.forEach((error) =>
-                        console.log(`      • ${error}`),
-                    );
+                    for (const error of validation.errors) {
+                        console.log(`      • ${error}`);
+                    }
                     invalidImages++;
                 }
 
@@ -433,9 +439,9 @@ async function main() {
                         console.log(
                             `      Aspect Ratio: ${validation.actualRatio} (expected ${validation.expectedSpec.aspectRatio})`,
                         );
-                        validation.errors.forEach((error) =>
-                            console.log(`      • ${error}`),
-                        );
+                        for (const error of validation.errors) {
+                            console.log(`      • ${error}`);
+                        }
                         invalidImages++;
                     }
 
@@ -504,9 +510,9 @@ async function main() {
                         console.log(
                             `      Aspect Ratio: ${validation.actualRatio} (expected ${validation.expectedSpec.aspectRatio})`,
                         );
-                        validation.errors.forEach((error) =>
-                            console.log(`      • ${error}`),
-                        );
+                        for (const error of validation.errors) {
+                            console.log(`      • ${error}`);
+                        }
                         invalidImages++;
                     }
 
@@ -588,9 +594,9 @@ async function main() {
                             console.log(
                                 `      Aspect Ratio: ${validation.actualRatio} (expected ${validation.expectedSpec.aspectRatio})`,
                             );
-                            validation.errors.forEach((error) =>
-                                console.log(`      • ${error}`),
-                            );
+                            for (const error of validation.errors) {
+                                console.log(`      • ${error}`);
+                            }
                             invalidImages++;
                         }
 
