@@ -24,6 +24,7 @@ export interface ServiceStoryParams {
     preferredGenre?: StoryGenre;
     preferredTone?: StoryTone;
     userId: string;
+    promptVersion?: string;
     // apiKey removed - now retrieved from auth context
 }
 
@@ -45,6 +46,7 @@ export class StoryService {
             preferredGenre,
             preferredTone,
             userId,
+            promptVersion,
         } = params;
 
         // 1. Generate story using pure generator
@@ -54,6 +56,7 @@ export class StoryService {
             language,
             preferredGenre,
             preferredTone,
+            promptVersion,
         };
 
         const generationResult: GeneratorStoryResult =

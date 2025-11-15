@@ -191,6 +191,7 @@ export interface GeneratorStoryParams {
     language?: string;
     preferredGenre?: import("@/lib/constants/genres").StoryGenre;
     preferredTone?: import("@/lib/constants/tones").StoryTone;
+    promptVersion?: string;
 }
 
 export interface StoryPromptParams extends Record<string, string> {

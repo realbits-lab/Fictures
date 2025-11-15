@@ -1203,27 +1203,36 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
         version?: string,
     ): { system: string; user: string } {
         // Check if a versioned prompt is requested and available
-        if (version && promptType === "part") {
-            // Load versioned part prompt for iteration testing
+        if (version && (promptType === "part" || promptType === "story")) {
+            // Load versioned prompt for iteration testing
             // Use __dirname-based path for reliable module resolution across different runtimes
             const path = require("node:path");
             let promptPath: string;
             let templateKey: string;
 
-            if (version === "v1.1") {
-                promptPath = path.resolve(
-                    __dirname,
-                    "../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js",
-                );
-                templateKey = "partPromptV1_1";
-            } else if (version === "v1.2") {
-                promptPath = path.resolve(
-                    __dirname,
-                    "../../../tests/iteration-testing/novels/prompts/v1.2/part-prompt.js",
-                );
-                templateKey = "partPromptV1_2";
-            } else {
-                throw new Error(`Unknown prompt version: ${version}`);
+            // Story prompt versioning
+            if (promptType === "story") {
+                if (version === "v1.3") {
+                    promptPath = path.resolve(__dirname, "../prompts/v1.3/story-prompt.js");
+                    templateKey = "storyPromptV1_3";
+                } else {
+                    throw new Error(`Unknown story prompt version: ${version}`);
+                }
+            }
+            // Part prompt versioning
+            else if (promptType === "part") {
+                if (version === "v1.1") {
+                    promptPath = path.resolve(__dirname, "../prompts/v1.1/part-prompt.js");
+                    templateKey = "partPromptV1_1";
+                } else if (version === "v1.2") {
+                    promptPath = path.resolve(__dirname, "../prompts/v1.2/part-prompt.js");
+                    templateKey = "partPromptV1_2";
+                } else if (version === "v1.3") {
+                    promptPath = path.resolve(__dirname, "../prompts/v1.3/part-prompt.js");
+                    templateKey = "partPromptV1_2"; // v1.3 uses v1.2 part prompt
+                } else {
+                    throw new Error(`Unknown part prompt version: ${version}`);
+                }
             }
 
             const promptModule = require(promptPath);
