@@ -5,17 +5,20 @@
  * Now uses authentication context instead of passing API keys as parameters.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { characters, stories } from "@/lib/schemas/database";
-import type { Character, Story } from "@/lib/schemas/zod/ai";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Character = InferSelectModel<typeof characters>;
 import { insertCharacterSchema } from "@/lib/schemas/zod/generated";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
-    GeneratorCharactersParams,
-    GeneratorCharactersResult,
-} from "../generators/types";
+    GenerateCharactersParams,
+    GenerateCharactersResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceCharactersParams {
     storyId: string;
@@ -65,13 +68,13 @@ export class CharacterService {
 
         // 3. Generate characters using pure generator
         // API key is automatically retrieved from auth context
-        const generateParams: GeneratorCharactersParams = {
+        const generateParams: GenerateCharactersParams = {
             story,
             characterCount,
             language,
         };
 
-        const generationResult: GeneratorCharactersResult =
+        const generationResult: GenerateCharactersResult =
             await generateCharacters(generateParams);
 
         // 4. Save characters to database
