@@ -1205,7 +1205,10 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
         // Check if a versioned prompt is requested and available
         if (version && promptType === "part" && version === "v1.1") {
             // Load v1.1 part prompt for iteration testing
-            const { partPromptV1_1 } = require("../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js");
+            // Use __dirname-based path for reliable module resolution across different runtimes
+            const path = require("node:path");
+            const promptPath = path.resolve(__dirname, "../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js");
+            const { partPromptV1_1 } = require(promptPath);
             const template = partPromptV1_1;
 
             // Replace variables in user template
