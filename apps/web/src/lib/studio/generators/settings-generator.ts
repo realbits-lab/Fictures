@@ -9,8 +9,8 @@
  */
 
 import type {
-    GeneratorSettingsParams,
-    GeneratorSettingsResult,
+    GenerateSettingsParams,
+    GenerateSettingsResult,
     SettingPromptParams,
 } from "@/lib/schemas/generators/types";
 import { type AiSettingType, AiSettingZodSchema } from "@/lib/schemas/zod/ai";
@@ -25,12 +25,12 @@ import { promptManager } from "./prompt-manager";
  * @returns Settings data (caller responsible for database save)
  */
 export async function generateSettings(
-    params: GeneratorSettingsParams,
-): Promise<GeneratorSettingsResult> {
+    params: GenerateSettingsParams,
+): Promise<GenerateSettingsResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, settingCount, onProgress }: GeneratorSettingsParams = params;
+    const { story, settingCount, onProgress }: GenerateSettingsParams = params;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient();
@@ -107,7 +107,7 @@ export async function generateSettings(
     );
 
     // 8. Build and return result with metadata
-    const result: GeneratorSettingsResult = {
+    const result: GenerateSettingsResult = {
         settings,
         metadata: {
             totalGenerated: settings.length,

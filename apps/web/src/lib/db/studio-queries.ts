@@ -116,15 +116,11 @@ export async function getCachedUserStories(userId: string) {
         // Get first chapter (already ordered by orderIndex)
         const firstChapter = storyChapters.length > 0 ? storyChapters[0] : null;
 
-        // Count completed chapters
-        const completedChapters = storyChapters.filter(
-            (ch) => ch.status === "published",
-        ).length;
+        // Count completed chapters (chapters don't have status field - use story status)
+        const completedChapters = storyChapters.length;
 
-        // Check if story is actually published (has published chapters AND is public)
-        const hasPublishedChapters = storyChapters.some(
-            (chapter) => chapter.status === "published",
-        );
+        // Check if story is actually published
+        const hasPublishedChapters = storyChapters.length > 0;
         const actualStatus =
             story.status === "published" && hasPublishedChapters
                 ? ("published" as const)

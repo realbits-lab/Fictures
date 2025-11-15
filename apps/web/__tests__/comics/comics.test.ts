@@ -130,7 +130,7 @@ beforeAll(async () => {
 
     // Create test story with moral framework
     await db
-        .insert(stories)
+        .insert(stories as any)
         .values({
             id: testStoryId,
             authorId: writerUserId,
@@ -157,7 +157,7 @@ beforeAll(async () => {
 
     // Create test character with all required fields
     await db
-        .insert(characters)
+        .insert(characters as any)
         .values({
             id: testCharacterId,
             storyId: testStoryId,
@@ -231,7 +231,7 @@ beforeAll(async () => {
 
     // Create test part
     await db
-        .insert(parts)
+        .insert(parts as any)
         .values({
             id: testPartId,
             storyId: testStoryId,
@@ -244,7 +244,7 @@ beforeAll(async () => {
 
     // Create test chapter
     await db
-        .insert(chapters)
+        .insert(chapters as any)
         .values({
             id: testChapterId,
             storyId: testStoryId,
@@ -265,7 +265,7 @@ beforeAll(async () => {
 
     // Create test scene with detailed content for comic conversion
     await db
-        .insert(scenes)
+        .insert(scenes as any)
         .values({
             id: testSceneId,
             storyId: testStoryId,
@@ -415,10 +415,10 @@ describe("Comics System Integration", () => {
             await generateComicPanels(requestBody);
 
         // Assert - Evaluation completeness
-        expect(result.result.evaluation).toBeDefined();
-        expect(result.result.evaluation.weighted_score).toBeGreaterThan(0);
-        expect(result.result.evaluation.weighted_score).toBeLessThanOrEqual(5);
-        expect(typeof result.result.evaluation.passes).toBe("boolean");
+        expect((result.result.evaluation as any)).toBeDefined();
+        expect((result.result.evaluation as any).weighted_score).toBeGreaterThan(0);
+        expect((result.result.evaluation as any).weighted_score).toBeLessThanOrEqual(5);
+        expect(typeof (result.result.evaluation as any).passes).toBe("boolean");
 
         // Assert - Evaluation categories
         expect(
@@ -427,13 +427,13 @@ describe("Comics System Integration", () => {
         expect(
             result.result.evaluation.category2_visual_transformation,
         ).toBeDefined();
-        expect(result.result.evaluation.category3_webtoon_pacing).toBeDefined();
+        expect((result.result.evaluation as any).category3_webtoon_pacing).toBeDefined();
         expect(
             result.result.evaluation.category4_script_formatting,
         ).toBeDefined();
 
         // Assert - Quality threshold (should pass or be close)
-        expect(result.result.evaluation.weighted_score).toBeGreaterThanOrEqual(
+        expect((result.result.evaluation as any).weighted_score).toBeGreaterThanOrEqual(
             2.5,
         );
     }, 600000);

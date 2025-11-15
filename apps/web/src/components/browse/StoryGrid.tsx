@@ -21,9 +21,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { trackSearch, trackStoryEvent } from "@/lib/analysis/google-analytics";
+import { trackEngagement, trackStoryView } from "@/lib/analysis/google-analytics";
 import { STORY_GENRES } from "@/lib/constants/genres";
-import { readingHistoryManager } from "@/lib/storage/reading-history-manager";
+import { ReadingHistoryManager } from "@/lib/storage/reading-history-manager";
 import type { ReadingFormat } from "@/types/reading-history";
 
 interface Story {
@@ -84,7 +84,7 @@ export function StoryGrid({
 
             if (!session?.user?.id) {
                 // Anonymous user - use localStorage for specific format
-                const localHistory = readingHistoryManager.getHistory(format);
+                const localHistory = ReadingHistoryManager.getHistory(format);
                 setReadingHistory(localHistory);
                 setIsLoadingHistory(false);
                 return;
@@ -102,7 +102,7 @@ export function StoryGrid({
                 } else {
                     // API failed, fallback to localStorage
                     const localHistory =
-                        readingHistoryManager.getHistory(format);
+                        ReadingHistoryManager.getHistory(format);
                     setReadingHistory(localHistory);
                 }
             } catch (error) {
@@ -111,7 +111,7 @@ export function StoryGrid({
                     error,
                 );
                 // Fallback to localStorage
-                const localHistory = readingHistoryManager.getHistory(format);
+                const localHistory = ReadingHistoryManager.getHistory(format);
                 setReadingHistory(localHistory);
             } finally {
                 setIsLoadingHistory(false);
@@ -129,11 +129,11 @@ export function StoryGrid({
         }
 
         // Track story view in GA (always track, regardless of auth)
-        trackStoryEvent.view(storyId, storyTitle);
+        trackStoryView(storyId, storyTitle);
 
         if (!session?.user?.id) {
             // Anonymous user - use localStorage only with format
-            readingHistoryManager.addToHistory(storyId, format);
+            ReadingHistoryManager.addToHistory(storyId, format);
             setReadingHistory((prev) => new Set([...prev, storyId]));
             return;
         }
@@ -148,17 +148,17 @@ export function StoryGrid({
 
             if (response.ok) {
                 // Also update localStorage as backup/cache with format
-                readingHistoryManager.addToHistory(storyId, format);
+                ReadingHistoryManager.addToHistory(storyId, format);
                 setReadingHistory((prev) => new Set([...prev, storyId]));
             } else {
                 // API failed, fallback to localStorage
-                readingHistoryManager.addToHistory(storyId, format);
+                ReadingHistoryManager.addToHistory(storyId, format);
                 setReadingHistory((prev) => new Set([...prev, storyId]));
             }
         } catch (error) {
             console.error(`Error recording ${format} story view:`, error);
             // Fallback to localStorage
-            readingHistoryManager.addToHistory(storyId, format);
+            ReadingHistoryManager.addToHistory(storyId, format);
             setReadingHistory((prev) => new Set([...prev, storyId]));
         }
     };
@@ -356,7 +356,7 @@ export function StoryGrid({
                                     setSelectedGenre(genre);
                                     // Track genre filter
                                     if (genre !== "All") {
-                                        trackSearch.filterByGenre(genre);
+                                        trackEngagement("search", "filter_genre_" + genre);
                                     }
                                 }}
                             >

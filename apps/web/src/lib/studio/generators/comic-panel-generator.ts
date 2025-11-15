@@ -12,7 +12,12 @@ import type {
     AiComicPanelSpecType,
     AiComicToonplayType,
 } from "@/lib/schemas/ai/ai-toonplay";
-import type { Character, Setting } from "@/lib/schemas/database";
+import { type InferSelectModel } from "drizzle-orm";
+import { characters, settings } from "@/lib/schemas/database";
+
+// Database row types
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
 import type { GeneratorImageResult } from "@/lib/schemas/generators/types";
 import { generateImage } from "@/lib/studio/generators/images-generator";
 

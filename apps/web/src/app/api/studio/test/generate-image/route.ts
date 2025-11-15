@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { imageGenerationClient } from "@/lib/ai/image-generation";
+import { generateImages } from "@/lib/studio/generators/images-generator";
 
 /**
  * Test API: Generate Image (No Vercel Blob Upload)

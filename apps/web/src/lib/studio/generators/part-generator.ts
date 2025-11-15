@@ -10,8 +10,8 @@
  */
 
 import type {
-    GeneratorPartParams,
-    GeneratorPartResult,
+    GeneratePartParams,
+    GeneratePartResult,
     PartPromptParams,
 } from "@/lib/schemas/generators/types";
 import { type AiPartType, AiPartZodSchema } from "@/lib/schemas/zod/ai";
@@ -31,8 +31,8 @@ import { promptManager } from "./prompt-manager";
  * @returns Part data (caller responsible for database save)
  */
 export async function generatePart(
-    params: GeneratorPartParams,
-): Promise<GeneratorPartResult> {
+    params: GeneratePartParams,
+): Promise<GeneratePartResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -43,7 +43,7 @@ export async function generatePart(
         previousParts,
         partIndex,
         promptVersion,
-    }: GeneratorPartParams = params;
+    }: GeneratePartParams = params;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient();
@@ -115,7 +115,7 @@ export async function generatePart(
     });
 
     // 9. Build and return result with metadata
-    const result: GeneratorPartResult = {
+    const result: GeneratePartResult = {
         part: partData,
         metadata: {
             generationTime: totalTime,

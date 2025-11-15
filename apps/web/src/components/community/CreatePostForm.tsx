@@ -12,7 +12,7 @@ import {
     Input,
     Label,
 } from "@/components/ui";
-import { trackCommunity } from "@/lib/analysis/google-analytics";
+import { trackEngagement } from "@/lib/analysis/google-analytics";
 
 interface CreatePostFormProps {
     storyId: string;
@@ -100,7 +100,7 @@ export function CreatePostForm({
 
             // Track post creation
             if (data.id) {
-                trackCommunity.createPost(data.id);
+                trackEngagement("community", "create_post");
             }
 
             toast.success("Post created successfully!");

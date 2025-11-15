@@ -515,7 +515,7 @@ export async function updateStory(
         title: string;
         summary: string;
         genre: string;
-        status: "writing" | "published";
+        status: "draft" | "published";
     }>,
 ) {
     const result = await measureAsync(
@@ -543,7 +543,7 @@ export async function updateChapter(
     data: Partial<{
         title: string;
         content: string;
-        status: "writing" | "published";
+        status: "draft" | "published";
         publishedAt: Date;
         scheduledFor: Date;
     }>,

@@ -86,11 +86,9 @@ export async function generateCompleteToonplay(params: {
     const toonplayStartTime: number = Date.now();
     const toonplayResult = await generateToonplayWithEvaluation({
         scene,
-        story,
         characters,
-        settings,
-        language,
-        evaluationMode,
+        setting: settings[0], // Use first setting
+        storyGenre: story.genre,
     });
     const toonplayGenerationTime: number = Date.now() - toonplayStartTime;
 
@@ -147,7 +145,7 @@ export async function generateCompleteToonplay(params: {
             weighted_score: toonplayResult.evaluation.weighted_score,
             passes: toonplayResult.evaluation.passes,
             iterations: toonplayResult.iterations,
-            final_report: toonplayResult.evaluation.final_report,
+            final_report: toonplayResult.final_report,
         },
         metadata: {
             totalGenerationTime,

@@ -123,7 +123,7 @@ export const PATCH = requireScopes("admin:all")(
                 const updateData: {
                     name?: string;
                     scopes?: ApiScope[];
-                    expiresAt?: Date | null;
+                    expiresAt?: string | null;
                     isActive?: boolean;
                 } = {};
 
@@ -144,7 +144,7 @@ export const PATCH = requireScopes("admin:all")(
 
                 if (validatedData.expiresAt !== undefined) {
                     updateData.expiresAt = validatedData.expiresAt
-                        ? new Date(validatedData.expiresAt)
+                        ? new Date(validatedData.expiresAt).toISOString()
                         : null;
                 }
 

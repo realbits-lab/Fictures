@@ -10,8 +10,8 @@
 
 import type {
     CharacterPromptParams,
-    GeneratorCharactersParams,
-    GeneratorCharactersResult,
+    GenerateCharactersParams,
+    GenerateCharactersResult,
 } from "@/lib/schemas/generators/types";
 import {
     type AiCharacterType,
@@ -28,8 +28,8 @@ import { promptManager } from "./prompt-manager";
  * @returns Character data (caller responsible for database save)
  */
 export async function generateCharacters(
-    params: GeneratorCharactersParams,
-): Promise<GeneratorCharactersResult> {
+    params: GenerateCharactersParams,
+): Promise<GenerateCharactersResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
@@ -38,7 +38,7 @@ export async function generateCharacters(
         characterCount,
         language = "English",
         onProgress,
-    }: GeneratorCharactersParams = params;
+    }: GenerateCharactersParams = params;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient();
@@ -124,7 +124,7 @@ export async function generateCharacters(
     );
 
     // 9. Build and return result with metadata
-    const result: GeneratorCharactersResult = {
+    const result: GenerateCharactersResult = {
         characters,
         metadata: {
             totalGenerated: characters.length,

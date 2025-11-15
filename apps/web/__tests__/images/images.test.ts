@@ -112,7 +112,7 @@ beforeAll(async () => {
 
     // Create test story
     await db
-        .insert(stories)
+        .insert(stories as any)
         .values({
             id: testStoryId,
             authorId: writerUserId,
@@ -139,7 +139,7 @@ beforeAll(async () => {
 
     // Create test character
     await db
-        .insert(characters)
+        .insert(characters as any)
         .values({
             id: testCharacterId,
             storyId: testStoryId,
@@ -213,7 +213,7 @@ beforeAll(async () => {
 
     // Create test part
     await db
-        .insert(parts)
+        .insert(parts as any)
         .values({
             id: testPartId,
             storyId: testStoryId,
@@ -226,7 +226,7 @@ beforeAll(async () => {
 
     // Create test chapter
     await db
-        .insert(chapters)
+        .insert(chapters as any)
         .values({
             id: testChapterId,
             storyId: testStoryId,
@@ -249,7 +249,7 @@ beforeAll(async () => {
 
     // Create test scenes
     await db
-        .insert(scenes)
+        .insert(scenes as any)
         .values([
             {
                 id: testScene1Id,

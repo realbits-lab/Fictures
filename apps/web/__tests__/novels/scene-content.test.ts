@@ -342,9 +342,9 @@ describe("Scene Content API", () => {
         ).toBe(true);
 
         // === PUBLISHING (Novel Format) ===
-        expect(scene.visibility).toBeDefined();
+        expect(scene.novelStatus).toBeDefined();
         expect(
-            ["private", "public", "unlisted"].includes(scene.visibility),
+            ["private", "public", "unlisted"].includes(scene.novelStatus),
         ).toBe(true);
 
         expect(

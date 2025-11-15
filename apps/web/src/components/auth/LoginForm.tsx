@@ -64,7 +64,7 @@ export function LoginForm() {
                 }
             } else if (result?.ok) {
                 // Track successful sign in
-                trackEngagement.signIn("email");
+                trackEngagement("sign_in", "email");
 
                 // Give browser a moment to detect the successful login
                 await new Promise((resolve) => setTimeout(resolve, 100));
@@ -98,7 +98,7 @@ export function LoginForm() {
                 setError("Failed to sign in with Google");
             } else if (result?.ok) {
                 // Track successful sign in
-                trackEngagement.signIn("google");
+                trackEngagement("sign_in", "google");
 
                 router.push("/");
                 router.refresh();

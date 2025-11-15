@@ -1264,6 +1264,10 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
                         `Unknown chapter prompt version: ${version}`,
                     );
                 }
+            } else {
+                throw new Error(
+                    `Versioned prompts not available for prompt type: ${promptType}`,
+                );
             }
 
             const promptModule = require(promptPath);

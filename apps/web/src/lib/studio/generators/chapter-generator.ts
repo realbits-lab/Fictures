@@ -11,8 +11,8 @@
 
 import type {
     ChapterPromptParams,
-    GeneratorChapterParams,
-    GeneratorChapterResult,
+    GenerateChapterParams,
+    GenerateChapterResult,
 } from "@/lib/schemas/generators/types";
 import { type AiChapterType, AiChapterZodSchema } from "@/lib/schemas/zod/ai";
 import { createTextGenerationClient } from "./ai-client";
@@ -32,8 +32,8 @@ import { promptManager } from "./prompt-manager";
  * @returns Chapter data (caller responsible for database save)
  */
 export async function generateChapter(
-    params: GeneratorChapterParams,
-): Promise<GeneratorChapterResult> {
+    params: GenerateChapterParams,
+): Promise<GenerateChapterResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -45,7 +45,7 @@ export async function generateChapter(
         previousChapters,
         chapterIndex,
         promptVersion,
-    }: GeneratorChapterParams = params;
+    }: GenerateChapterParams = params;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient();
@@ -112,7 +112,7 @@ export async function generateChapter(
     const previousChaptersContext: string =
         previousChapters.length > 0
             ? previousChapters
-                  .map((ch, idx) => {
+                  .map((ch: typeof previousChapters[0], idx: number) => {
                       return `Chapter ${idx + 1}:\n${buildChapterContext(ch)}`;
                   })
                   .join("\n\n")
@@ -173,7 +173,7 @@ export async function generateChapter(
     );
 
     // 11. Build and return result with metadata
-    const result: GeneratorChapterResult = {
+    const result: GenerateChapterResult = {
         chapter: chapterData,
         metadata: {
             generationTime: totalTime,

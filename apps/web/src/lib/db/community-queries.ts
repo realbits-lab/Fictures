@@ -132,8 +132,9 @@ export async function getCommunityStoriesForReading() {
                 totalMembers: 0, // TODO: Calculate from community_members table when available
                 isActive,
                 lastActivity:
-                    lastActivityDate?.toISOString() ||
-                    story.createdAt.toISOString(),
+                    (lastActivityDate instanceof Date
+                        ? lastActivityDate.toISOString()
+                        : lastActivityDate) || story.createdAt,
             };
         });
 

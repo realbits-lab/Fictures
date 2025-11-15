@@ -261,17 +261,8 @@ export function buildSettingContext(setting: Setting): string {
               })
             : {};
 
-    const cycleAmplification =
-        typeof setting.cycleAmplification === "object" &&
-        setting.cycleAmplification !== null
-            ? (setting.cycleAmplification as {
-                  setup?: string;
-                  confrontation?: string;
-                  virtue?: string;
-                  consequence?: string;
-                  transition?: string;
-              })
-            : {};
+    // cycleAmplification field removed from schema
+    const cycleAmplification = {};
 
     const sensory =
         typeof setting.sensory === "object" && setting.sensory !== null

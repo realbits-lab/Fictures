@@ -11,8 +11,8 @@
 
 import type {
     CyclePhase,
-    GeneratorSceneSummaryParams,
-    GeneratorSceneSummaryResult,
+    GenerateSceneSummaryParams,
+    GenerateSceneSummaryResult,
     SceneSummaryPromptParams,
 } from "@/lib/schemas/generators/types";
 import {
@@ -36,8 +36,8 @@ import { promptManager } from "./prompt-manager";
  * @returns Scene summary data (caller responsible for database save)
  */
 export async function generateSceneSummary(
-    params: GeneratorSceneSummaryParams,
-): Promise<GeneratorSceneSummaryResult> {
+    params: GenerateSceneSummaryParams,
+): Promise<GenerateSceneSummaryResult> {
     const startTime = Date.now();
 
     // 1. Extract parameters
@@ -49,7 +49,7 @@ export async function generateSceneSummary(
         settings,
         previousScenes,
         sceneIndex,
-    }: GeneratorSceneSummaryParams = params;
+    }: GenerateSceneSummaryParams = params;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient();

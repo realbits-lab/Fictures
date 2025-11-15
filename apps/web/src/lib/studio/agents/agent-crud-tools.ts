@@ -85,7 +85,7 @@ export const updateStory = tool({
         updates,
     }: z.infer<typeof updateStorySchema>) => {
         const [updated] = await db
-            .update(stories)
+            .update(stories as any)
             .set({
                 ...updates,
                 updatedAt: new Date().toISOString(),
@@ -166,7 +166,7 @@ export const createPart = tool({
         orderIndex,
     }: z.infer<typeof createPartSchema>) => {
         const [part] = await db
-            .insert(parts)
+            .insert(parts as any)
             .values({
                 id: `part_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 storyId,
@@ -303,7 +303,7 @@ export const createChapter = tool({
         orderIndex,
     }: z.infer<typeof createChapterSchema>) => {
         const [chapter] = await db
-            .insert(chapters)
+            .insert(chapters as any)
             .values({
                 id: `chapter_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 storyId,
@@ -464,7 +464,7 @@ export const createScene = tool({
         orderIndex,
     }: z.infer<typeof createSceneSchema>) => {
         const [scene] = await db
-            .insert(scenes)
+            .insert(scenes as any)
             .values({
                 id: `scene_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 chapterId,
@@ -525,7 +525,7 @@ export const updateScene = tool({
         updates,
     }: z.infer<typeof updateSceneSchema>) => {
         const [updated] = await db
-            .update(scenes)
+            .update(scenes as any)
             .set({
                 ...updates,
                 updatedAt: new Date().toISOString(),
@@ -631,7 +631,7 @@ export const createCharacter = tool({
         summary,
     }: z.infer<typeof createCharacterSchema>) => {
         const [character] = await db
-            .insert(characters)
+            .insert(characters as any)
             .values({
                 id: `character_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                 storyId,
@@ -685,7 +685,7 @@ export const updateCharacter = tool({
         updates,
     }: z.infer<typeof updateCharacterSchema>) => {
         const [updated] = await db
-            .update(characters)
+            .update(characters as any)
             .set({
                 ...updates,
                 updatedAt: new Date().toISOString(),

@@ -43,14 +43,23 @@ import type { StoryGenre } from "@/lib/constants/genres";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import { STORY_TONES } from "@/lib/constants/tones";
-import type {
-    Chapter,
-    Character,
-    Part,
-    Scene,
-    Setting,
-    Story,
-} from "@/lib/schemas/zod/generated";
+import { type InferSelectModel } from "drizzle-orm";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Part = InferSelectModel<typeof parts>;
+type Chapter = InferSelectModel<typeof chapters>;
+type Scene = InferSelectModel<typeof scenes>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
 
 // ============================================================================
 // Story Generation
