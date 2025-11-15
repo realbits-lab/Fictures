@@ -17,7 +17,7 @@
 import { gateway } from "@ai-sdk/gateway";
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { ComicToonplay } from "@/lib/ai/toonplay-converter";
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import type { characters, scenes, settings } from "@/lib/schemas/database";
 
 // ============================================
@@ -93,7 +93,7 @@ export interface ToonplayEvaluationResult extends ToonplayEvaluation {
 // ============================================
 
 export interface EvaluateToonplayOptions {
-    toonplay: ComicToonplay;
+    toonplay: AiComicToonplayType;
     sourceScene: typeof scenes.$inferSelect;
     characters: (typeof characters.$inferSelect)[];
     setting: typeof settings.$inferSelect;
@@ -168,7 +168,7 @@ export async function evaluateToonplay(
 // METRICS CALCULATION
 // ============================================
 
-function calculateToonplayMetrics(toonplay: ComicToonplay) {
+function calculateToonplayMetrics(toonplay: AiComicToonplayType) {
     const panels = toonplay.panels;
     const totalPanels = panels.length;
 
@@ -221,7 +221,7 @@ function calculateToonplayMetrics(toonplay: ComicToonplay) {
 // ============================================
 
 function buildEvaluationPrompt(
-    toonplay: ComicToonplay,
+    toonplay: AiComicToonplayType,
     sourceScene: typeof scenes.$inferSelect,
     sceneCharacters: (typeof characters.$inferSelect)[],
     setting: typeof settings.$inferSelect,
@@ -243,7 +243,7 @@ function buildEvaluationPrompt(
                     .join("; ") || "None";
             const narrativeText = p.narrative || "None";
             return `Panel ${i + 1} [${p.shot_type}]:
-  Description: ${p.summary}
+  Description: ${p.description}
   Dialogue: ${dialogueText}
   Narrative: ${narrativeText}
   Characters: ${p.characters_visible.join(", ") || "None"}`;

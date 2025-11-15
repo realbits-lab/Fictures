@@ -9,19 +9,16 @@
 
 import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
-import { generateComicPanels } from "@/lib/ai/comic-panel-generator";
-import { auth } from "@/lib/auth";
 import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 import { db } from "@/lib/db";
 import {
-    chapters,
     characters,
     comicPanels,
     scenes,
     settings,
-    stories,
 } from "@/lib/schemas/database";
+import { generateAndSaveComic } from "@/lib/studio/services/comic-service";
 
 export const maxDuration = 300; // 5 minutes
 
@@ -149,7 +146,7 @@ export const POST = requireScopes("stories:write")(
             });
 
             // Use the first setting or create a default one
-            const primarySetting = storySettings[0] || {
+            const _primarySetting = storySettings[0] || {
                 id: "default",
                 name: "Default Setting",
                 summary: "A generic setting",
@@ -185,18 +182,15 @@ export const POST = requireScopes("stories:write")(
                             message: "Starting panel generation...",
                         });
 
-                        // Generate panels with progress callback
-                        const result = await generateComicPanels({
+                        // Generate panels using service layer
+                        const result = await generateAndSaveComic({
                             sceneId,
                             scene: scene as any,
+                            story: story as any,
                             characters: storyCharacters as any,
-                            setting: primarySetting as any,
-                            story: {
-                                story_id: story.id,
-                                genre: story.genre || "drama",
-                            },
+                            settings: storySettings as any,
                             targetPanelCount,
-                            progressCallback: (
+                            onProgress: (
                                 current: number,
                                 total: number,
                                 status: string,

@@ -867,6 +867,12 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
   // Scene specification (planning layer)
   summary: string;              // Generated scene specification
   cyclePhase: 'setup' | 'adversity' | 'virtue' | 'consequence' | 'transition';
+  // CRITICAL: cyclePhase MUST follow strict ordering rules:
+  // - First scene in chapter MUST be "setup"
+  // - Subsequent scenes can stay at same phase OR advance to next phase
+  // - Phases follow sequence: setup → adversity → virtue → consequence → transition
+  // - NO backwards movement (once advanced, cannot return to earlier phase)
+  // - Multiple scenes can share same phase (e.g., "adversity", "adversity", "virtue" is valid)
   emotionalBeat: 'fear' | 'hope' | 'tension' | 'relief' | 'elevation' | 'catharsis' | 'despair' | 'joy';
 
   // Scene metadata (guides content generation)

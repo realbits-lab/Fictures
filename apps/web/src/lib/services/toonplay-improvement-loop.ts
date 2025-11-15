@@ -20,12 +20,8 @@ type StoryScene = typeof scenes.$inferSelect;
 type StoryCharacter = typeof characters.$inferSelect;
 type StorySetting = typeof settings.$inferSelect;
 
-import {
-    type ComicToonplay,
-    ComicToonplaySchema,
-    type ConvertToToonplayOptions,
-    convertSceneToToonplay,
-} from "@/lib/ai/toonplay-converter";
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
+import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
 import {
     evaluateToonplay,
     formatEvaluationReport,
@@ -37,7 +33,7 @@ import {
 // ============================================
 
 export interface ToonplayGenerationResult {
-    toonplay: ComicToonplay;
+    toonplay: AiComicToonplayType;
     evaluation: ToonplayEvaluationResult;
     iterations: number;
     improvement_history: {
@@ -87,9 +83,9 @@ export async function generateToonplayWithEvaluation(
         `   ═══════════════════════════════════════════════════════════\n`,
     );
 
-    let currentToonplay: ComicToonplay | null = null;
+    let currentToonplay: AiComicToonplayType | null = null;
     let currentEvaluation: ToonplayEvaluationResult | null = null;
-    let bestToonplay: ComicToonplay | null = null;
+    let bestToonplay: AiComicToonplayType | null = null;
     let bestEvaluation: ToonplayEvaluationResult | null = null;
     let bestScore = 0;
 
@@ -107,13 +103,18 @@ export async function generateToonplayWithEvaluation(
 
     const safeStoryGenre = storyGenre || "Unknown";
 
-    currentToonplay = await convertSceneToToonplay({
+    const generatorResult = await convertSceneToToonplay({
         scene,
+        story: {
+            id: "temp",
+            genre: safeStoryGenre,
+            tone: "",
+        } as any,
         characters,
-        setting,
-        storyGenre: safeStoryGenre,
-        targetPanelCount,
+        settings: [setting],
     });
+
+    currentToonplay = generatorResult.toonplay;
 
     console.log(`   ✅ Generated ${currentToonplay.total_panels} panels`);
 
@@ -206,10 +207,10 @@ export async function generateToonplayWithEvaluation(
         });
 
         console.log(
-            `\n   Score: ${improvedEvaluation.weighted_score.toFixed(2)}/5.0 (previous: ${currentEvaluation!.weighted_score.toFixed(2)})`,
+            `\n   Score: ${improvedEvaluation.weighted_score.toFixed(2)}/5.0 (previous: ${currentEvaluation?.weighted_score.toFixed(2)})`,
         );
         console.log(
-            `   Improvement: ${improvedEvaluation.weighted_score > currentEvaluation!.weighted_score ? "📈 Better" : "📉 Worse"}`,
+            `   Improvement: ${improvedEvaluation.weighted_score > currentEvaluation?.weighted_score ? "📈 Better" : "📉 Worse"}`,
         );
         console.log(
             `   Status: ${improvedEvaluation.passes ? "✅ PASSES" : "❌ STILL NEEDS WORK"}`,
@@ -251,7 +252,7 @@ export async function generateToonplayWithEvaluation(
         `   Best Score: ${bestScore.toFixed(2)}/5.0 (iteration ${improvementHistory.findIndex((h) => h.score === bestScore)})`,
     );
     console.log(
-        `   Status: ${bestEvaluation!.passes ? "✅ PASSES" : "⚠️  DOES NOT PASS (using best available)"}`,
+        `   Status: ${bestEvaluation?.passes ? "✅ PASSES" : "⚠️  DOES NOT PASS (using best available)"}`,
     );
     console.log(`   Total Iterations: ${improvementHistory.length - 1}`);
     console.log(
@@ -274,7 +275,7 @@ export async function generateToonplayWithEvaluation(
 // ============================================
 
 interface ImproveToonplayOptions {
-    currentToonplay: ComicToonplay;
+    currentToonplay: AiComicToonplayType;
     evaluation: ToonplayEvaluationResult;
     scene: StoryScene;
     characters: StoryCharacter[];
@@ -285,7 +286,7 @@ interface ImproveToonplayOptions {
 
 async function improveToonplay(
     options: ImproveToonplayOptions,
-): Promise<ComicToonplay> {
+): Promise<AiComicToonplayType> {
     const {
         currentToonplay,
         evaluation,
@@ -383,7 +384,7 @@ Return the IMPROVED toonplay as a valid JSON object matching the ComicToonplay s
 
     const result = await generateObject({
         model: gateway("google/gemini-2.5-flash-lite"),
-        schema: ComicToonplaySchema,
+        schema: AiComicToonplayTypeSchema,
         prompt: improvementPrompt,
         temperature: 0.7,
     });

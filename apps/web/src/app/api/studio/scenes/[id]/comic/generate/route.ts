@@ -1,6 +1,5 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { generateComicPanels } from "@/lib/ai/comic-panel-generator";
 import { authenticateRequest } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import {
@@ -9,6 +8,7 @@ import {
     scenes,
     settings,
 } from "@/lib/schemas/database";
+import { generateAndSaveComic } from "@/lib/studio/services/comic-service";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -201,18 +201,15 @@ export async function POST(
                             `🎨 Generating comic panels for scene: ${scene.title}`,
                         );
 
-                        // Database objects now match HNS types - just cast directly
-                        const result = await generateComicPanels({
+                        // Use service layer to orchestrate complete generation
+                        const result = await generateAndSaveComic({
                             sceneId: id,
                             scene: scene as any,
+                            story: story as any,
                             characters: storyCharacters as any,
-                            setting: primarySetting as any,
-                            story: {
-                                story_id: story.id,
-                                genre: story.genre || "drama",
-                            },
+                            settings: storySettings as any,
                             targetPanelCount,
-                            progressCallback: (current, total, status) => {
+                            onProgress: (current, total, status) => {
                                 sendEvent("progress", {
                                     current,
                                     total,
@@ -224,18 +221,10 @@ export async function POST(
                             },
                         });
 
-                        // Update scene metadata with comic status
-                        const [updatedScene] = await db
-                            .update(scenes)
-                            .set({
-                                comicStatus: "draft", // Uses unified status enum
-                                comicGeneratedAt: new Date().toISOString(),
-                                comicPanelCount: result.panels.length,
-                                comicVersion: (scene.comicVersion || 0) + 1,
-                                updatedAt: new Date().toISOString(),
-                            })
-                            .where(eq(scenes.id, id))
-                            .returning();
+                        // Fetch updated scene
+                        const updatedScene = await db.query.scenes.findFirst({
+                            where: eq(scenes.id, id),
+                        });
 
                         console.log(
                             `✅ Generated ${result.panels.length} comic panels for scene: ${scene.title}`,

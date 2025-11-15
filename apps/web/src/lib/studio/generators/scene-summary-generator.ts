@@ -61,19 +61,6 @@ export async function generateSceneSummary(
         `[scene-summary-generator] Previous scenes count: ${previousScenes.length}`,
     );
 
-    // 2. Determine cycle phase
-    const cyclePhases: CyclePhase[] = [
-        "setup",
-        "adversity",
-        "virtue",
-        "consequence",
-        "transition",
-    ];
-    const cyclePhase =
-        cyclePhases[Math.min(sceneIndex, cyclePhases.length - 1)];
-
-    console.log(`[scene-summary-generator] Cycle phase: ${cyclePhase}`);
-
     // 3. Build context strings using common builders
     const storyContext: string = buildStoryContext(story);
     const partContext: string = buildPartContext(part, characters);
@@ -132,8 +119,7 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         },
     );
 
-    // 7. Validate cycle phase ordering
-    // Check if AI-generated phase follows the correct sequence
+    // 7. Validate cycle phase ordering based on previous scenes
     const phaseOrder: CyclePhase[] = [
         "setup",
         "adversity",
@@ -141,19 +127,46 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         "consequence",
         "transition",
     ];
-    const aiPhaseIndex = phaseOrder.indexOf(sceneData.cyclePhase);
-    const expectedPhaseIndex = phaseOrder.indexOf(cyclePhase);
 
-    // Validate ordering (AI can be at same phase or later, but not earlier)
-    if (aiPhaseIndex < expectedPhaseIndex) {
-        console.warn(
-            `[scene-summary-generator] ⚠️ AI-generated cyclePhase "${sceneData.cyclePhase}" is earlier than expected "${cyclePhase}" for scene ${sceneIndex + 1}. Using expected phase.`,
-        );
-        sceneData.cyclePhase = cyclePhase;
-    } else {
-        console.log(
-            `[scene-summary-generator] ✓ AI-generated cyclePhase "${sceneData.cyclePhase}" is valid (expected minimum: "${cyclePhase}")`,
-        );
+    // 7.1. Get previous scene's phase (or null if first scene)
+    const previousPhase: CyclePhase | null =
+        previousScenes.length > 0
+            ? previousScenes[previousScenes.length - 1].cyclePhase
+            : null;
+
+    const aiPhaseIndex = phaseOrder.indexOf(sceneData.cyclePhase);
+
+    // 7.2. Validate first scene must be "setup"
+    if (sceneIndex === 0) {
+        if (sceneData.cyclePhase !== "setup") {
+            console.warn(
+                `[scene-summary-generator] ⚠️ First scene must be "setup", but AI generated "${sceneData.cyclePhase}". Correcting to "setup".`,
+            );
+            sceneData.cyclePhase = "setup";
+        } else {
+            console.log(
+                `[scene-summary-generator] ✓ First scene correctly set to "setup"`,
+            );
+        }
+    }
+    // 7.3. Validate subsequent scenes follow ordering (same phase or later, no backwards)
+    else if (previousPhase) {
+        const prevPhaseIndex = phaseOrder.indexOf(previousPhase);
+
+        if (aiPhaseIndex < prevPhaseIndex) {
+            console.warn(
+                `[scene-summary-generator] ⚠️ AI-generated cyclePhase "${sceneData.cyclePhase}" goes backwards from previous scene's "${previousPhase}". Keeping previous phase.`,
+            );
+            sceneData.cyclePhase = previousPhase; // Stay at same phase instead of going backwards
+        } else if (aiPhaseIndex === prevPhaseIndex) {
+            console.log(
+                `[scene-summary-generator] ✓ Scene ${sceneIndex + 1} continues with "${sceneData.cyclePhase}" (same as previous)`,
+            );
+        } else {
+            console.log(
+                `[scene-summary-generator] ✓ Scene ${sceneIndex + 1} advances to "${sceneData.cyclePhase}" (from "${previousPhase}")`,
+            );
+        }
     }
 
     // 8. Calculate total generation time
@@ -164,7 +177,7 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         {
             title: sceneData.title,
             cyclePhase: sceneData.cyclePhase,
-            minimumExpectedPhase: cyclePhase,
+            previousPhase: previousPhase || "none (first scene)",
             generationTime: totalTime,
         },
     );
