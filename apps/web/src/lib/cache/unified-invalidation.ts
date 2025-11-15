@@ -115,7 +115,7 @@ export async function invalidateEntityCache(
         switch (context.entityType) {
             case "story":
                 await onStoryMutation(context.entityId);
-                cacheMetrics.invalidate("redis", `story:${context.entityId}`);
+                // cacheMetrics.invalidate("redis", `story:${context.entityId}`);
                 break;
 
             case "part":
@@ -123,7 +123,7 @@ export async function invalidateEntityCache(
                     throw new Error("storyId required for part invalidation");
                 }
                 await onPartMutation(context.entityId, context.storyId);
-                cacheMetrics.invalidate("redis", `part:${context.entityId}`);
+                // cacheMetrics.invalidate("redis", `part:${context.entityId}`);
                 break;
 
             case "chapter":
@@ -133,7 +133,7 @@ export async function invalidateEntityCache(
                     );
                 }
                 await onChapterMutation(context.entityId, context.storyId);
-                cacheMetrics.invalidate("redis", `chapter:${context.entityId}`);
+                // cacheMetrics.invalidate("redis", `chapter:${context.entityId}`);
                 break;
 
             case "scene":
@@ -141,7 +141,7 @@ export async function invalidateEntityCache(
                     throw new Error("storyId required for scene invalidation");
                 }
                 await onSceneMutation(context.entityId, context.storyId);
-                cacheMetrics.invalidate("redis", `scene:${context.entityId}`);
+                // cacheMetrics.invalidate("redis", `scene:${context.entityId}`);
                 break;
 
             case "character":
@@ -151,10 +151,7 @@ export async function invalidateEntityCache(
                     );
                 }
                 await onCharacterMutation(context.entityId, context.storyId);
-                cacheMetrics.invalidate(
-                    "redis",
-                    `character:${context.entityId}`,
-                );
+                // cacheMetrics.invalidate("redis", `character:${context.entityId}`);
                 break;
 
             case "setting":
@@ -164,7 +161,7 @@ export async function invalidateEntityCache(
                     );
                 }
                 await onSettingMutation(context.entityId, context.storyId);
-                cacheMetrics.invalidate("redis", `setting:${context.entityId}`);
+                // cacheMetrics.invalidate("redis", `setting:${context.entityId}`);
                 break;
 
             case "comment":
@@ -172,10 +169,7 @@ export async function invalidateEntityCache(
             case "post":
                 // Community entities handled separately
                 // Import and call community-specific invalidation if needed
-                cacheMetrics.invalidate(
-                    "redis",
-                    `${context.entityType}:${context.entityId}`,
-                );
+                // cacheMetrics.invalidate("redis", `${context.entityType}:${context.entityId}`);
                 break;
 
             default:
