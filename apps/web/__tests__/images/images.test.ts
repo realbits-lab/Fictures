@@ -14,7 +14,10 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { beforeAll, describe, expect, it } from "@jest/globals";
+import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { characters, scenes, settings, stories, users } from "@/lib/schemas/database";
 
 // ============================================================================
 // Test Configuration
@@ -83,25 +86,123 @@ interface ApiImagesResponse {
 
 let authData: AuthData;
 let writerApiKey: string;
+let writerUserId: string;
+let testStoryId: string;
+let testCharacterId: string;
+let testSettingId: string;
+let testScene1Id: string;
+let testScene2Id: string;
+let testScene3Id: string;
 
 // ============================================================================
 // Test Setup
 // ============================================================================
 
-beforeAll(() => {
+beforeAll(async () => {
     // 1. Load authentication data
     const authContent: string = fs.readFileSync(AUTH_FILE_PATH, "utf-8");
     authData = JSON.parse(authContent) as AuthData;
 
-    // 2. Get writer API key
+    // 2. Get writer API key and user ID
     writerApiKey = authData.develop.profiles.writer.apiKey;
+
+    // Get actual writer user ID from database
+    const writerEmail = authData.develop.profiles.writer.email;
+    const writerUser = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, writerEmail))
+        .limit(1);
+
+    if (writerUser.length === 0) {
+        throw new Error(`Writer user not found: ${writerEmail}. Run setup-auth-users.ts first.`);
+    }
+
+    writerUserId = writerUser[0].id;
 
     // 3. Verify environment variables
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
         throw new Error("BLOB_READ_WRITE_TOKEN not set in environment");
     }
 
-    console.log("✓ Test setup complete - using writer API key");
+    // 4. Create test database records
+    testStoryId = "story_test_001";
+    testCharacterId = "char_test_001";
+    testSettingId = "setting_test_001";
+    testScene1Id = "scene_test_001";
+    testScene2Id = "scene_test_002";
+    testScene3Id = "scene_test_003";
+
+    // Create test story
+    await db.insert(stories).values({
+        id: testStoryId,
+        authorId: writerUserId,
+        title: "Test Story for Image Generation",
+        summary: "A test story for image generation tests",
+        genre: "Fantasy",
+        tone: "hopeful",
+        language: "en",
+        targetAudience: "general",
+        userPrompt: "A test story",
+    }).onConflictDoNothing();
+
+    // Create test character
+    await db.insert(characters).values({
+        id: testCharacterId,
+        storyId: testStoryId,
+        name: "Test Character",
+        role: "protagonist",
+        summary: "A test character for image generation",
+    }).onConflictDoNothing();
+
+    // Create test setting
+    await db.insert(settings).values({
+        id: testSettingId,
+        storyId: testStoryId,
+        name: "Test Setting",
+        summary: "A test setting for image generation",
+    }).onConflictDoNothing();
+
+    // Create test scenes
+    await db.insert(scenes).values([
+        {
+            id: testScene1Id,
+            storyId: testStoryId,
+            title: "Test Scene 1",
+            summary: "First test scene for image generation",
+        },
+        {
+            id: testScene2Id,
+            storyId: testStoryId,
+            title: "Test Scene 2",
+            summary: "Second test scene for comic panel",
+        },
+        {
+            id: testScene3Id,
+            storyId: testStoryId,
+            title: "Test Scene 3",
+            summary: "Third test scene for metadata testing",
+        },
+    ]).onConflictDoNothing();
+
+    console.log("✓ Test setup complete - using writer API key and test database records");
+});
+
+// Cleanup test data after all tests
+afterAll(async () => {
+    // Delete test scenes
+    await db.delete(scenes).where(eq(scenes.storyId, testStoryId));
+
+    // Delete test character
+    await db.delete(characters).where(eq(characters.id, testCharacterId));
+
+    // Delete test setting
+    await db.delete(settings).where(eq(settings.id, testSettingId));
+
+    // Delete test story
+    await db.delete(stories).where(eq(stories.id, testStoryId));
+
+    console.log("✓ Test cleanup complete - removed test database records");
 });
 
 // ============================================================================
@@ -120,7 +221,7 @@ async function generateImage(
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${writerApiKey}`,
+            "x-api-key": writerApiKey,
         },
         body: JSON.stringify(requestBody),
     });
