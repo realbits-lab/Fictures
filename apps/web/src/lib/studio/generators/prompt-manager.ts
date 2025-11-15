@@ -1203,13 +1203,25 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
         version?: string,
     ): { system: string; user: string } {
         // Check if a versioned prompt is requested and available
-        if (version && promptType === "part" && version === "v1.1") {
-            // Load v1.1 part prompt for iteration testing
+        if (version && promptType === "part") {
+            // Load versioned part prompt for iteration testing
             // Use __dirname-based path for reliable module resolution across different runtimes
             const path = require("node:path");
-            const promptPath = path.resolve(__dirname, "../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js");
-            const { partPromptV1_1 } = require(promptPath);
-            const template = partPromptV1_1;
+            let promptPath: string;
+            let templateKey: string;
+
+            if (version === "v1.1") {
+                promptPath = path.resolve(__dirname, "../../../tests/iteration-testing/novels/prompts/v1.1/part-prompt.js");
+                templateKey = "partPromptV1_1";
+            } else if (version === "v1.2") {
+                promptPath = path.resolve(__dirname, "../../../tests/iteration-testing/novels/prompts/v1.2/part-prompt.js");
+                templateKey = "partPromptV1_2";
+            } else {
+                throw new Error(`Unknown prompt version: ${version}`);
+            }
+
+            const promptModule = require(promptPath);
+            const template = promptModule[templateKey];
 
             // Replace variables in user template
             let userPrompt = template.userTemplate;
