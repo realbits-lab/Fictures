@@ -206,7 +206,7 @@ export const updatePart = tool({
             .update(parts)
             .set({
                 ...updates,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
             })
             .where(eq(parts.id, partId))
             .returning();
@@ -355,7 +355,7 @@ export const updateChapter = tool({
             .update(chapters)
             .set({
                 ...updates,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
             })
             .where(eq(chapters.id, chapterId))
             .returning();
@@ -523,7 +523,7 @@ export const updateScene = tool({
             .update(scenes)
             .set({
                 ...updates,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
             })
             .where(eq(scenes.id, sceneId))
             .returning();
@@ -675,7 +675,7 @@ export const updateCharacter = tool({
             .update(characters)
             .set({
                 ...updates,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
             })
             .where(eq(characters.id, characterId))
             .returning();
@@ -821,7 +821,7 @@ export const updateSetting = tool({
             .update(settings)
             .set({
                 ...updates,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
             })
             .where(eq(settings.id, settingId))
             .returning();
