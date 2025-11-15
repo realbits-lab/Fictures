@@ -25,7 +25,7 @@ import { improveScene } from "../generators/scene-improvement-generator";
 import type {
     GeneratorSceneImprovementParams,
     GeneratorSceneImprovementResult,
-} from "../generators/types";
+} from "@/lib/schemas/generators/types";
 
 /**
  * Service parameters for scene improvement
@@ -157,7 +157,7 @@ export class SceneImprovementService {
             );
         }
 
-        const storyContext: import("../generators/types").SceneImprovementStoryContext =
+        const storyContext: import("@/lib/schemas/generators/types").SceneImprovementStoryContext =
             {
                 id: story.id,
                 title: story.title,

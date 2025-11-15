@@ -121,7 +121,7 @@ async function generateQualityInsights(story: any): Promise<void> {
         storyId: story.id,
         insightType: "quality_improvement",
         title: `Improve ${capitalizeFirst(lowestCategory.category)}`,
-        summary: `Your ${lowestCategory.category} scores average ${lowestCategory.value.toFixed(1)}/100. ${recommendations.summary}`,
+        description: `Your ${lowestCategory.category} scores average ${lowestCategory.value.toFixed(1)}/100. ${recommendations.summary}`,
         severity: lowestCategory.value < 60 ? "warning" : "info",
         actionItems: recommendations.actionItems,
         metrics: {
@@ -132,7 +132,7 @@ async function generateQualityInsights(story: any): Promise<void> {
         },
         aiModel: "gemini-2.0-flash-exp",
         confidenceScore: "0.85",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
     });
 }
 
@@ -171,7 +171,7 @@ async function generateEngagementInsights(story: any): Promise<void> {
             storyId: story.id,
             insightType: "engagement_drop",
             title: "Engagement Declining",
-            summary: `Reader engagement has dropped by ${decline.toFixed(0)}% over the last 30 days. Consider publishing new content or engaging with your community.`,
+            description: `Reader engagement has dropped by ${decline.toFixed(0)}% over the last 30 days. Consider publishing new content or engaging with your community.`,
             severity: decline > 30 ? "warning" : "info",
             actionItems: [
                 "Publish a new chapter to re-engage readers",
@@ -187,7 +187,7 @@ async function generateEngagementInsights(story: any): Promise<void> {
             },
             aiModel: "rule-based",
             confidenceScore: "0.90",
-            createdAt: new Date(),
+            createdAt: new Date().toISOString(),
         });
     }
 }
@@ -220,7 +220,7 @@ async function generateReaderFeedbackInsights(story: any): Promise<void> {
         storyId: story.id,
         insightType: "reader_feedback",
         title: "Reader Feedback Summary",
-        summary: analysis.summary,
+        description: analysis.summary,
         severity: "info",
         actionItems: analysis.suggestions,
         metrics: {
@@ -230,7 +230,7 @@ async function generateReaderFeedbackInsights(story: any): Promise<void> {
         },
         aiModel: "gemini-2.0-flash-exp",
         confidenceScore: "0.75",
-        createdAt: new Date(),
+        createdAt: new Date().toISOString(),
     });
 }
 
