@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { authenticateRequest } from "@/lib/auth/dual-auth";
+import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
+import { getAuth } from "@/lib/auth/server-context";
 import { db } from "@/lib/db";
 import {
     characters,
@@ -14,10 +15,10 @@ export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
 
 /**
- * POST /api/scenes/[id]/comic/generate
+ * POST /api/studio/scenes/[id]/comic/generate
  * Generate comic panels for a scene with SSE progress updates
  *
- * Authentication: Dual auth (API key OR session)
+ * Authentication: Dual auth (API key OR session) via withAuthentication wrapper
  * - API key: x-api-key header (requires stories:write scope)
  * - Session: NextAuth.js session (story owner or admin)
  *
@@ -25,29 +26,21 @@ export const maxDuration = 300; // 5 minutes
  * - With Accept: text/event-stream - Returns SSE stream with progress updates
  * - Otherwise - Returns JSON response after completion
  */
-export async function POST(
+async function handlePOST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
     try {
         const { id } = await params;
-        const authResult = await authenticateRequest(request);
 
-        if (!authResult?.user?.id) {
+        // Get authentication from context (set by withAuthentication wrapper)
+        const auth = getAuth();
+
+        if (!auth?.userId) {
             return NextResponse.json(
                 { error: "Unauthorized" },
                 { status: 401 },
             );
-        }
-
-        // For API key auth, verify stories:write scope
-        if (authResult.type === "api_key") {
-            if (!authResult.scopes?.includes("stories:write")) {
-                return NextResponse.json(
-                    { error: "Forbidden: requires stories:write scope" },
-                    { status: 403 },
-                );
-            }
         }
 
         // Parse optional parameters
@@ -106,14 +99,10 @@ export async function POST(
         const story = sceneWithStory.chapter.story;
 
         // Verify ownership (allow story owner or manager/admin)
-        // For API key auth, bypass ownership check if user has stories:write scope
-        const isOwner = story.authorId === authResult.user.id;
-        const isAdmin =
-            authResult.user.role === "manager" ||
-            authResult.user.role === "admin";
-        const hasApiKeyAccess =
-            authResult.type === "api_key" &&
-            authResult.scopes?.includes("stories:write");
+        // For API key auth, stories:write scope is already verified by requireScopes wrapper
+        const isOwner = story.authorId === auth.userId;
+        const isAdmin = auth.role === "manager" || auth.role === "admin";
+        const hasApiKeyAccess = auth.type === "api_key"; // stories:write already verified
 
         if (!isOwner && !isAdmin && !hasApiKeyAccess) {
             return NextResponse.json(
@@ -349,3 +338,6 @@ export async function POST(
         );
     }
 }
+
+// Export with authentication wrappers
+export const POST = requireScopes("stories:write")(withAuthentication(handlePOST));
