@@ -23,7 +23,7 @@ const getStorySchema = z.object({
 export const getStory = tool({
     summary: "Get complete story details including all metadata fields",
     parameters: getStorySchema,
-    execute: async ({ storyId }: z.infer<typeof getStorySchema>) => {
+    execute: async ({ storyId }: { storyId: string }) => {
         const [story] = await db
             .select()
             .from(stories)

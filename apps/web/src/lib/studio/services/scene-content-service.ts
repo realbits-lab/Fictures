@@ -4,7 +4,7 @@
  * Service layer for scene content generation and database persistence.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
     chapters,
@@ -14,19 +14,20 @@ import {
     settings,
     stories,
 } from "@/lib/schemas/database";
-import type {
-    Chapter,
-    Character,
-    Part,
-    Scene,
-    Setting,
-    Story,
-} from "@/lib/schemas/zod/ai";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Chapter = InferSelectModel<typeof chapters>;
+type Part = InferSelectModel<typeof parts>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
+type Scene = InferSelectModel<typeof scenes>;
+
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
     GeneratorSceneContentParams,
     GeneratorSceneContentResult,
-} from "../generators/types";
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceSceneContentParams {
     sceneId: string;

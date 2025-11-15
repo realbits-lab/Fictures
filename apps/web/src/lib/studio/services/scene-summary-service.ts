@@ -6,7 +6,7 @@
  * one at a time, seeing all previous scenes in the chapter.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
@@ -17,20 +17,19 @@ import {
     settings,
     stories,
 } from "@/lib/schemas/database";
-import type {
-    Chapter,
-    Character,
-    Part,
-    Scene,
-    Setting,
-    Story,
-} from "@/lib/schemas/zod/ai";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Chapter = InferSelectModel<typeof chapters>;
+type Part = InferSelectModel<typeof parts>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
 import { insertSceneSchema } from "@/lib/schemas/zod/generated";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
-    GeneratorSceneSummaryParams,
-    GeneratorSceneSummaryResult,
-} from "../generators/types";
+    GenerateSceneSummaryParams,
+    GenerateSceneSummaryResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceSceneSummaryParams {
     storyId: string;
@@ -141,7 +140,7 @@ export class SceneSummaryService {
         );
 
         // 7. Generate next scene summary using singular generator with full context
-        const generateParams: GeneratorSceneSummaryParams = {
+        const generateParams: GenerateSceneSummaryParams = {
             story,
             part,
             chapter,
@@ -151,7 +150,7 @@ export class SceneSummaryService {
             sceneIndex: nextSceneIndex,
         };
 
-        const generationResult: GeneratorSceneSummaryResult =
+        const generationResult: GenerateSceneSummaryResult =
             await generateSceneSummary(generateParams);
 
         // 8. Save scene summary to database
