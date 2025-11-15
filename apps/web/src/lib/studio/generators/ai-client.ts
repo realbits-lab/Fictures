@@ -7,6 +7,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { z } from "zod";
+import { fetch as undiciFetch, Agent } from "undici";
 import { getApiKey } from "@/lib/auth/server-context";
 import type {
     GenerationOptions,
@@ -583,13 +584,20 @@ class AIServerProvider extends TextGenerationProvider {
             top_p: options?.topP ?? 0.9,
         };
 
-        const response = await fetch(
+        // Create custom agent with extended headers timeout
+        const agent = new Agent({
+            headersTimeout: this.config.timeout, // Match configured timeout (10 minutes)
+            bodyTimeout: this.config.timeout,
+        });
+
+        const response = await undiciFetch(
             `${this.config.url}/api/v1/text/structured`,
             {
                 method: "POST",
                 headers: this.buildHeaders(),
                 body: JSON.stringify(requestBody),
                 signal: AbortSignal.timeout(this.config.timeout),
+                dispatcher: agent,
             },
         );
 
