@@ -81,13 +81,16 @@ python --version  # Should show 3.12.7
 
 ## API Authentication
 
-**IMPORTANT**: All API endpoints require authentication via API key. Authentication is always enabled and cannot be disabled.
+**IMPORTANT**: All API endpoints require authentication. The AI server supports TWO distinct authentication methods:
 
-**Cross-System Compatible**: The AI server uses the same authentication system as the web app for seamless integration.
+1. **API Key Authentication** - Using `x-api-key` header (for server-to-server, scripts, testing)
+2. **Email/Password Authentication** - Using JWT tokens (for user sessions, not yet implemented)
+
+**Cross-System Compatible**: The AI server uses the same authentication database as the web app for seamless integration.
 
 **Complete Documentation**: [../../docs/operation/cross-system-authentication.md](../../docs/operation/cross-system-authentication.md)
 
-### Authentication Method
+### Method 1: API Key Authentication
 
 The AI server validates API keys against the web application's PostgreSQL database. API keys are stored securely using bcrypt hashing, ensuring compatibility between both systems.
 
@@ -95,14 +98,25 @@ The AI server validates API keys against the web application's PostgreSQL databa
 - **Hashing**: bcrypt (compatible with web app)
 - **Prefix Length**: 16 characters (for fast lookup)
 
-**Required Header Formats:**
-```bash
-# Option 1: Authorization header (recommended)
-Authorization: Bearer YOUR_API_KEY
+**Required Header Format:**
 
-# Option 2: x-api-key header
+```bash
+# Use x-api-key header
 x-api-key: YOUR_API_KEY
 ```
+
+**IMPORTANT**: The AI server ONLY accepts the `x-api-key` header for API key authentication. Do NOT use `Authorization: Bearer` for API keys.
+
+### Method 2: Email/Password Authentication (Future)
+
+For user session authentication (not yet implemented):
+
+```bash
+# Use Authorization header with JWT token
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Status**: Not yet implemented. Currently, only API key authentication (`x-api-key` header) is supported.
 
 ### Getting API Keys for Testing
 
@@ -115,19 +129,7 @@ cat .auth/user.json | jq -r '.apiKey'
 
 **Example API Request:**
 ```bash
-# Using Authorization header
-curl -X POST "http://localhost:8000/api/v1/images/generate" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $(cat .auth/user.json | jq -r '.apiKey')" \
-  -d '{
-    "prompt": "A beautiful sunset over mountains",
-    "width": 1024,
-    "height": 1024,
-    "num_inference_steps": 4,
-    "guidance_scale": 1.0
-  }'
-
-# Using x-api-key header
+# Using x-api-key header (ONLY supported method)
 curl -X POST "http://localhost:8000/api/v1/images/generate" \
   -H "Content-Type: application/json" \
   -H "x-api-key: $(cat .auth/user.json | jq -r '.apiKey')" \
