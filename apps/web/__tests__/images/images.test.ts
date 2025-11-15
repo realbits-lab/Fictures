@@ -14,74 +14,48 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { chapters, characters, parts, scenes, settings, stories, users } from "@/lib/schemas/database";
+import {
+	chapters,
+	characters,
+	parts,
+	scenes,
+	settings,
+	stories,
+	users,
+} from "@/lib/schemas/database";
+import type { ApiImagesResponse } from "@/lib/schemas/api/studio";
+import type { ImageVariant } from "@/lib/studio/services/image-optimization-service";
 
 // ============================================================================
 // Test Configuration
 // ============================================================================
 
-const AUTH_FILE_PATH: string = path.resolve(__dirname, "../../.auth/user.json");
+const AUTH_FILE_PATH: string = path.resolve(
+	__dirname,
+	"../../.auth/user.json",
+);
 
 const API_BASE_URL: string = "http://localhost:3000";
 const API_ENDPOINT: string = "/api/studio/images";
 
 interface AuthData {
-    develop: {
-        profiles: {
-            writer: {
-                email: string;
-                password: string;
-                apiKey: string;
-            };
-        };
-    };
+	develop: {
+		profiles: {
+			writer: {
+				email: string;
+				password: string;
+				apiKey: string;
+			};
+		};
+	};
 }
 
 interface ApiImagesRequest {
-    prompt: string;
-    contentId: string;
-    imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
-}
-
-interface ImageVariant {
-    format: string;
-    device: string;
-    resolution: string;
-    width: number;
-    height: number;
-    url: string;
-    size: number;
-}
-
-interface OptimizedImageSet {
-    imageId: string;
-    originalUrl: string;
-    variants: ImageVariant[];
-    generatedAt: string;
-}
-
-interface ApiImagesResponse {
-    imageId: string;
-    imageUrl: string;
-    blobUrl: string;
-    width: number;
-    height: number;
-    size: number;
-    aspectRatio: string;
-    optimizedSet: OptimizedImageSet;
-    isPlaceholder: boolean;
-    model: string;
-    provider: string;
-    metadata: {
-        generationTime: number;
-        uploadTime: number;
-        optimizationTime: number;
-        dbUpdateTime: number;
-        totalTime: number;
-    };
+	prompt: string;
+	contentId: string;
+	imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
 }
 
 let authData: AuthData;
