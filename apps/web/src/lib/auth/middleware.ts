@@ -134,11 +134,14 @@ async function resolveAuthentication(
  * );
  * ```
  */
-export function withAuthentication(
-    handler: (request: NextRequest) => Promise<NextResponse | Response>,
+export function withAuthentication<P = any>(
+    handler: (
+        request: NextRequest,
+        context?: P,
+    ) => Promise<NextResponse | Response>,
     options: AuthMiddlewareOptions = {},
-): (request: NextRequest) => Promise<NextResponse | Response> {
-    return async (request: NextRequest) => {
+): (request: NextRequest, context?: P) => Promise<NextResponse | Response> {
+    return async (request: NextRequest, context?: P) => {
         const {
             requiredScopes = [],
             allowAnonymous = false,
@@ -174,10 +177,24 @@ export function withAuthentication(
             }
 
             // Run the handler with authentication context
-            return await withAuth(authContext!, () => handler(request));
+            return await withAuth(authContext!, () =>
+                handler(request, context),
+            );
         } catch (error) {
-            if (debug) {
+            // ALWAYS log errors in development to help debugging
+            const isDev = process.env.NODE_ENV === "development";
+            if (debug || isDev) {
                 console.error("[AUTH_MIDDLEWARE] Error:", error);
+                if (error instanceof Error) {
+                    console.error(
+                        "[AUTH_MIDDLEWARE] Error message:",
+                        error.message,
+                    );
+                    console.error(
+                        "[AUTH_MIDDLEWARE] Error stack:",
+                        error.stack,
+                    );
+                }
             }
 
             // Use custom error handler if provided
@@ -200,11 +217,13 @@ export function withAuthentication(
                 );
             }
 
-            // Generic error
-            return NextResponse.json(
-                { error: "Authentication error" },
-                { status: 500 },
-            );
+            // Generic error - include actual error message in development
+            const errorMessage =
+                isDev && error instanceof Error
+                    ? error.message
+                    : "Authentication error";
+
+            return NextResponse.json({ error: errorMessage }, { status: 500 });
         }
     };
 }
@@ -227,9 +246,15 @@ export function withAuthentication(
  * ```
  */
 export function requireScopes(...scopes: string[]) {
-    return (
-        handler: (request: NextRequest) => Promise<NextResponse | Response>,
-    ): ((request: NextRequest) => Promise<NextResponse | Response>) =>
+    return <P = any>(
+        handler: (
+            request: NextRequest,
+            context?: P,
+        ) => Promise<NextResponse | Response>,
+    ): ((
+        request: NextRequest,
+        context?: P,
+    ) => Promise<NextResponse | Response>) =>
         withAuthentication(handler, { requiredScopes: scopes });
 }
 
@@ -253,9 +278,12 @@ export function requireScopes(...scopes: string[]) {
  * });
  * ```
  */
-export function optionalAuth(
-    handler: (request: NextRequest) => Promise<NextResponse | Response>,
-): (request: NextRequest) => Promise<NextResponse | Response> {
+export function optionalAuth<P = any>(
+    handler: (
+        request: NextRequest,
+        context?: P,
+    ) => Promise<NextResponse | Response>,
+): (request: NextRequest, context?: P) => Promise<NextResponse | Response> {
     return withAuthentication(handler, { allowAnonymous: true });
 }
 
@@ -273,9 +301,12 @@ export function optionalAuth(
  * });
  * ```
  */
-export function adminOnly(
-    handler: (request: NextRequest) => Promise<NextResponse | Response>,
-): (request: NextRequest) => Promise<NextResponse | Response> {
+export function adminOnly<P = any>(
+    handler: (
+        request: NextRequest,
+        context?: P,
+    ) => Promise<NextResponse | Response>,
+): (request: NextRequest, context?: P) => Promise<NextResponse | Response> {
     return withAuthentication(handler, { requiredScopes: ["admin:all"] });
 }
 
