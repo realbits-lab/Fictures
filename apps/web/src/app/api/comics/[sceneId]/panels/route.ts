@@ -67,8 +67,8 @@ export async function GET(_request: NextRequest, context: RouteContext) {
             session?.user?.role === "manager" ||
             session?.user?.role === "admin";
 
-        // Check if story is public (using is_public from database)
-        const isPublished = story.isPublic === true || story.is_public === true;
+        // Check if story is published
+        const isPublished = story.status === "published";
 
         if (!isPublished && !isOwner && !isAdmin) {
             return new Response(JSON.stringify({ error: "Forbidden" }), {

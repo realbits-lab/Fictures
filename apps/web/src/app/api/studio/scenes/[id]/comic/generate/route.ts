@@ -98,13 +98,12 @@ async function handlePOST(
         // Extract story for type safety
         const story = sceneWithStory.chapter.story;
 
-        // Verify ownership (allow story owner or manager/admin)
+        // Verify ownership
         // For API key auth, stories:write scope is already verified by requireScopes wrapper
         const isOwner = story.authorId === auth.userId;
-        const isAdmin = auth.role === "manager" || auth.role === "admin";
-        const hasApiKeyAccess = auth.type === "api_key"; // stories:write already verified
+        const hasApiKeyAccess = auth.type === "api-key"; // stories:write already verified
 
-        if (!isOwner && !isAdmin && !hasApiKeyAccess) {
+        if (!isOwner && !hasApiKeyAccess) {
             return NextResponse.json(
                 { error: "Access denied" },
                 { status: 403 },
