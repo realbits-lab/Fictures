@@ -557,10 +557,6 @@ export const chapters = pgTable(
             "btree",
             table.partId.asc().nullsLast().op("text_ops"),
         ),
-        index("idx_chapters_status").using(
-            "btree",
-            table.status.asc().nullsLast().op("enum_ops"),
-        ),
         index("idx_chapters_story_id").using(
             "btree",
             table.storyId.asc().nullsLast().op("text_ops"),

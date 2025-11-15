@@ -101,12 +101,38 @@ cd apps/ai-server
 - **Web Server (Port 3000)**: Kill any process using port 3000 before running `pnpm dev` in `apps/web/`
 - **AI Server (Port 8000)**: Kill any process using port 8000 before running the server in `apps/ai-server/`
 
-**Workflow**:
-1. Kill existing processes on ports 3000 and 8000
-2. Run development servers as background processes
-3. Redirect output to logs directory (e.g., `logs/dev-server.log`, `logs/ai-server.log`)
+**Quick Start - Running Both Servers**:
 
-This prevents port conflicts and ensures clean server startup.
+```bash
+# 1. Kill existing processes on ports 3000 and 8000
+fuser -k 3000/tcp 8000/tcp 2>/dev/null || true
+
+# 2. Start AI Server (Python FastAPI) - MUST use venv
+cd apps/ai-server
+source venv/bin/activate
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload > ../../logs/ai-server.log 2>&1 &
+cd ../..
+
+# 3. Start Web Server (Next.js)
+cd apps/web
+dotenv -e .env.local -- pnpm dev > ../../logs/dev-server.log 2>&1 &
+cd ../..
+
+# 4. Verify both servers are running
+sleep 10
+curl -s http://localhost:8000/health | jq .  # AI server health check
+curl -s http://localhost:3000 | head -5      # Web server check
+```
+
+**Important Notes**:
+- **AI Server**: MUST activate Python venv before starting (`source venv/bin/activate`)
+- **Web Server**: MUST use `dotenv -e .env.local` to load environment variables
+- **Background Processes**: Both servers run in background with output redirected to `logs/`
+- **Port Check**: Always kill existing processes first to prevent port conflicts
+
+**Detailed Guides**:
+- **Web Server**: See [apps/web/CLAUDE.md](apps/web/CLAUDE.md#development-process-guidelines) for complete web server setup
+- **AI Server**: See [apps/ai-server/CLAUDE.md](apps/ai-server/CLAUDE.md#development-commands) for complete AI server setup and Python environment details
 
 ## Authentication & API Keys
 

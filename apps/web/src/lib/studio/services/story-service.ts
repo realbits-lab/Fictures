@@ -71,7 +71,7 @@ export class StoryService {
             genre: generationResult.story.genre || null,
             tone: generationResult.story.tone || "hopeful",
             moralFramework: generationResult.story.moralFramework || null,
-            status: "writing",
+            status: "draft",
             viewCount: 0,
             rating: 0,
             ratingCount: 0,
