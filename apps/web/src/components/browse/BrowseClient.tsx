@@ -10,14 +10,12 @@ import {
 } from "@/components/common";
 import { SkeletonLoader } from "@/components/ui";
 import { usePublishedStories } from "@/lib/hooks/use-page-cache";
-import { cacheManager } from "@/lib/hooks/use-persisted-swr";
 import { StoryGrid } from "./StoryGrid";
 
 export function BrowseClient() {
     const { data: session } = useSession();
     const pathname = usePathname();
-    const { data, isLoading, isValidating, error, mutate } =
-        usePublishedStories();
+    const { stories, loading, error } = usePublishedStories();
     const [showCacheInfo, setShowCacheInfo] = useState(false);
     const [hasMounted, setHasMounted] = useState(false);
 
@@ -33,11 +31,13 @@ export function BrowseClient() {
     const firstDataTimeRef = useRef<number | null>(null);
     const renderCountRef = useRef<number>(0);
 
-    const stories = data?.stories || [];
-    const count = data?.count || 0;
+    const isLoading = loading;
+    const isValidating = false; // Hook doesn't support background validation
+    const count = stories.length;
+    const cacheHealth = "unknown" as "fresh" | "stale" | "expired" | "unknown"; // Hook doesn't provide cache metadata
 
-    // Get cache health status
-    const cacheHealth = cacheManager.getCacheHealth(pageType);
+    // Mock mutate function for retry
+    const mutate = () => window.location.reload();
 
     // Fix hydration mismatch by ensuring first render matches server
     useEffect(() => {
@@ -53,10 +53,9 @@ export function BrowseClient() {
         console.log(`[BrowseClient] 📊 Initial state:`, {
             isLoading,
             isValidating,
-            hasData: !!data,
+            hasData: stories.length > 0,
             storiesCount: stories.length,
             hasError: !!error,
-            cacheHealth,
         });
 
         return () => {
@@ -65,7 +64,7 @@ export function BrowseClient() {
                 `[BrowseClient] 👋 Component unmounted after ${totalTime}ms`,
             );
         };
-    }, [cacheHealth, data, error, isLoading, isValidating, stories.length]);
+    }, [error, isLoading, isValidating, stories.length]);
 
     // Track data loading stages
     useEffect(() => {
@@ -80,8 +79,6 @@ export function BrowseClient() {
                 isValidating,
                 storiesCount: stories.length,
                 hasError: !!error,
-                fromCache: data?.fromCache,
-                cacheHealth,
             },
         );
 
@@ -94,10 +91,6 @@ export function BrowseClient() {
                 `[BrowseClient] ⚡ First data appeared in ${timeToFirstData}ms:`,
                 {
                     storiesCount: stories.length,
-                    fromCache: data?.fromCache,
-                    source: data?.fromCache
-                        ? "localStorage cache"
-                        : "API fetch",
                 },
             );
         }
@@ -110,7 +103,6 @@ export function BrowseClient() {
                 {
                     storiesCount: stories.length,
                     totalCount: count,
-                    cacheHealth,
                 },
             );
         }
@@ -118,9 +110,7 @@ export function BrowseClient() {
         isLoading,
         isValidating,
         stories.length,
-        data?.fromCache,
         error,
-        cacheHealth,
         count,
     ]);
 
@@ -145,7 +135,7 @@ export function BrowseClient() {
     useEffect(() => {
         if (error) {
             console.error(`[BrowseClient] ❌ Error occurred:`, {
-                message: error.message,
+                message: error,
                 timeSinceMount: Date.now() - mountTimeRef.current,
                 hadPreviousData: stories.length > 0,
             });
@@ -197,7 +187,7 @@ export function BrowseClient() {
                                 {/* Cache management button */}
                                 <button
                                     onClick={() => {
-                                        cacheManager.clearPageCache(pageType);
+                                        // cacheManager not available in hook
                                         mutate();
                                     }}
                                     className="text-xs px-2 py-1 bg-[rgb(var(--color-secondary))] hover:bg-[rgb(var(--color-secondary)/80%)] text-[rgb(var(--color-secondary-foreground))] rounded-full transition-colors"
@@ -263,7 +253,7 @@ export function BrowseClient() {
                     <StoryLoadingError
                         title="Failed to load stories"
                         message={
-                            error.message ||
+                            error ||
                             "Something went wrong while loading stories."
                         }
                         onRetry={() => mutate()}

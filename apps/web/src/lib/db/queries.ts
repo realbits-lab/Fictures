@@ -73,7 +73,7 @@ export async function updateUser(
     data: {
         name?: string;
         image?: string;
-        emailVerified?: Date;
+        emailVerified?: string;
         role?: "manager" | "writer" | "reader";
     },
 ) {
@@ -360,7 +360,7 @@ export async function updateUserStats(
         totalWordsWritten: number;
         storiesPublished: number;
         chaptersPublished: number;
-        lastWritingDate: Date;
+        lastWritingDate: string;
     }>,
 ) {
     await db
@@ -611,10 +611,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
                 storyId: chapters.storyId,
                 partId: chapters.partId,
                 orderIndex: chapters.orderIndex,
-                purpose: chapters.purpose,
-                hook: chapters.hook,
-                publishedAt: chapters.publishedAt,
-                scheduledFor: chapters.scheduledFor,
                 createdAt: chapters.createdAt,
                 updatedAt: chapters.updatedAt,
             },
@@ -885,7 +881,7 @@ export async function updateApiKey(
     data: {
         name?: string;
         scopes?: ApiScope[];
-        expiresAt?: Date | null;
+        expiresAt?: string | null;
         isActive?: boolean;
     },
 ) {
