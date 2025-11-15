@@ -2,7 +2,7 @@ CREATE TYPE "public"."adversity_type" AS ENUM('internal', 'external', 'both');--
 CREATE TYPE "public"."arc_position" AS ENUM('beginning', 'middle', 'climax', 'resolution');--> statement-breakpoint
 CREATE TYPE "public"."comic_status" AS ENUM('none', 'draft', 'published');--> statement-breakpoint
 CREATE TYPE "public"."content_type" AS ENUM('markdown', 'html', 'plain');--> statement-breakpoint
-CREATE TYPE "public"."cycle_phase" AS ENUM('setup', 'confrontation', 'virtue', 'consequence', 'transition');--> statement-breakpoint
+CREATE TYPE "public"."cycle_phase" AS ENUM('setup', 'adversity', 'virtue', 'consequence', 'transition');--> statement-breakpoint
 CREATE TYPE "public"."emotional_beat" AS ENUM('fear', 'hope', 'tension', 'relief', 'elevation', 'catharsis', 'despair', 'joy');--> statement-breakpoint
 CREATE TYPE "public"."event_type" AS ENUM('page_view', 'story_view', 'chapter_read_start', 'chapter_read_complete', 'scene_read', 'comment_created', 'comment_liked', 'story_liked', 'chapter_liked', 'post_created', 'post_viewed', 'share', 'bookmark');--> statement-breakpoint
 CREATE TYPE "public"."insight_type" AS ENUM('quality_improvement', 'engagement_drop', 'reader_feedback', 'pacing_issue', 'character_development', 'plot_consistency', 'trending_up', 'publishing_opportunity', 'audience_mismatch');--> statement-breakpoint

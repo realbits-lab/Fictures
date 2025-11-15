@@ -223,9 +223,9 @@ This section provides detailed metric descriptions organized by generation phase
 
 | Metric | Description | Target | Threshold | Method |
 |--------|-------------|--------|-----------|--------|
-| **Cycle Coherence** | 5-phase structure (Setup → Confrontation → Virtue → Consequence → Transition) is complete | All 5 phases present and distinct per character | 4+ phases present | Automated: Phase detection in part summary |
+| **Cycle Coherence** | 5-phase structure (Setup → Adversity → Virtue → Consequence → Transition) is complete | All 5 phases present and distinct per character | 4+ phases present | Automated: Phase detection in part summary |
 | **Conflict Definition Clarity** | Internal and external conflicts are explicitly stated | Both conflict types named with specific examples | Both fields populated | AI evaluation: Conflict field analysis and concreteness |
-| **Earned Luck Tracking** | Seeds planted in setup/confrontation, resolved in consequence | At least 1 seed per cycle with planting and resolution noted | Seed tracking table exists | Automated: Seed tracking table validation |
+| **Earned Luck Tracking** | Seeds planted in setup/adversity, resolved in consequence | At least 1 seed per cycle with planting and resolution noted | Seed tracking table exists | Automated: Seed tracking table validation |
 | **Part Summary Quality** | Overall assessment of macro-arc structure using database summary field | Composite score ≥3.5/4.0 averaging all part metrics, summary demonstrates complete 5-phase structure with clear conflicts | Composite score ≥3.0/4.0, summary shows cycle coherence and seed tracking | AI evaluation: Holistic review of part summary field for cycle structure completeness, conflict clarity, and seed causality across the macro arc |
 
 ### 2.5 Chapter Generation Metrics

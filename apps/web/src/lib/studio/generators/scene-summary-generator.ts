@@ -9,6 +9,12 @@
  * Database operations are handled by the caller (API route).
  */
 
+import type {
+    CyclePhase,
+    GeneratorSceneSummaryParams,
+    GeneratorSceneSummaryResult,
+    SceneSummaryPromptParams,
+} from "@/lib/schemas/generators/types";
 import {
     type AiSceneSummaryType,
     AiSceneSummaryZodSchema,
@@ -22,12 +28,6 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    CyclePhase,
-    GeneratorSceneSummaryParams,
-    GeneratorSceneSummaryResult,
-    SceneSummaryPromptParams,
-} from "@/lib/schemas/generators/types";
 
 /**
  * Generate ONE next scene summary with full context
@@ -64,7 +64,7 @@ export async function generateSceneSummary(
     // 2. Determine cycle phase
     const cyclePhases: CyclePhase[] = [
         "setup",
-        "confrontation",
+        "adversity",
         "virtue",
         "consequence",
         "transition",

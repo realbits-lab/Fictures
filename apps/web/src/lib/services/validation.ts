@@ -288,7 +288,7 @@ export function validateScene(data: unknown): ValidationResult {
             warnings.push({
                 field: "cyclePhase",
                 message:
-                    "Define the cycle phase (setup, confrontation, virtue, consequence, transition)",
+                    "Define the cycle phase (setup, adversity, virtue, consequence, transition)",
                 severity: "warning",
                 type: "quality",
             });

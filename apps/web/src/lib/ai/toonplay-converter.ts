@@ -126,7 +126,7 @@ export async function convertSceneToToonplay(
     // Derive narrative context from Adversity-Triumph Engine schema
     const goal = scene.summary || "Advance the story";
     const conflict =
-        scene.cyclePhase === "confrontation"
+        scene.cyclePhase === "adversity"
             ? "Characters face obstacles and challenges"
             : scene.cyclePhase === "virtue"
               ? "Characters must demonstrate moral courage"

@@ -751,7 +751,7 @@ export const createSceneTool = tool({
       title: z.string().describe('Scene title'),
       summary: z.string().describe('Scene specification'),
       content: z.string().optional().describe('Full prose narrative (optional)'),
-      cyclePhase: z.enum(['setup', 'confrontation', 'virtue', 'consequence', 'transition']),
+      cyclePhase: z.enum(['setup', 'adversity', 'virtue', 'consequence', 'transition']),
       order: z.number().int().min(1),
     }),
   }),
