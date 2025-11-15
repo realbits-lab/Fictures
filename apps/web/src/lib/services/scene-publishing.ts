@@ -6,7 +6,7 @@ import { chapters, scenes, stories } from "@/lib/schemas/database";
 interface PublishSceneParams {
     sceneId: string;
     publishedBy: string;
-    visibility?: "private" | "unlisted" | "public";
+    novelStatus?: "draft" | "published";
     scheduledFor?: Date;
     validateContent?: boolean;
 }
@@ -15,7 +15,7 @@ export async function publishScene(params: PublishSceneParams): Promise<void> {
     const {
         sceneId,
         publishedBy,
-        visibility = "public",
+        novelStatus = "published",
         scheduledFor,
         validateContent = true,
     } = params;
@@ -53,32 +53,16 @@ export async function publishScene(params: PublishSceneParams): Promise<void> {
     await db
         .update(scenes)
         .set({
-            publishedAt: scheduledFor || now,
+            publishedAt: scheduledFor?.toISOString() || now.toISOString(),
             publishedBy,
-            visibility,
-            scheduledFor: scheduledFor || null,
-            updatedAt: now,
+            novelStatus,
+            scheduledFor: scheduledFor?.toISOString() || null,
+            updatedAt: now.toISOString(),
         })
         .where(eq(scenes.id, sceneId));
 
-    // Update chapter status if all scenes published
-    const chapterScenes = await db
-        .select()
-        .from(scenes)
-        .where(eq(scenes.chapterId, scene.chapterId));
-
-    const allPublished = chapterScenes.every((s) => s.publishedAt !== null);
-
-    if (allPublished && chapter) {
-        await db
-            .update(chapters)
-            .set({
-                status: "published",
-                publishedAt: now,
-                updatedAt: now,
-            })
-            .where(eq(chapters.id, scene.chapterId));
-    }
+    // Note: Chapters no longer have status field after schema migration
+    // Chapter publish status is now determined by scene publish status
 }
 
 export async function unpublishScene(
@@ -91,10 +75,10 @@ export async function unpublishScene(
         .update(scenes)
         .set({
             publishedAt: null,
-            visibility: "private",
-            unpublishedAt: now,
+            novelStatus: "draft",
+            unpublishedAt: now.toISOString(),
             unpublishedBy,
-            updatedAt: now,
+            updatedAt: now.toISOString(),
         })
         .where(eq(scenes.id, sceneId));
 }
@@ -102,14 +86,14 @@ export async function unpublishScene(
 export async function bulkPublishScenes(
     sceneIds: string[],
     publishedBy: string,
-    visibility: "private" | "unlisted" | "public" = "public",
+    novelStatus: "draft" | "published" = "published",
 ): Promise<{ success: string[]; failed: string[] }> {
     const success: string[] = [];
     const failed: string[] = [];
 
     for (const sceneId of sceneIds) {
         try {
-            await publishScene({ sceneId, publishedBy, visibility });
+            await publishScene({ sceneId, publishedBy, novelStatus });
             success.push(sceneId);
         } catch (error) {
             console.error(`Failed to publish scene ${sceneId}:`, error);
@@ -152,7 +136,7 @@ async function validateSceneForPublishing(
 export async function getScenePublishStatus(sceneId: string): Promise<{
     isPublished: boolean;
     publishedAt?: Date;
-    visibility?: string;
+    novelStatus?: string;
     scheduledFor?: Date;
     canPublish: boolean;
     validationErrors?: string[];
@@ -171,9 +155,13 @@ export async function getScenePublishStatus(sceneId: string): Promise<{
 
     return {
         isPublished: !!scene.publishedAt,
-        publishedAt: scene.publishedAt || undefined,
-        visibility: scene.visibility,
-        scheduledFor: scene.scheduledFor || undefined,
+        publishedAt: scene.publishedAt
+            ? new Date(scene.publishedAt)
+            : undefined,
+        novelStatus: scene.novelStatus,
+        scheduledFor: scene.scheduledFor
+            ? new Date(scene.scheduledFor)
+            : undefined,
         canPublish: validation.isValid,
         validationErrors:
             validation.errors.length > 0 ? validation.errors : undefined,

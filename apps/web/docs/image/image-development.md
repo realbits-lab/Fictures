@@ -14,11 +14,16 @@ This document provides implementation specifications for the image generation an
 
 ### 1.1 Generate Image
 
-**Endpoint**: `POST /api/images/generate`
+**Endpoint**: `POST /api/studio/images`
 
 **Purpose**: Generate story illustration with automatic optimization
 
 **Authentication**: NextAuth.js session or API key with `images:write` scope
+
+**Architecture**: Follows Adversity-Triumph Engine pattern with layered architecture
+- API Layer: `/api/studio/images/route.ts`
+- Service Layer: `/lib/studio/services/images-service.ts`
+- Generator Layer: `/lib/studio/generators/images-generator.ts`
 
 **Request Body**:
 ```typescript
@@ -87,7 +92,7 @@ This document provides implementation specifications for the image generation an
 **Example Request**:
 ```typescript
 // Generate story cover image
-const response = await fetch('/api/images/generate', {
+const response = await fetch('/api/studio/images', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -102,7 +107,7 @@ console.log('Image URL:', data.originalUrl);
 console.log('Optimized variants:', data.optimizedSet.variants.length);
 
 // Generate character portrait
-await fetch('/api/images/generate', {
+await fetch('/api/studio/images', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -113,7 +118,7 @@ await fetch('/api/images/generate', {
 });
 
 // Generate scene image
-await fetch('/api/images/generate', {
+await fetch('/api/studio/images', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
@@ -140,57 +145,114 @@ await fetch('/api/images/generate', {
 
 ## Part II: Service Layer
 
-### 2.1 Generate Story Image
+### 2.1 Images Service (Orchestration)
 
-**File**: `src/lib/services/image-generation.ts`
+**File**: `src/lib/studio/services/images-service.ts`
 
-**Function**:
+**Service Class**: `ImagesService`
+
+**Main Method**: `generateAndSave()`
+
+**Architecture Pattern**: Adversity-Triumph Engine
+- Orchestrates image generation, Blob upload, DB persistence
+- Verifies ownership before generation
+- Handles all side effects (uploads, database updates)
+- Returns complete result with metadata
+
+**Service Method**:
 ```typescript
-export async function generateStoryImage(
-  params: GenerateStoryImageParams
-): Promise<StoryImageGenerationResult>
+async generateAndSave(params: ServiceImagesParams): Promise<ServiceImagesResult> {
+  // 1. Determine aspect ratio (automatic by image type)
+  // 2. Verify ownership before generating
+  // 3. Generate image via generator (pure generation, no upload)
+  // 4. Upload original to Vercel Blob
+  // 5. Generate optimized variants (AVIF-only, mobile 1x/2x)
+  // 6. Update database with imageUrl and imageVariants
+  // 7. Return result
+}
+```
+
+**Type Definitions**:
+```typescript
+interface ServiceImagesParams {
+  prompt: string;
+  contentId: string;  // Entity ID (storyId, characterId, settingId, or sceneId)
+  imageType: GeneratorImageType;
+  userId: string;     // For authorization checks
+}
+
+interface ServiceImagesResult {
+  imageId: string;
+  imageUrl: string;
+  blobUrl: string;
+  width: number;
+  height: number;
+  size: number;
+  aspectRatio: AspectRatio;
+  optimizedSet: OptimizedImageSet;  // 2 AVIF variants (mobile 1x/2x)
+  isPlaceholder: boolean;
+  model: string;
+  provider: "gemini" | "ai-server";
+  metadata: {
+    generationTime: number;
+    uploadTime: number;
+    optimizationTime: number;
+    dbUpdateTime: number;
+    totalTime: number;
+  };
+}
+```
+
+### 2.2 Image Generator (Pure Function)
+
+**File**: `src/lib/studio/generators/images-generator.ts`
+
+**Function**: `generateImage(params: GeneratorImageParams): Promise<GeneratorImageResult>`
+
+**Architecture Pattern**: Pure function with no side effects
+- No database operations
+- No Vercel Blob uploads
+- Returns plain data structures only
+
+**Type Definitions**:
+```typescript
+interface GeneratorImageParams {
+  prompt: string;
+  aspectRatio: AspectRatio;  // "16:9" | "1:1" | "9:16"
+  imageType: GeneratorImageType;
+}
+
+interface GeneratorImageResult {
+  imageUrl: string;       // Provider URL (temporary)
+  imageBuffer: ArrayBuffer;
+  width: number;
+  height: number;
+  size: number;
+  aspectRatio: AspectRatio;
+  model: string;
+  provider: "gemini" | "ai-server";
+  generationTime: number;
+}
 ```
 
 **Process**:
 ```
-1. Determine aspect ratio (automatic by image type)
-2. Generate image using AI provider
+1. Generate image using AI provider
    ├─ Qwen-Image-Lightning (AI Server) - Primary
    └─ Gemini 2.5 Flash (cloud API) - Fallback
-3. Upload original to Vercel Blob
-4. Create 2 unified-size AVIF variants (based on Qwen dimensions)
-   ├─ AVIF mobile 1x: 832×464 (16:9) - downscale to 50% of Qwen + convert
-   └─ AVIF mobile 2x: 1664×928 (16:9) - resize to Qwen size + convert
-   Note: For Qwen originals, 2x = format conversion only (no resize)
-         For Gemini originals, 2x = upscale to Qwen size + convert
-5. Upload all variants to Vercel Blob
-6. Return URLs + metadata
+2. Download image buffer from provider
+3. Return result with metadata (NO uploads, NO database)
 ```
 
-**Unified Variant Dimensions**:
+**Provider Dimensions**:
+- **Qwen (AI Server)**: 1664×928 (16:9), 1664×1664 (1:1), 928×1664 (9:16)
+- **Gemini**: 1024×576 (16:9), 1024×1024 (1:1), 576×1024 (9:16)
+
+**Unified Variant Dimensions** (created during optimization):
 - **16:9**: 832×464 (1x), 1664×928 (2x)
-- **1:1**: 664×664 (1x), 1328×1328 (2x)
+- **1:1**: 832×832 (1x), 1664×1664 (2x)
 - **9:16**: 464×832 (1x), 928×1664 (2x)
-
-**Usage**:
-```typescript
-import { generateStoryImage } from '@/lib/services/image-generation';
-
-// Generate setting image
-const result = await generateStoryImage({
-  prompt: 'Ancient library with towering bookshelves, magical atmosphere',
-  contentId: 'setting_abc123',
-  imageType: 'setting',
-});
-
-// Save to database (entity type inferred from imageType)
-await db.update(settings)
-  .set({
-    imageUrl: result.url,
-    imageVariants: result.optimizedSet,
-  })
-  .where(eq(settings.id, 'setting_abc123'));
-```
+- **Format**: AVIF-only, mobile-only (2 variants total)
 
 ### 2.2 Optimize Image
 
@@ -279,13 +341,18 @@ async function optimizeImage(
 }
 ```
 
-**Key Changes**:
-- ✅ **AVIF-only**: Single format (no JPEG fallback) for 93.8% browser support
-- ✅ **2 variants**: 50% reduction in storage and processing time
+**Key Features**:
+- ✅ **AVIF-only**: Single format (no JPEG) for 93.8% browser support
+- ✅ **2 variants total**: Mobile 1x and 2x only (no desktop/tablet)
 - ✅ **Unified dimensions**: All variants use Qwen-based sizes regardless of provider
 - ✅ **Consistent resizing**: Both providers' images resized to same target dimensions
 - ✅ **Client simplicity**: Browser always receives same sizes (832×464, 1664×928 for 16:9)
 - ✅ **Backend flexibility**: Optimization handled server-side, transparent to client
+
+**Storage Efficiency**:
+- **Per Image**: ~45KB total (15KB 1x + 30KB 2x)
+- **Compression**: 93-97% reduction vs original PNG (~300KB)
+- **Format**: AVIF quality 75 only
 
 ---
 

@@ -76,8 +76,8 @@ export async function PUT(
 
         // Update the story status based on visibility request
         // isPublic: true -> status = 'published' (public)
-        // isPublic: false -> status = 'writing' (private)
-        const newStatus = isPublic ? "published" : "writing";
+        // isPublic: false -> status = 'draft' (private)
+        const newStatus = isPublic ? "published" : "draft";
         const [updatedStory] = await db
             .update(stories)
             .set({
@@ -100,7 +100,7 @@ export async function PUT(
             JSON.stringify({
                 success: true,
                 story: updatedStory,
-                message: `Story is now ${isPublic ? "public (published)" : "private (writing)"}`,
+                message: `Story is now ${isPublic ? "public (published)" : "private (draft)"}`,
             }),
             {
                 status: 200,

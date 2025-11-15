@@ -22,7 +22,7 @@ const updateStorySchema = z.object({
     title: z.string().min(1).max(255).optional(),
     summary: z.string().optional(),
     genre: z.string().optional(),
-    status: z.enum(["writing", "published"]).optional(),
+    status: z.enum(["draft", "published"]).optional(),
     isPublic: z.boolean().optional(),
     coverImage: z.string().url().optional(),
 });

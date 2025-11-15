@@ -109,8 +109,11 @@ export async function POST(
         // For API key auth, bypass ownership check if user has stories:write scope
         const isOwner = story.authorId === authResult.user.id;
         const isAdmin =
-            authResult.user.role === "manager" || authResult.user.role === "admin";
-        const hasApiKeyAccess = authResult.type === "api_key" && authResult.scopes?.includes("stories:write");
+            authResult.user.role === "manager" ||
+            authResult.user.role === "admin";
+        const hasApiKeyAccess =
+            authResult.type === "api_key" &&
+            authResult.scopes?.includes("stories:write");
 
         if (!isOwner && !isAdmin && !hasApiKeyAccess) {
             return NextResponse.json(
@@ -225,7 +228,7 @@ export async function POST(
                         const [updatedScene] = await db
                             .update(scenes)
                             .set({
-                                comicStatus: "draft",
+                                comicStatus: "draft", // Uses unified status enum
                                 comicGeneratedAt: new Date().toISOString(),
                                 comicPanelCount: result.panels.length,
                                 comicVersion: (scene.comicVersion || 0) + 1,
@@ -301,7 +304,7 @@ export async function POST(
             const [updatedScene] = await db
                 .update(scenes)
                 .set({
-                    comicStatus: "draft",
+                    comicStatus: "draft", // Uses unified status enum
                     comicGeneratedAt: new Date().toISOString(),
                     comicPanelCount: result.panels.length,
                     comicVersion: (scene.comicVersion || 0) + 1,

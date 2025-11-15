@@ -2,14 +2,13 @@
  * Image Optimization Service
  *
  * Handles responsive image generation for optimal web performance:
- * - Generates multiple size variants for mobile, tablet, desktop (1x and 2x)
- * - Converts to modern formats: AVIF, WebP, JPEG (with fallbacks)
+ * - Generates 2 size variants for mobile (1x and 2x)
+ * - Converts to AVIF format only
  * - Uploads optimized variants to Vercel Blob
  *
  * Based on 2025 best practices:
  * - AVIF: 50% smaller than JPEG, 93.8% browser support
- * - WebP: 30% smaller than JPEG, 95.29% browser support
- * - Breakpoints: Mobile (640w), Tablet (1024w), Desktop (1440w)
+ * - Mobile-only optimization for story/scene images
  */
 
 import { put } from "@vercel/blob";
@@ -33,17 +32,15 @@ export const ORIGINAL_IMAGE_SIZE = {
     height: 768,
 } as const;
 
-// Supported output formats in priority order
-// Removed WebP: AVIF (93.8% support) with JPEG fallback covers 100% of users
-export const IMAGE_FORMATS = ["avif", "jpeg"] as const;
+// Supported output format: AVIF only
+export const IMAGE_FORMATS = ["avif"] as const;
 export type ImageFormat = (typeof IMAGE_FORMATS)[number];
 export type DeviceType = keyof typeof IMAGE_SIZES;
 export type DeviceResolution = "1x" | "2x";
 
-// Quality settings per format
+// Quality settings for AVIF
 const QUALITY_SETTINGS: Record<ImageFormat, number> = {
     avif: 75, // AVIF can maintain quality at lower settings
-    jpeg: 85, // JPEG needs higher quality setting
 };
 
 export interface ImageVariant {
@@ -142,15 +139,8 @@ async function generateVariant(
         });
     }
 
-    // Apply format-specific conversion
-    switch (format) {
-        case "avif":
-            sharpInstance = sharpInstance.avif({ quality, effort: 6 });
-            break;
-        case "jpeg":
-            sharpInstance = sharpInstance.jpeg({ quality, progressive: true });
-            break;
-    }
+    // Apply AVIF conversion
+    sharpInstance = sharpInstance.avif({ quality, effort: 6 });
 
     const buffer = await sharpInstance.toBuffer();
     return { buffer, size: buffer.length };
@@ -320,13 +310,8 @@ export function getBestVariant(
     viewportWidth: number,
     format: ImageFormat = "avif",
 ): string | null {
-    // Try to find variant in preferred format
-    let formatVariants = variants.filter((v) => v.format === format);
-
-    // Fallback to jpeg if avif not available
-    if (formatVariants.length === 0) {
-        formatVariants = variants.filter((v) => v.format === "jpeg");
-    }
+    // Filter variants in AVIF format
+    const formatVariants = variants.filter((v) => v.format === format);
 
     // No variants available
     if (formatVariants.length === 0) {

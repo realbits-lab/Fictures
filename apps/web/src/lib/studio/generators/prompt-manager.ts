@@ -846,6 +846,23 @@ Settings:
 
 {previousScenesContext}
 
+**CRITICAL: CYCLE PHASE ORDERING REQUIREMENT**
+The adversity-triumph cycle phases MUST follow this strict order across all scenes:
+1. "setup" → 2. "adversity" → 3. "virtue" → 4. "consequence" → 5. "transition"
+
+Rules:
+- Phases must appear in this exact sequence (cannot skip or go backwards)
+- Multiple scenes can share the same phase (e.g., two "adversity" scenes in a row is valid)
+- Once you move to the next phase, you cannot return to a previous phase
+- The first scene MUST start with "setup"
+- Example valid progression: setup, setup, adversity, adversity, virtue, consequence, transition
+- Example INVALID: setup, virtue, adversity (skipped adversity, then went backwards)
+
+For this scene {sceneNumber}, choose the appropriate cyclePhase that:
+1. Continues or advances from the previous scene's phase
+2. Follows the mandatory ordering rule above
+3. Fits the narrative content of this specific scene
+
 Break down this chapter's adversity-triumph cycle into scene summaries, where each summary provides a complete specification for prose generation.
 
 Return structured data for scenes with clear sections following the template above.`,

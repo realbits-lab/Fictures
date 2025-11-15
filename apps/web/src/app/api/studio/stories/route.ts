@@ -322,7 +322,7 @@ export const POST = requireScopes("stories:write")(
                                 summary: result.story.summary, // Adversity-Triumph: General thematic premise
                                 tone: toneValue, // Adversity-Triumph: Emotional direction (validated enum value)
                                 moralFramework: result.story.moralFramework, // Adversity-Triumph: Virtue framework
-                                status: "writing", // Fixed: Use 'writing' instead of 'draft' (valid enum value)
+                                status: "draft", // Use 'draft' for non-published stories (new unified status enum)
                                 createdAt: new Date().toISOString(),
                                 updatedAt: new Date().toISOString(),
                             })

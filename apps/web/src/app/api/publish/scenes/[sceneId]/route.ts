@@ -17,12 +17,12 @@ export async function POST(
 
         const { sceneId } = await params;
         const body = await request.json();
-        const { visibility = "public", scheduledFor } = body;
+        const { novelStatus = "published", scheduledFor } = body;
 
         await publishScene({
             sceneId,
             publishedBy: session.user.id,
-            visibility,
+            novelStatus,
             scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
         });
 

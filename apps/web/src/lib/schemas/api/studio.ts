@@ -401,3 +401,64 @@ export const improveSceneSchema = z.object({
     sceneId: z.string(),
     maxIterations: z.number().min(1).max(3).optional().default(2),
 });
+
+// ============================================================================
+// Image Generation
+// ============================================================================
+
+export interface ApiImagesRequest {
+    prompt: string;
+    contentId: string; // Entity ID (storyId, characterId, settingId, or sceneId)
+    imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
+}
+
+export interface ApiImagesResponse {
+    success: true;
+    imageType: string;
+    imageId: string;
+    originalUrl: string;
+    blobUrl: string;
+    dimensions: {
+        width: number;
+        height: number;
+    };
+    size: number;
+    aspectRatio: string;
+    model: string;
+    provider: "gemini" | "ai-server";
+    optimizedSet: {
+        imageId: string;
+        originalUrl: string;
+        variants: Array<{
+            format: "avif";
+            device: "mobile";
+            resolution: "1x" | "2x";
+            width: number;
+            height: number;
+            url: string;
+            size: number;
+        }>;
+        generatedAt: string;
+    };
+    isPlaceholder: boolean;
+}
+
+export interface ApiImagesErrorResponse {
+    error: string;
+    details?: string;
+}
+
+/**
+ * Validation schema for generating images
+ */
+export const generateImagesSchema = z.object({
+    prompt: z.string().min(10).max(1000),
+    contentId: z.string(),
+    imageType: z.enum([
+        "story",
+        "character",
+        "setting",
+        "scene",
+        "comic-panel",
+    ]),
+});

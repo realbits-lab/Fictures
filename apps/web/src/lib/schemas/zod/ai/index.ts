@@ -561,7 +561,7 @@ export const AiSceneSummaryZodSchema = insertSceneSchema
         cyclePhase: z
             .enum(CYCLE_PHASES)
             .describe(
-                "Position in adversity-triumph cycle - must be one of: setup (establish adversity), adversity (face challenge), virtue (moral action), consequence (earned payoff), transition (new adversity emerges)",
+                "Position in adversity-triumph cycle - MUST match scene number: Scene 1='setup', Scene 2='adversity', Scene 3='virtue', Scene 4='consequence', Scene 5+='transition'. This ensures proper 5-phase cycle structure.",
             ),
         emotionalBeat: z
             .enum(EMOTIONAL_BEATS)

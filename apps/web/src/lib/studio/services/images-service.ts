@@ -1,34 +1,60 @@
 /**
  * Images Service (Orchestration Layer)
  *
- * Service layer for generating and saving story images with optimization.
- * Handles database operations and Vercel Blob uploads.
+ * Service layer for image generation with Vercel Blob upload and database persistence.
+ * Follows Adversity-Triumph Engine architecture pattern.
  *
- * Following Adversity-Triumph Engine pattern:
- * - Generator layer: Pure generation logic (no DB, no uploads)
- * - Service layer: Orchestration, DB operations, uploads
+ * Architecture:
+ * - Generator layer: Pure image generation (no DB, no uploads)
+ * - Service layer: Orchestration, Blob uploads, DB operations (this file)
  * - API layer: HTTP requests
+ *
+ * Type Flow:
+ * ApiImagesRequest (API Layer)
+ *     ↓
+ * ServiceImagesParams (Service Layer)
+ *     ↓ imagesService.generateAndSave()
+ * GeneratorImageParams (Generator Layer)
+ *     ↓ generateImage()
+ * GeneratorImageResult (Generator Layer)
+ *     ↓ Upload to Vercel Blob + Optimize
+ * ServiceImagesResult (Service Layer)
+ *     ↓
+ * ApiImagesResponse (API Layer)
  */
 
 import { put } from "@vercel/blob";
+import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { db } from "@/lib/db";
+import {
+    chapters,
+    characters,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
 import type { AspectRatio } from "@/lib/schemas/domain/image";
-import type { GeneratorImageType } from "@/lib/schemas/generators/types";
+import type {
+    GeneratorImageParams,
+    GeneratorImageResult,
+    GeneratorImageType,
+} from "@/lib/schemas/generators/types";
 import {
     type OptimizedImageSet,
     optimizeImage,
-} from "@/lib/services/image-optimization";
+} from "@/lib/studio/services/image-optimization-service";
 import { getBlobPath } from "@/lib/utils/blob-path";
 import { generateImage } from "../generators/images-generator";
 
-/**
- * Image type for service layer
- */
-export type ServiceImageType = GeneratorImageType;
+// ============================================================================
+// Service Layer Types
+// ============================================================================
 
 /**
  * Aspect ratio mapping for different image types
  */
-const IMAGE_TYPE_ASPECT_RATIOS: Record<ServiceImageType, AspectRatio> = {
+const IMAGE_TYPE_ASPECT_RATIOS: Record<GeneratorImageType, AspectRatio> = {
     story: "16:9",
     character: "1:1",
     setting: "1:1",
@@ -40,31 +66,29 @@ const IMAGE_TYPE_ASPECT_RATIOS: Record<ServiceImageType, AspectRatio> = {
  * Get aspect ratio for a given image type
  */
 export function getAspectRatioForImageType(
-    imageType: ServiceImageType,
+    imageType: GeneratorImageType,
 ): AspectRatio {
     return IMAGE_TYPE_ASPECT_RATIOS[imageType];
 }
 
 /**
  * Service parameters for image generation
+ *
+ * Pattern: Maps from ApiImagesRequest
  */
-export interface ServiceImageParams {
+export interface ServiceImagesParams {
     prompt: string;
-    storyId: string;
-    imageType: ServiceImageType;
-    chapterId?: string;
-    sceneId?: string;
-    panelNumber?: number;
-    style?: "vivid" | "natural";
-    quality?: "standard" | "hd";
-    seed?: number;
-    aspectRatio?: AspectRatio; // Optional override
+    contentId: string; // Entity ID (storyId, characterId, settingId, or sceneId)
+    imageType: GeneratorImageType;
+    userId: string; // For authorization checks
 }
 
 /**
  * Service result for image generation
+ *
+ * Pattern: Maps to ApiImagesResponse
  */
-export interface ServiceImageResult {
+export interface ServiceImagesResult {
     imageId: string;
     imageUrl: string; // Original Vercel Blob URL
     blobUrl: string; // Same as imageUrl (for compatibility)
@@ -78,71 +102,67 @@ export interface ServiceImageResult {
     provider: "gemini" | "ai-server";
     metadata: {
         generationTime: number;
-        optimizationTime: number;
         uploadTime: number;
+        optimizationTime: number;
+        dbUpdateTime: number;
         totalTime: number;
     };
 }
 
-/**
- * Images Service Class
- */
+// ============================================================================
+// Images Service Class
+// ============================================================================
+
 export class ImagesService {
     /**
-     * Generate and save image with automatic optimization
+     * Generate image and save to database
      *
-     * This method:
-     * 1. Calls generator to create image
-     * 2. Uploads original to Vercel Blob
-     * 3. Creates optimized variants
-     * 4. Returns URLs and metadata (caller saves to database)
+     * Following Adversity-Triumph Engine pattern:
+     * 1. Determine aspect ratio
+     * 2. Generate image via generator (pure generation, no upload)
+     * 3. Upload original to Vercel Blob
+     * 4. Create optimized variants
+     * 5. Update database with imageUrl and imageVariants
+     * 6. Return result with metadata
+     *
+     * @param params - Service parameters
+     * @returns Service result with URLs and metadata
      */
-    async generateAndUpload(
-        params: ServiceImageParams,
-    ): Promise<ServiceImageResult> {
-        const serviceStartTime: number = Date.now();
-        const {
-            prompt,
-            storyId,
-            imageType,
-            chapterId,
-            sceneId,
-            panelNumber,
-            seed,
-            aspectRatio: aspectRatioOverride,
-        }: ServiceImageParams = params;
+    async generateAndSave(
+        params: ServiceImagesParams,
+    ): Promise<ServiceImagesResult> {
+        const serviceStartTime = Date.now();
+        const { prompt, contentId, imageType, userId } = params;
 
         console.log(
-            `[images-service] =� Generating and uploading ${imageType} image for story ${storyId}`,
+            `[images-service] 🎨 Generating and saving ${imageType} image for content ${contentId}`,
         );
 
-        // 1. Determine aspect ratio
-        const aspectRatio: AspectRatio =
-            aspectRatioOverride || getAspectRatioForImageType(imageType);
+        // 1. Determine aspect ratio (automatic by image type)
+        const aspectRatio = getAspectRatioForImageType(imageType);
 
         console.log(`[images-service] Using aspect ratio: ${aspectRatio}`);
 
-        // 2. Generate image via generator (pure generation, no upload)
-        const generateResult = await generateImage({
+        // 2. Verify ownership before generating
+        await this.verifyOwnership(contentId, imageType, userId);
+
+        // 3. Generate image via generator (pure generation, no upload)
+        const generatorParams: GeneratorImageParams = {
             prompt,
             aspectRatio,
-            seed,
             imageType,
-        });
+        };
+
+        const generateResult: GeneratorImageResult =
+            await generateImage(generatorParams);
 
         console.log(
-            `[images-service]  Image generated (${generateResult.generationTime}ms)`,
+            `[images-service] ✓ Image generated (${generateResult.generationTime}ms)`,
         );
 
-        // 3. Upload original to Vercel Blob
-        const uploadStartTime: number = Date.now();
-        const blobPath: string = this.buildBlobPath({
-            storyId,
-            imageType,
-            chapterId,
-            sceneId,
-            panelNumber,
-        });
+        // 4. Upload original to Vercel Blob
+        const uploadStartTime = Date.now();
+        const blobPath = this.buildBlobPath(contentId, imageType);
 
         console.log(`[images-service] Uploading to Vercel Blob: ${blobPath}`);
 
@@ -151,20 +171,20 @@ export class ImagesService {
             contentType: "image/png",
         });
 
-        const uploadTime: number = Date.now() - uploadStartTime;
+        const uploadTime = Date.now() - uploadStartTime;
 
         console.log(
-            `[images-service]  Uploaded successfully (${uploadTime}ms)`,
+            `[images-service] ✓ Uploaded successfully (${uploadTime}ms)`,
         );
         console.log(`[images-service] Blob URL: ${blob.url}`);
 
-        // 4. Generate optimized variants
-        const optimizationStartTime: number = Date.now();
+        // 5. Generate optimized variants
+        const optimizationStartTime = Date.now();
 
         console.log(`[images-service] Generating optimized variants...`);
 
         // Generate unique image ID
-        const imageId: string = `img_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        const imageId = `img_${Date.now()}_${nanoid(8)}`;
 
         // Map GeneratorImageType to OptimizationImageType
         const optimizationImageType:
@@ -177,24 +197,35 @@ export class ImagesService {
         const optimizedSet: OptimizedImageSet = await optimizeImage(
             blob.url,
             imageId,
-            storyId,
+            contentId,
             optimizationImageType,
-            sceneId,
+            imageType === "scene" || imageType === "comic-panel"
+                ? contentId
+                : undefined,
         );
 
-        const optimizationTime: number = Date.now() - optimizationStartTime;
+        const optimizationTime = Date.now() - optimizationStartTime;
 
         console.log(
-            `[images-service]  Created ${optimizedSet.variants.length} variants (${optimizationTime}ms)`,
+            `[images-service] ✓ Created ${optimizedSet.variants.length} variants (${optimizationTime}ms)`,
         );
 
-        const totalTime: number = Date.now() - serviceStartTime;
+        // 6. Update database with imageUrl and imageVariants
+        const dbUpdateStartTime = Date.now();
+
+        await this.updateDatabase(contentId, imageType, blob.url, optimizedSet);
+
+        const dbUpdateTime = Date.now() - dbUpdateStartTime;
+
+        console.log(`[images-service] ✓ Database updated (${dbUpdateTime}ms)`);
+
+        const totalTime = Date.now() - serviceStartTime;
 
         console.log(
-            `[images-service]  Image generation complete (${totalTime}ms total)`,
+            `[images-service] ✅ Image generation complete (${totalTime}ms total)`,
         );
 
-        // 5. Return result (caller saves to database)
+        // 7. Return result
         return {
             imageId,
             imageUrl: blob.url,
@@ -209,43 +240,171 @@ export class ImagesService {
             provider: generateResult.provider,
             metadata: {
                 generationTime: generateResult.generationTime,
-                optimizationTime,
                 uploadTime,
+                optimizationTime,
+                dbUpdateTime,
                 totalTime,
             },
         };
     }
 
     /**
+     * Verify user owns the content entity before generating image
+     */
+    private async verifyOwnership(
+        contentId: string,
+        imageType: GeneratorImageType,
+        userId: string,
+    ): Promise<void> {
+        let authorId: string | undefined;
+
+        if (imageType === "story") {
+            const [story] = await db
+                .select({ authorId: stories.authorId })
+                .from(stories)
+                .where(eq(stories.id, contentId))
+                .limit(1);
+            authorId = story?.authorId;
+        } else if (imageType === "character") {
+            // Characters reference story, need to check story.authorId
+            const [character] = await db
+                .select({ storyId: characters.storyId })
+                .from(characters)
+                .where(eq(characters.id, contentId))
+                .limit(1);
+
+            if (character) {
+                const [story] = await db
+                    .select({ authorId: stories.authorId })
+                    .from(stories)
+                    .where(eq(stories.id, character.storyId))
+                    .limit(1);
+                authorId = story?.authorId;
+            }
+        } else if (imageType === "setting") {
+            // Settings reference story, need to check story.authorId
+            const [setting] = await db
+                .select({ storyId: settings.storyId })
+                .from(settings)
+                .where(eq(settings.id, contentId))
+                .limit(1);
+
+            if (setting) {
+                const [story] = await db
+                    .select({ authorId: stories.authorId })
+                    .from(stories)
+                    .where(eq(stories.id, setting.storyId))
+                    .limit(1);
+                authorId = story?.authorId;
+            }
+        } else if (imageType === "scene" || imageType === "comic-panel") {
+            // Scenes reference chapter → part → story, need to check story.authorId
+            const [scene] = await db
+                .select({
+                    chapterId: scenes.chapterId,
+                })
+                .from(scenes)
+                .where(eq(scenes.id, contentId))
+                .limit(1);
+
+            if (scene) {
+                // Query story through joins
+                const [result] = await db
+                    .select({ authorId: stories.authorId })
+                    .from(scenes)
+                    .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
+                    .innerJoin(stories, eq(chapters.storyId, stories.id))
+                    .where(eq(scenes.id, contentId))
+                    .limit(1);
+
+                authorId = result?.authorId;
+            }
+        }
+
+        if (!authorId) {
+            throw new Error(`Content not found: ${contentId}`);
+        }
+
+        if (authorId !== userId) {
+            throw new Error(
+                `Unauthorized: User ${userId} does not own content ${contentId}`,
+            );
+        }
+    }
+
+    /**
+     * Update database with image URL and variants
+     */
+    private async updateDatabase(
+        contentId: string,
+        imageType: GeneratorImageType,
+        imageUrl: string,
+        imageVariants: OptimizedImageSet,
+    ): Promise<void> {
+        const now = new Date().toISOString();
+
+        if (imageType === "story") {
+            await db
+                .update(stories)
+                .set({
+                    imageUrl,
+                    imageVariants,
+                    updatedAt: now,
+                })
+                .where(eq(stories.id, contentId));
+        } else if (imageType === "character") {
+            await db
+                .update(characters)
+                .set({
+                    imageUrl,
+                    imageVariants,
+                    updatedAt: now,
+                })
+                .where(eq(characters.id, contentId));
+        } else if (imageType === "setting") {
+            await db
+                .update(settings)
+                .set({
+                    imageUrl,
+                    imageVariants,
+                    updatedAt: now,
+                })
+                .where(eq(settings.id, contentId));
+        } else if (imageType === "scene" || imageType === "comic-panel") {
+            await db
+                .update(scenes)
+                .set({
+                    imageUrl,
+                    imageVariants,
+                    updatedAt: now,
+                })
+                .where(eq(scenes.id, contentId));
+        }
+    }
+
+    /**
      * Build Vercel Blob path for image
      */
-    private buildBlobPath(params: {
-        storyId: string;
-        imageType: ServiceImageType;
-        chapterId?: string;
-        sceneId?: string;
-        panelNumber?: number;
-    }): string {
-        const { storyId, imageType, chapterId, sceneId, panelNumber } = params;
+    private buildBlobPath(
+        contentId: string,
+        imageType: GeneratorImageType,
+    ): string {
+        const timestamp = Date.now();
 
         let path: string;
 
         if (imageType === "story") {
-            path = `stories/${storyId}/cover.png`;
+            path = `stories/${contentId}/story/original/${timestamp}.png`;
         } else if (imageType === "character") {
-            path = `stories/${storyId}/characters/${Date.now()}.png`;
+            path = `stories/${contentId}/character/original/${timestamp}.png`;
         } else if (imageType === "setting") {
-            path = `stories/${storyId}/settings/${Date.now()}.png`;
-        } else if (imageType === "scene" && chapterId && sceneId) {
-            path = `stories/${storyId}/chapters/${chapterId}/scenes/${sceneId}/image.png`;
-        } else if (
-            imageType === "comic-panel" &&
-            sceneId &&
-            panelNumber !== undefined
-        ) {
-            path = `stories/${storyId}/comics/${sceneId}/panel-${panelNumber}.png`;
+            path = `stories/${contentId}/setting/original/${timestamp}.png`;
+        } else if (imageType === "scene") {
+            path = `stories/${contentId}/scene/original/${timestamp}.png`;
+        } else if (imageType === "comic-panel") {
+            path = `stories/${contentId}/panel/original/${timestamp}.png`;
         } else {
-            path = `stories/${storyId}/${imageType}/${Date.now()}.png`;
+            path = `stories/${contentId}/${imageType}/original/${timestamp}.png`;
         }
 
         // Apply environment prefix (develop/ or main/)

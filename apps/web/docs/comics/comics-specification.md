@@ -44,7 +44,7 @@ This document specifies the comics generation system that transforms narrative p
 │  ├─ Traditional text            ├─ Visual comic panels      │
 │  ├─ Scene illustrations         ├─ Sequential panels        │
 │  ├─ Prose content               ├─ Dialogue overlays        │
-│  └─ visibility = 'public'       └─ comicStatus = 'published'│
+│  └─ novel_status = 'published'  └─ comic_status = 'published'│
 │                                                             │
 └────────────────────────────────────────────────────────────┘
 
@@ -52,10 +52,11 @@ This document specifies the comics generation system that transforms narrative p
 │                  INDEPENDENT PUBLISHING                     │
 ├────────────────────────────────────────────────────────────┤
 │                                                             │
-│  Scene Text (visibility)        Comic Panels (comicStatus)  │
-│  ├─ draft                       ├─ none (no panels exist)   │
-│  ├─ public                      ├─ draft (generated)        │
-│  └─ private                     └─ published (visible)      │
+│  Scene Text (novel_status)      Comic Panels (comic_status) │
+│  ├─ draft (not published)       ├─ draft (not published)    │
+│  └─ published (visible)         └─ published (visible)      │
+│                                                              │
+│  Comic Existence Check: comic_panel_count = 0 (no panels)   │
 │                                                             │
 │  Publishing Flow:                                           │
 │  1. Generate scene text → Publish text (novels)            │
@@ -99,17 +100,18 @@ PHASE 1: Toonplay Conversion
 PHASE 2: Panel Image Generation
   ├─ For each panel specification:
   │   ├─ Build detailed image prompt
-  │   ├─ Generate image (1344×768, 7:4 ratio)
-  │   ├─ Create 4 optimized variants (AVIF/JPEG × 2 sizes)
+  │   ├─ Generate image (9:16 aspect ratio, provider-specific dimensions)
+  │   ├─ Create 2 AVIF optimized variants (1x and 2x)
   │   ├─ Upload to Vercel Blob Storage
   │   └─ Save panel data to database
-  └─ Model: Gemini 2.5 Flash Image
+  └─ Model: Gemini 2.5 Flash Image or AI Server
+  └─ See: ../image/image-specification.md for generation details
 
          ↓
 
 PHASE 3: Database Storage
   ├─ Save comicPanels records (ordered by panelNumber)
-  ├─ Update scene: comicStatus = 'draft'
+  ├─ Update scene: comic_status = 'draft', comic_panel_count = N
   ├─ Store metadata: panelCount, generatedAt, version
   └─ Link to scene via sceneId (cascade delete)
 
@@ -171,12 +173,13 @@ OUTPUT: Sequential Comic Panels
 **Target Device**: Mobile phones in portrait orientation (95%+ of webtoon readers)
 
 **Image Specifications:**
-- **Current**: 1344×768 pixels (7:4 landscape ratio)
-- **Format**: PNG original, AVIF/JPEG optimized variants
-- **Optimization**: 4 variants per panel
-  - Mobile 1x: 672×384 pixels
-  - Mobile 2x: 1344×768 pixels (original used)
-  - Formats: AVIF (best compression), JPEG (fallback)
+- **Aspect Ratio**: 9:16 (portrait, mobile-optimized)
+- **Original Dimensions**: Provider-dependent (see [Image Specification](../image/image-specification.md))
+  - Gemini: 576×1024 pixels
+  - AI Server: 928×1664 pixels
+- **Format**: PNG original, AVIF-only optimized variants
+- **Optimization**: 2 AVIF variants per panel (50% and 100% of original size)
+  - See [Image Optimization](../image/image-specification.md#part-iii-image-optimization) for complete details
 
 **Panel Spacing** (Critical for Reading Rhythm):
 - **Current**: 24px static spacing (Tailwind `space-y-6`)
@@ -201,12 +204,24 @@ OUTPUT: Sequential Comic Panels
 export const scenes = pgTable('scenes', {
   // ... existing scene fields (id, title, content, visibility, etc.) ...
 
+  // Novel text publishing status
+  novelStatus: status('novel_status')
+    .default('draft')
+    .notNull(),
+
   // Comic publishing status
-  comicStatus: comicStatusEnum('comic_status')
-    .default('none')
+  comicStatus: status('comic_status')
+    .default('draft')
     .notNull(),
 
   // Publishing metadata
+  publishedAt: timestamp('published_at'),
+  publishedBy: text('published_by')
+    .references(() => users.id),
+  unpublishedAt: timestamp('unpublished_at'),
+  unpublishedBy: text('unpublished_by')
+    .references(() => users.id),
+
   comicPublishedAt: timestamp('comic_published_at'),
   comicPublishedBy: text('comic_published_by')
     .references(() => users.id),
@@ -220,11 +235,10 @@ export const scenes = pgTable('scenes', {
   comicVersion: integer('comic_version').default(1),
 });
 
-// Comic status enum
-export const comicStatusEnum = pgEnum('comic_status', [
-  'none',      // No comic panels exist
-  'draft',     // Panels generated but not published
-  'published'  // Panels are public and visible
+// Unified status enum (used for stories, novel_status, comic_status)
+export const status = pgEnum('status', [
+  'draft',      // Not published (private, author-only)
+  'published'   // Published and visible to readers
 ]);
 ```
 
@@ -232,13 +246,18 @@ export const comicStatusEnum = pgEnum('comic_status', [
 
 | Field | Type | Purpose | Usage |
 |-------|------|---------|-------|
-| `comicStatus` | enum | Publishing state | Query filter for `/comics/{id}` |
-| `comicPublishedAt` | timestamp | When published | Display metadata |
-| `comicPublishedBy` | text | User who published | Audit trail |
-| `comicUnpublishedAt` | timestamp | When unpublished | Audit trail |
-| `comicUnpublishedBy` | text | User who unpublished | Audit trail |
-| `comicGeneratedAt` | timestamp | Generation time | Metadata |
-| `comicPanelCount` | integer | Number of panels | Display info |
+| `novelStatus` | enum (status) | Novel text publishing state | Query filter for `/novels/{id}` |
+| `comicStatus` | enum (status) | Comic panels publishing state | Query filter for `/comics/{id}` |
+| `publishedAt` | timestamp | When novel text published | Display metadata |
+| `publishedBy` | text | User who published novel text | Audit trail |
+| `unpublishedAt` | timestamp | When novel text unpublished | Audit trail |
+| `unpublishedBy` | text | User who unpublished novel text | Audit trail |
+| `comicPublishedAt` | timestamp | When comic published | Display metadata |
+| `comicPublishedBy` | text | User who published comic | Audit trail |
+| `comicUnpublishedAt` | timestamp | When comic unpublished | Audit trail |
+| `comicUnpublishedBy` | text | User who unpublished comic | Audit trail |
+| `comicGeneratedAt` | timestamp | Comic generation time | Metadata |
+| `comicPanelCount` | integer | Number of panels | Display info, existence check (0 = no comic) |
 | `comicVersion` | integer | Regeneration version | Version tracking |
 
 #### 2.1.2 Comic Panels Table
@@ -258,9 +277,10 @@ export const comicPanels = pgTable('comic_panels', {
   // 'establishing_shot' | 'wide_shot' | 'medium_shot' |
   // 'close_up' | 'extreme_close_up' | 'over_shoulder' | 'dutch_angle'
 
-  // Image data (1344×768, 7:4 aspect ratio)
+  // Image data (9:16 aspect ratio, provider-specific dimensions)
   imageUrl: text('image_url').notNull(),
-  imageVariants: json('image_variants'), // 4 variants (AVIF/JPEG × 2 sizes)
+  imageVariants: json('image_variants'), // 2 AVIF variants (1x + 2x)
+  // See: ../image/image-specification.md for ImageVariants structure
 
   // Content overlays
   narrative: text('narrative'),  // Narrative text for panels without characters
@@ -340,21 +360,9 @@ interface SFXItem {
 
 #### 2.2.3 ImageVariants
 
-```typescript
-interface ImageVariants {
-  imageId: string;
-  originalUrl: string;
-  variants: ImageVariant[];
-  generatedAt: string;
-}
+**See**: [Image Specification - ImageVariants Structure](../image/image-specification.md#part-iii-image-optimization) for complete interface definition.
 
-interface ImageVariant {
-  url: string;
-  format: 'avif' | 'jpeg';
-  width: number;
-  height: number;
-}
-```
+**Summary**: Contains 2 AVIF variants (mobile 1x and 2x) with URLs, dimensions, and metadata.
 
 ---
 
@@ -362,44 +370,82 @@ interface ImageVariant {
 
 ### 3.1 Vercel Blob Structure
 
+**Environment-Based Root Directory**:
+
 ```
-stories/{storyId}/
+{environment}/                    # Environment prefix (main/ or develop/)
+  ├─ main/           (production: NODE_ENV=production)
+  └─ develop/        (development: NODE_ENV=development)
+```
+
+**Purpose**: Isolate development and production blob storage
+
+**Utility**: `getBlobPath()` automatically adds environment prefix
+- `NODE_ENV=production` → Prefix: `main/`
+- `NODE_ENV=development` → Prefix: `develop/`
+
+**Full Storage Structure**:
+
+```
+{environment}/stories/{storyId}/
   ├── story/      # Story cover image (1 per story)
   ├── character/  # Character portraits (1 per character)
   ├── setting/    # Setting visuals (1 per setting)
   ├── scene/      # Scene illustrations for text reading (1 per scene)
   └── comics/     # Comic panels for comic reading ⭐
       └── {sceneId}/
-          ├── panel-1.png  (1344×768, 7:4 ratio, original)
-          ├── panel-2.png
-          ├── panel-3.png
-          └── panel/       # Optimized variants directory
-              ├── avif/
-              │   ├── 672x384/{imageId}.avif    (mobile 1x)
-              │   └── 1344x768/{imageId}.avif   (mobile 2x)
-              └── jpeg/
-                  ├── 672x384/{imageId}.jpeg    (mobile 1x)
-                  └── 1344x768/{imageId}.jpeg   (mobile 2x)
+          └── panel/
+              ├── original/
+              │   ├── panel-1.png  (9:16 portrait, original PNG)
+              │   ├── panel-2.png
+              │   └── panel-3.png
+              └── avif/
+                  ├── 464x832/       # Mobile 1x (unified dimensions)
+                  │   ├── panel-1.avif
+                  │   ├── panel-2.avif
+                  │   └── panel-3.avif
+                  └── 928x1664/      # Mobile 2x / Desktop (unified dimensions)
+                      ├── panel-1.avif
+                      ├── panel-2.avif
+                      └── panel-3.avif
 ```
 
-**URL Format Examples:**
+**URL Format Examples**:
 
 ```
+Development Environment (NODE_ENV=development):
+
 Original panel:
-https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel-1.png
+https://[blob].vercel-storage.com/develop/stories/3JpLd.../comics/s25AR.../panel/original/panel-1.png
 
-Optimized variants:
-https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/avif/672x384/[id].avif
-https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/avif/1344x768/[id].avif
-https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/jpeg/672x384/[id].jpeg
-https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/jpeg/1344x768/[id].jpeg
+AVIF variants (unified dimensions):
+https://[blob].vercel-storage.com/develop/stories/3JpLd.../comics/s25AR.../panel/avif/464x832/panel-1.avif
+https://[blob].vercel-storage.com/develop/stories/3JpLd.../comics/s25AR.../panel/avif/928x1664/panel-1.avif
+
+Production Environment (NODE_ENV=production):
+
+Original panel:
+https://[blob].vercel-storage.com/main/stories/3JpLd.../comics/s25AR.../panel/original/panel-1.png
+
+AVIF variants (unified dimensions):
+https://[blob].vercel-storage.com/main/stories/3JpLd.../comics/s25AR.../panel/avif/464x832/panel-1.avif
+https://[blob].vercel-storage.com/main/stories/3JpLd.../comics/s25AR.../panel/avif/928x1664/panel-1.avif
 ```
 
 **Design Principles:**
+- **Environment isolation**: `main/` (production) vs `develop/` (development) root prefixes
 - **Flat structure** for single images (story/, character/, scene/)
 - **Nested structure** for multi-image content (comics/{sceneId}/)
-- **Semantic clarity** - comics treated as distinct content type
-- **Optimized variants** under `panel/` subdirectory for responsive loading
+- **Semantic clarity**: comics treated as distinct content type
+- **Unified dimensions**: 464×832 (1x) and 928×1664 (2x) for all 9:16 panels
+- **AVIF-only variants**: Optimal mobile performance (93.8% browser support)
+- **Automatic path resolution**: `getBlobPath()` utility handles environment prefixes
+
+**Complete Documentation**: See [Image Storage Architecture](../image/image-specification.md#part-iv-storage--delivery) for:
+- Environment-based routing logic
+- Provider-agnostic variant generation
+- Placeholder fallback strategies
+- CDN caching configuration
 
 ---
 
@@ -413,14 +459,14 @@ https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/jpeg/13
 └────────────────────────────────────────────────────────────┘
 
 1. Author writes scene text (Studio)
-   └─> visibility: 'draft'
+   └─> novel_status: 'draft'
 
 2. Publish scene text
-   └─> visibility: 'public'
+   └─> novel_status: 'published'
    └─> Text appears at /novels/[storyId]
 
 3. Generate comic panels (Studio → Comic Panel Generator)
-   └─> comicStatus: 'draft'
+   └─> comic_status: 'draft', comic_panel_count: N
    └─> 8-12 panels generated (~8-15 min)
 
 4. Preview comic panels in Studio
@@ -429,7 +475,7 @@ https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/jpeg/13
    └─> Verify character consistency
 
 5. Publish comic
-   └─> comicStatus: 'published'
+   └─> comic_status: 'published'
    └─> Comics appear at /comics/[storyId]
 
 6. Readers can choose format
@@ -447,8 +493,7 @@ https://[blob].vercel-storage.com/stories/3JpLd.../comics/s25AR.../panel/jpeg/13
 const scenes = await db.query.scenes.findMany({
   where: and(
     eq(scenes.chapterId, chapterId),
-    eq(scenes.visibility, 'public'),
-    // Don't filter by comicStatus - show text if scene is public
+    eq(scenes.novelStatus, 'published'),
   ),
   columns: {
     id: true,
@@ -470,8 +515,9 @@ const scenes = await db.query.scenes.findMany({
 const scenes = await db.query.scenes.findMany({
   where: and(
     eq(scenes.chapterId, chapterId),
-    eq(scenes.visibility, 'public'),
+    eq(scenes.novelStatus, 'published'),
     eq(scenes.comicStatus, 'published'), // ✅ Only published comics
+    gt(scenes.comicPanelCount, 0), // ✅ Only scenes with comic panels
   ),
   with: {
     comicPanels: {
@@ -501,12 +547,12 @@ const scene = await db.query.scenes.findFirst({
 });
 
 // UI displays:
-// - Text publishing controls (visibility: draft/public/private)
-// - Comic publishing controls (comicStatus: none/draft/published)
-// - "Generate Comic Panels" button (if none)
-// - "Preview Comics" button (if draft)
-// - "Publish Comics" button (if draft)
-// - "Unpublish Comics" button (if published)
+// - Novel text publishing controls (novel_status: draft/published)
+// - Comic publishing controls (comic_status: draft/published)
+// - "Generate Comic Panels" button (if comic_panel_count = 0)
+// - "Preview Comics" button (if comic_status = 'draft')
+// - "Publish Comics" button (if comic_status = 'draft')
+// - "Unpublish Comics" button (if comic_status = 'published')
 ```
 
 ### 4.3 Benefits of Independent Publishing
@@ -533,20 +579,23 @@ const scene = await db.query.scenes.findFirst({
 
 ### 5.1 Image Generation
 
-**Model**: Google Gemini 2.5 Flash Image (via Google AI API)
+**Image Type**: `comic-panel` (9:16 portrait aspect ratio)
 
-**Specifications:**
-- **Dimensions**: 1344×768 pixels
-- **Aspect Ratio**: 7:4 (1.75:1) landscape
+**AI Providers**:
+- **Gemini 2.5 Flash Image**: 576×1024 pixels (default)
+- **AI Server (Qwen-Image)**: 928×1664 pixels (optional)
+
+**Generation Process**:
 - **Format**: PNG (original)
 - **Quality**: Standard
-- **Generation Time**: ~20-25 seconds per panel
+- **Generation Time**: ~20-25 seconds per panel (Gemini), ~5-10 seconds (AI Server)
+- **Automatic Optimization**: 2 AVIF variants generated after each panel
 
-**Optimization** (Automatic):
-- **Variants**: 4 per panel
-- **Formats**: AVIF (best compression), JPEG (universal fallback)
-- **Sizes**: Mobile 1x (672×384), Mobile 2x (1344×768)
-- **Process**: Automatic after each panel generation
+**Complete Specifications**: See [Image Specification](../image/image-specification.md) for:
+- Provider configuration
+- Dimension details
+- Optimization pipeline
+- Performance benchmarks
 
 ### 5.2 Panel Count Guidelines
 
@@ -619,12 +668,14 @@ const TYPOGRAPHY_CONFIG = {
 
 ### 6.1 Critical Improvements Planned
 
-**1. Portrait Aspect Ratio (High Priority)**
+**1. Portrait Aspect Ratio (✅ IMPLEMENTED)**
 
-**Current**: 1344×768 (7:4 landscape) - Not mobile-optimized
-**Planned**: 800×1143 (7:10 portrait) - Fills mobile screens naturally
+**Status**: Comic panels now use 9:16 portrait aspect ratio
+- **Gemini**: 576×1024 pixels
+- **AI Server**: 928×1664 pixels
+- **Mobile Coverage**: 82% screen coverage on iPhone (9:16 panel scaled to 390px width)
 
-**Why**: 95%+ of webtoon readers use mobile devices in portrait orientation.
+**Impact**: Optimized for 95%+ of webtoon readers on mobile devices in portrait orientation.
 
 **2. Dynamic Panel Spacing (Critical)**
 
@@ -669,5 +720,8 @@ The comics generation system transforms prose narratives into mobile-optimized v
 - See `comics-evaluation.md` for quality metrics and testing strategies
 
 **Related Systems:**
-- Source narratives: `../novels/novels-specification.md` (Adversity-Triumph Engine)
-- Image system: `../image/image-architecture.md` (Gemini 2.5 Flash + optimization)
+- **Source narratives**: `../novels/novels-specification.md` (Adversity-Triumph Engine)
+- **Image generation**: `../image/image-specification.md` (Dual-provider support, aspect ratios)
+- **Image optimization**: `../image/image-specification.md#part-iii-image-optimization` (AVIF-only, 2 variants)
+- **Image evaluation**: `../image/image-evaluation.md` (Quality metrics, performance benchmarks)
+- **Image development**: `../image/image-development.md` (API specifications, implementation)

@@ -1,169 +1,151 @@
+/**
+ * Images API Route
+ *
+ * API Layer for image generation following Adversity-Triumph Engine architecture.
+ * Handles HTTP requests and maps to service layer.
+ *
+ * Architecture:
+ * API Layer (this file) → Service Layer (images-service.ts) → Generator Layer (images-generator.ts)
+ *
+ * Type Flow:
+ * ApiImagesRequest (HTTP body)
+ *     ↓
+ * ServiceImagesParams (service input)
+ *     ↓ imagesService.generateAndSave()
+ * ServiceImagesResult (service output)
+ *     ↓
+ * ApiImagesResponse (HTTP response)
+ */
+
 import { type NextRequest, NextResponse } from "next/server";
-import { generateImages } from "@/lib/studio/generators";
+import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
+import { getAuth } from "@/lib/auth/server-context";
 import type {
-    CharacterGenerationResult,
-    SceneSummaryResult,
-    SettingGenerationResult,
-} from "@/lib/studio/generators/ai-types";
+    ApiImagesErrorResponse,
+    ApiImagesRequest,
+    ApiImagesResponse,
+} from "@/lib/schemas/api/studio";
+import { generateImagesSchema } from "@/lib/schemas/api/studio";
+import { imagesService } from "@/lib/studio/services/images-service";
 
-interface StoryData {
-    title: string;
-    genre: string;
-    summary: string;
-    tone: string;
-}
-
-interface ImageGenerationRequest {
-    storyId: string;
-    imageType: "story" | "character" | "setting" | "scene";
-    targetData:
-        | StoryData
-        | CharacterGenerationResult
-        | SettingGenerationResult
-        | (SceneSummaryResult & { content?: string });
-    chapterId?: string;
-    sceneId?: string;
-}
+export const runtime = "nodejs";
 
 /**
- * API 9: Image Generation (All Story Assets)
+ * POST /api/studio/images - Generate image for story assets
  *
  * Generates images for story covers, characters, settings, and scenes using Gemini 2.5 Flash Image.
- * Automatically creates optimized variants for mobile devices.
+ * Automatically creates optimized variants (2 AVIF variants: mobile 1x/2x).
  *
- * Dimensions: 1344×768 (7:4 aspect ratio)
- * Optimization: 4 variants (AVIF/JPEG × mobile 1x/2x)
+ * Dimensions by type:
+ * - story: 16:9 (1664×936)
+ * - character: 1:1 (832×832)
+ * - setting: 1:1 (832×832)
+ * - scene: 16:9 (1664×936)
+ * - comic-panel: 9:16 (936×1664)
+ *
+ * Optimization: 2 AVIF variants (mobile 1x + 2x)
  */
-export async function POST(request: NextRequest) {
-    try {
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        console.log("🎨 [IMAGES API] Request received");
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+export const POST = requireScopes("images:write")(
+    withAuthentication(async (request: NextRequest) => {
+        try {
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            console.log("🎨 [IMAGES API] POST request received");
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-        const body = (await request.json()) as ImageGenerationRequest;
-        const { storyId, imageType, targetData, chapterId, sceneId } = body;
+            // 1. Get authentication from context
+            const auth = getAuth();
 
-        console.log("[IMAGES API] Request parameters:", {
-            storyId,
-            imageType,
-            hasTargetData: !!targetData,
-            chapterId,
-            sceneId,
-        });
+            console.log("✅ [IMAGES API] Authentication successful:", {
+                type: auth.type,
+                userId: auth.userId,
+                email: auth.email,
+            });
 
-        if (!storyId || !imageType || !targetData) {
-            console.error("❌ [IMAGES API] Validation failed");
-            return NextResponse.json(
-                { error: "storyId, imageType, and targetData are required" },
-                { status: 400 },
+            // 2. Parse and validate request body
+            const body: ApiImagesRequest =
+                (await request.json()) as ApiImagesRequest;
+
+            console.log("[IMAGES API] Request parameters:", {
+                prompt: body.prompt?.substring(0, 100) || "(empty)",
+                contentId: body.contentId,
+                imageType: body.imageType,
+            });
+
+            // 3. Validate using Zod schema
+            const validationResult = generateImagesSchema.safeParse(body);
+
+            if (!validationResult.success) {
+                console.error(
+                    "❌ [IMAGES API] Validation failed:",
+                    validationResult.error.issues,
+                );
+                const errorResponse: ApiImagesErrorResponse = {
+                    error: "Validation failed",
+                    details: validationResult.error.issues
+                        .map((e) => `${e.path.join(".")}: ${e.message}`)
+                        .join(", "),
+                };
+                return NextResponse.json(errorResponse, { status: 400 });
+            }
+
+            const { prompt, contentId, imageType } = validationResult.data;
+
+            console.log("✅ [IMAGES API] Validation passed");
+
+            // 4. Call service layer (handles generation, upload, DB persistence)
+            console.log("[IMAGES API] 🎨 Calling images service...");
+
+            const serviceResult = await imagesService.generateAndSave({
+                prompt,
+                contentId,
+                imageType,
+                userId: auth.userId!,
+            });
+
+            console.log(
+                "[IMAGES API] ✅ Image generation and save completed:",
+                {
+                    imageId: serviceResult.imageId,
+                    imageUrl: serviceResult.imageUrl,
+                    totalTime: serviceResult.metadata.totalTime,
+                },
             );
-        }
 
-        console.log("✅ [IMAGES API] Validation passed");
-        console.log(
-            `[IMAGES API] 🎨 Calling images generator for ${imageType}...`,
-        );
+            console.log("✅ [IMAGES API] Request completed successfully");
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // Prepare data based on image type
-        let storyData: StoryData | undefined;
-        let characters: CharacterGenerationResult[] | undefined;
-        let settings: SettingGenerationResult[] | undefined;
-        let scenes: (SceneSummaryResult & { content?: string })[] | undefined;
+            // 5. Map ServiceImagesResult to ApiImagesResponse
+            const response: ApiImagesResponse = {
+                success: true,
+                imageType,
+                imageId: serviceResult.imageId,
+                originalUrl: serviceResult.imageUrl,
+                blobUrl: serviceResult.blobUrl,
+                dimensions: {
+                    width: serviceResult.width,
+                    height: serviceResult.height,
+                },
+                size: serviceResult.size,
+                aspectRatio: serviceResult.aspectRatio,
+                model: serviceResult.model,
+                provider: serviceResult.provider,
+                optimizedSet: serviceResult.optimizedSet,
+                isPlaceholder: serviceResult.isPlaceholder,
+            };
 
-        switch (imageType) {
-            case "story":
-                storyData = targetData as StoryData;
-                break;
-            case "character":
-                characters = [targetData as CharacterGenerationResult];
-                break;
-            case "setting":
-                settings = [targetData as SettingGenerationResult];
-                break;
-            case "scene":
-                scenes = [
-                    targetData as SceneSummaryResult & { content?: string },
-                ];
-                break;
-        }
+            return NextResponse.json(response, { status: 201 });
+        } catch (error) {
+            console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            console.error("❌ [IMAGES API] Error:", error);
+            console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-        // Use the common generator (does NOT save to database)
-        const generationResult = await generateImages({
-            storyId,
-            story: storyData
-                ? {
-                      id: storyId,
-                      title: storyData.title,
-                      genre: storyData.genre,
-                      tone: storyData.tone,
-                      summary: storyData.summary,
-                      moralFramework: "",
-                      createdAt: new Date(),
-                      updatedAt: new Date(),
-                  }
-                : undefined,
-            characters: characters?.map((c) => ({
-                ...c,
-                id: c.id || "temp_char_id",
-                storyId,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            })),
-            settings: settings?.map((s) => ({
-                ...s,
-                id: s.id || "temp_setting_id",
-                storyId,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            })),
-            scenes: scenes?.map((s) => ({
-                ...s,
-                id: sceneId || "temp_scene_id",
-                chapterId: chapterId || "temp_chapter_id",
-                content: s.content || "",
-                emotionalTone: s.emotionalBeat,
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            })),
-            imageTypes: [imageType],
-        });
-
-        console.log("[IMAGES API] ✅ Image generation completed");
-        console.log("[IMAGES API] Result summary:", {
-            imagesGenerated: generationResult.generatedImages.length,
-            generationTime: generationResult.metadata.generationTime,
-        });
-        console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-
-        // Return the first (and only) image result in the expected format
-        const imageResult = generationResult.generatedImages[0];
-        if (!imageResult) {
-            throw new Error("No image generated");
-        }
-
-        return NextResponse.json({
-            success: true,
-            imageType,
-            imageId: imageResult.entityId,
-            originalUrl: imageResult.imageUrl,
-            blobUrl: imageResult.imageUrl,
-            dimensions: {
-                width: 1344,
-                height: 768,
-            },
-            size: 0, // Not provided by generator
-            optimizedSet: imageResult.variants,
-            isPlaceholder: false,
-        });
-    } catch (error) {
-        console.error("[API 9] Image generation error:", error);
-        return NextResponse.json(
-            {
+            const errorResponse: ApiImagesErrorResponse = {
                 error: "Failed to generate image",
                 details:
                     error instanceof Error ? error.message : "Unknown error",
-            },
-            { status: 500 },
-        );
-    }
-}
+            };
+
+            return NextResponse.json(errorResponse, { status: 500 });
+        }
+    }),
+);

@@ -132,7 +132,11 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         },
     );
 
-    // 7. Calculate total generation time
+    // 7. Override AI-generated cyclePhase with our calculated value
+    // This ensures consistent phase assignment based on scene index
+    sceneData.cyclePhase = cyclePhase;
+
+    // 8. Calculate total generation time
     const totalTime = Date.now() - startTime;
 
     console.log(
@@ -140,11 +144,12 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         {
             title: sceneData.title,
             cyclePhase: sceneData.cyclePhase,
+            calculatedPhase: cyclePhase,
             generationTime: totalTime,
         },
     );
 
-    // 8. Build and return result with metadata
+    // 9. Build and return result with metadata
     return {
         scene: sceneData,
         metadata: {

@@ -63,11 +63,7 @@ export const characterRole = pgEnum(
     "character_role",
     CHARACTER_ROLES as unknown as [string, ...string[]],
 );
-export const comicStatus = pgEnum("comic_status", [
-    "none",
-    "draft",
-    "published",
-]);
+// Removed: comicStatus enum - now uses unified 'status' enum
 export const contentType = pgEnum("content_type", [
     "markdown",
     "html",
@@ -145,7 +141,7 @@ export const shotType = pgEnum("shot_type", [
     "over_shoulder",
     "dutch_angle",
 ]);
-export const status = pgEnum("status", ["writing", "published"]);
+export const status = pgEnum("status", ["draft", "published"]);
 export const userRole = pgEnum("user_role", ["reader", "writer", "manager"]);
 export const coreTrait = pgEnum(
     "core_trait",
@@ -155,11 +151,7 @@ export const virtueType = pgEnum(
     "virtue_type",
     CORE_TRAITS as unknown as [string, ...string[]],
 );
-export const visibility = pgEnum("visibility", [
-    "private",
-    "unlisted",
-    "public",
-]);
+// Removed: visibility enum - now uses unified 'status' enum
 
 export const characters = pgTable(
     "characters",
@@ -342,7 +334,7 @@ export const stories = pgTable(
         moralFramework: text("moral_framework").notNull(), // What virtues are valued in this world?
 
         // === PUBLISHING & ENGAGEMENT ===
-        status: status().default("writing").notNull(),
+        status: status().default("draft").notNull(),
         viewCount: integer("view_count").default(0).notNull(),
         rating: integer().default(0).notNull(),
         ratingCount: integer("rating_count").default(0).notNull(),
@@ -545,11 +537,6 @@ export const chapters = pgTable(
         ).notNull(), // How previous resolution created this adversity
         createsNextAdversity: text("creates_next_adversity").notNull(), // How this resolution creates next problem
 
-        // === PUBLISHING ===
-        status: status().default("writing").notNull(),
-        publishedAt: timestamp("published_at", { mode: "string" }).notNull(),
-        scheduledFor: timestamp("scheduled_for", { mode: "string" }).notNull(),
-
         // === ORDERING ===
         orderIndex: integer("order_index").notNull(),
 
@@ -645,7 +632,7 @@ export const scenes = pgTable(
         }>(),
 
         // === PUBLISHING (Novel Format) ===
-        visibility: visibility().default("private").notNull(),
+        novelStatus: status("novel_status").default("draft").notNull(),
         publishedAt: timestamp("published_at", { mode: "string" }),
         publishedBy: text("published_by"),
         unpublishedAt: timestamp("unpublished_at", { mode: "string" }),
@@ -654,7 +641,7 @@ export const scenes = pgTable(
         autoPublish: boolean("auto_publish").default(false).notNull(),
 
         // === COMIC FORMAT ===
-        comicStatus: comicStatus("comic_status").default("none").notNull(),
+        comicStatus: status("comic_status").default("draft").notNull(),
         comicToonplay: jsonb("comic_toonplay"), // Complete toonplay specification (AiComicToonplayType)
         comicPublishedAt: timestamp("comic_published_at", { mode: "string" }),
         comicPublishedBy: text("comic_published_by"),
@@ -707,9 +694,9 @@ export const scenes = pgTable(
             "btree",
             table.suggestedLength.asc().nullsLast().op("text_ops"),
         ),
-        index("idx_scenes_visibility").using(
+        index("idx_scenes_novel_status").using(
             "btree",
-            table.visibility.asc().nullsLast().op("enum_ops"),
+            table.novelStatus.asc().nullsLast().op("enum_ops"),
         ),
         foreignKey({
             columns: [table.chapterId],
@@ -1917,12 +1904,15 @@ export const comicPanelsRelations = relations(comicPanels, ({ one }) => ({
 }));
 
 // Scene Evaluations Relations
-export const sceneEvaluationsRelations = relations(sceneEvaluations, ({ one }) => ({
-    scene: one(scenes, {
-        fields: [sceneEvaluations.sceneId],
-        references: [scenes.id],
+export const sceneEvaluationsRelations = relations(
+    sceneEvaluations,
+    ({ one }) => ({
+        scene: one(scenes, {
+            fields: [sceneEvaluations.sceneId],
+            references: [scenes.id],
+        }),
     }),
-}));
+);
 
 // Users Relations
 export const usersRelations = relations(users, ({ many }) => ({
@@ -1940,17 +1930,20 @@ export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
 }));
 
 // Community Posts Relations
-export const communityPostsRelations = relations(communityPosts, ({ one, many }) => ({
-    author: one(users, {
-        fields: [communityPosts.authorId],
-        references: [users.id],
+export const communityPostsRelations = relations(
+    communityPosts,
+    ({ one, many }) => ({
+        author: one(users, {
+            fields: [communityPosts.authorId],
+            references: [users.id],
+        }),
+        story: one(stories, {
+            fields: [communityPosts.storyId],
+            references: [stories.id],
+        }),
+        views: many(postViews),
     }),
-    story: one(stories, {
-        fields: [communityPosts.storyId],
-        references: [stories.id],
-    }),
-    views: many(postViews),
-}));
+);
 
 // Comments Relations (for story/chapter/scene comments)
 export const commentsRelations = relations(comments, ({ one, many }) => ({
@@ -1990,22 +1983,28 @@ export const postViewsRelations = relations(postViews, ({ one }) => ({
 }));
 
 // Studio Agent Chats Relations
-export const studioAgentChatsRelations = relations(studioAgentChats, ({ one, many }) => ({
-    user: one(users, {
-        fields: [studioAgentChats.userId],
-        references: [users.id],
+export const studioAgentChatsRelations = relations(
+    studioAgentChats,
+    ({ one, many }) => ({
+        user: one(users, {
+            fields: [studioAgentChats.userId],
+            references: [users.id],
+        }),
+        story: one(stories, {
+            fields: [studioAgentChats.storyId],
+            references: [stories.id],
+        }),
+        messages: many(studioAgentMessages),
     }),
-    story: one(stories, {
-        fields: [studioAgentChats.storyId],
-        references: [stories.id],
-    }),
-    messages: many(studioAgentMessages),
-}));
+);
 
 // Studio Agent Messages Relations
-export const studioAgentMessagesRelations = relations(studioAgentMessages, ({ one }) => ({
-    chat: one(studioAgentChats, {
-        fields: [studioAgentMessages.chatId],
-        references: [studioAgentChats.id],
+export const studioAgentMessagesRelations = relations(
+    studioAgentMessages,
+    ({ one }) => ({
+        chat: one(studioAgentChats, {
+            fields: [studioAgentMessages.chatId],
+            references: [studioAgentChats.id],
+        }),
     }),
-}));
+);
