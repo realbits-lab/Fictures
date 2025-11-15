@@ -9,14 +9,17 @@ import { nanoid } from "nanoid";
 import type { StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import { db } from "@/lib/db";
+import { type InferSelectModel } from "drizzle-orm";
 import { stories } from "@/lib/schemas/database";
-import type { Story } from "@/lib/schemas/zod/ai";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
 import { insertStorySchema } from "@/lib/schemas/zod/generated";
 import { generateStory } from "../generators/story-generator";
 import type {
-    GeneratorStoryParams,
-    GeneratorStoryResult,
-} from "../generators/types";
+    GenerateStoryParams,
+    GenerateStoryResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceStoryParams {
     userPrompt: string;
@@ -51,7 +54,7 @@ export class StoryService {
 
         // 1. Generate story using pure generator
         // API key is automatically retrieved from auth context
-        const generateParams: GeneratorStoryParams = {
+        const generateParams: GenerateStoryParams = {
             userPrompt,
             language,
             preferredGenre,
@@ -59,7 +62,7 @@ export class StoryService {
             promptVersion,
         };
 
-        const generationResult: GeneratorStoryResult =
+        const generationResult: GenerateStoryResult =
             await generateStory(generateParams);
 
         // 2. Prepare story data for database
