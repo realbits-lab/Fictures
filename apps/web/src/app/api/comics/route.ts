@@ -211,9 +211,9 @@ export const POST = requireScopes("stories:write")(
                                 toonplay: result.toonplay,
                                 panels: result.panels.map((p) => ({
                                     id: p.id,
-                                    panel_number: p.panel_number,
-                                    shot_type: p.shot_type,
-                                    image_url: p.image_url,
+                                    panel_number: p.panelNumber,
+                                    shot_type: p.shotType,
+                                    image_url: p.imageUrl,
                                     narrative: p.narrative,
                                     dialogue: p.dialogue,
                                     sfx: p.sfx,
