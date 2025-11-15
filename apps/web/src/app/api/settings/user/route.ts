@@ -101,7 +101,9 @@ export async function PUT(request: Request) {
             .limit(1);
 
         // Update or create preferences in database
-        let updatedPrefs;
+        let updatedPrefs: Awaited<
+            ReturnType<typeof db.query.userPreferences.findFirst>
+        >;
         if (existingPrefs) {
             [updatedPrefs] = await db
                 .update(userPreferences)

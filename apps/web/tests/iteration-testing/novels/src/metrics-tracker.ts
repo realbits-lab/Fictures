@@ -104,7 +104,9 @@ export function aggregateMetrics(
 /**
  * Create empty metrics object for a principle
  */
-function createEmptyMetrics(principle: keyof CorePrincipleMetrics): any {
+function createEmptyMetrics(
+    principle: keyof CorePrincipleMetrics,
+): Record<string, number> {
     switch (principle) {
         case "cyclicStructure":
             return {
@@ -280,7 +282,8 @@ function normalizeMetrics(
         keyof CorePrincipleMetrics
     >) {
         for (const metric of Object.keys(aggregated[principle]) as string[]) {
-            (aggregated[principle] as any)[metric] /= storyCount;
+            (aggregated[principle] as Record<string, number>)[metric] /=
+                storyCount;
         }
     }
 }

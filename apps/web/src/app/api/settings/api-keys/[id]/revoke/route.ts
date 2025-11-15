@@ -17,7 +17,7 @@ export const POST = requireScopes("admin:all")(
                 const auth = getAuth();
 
                 // Only session-based auth can manage API keys
-                if (auth.type !== "session") {
+                if (auth.type !== "session" || !auth.userId) {
                     return NextResponse.json(
                         {
                             error: "Session authentication required for API key management",
@@ -30,7 +30,7 @@ export const POST = requireScopes("admin:all")(
                 const { id } = await params;
 
                 // Verify the API key belongs to the user
-                const userApiKeys = await getUserApiKeys(auth.userId!);
+                const userApiKeys = await getUserApiKeys(auth.userId);
                 const existingKey = userApiKeys.find((key) => key.id === id);
 
                 if (!existingKey) {

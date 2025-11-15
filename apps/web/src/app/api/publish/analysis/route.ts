@@ -43,9 +43,9 @@ export async function GET(_request: NextRequest) {
                 ? {
                       id: chapter.id,
                       title: chapter.title || "Latest Chapter",
-                      publishedAgo: getTimeAgo(
-                          chapter.publishedAt! as unknown as string,
-                      ),
+                      publishedAgo: chapter.publishedAt
+                          ? getTimeAgo(chapter.publishedAt as unknown as string)
+                          : "Never",
                       views: Math.floor(Math.random() * 5000) + 1000,
                       comments: Math.floor(Math.random() * 200) + 50,
                       reactions: Math.floor(Math.random() * 500) + 100,

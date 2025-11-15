@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getScopeDescriptions, validateScopes } from "@/lib/auth/api-keys";
+import {
+    type ApiScope,
+    getScopeDescriptions,
+    validateScopes,
+} from "@/lib/auth/api-keys";
 import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 import { deleteApiKey, getUserApiKeys, updateApiKey } from "@/lib/db/queries";
@@ -114,7 +118,12 @@ export const PATCH = requireScopes("admin:all")(
                 const validatedData = updateApiKeySchema.parse(body);
 
                 // Prepare update data
-                const updateData: any = {};
+                const updateData: {
+                    name?: string;
+                    scopes?: ApiScope[];
+                    expiresAt?: Date | null;
+                    isActive?: boolean;
+                } = {};
 
                 if (validatedData.name) {
                     updateData.name = validatedData.name;
