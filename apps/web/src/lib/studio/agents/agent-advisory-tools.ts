@@ -210,12 +210,16 @@ export const checkPrerequisites = tool({
     },
 });
 
+const validateStoryStructureSchema = z.object({
+    storyId: z.string().describe("The story ID to validate"),
+});
+
 export const validateStoryStructure = tool({
     summary: "Validate story structure integrity and completeness",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID to validate"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: validateStoryStructureSchema,
+    execute: async ({
+        storyId,
+    }: z.infer<typeof validateStoryStructureSchema>) => {
         const [story] = await db
             .select()
             .from(stories)
@@ -315,12 +319,14 @@ export const validateStoryStructure = tool({
     },
 });
 
+const suggestNextPhaseSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
 export const suggestNextPhase = tool({
     summary: "Suggest the next logical phase based on current story state",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: suggestNextPhaseSchema,
+    execute: async ({ storyId }: z.infer<typeof suggestNextPhaseSchema>) => {
         const [story] = await db
             .select()
             .from(stories)

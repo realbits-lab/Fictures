@@ -6,13 +6,18 @@ import { z } from "zod";
 // Integration with existing Novel Generation API endpoints
 // ==============================================================================
 
+const generateStorySummarySchema = z.object({
+    storyId: z.string().describe("The story ID to generate summary for"),
+    userPrompt: z.string().describe("User story concept, genre, themes"),
+});
+
 export const generateStorySummary = tool({
     summary: "Generate initial story summary from user concept (Phase 1 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID to generate summary for"),
-        userPrompt: z.string().describe("User story concept, genre, themes"),
-    }),
-    execute: async ({ storyId, userPrompt }) => {
+    parameters: generateStorySummarySchema,
+    execute: async ({
+        storyId,
+        userPrompt,
+    }: z.infer<typeof generateStorySummarySchema>) => {
         // Call existing generation API
         const requestBody: {
             storyId: string;
@@ -48,12 +53,14 @@ export const generateStorySummary = tool({
     },
 });
 
+const generateCharactersSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
 export const generateCharacters = tool({
     summary: "Generate character profiles with AI portraits (Phase 2 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: generateCharactersSchema,
+    execute: async ({ storyId }: z.infer<typeof generateCharactersSchema>) => {
         const requestBody: {
             storyId: string;
         } = {
@@ -83,13 +90,15 @@ export const generateCharacters = tool({
     },
 });
 
+const generateSettingsSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
 export const generateSettings = tool({
     summary:
         "Generate story locations/settings with environment images (Phase 3 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: generateSettingsSchema,
+    execute: async ({ storyId }: z.infer<typeof generateSettingsSchema>) => {
         const requestBody: {
             storyId: string;
         } = {
@@ -119,12 +128,14 @@ export const generateSettings = tool({
     },
 });
 
+const generatePartsSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
 export const generateParts = tool({
     summary: "Generate story parts/acts structure (Phase 4 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: generatePartsSchema,
+    execute: async ({ storyId }: z.infer<typeof generatePartsSchema>) => {
         const requestBody: {
             storyId: string;
         } = {
@@ -154,16 +165,21 @@ export const generateParts = tool({
     },
 });
 
+const generateChaptersSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    partId: z
+        .string()
+        .optional()
+        .describe("Optional: generate chapters for specific part"),
+});
+
 export const generateChapters = tool({
     summary: "Generate chapters with outlines (Phase 5 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        partId: z
-            .string()
-            .optional()
-            .describe("Optional: generate chapters for specific part"),
-    }),
-    execute: async ({ storyId, partId }) => {
+    parameters: generateChaptersSchema,
+    execute: async ({
+        storyId,
+        partId,
+    }: z.infer<typeof generateChaptersSchema>) => {
         const requestBody: {
             storyId: string;
             partId?: string;
