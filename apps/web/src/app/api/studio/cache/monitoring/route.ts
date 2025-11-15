@@ -25,7 +25,6 @@ export async function GET() {
             timestamp: new Date().toISOString(),
             summary: {
                 hitRate: health.stats.hitRate,
-                averageDuration: health.stats.averageDuration,
                 totalHits: health.stats.totalHits,
                 totalMisses: health.stats.totalMisses,
             },
@@ -39,7 +38,6 @@ export async function GET() {
                     .length,
                 list: health.alerts,
             },
-            byType: health.stats.byType,
         };
 
         return NextResponse.json(response, {

@@ -31,7 +31,7 @@ export class RelationshipManager {
             // Update story timestamp
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, storyId));
 
             return partId;
@@ -64,13 +64,13 @@ export class RelationshipManager {
             // Update parent timestamps
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, storyId));
 
             if (partId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, partId));
             }
 
@@ -102,7 +102,7 @@ export class RelationshipManager {
             // Update chapter timestamp
             await tx
                 .update(chapters)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(chapters.id, chapterId));
 
             return sceneId;
@@ -131,7 +131,7 @@ export class RelationshipManager {
                 .update(chapters)
                 .set({
                     partId: newPartId || null,
-                    updatedAt: new Date(),
+                    updatedAt: new Date().toISOString(),
                 })
                 .where(eq(chapters.id, chapterId));
 
@@ -139,14 +139,14 @@ export class RelationshipManager {
             if (chapter.partId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, chapter.partId));
             }
 
             if (newPartId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, newPartId));
             }
         });
@@ -175,13 +175,13 @@ export class RelationshipManager {
             // Update parent timestamps
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, chapter.storyId));
 
             if (chapter.partId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, chapter.partId));
             }
         });
@@ -218,7 +218,7 @@ export class RelationshipManager {
             // Update story timestamp
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, part.storyId));
         });
     }
@@ -243,7 +243,7 @@ export class RelationshipManager {
             // Update chapter timestamp
             await tx
                 .update(chapters)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(chapters.id, scene.chapterId));
         });
     }
@@ -258,7 +258,7 @@ export class RelationshipManager {
                     .update(chapters)
                     .set({
                         orderIndex: i + 1,
-                        updatedAt: new Date(),
+                        updatedAt: new Date().toISOString(),
                     })
                     .where(eq(chapters.id, chapterIds[i]));
             }
@@ -275,7 +275,7 @@ export class RelationshipManager {
                     .update(parts)
                     .set({
                         orderIndex: i + 1,
-                        updatedAt: new Date(),
+                        updatedAt: new Date().toISOString(),
                     })
                     .where(eq(parts.id, partIds[i]));
             }
@@ -292,7 +292,7 @@ export class RelationshipManager {
                     .update(scenes)
                     .set({
                         orderIndex: i + 1,
-                        updatedAt: new Date(),
+                        updatedAt: new Date().toISOString(),
                     })
                     .where(eq(scenes.id, sceneIds[i]));
             }

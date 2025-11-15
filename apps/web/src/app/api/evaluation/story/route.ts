@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         const body: StoryEvaluationRequest = await request.json();
 
         // 2. Validate required fields
-        const validation = validateRequiredFields(body as Record<string, unknown>, ["storyId"]);
+        const validation = validateRequiredFields(body as unknown as Record<string, unknown>, ["storyId"]);
         if (!validation.valid) {
             return NextResponse.json(
                 createErrorResponse(

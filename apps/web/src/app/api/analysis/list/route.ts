@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getStoriesAnalytics } from "@/lib/services/analysis";
+import { getStoriesAnalysis } from "@/lib/services/analysis";
 
 /**
  * GET /api/analysis/list
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
             | "30d"
             | "90d";
 
-        const stories = await getStoriesAnalytics(session.user.id, range);
+        const stories = await getStoriesAnalysis(session.user.id, range);
 
         return NextResponse.json({ stories });
     } catch (error) {

@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         const body: CharacterEvaluationRequest = await request.json();
 
         // 2. Validate required fields
-        const validation = validateRequiredFields(body as Record<string, unknown>, [
+        const validation = validateRequiredFields(body as unknown as Record<string, unknown>, [
             "characterIds",
             "storyId",
         ]);

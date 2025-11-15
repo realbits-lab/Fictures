@@ -79,7 +79,7 @@ export async function updateUser(
 ) {
     const [user] = await db
         .update(users)
-        .set({ ...data, updatedAt: new Date() })
+        .set({ ...data, updatedAt: new Date().toISOString() })
         .where(eq(users.id, userId))
         .returning();
 
@@ -307,7 +307,7 @@ export async function updateChapter(
 
     const [updatedChapter] = await db
         .update(chapters)
-        .set({ ...data, updatedAt: new Date() })
+        .set({ ...data, updatedAt: new Date().toISOString() })
         .where(eq(chapters.id, chapterId))
         .returning();
 
@@ -365,7 +365,7 @@ export async function updateUserStats(
 ) {
     await db
         .update(userStats)
-        .set({ ...updates, updatedAt: new Date() })
+        .set({ ...updates, updatedAt: new Date().toISOString() })
         .where(eq(userStats.userId, userId));
 }
 
@@ -874,8 +874,8 @@ export async function updateApiKeyLastUsed(apiKeyId: string) {
     await db
         .update(apiKeys)
         .set({
-            lastUsedAt: new Date(),
-            updatedAt: new Date(),
+            lastUsedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(apiKeys.id, apiKeyId));
 }
@@ -893,7 +893,7 @@ export async function updateApiKey(
         .update(apiKeys)
         .set({
             ...data,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(apiKeys.id, apiKeyId))
         .returning();
