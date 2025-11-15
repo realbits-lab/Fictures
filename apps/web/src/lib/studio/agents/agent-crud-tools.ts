@@ -88,7 +88,7 @@ export const updateStory = tool({
             .update(stories)
             .set({
                 ...updates,
-                updatedAt: new Date(),
+                updatedAt: new Date().toISOString(),
             })
             .where(eq(stories.id, storyId))
             .returning();
@@ -465,9 +465,13 @@ export const createScene = tool({
                 chapterId,
                 title,
                 content: content || "",
-                summary: summary || null,
+                summary: summary || "",
                 orderIndex,
-                visibility: "private",
+                cyclePhase: "setup",
+                emotionalBeat: "hope",
+                settingId: "",
+                dialogueVsDescription: "50% dialogue, 50% description",
+                suggestedLength: "medium",
             })
             .returning();
 
@@ -587,15 +591,14 @@ export const getCharacter = tool({
                 storyId: character.storyId,
                 isMain: character.isMain,
                 role: character.role,
-                archetype: character.archetype,
                 summary: character.summary,
-                storyline: character.storyline,
                 coreTrait: character.coreTrait,
                 internalFlaw: character.internalFlaw,
                 externalGoal: character.externalGoal,
                 personality: character.personality,
                 backstory: character.backstory,
-                motivations: character.motivations,
+                physicalDescription: character.physicalDescription,
+                voiceStyle: character.voiceStyle,
                 imageUrl: character.imageUrl,
                 createdAt: character.createdAt,
                 updatedAt: character.updatedAt,
@@ -738,12 +741,11 @@ export const getSetting = tool({
                 id: setting.id,
                 name: setting.name,
                 storyId: setting.storyId,
-                summary: setting.description,
-                mood: setting.mood,
-                sensory: setting.sensory,
-                architecturalStyle: setting.architecturalStyle,
+                summary: setting.summary,
+                adversityElements: setting.adversityElements,
+                virtueElements: setting.virtueElements,
+                consequenceElements: setting.consequenceElements,
                 symbolicMeaning: setting.symbolicMeaning,
-                emotionalResonance: setting.emotionalResonance,
                 imageUrl: setting.imageUrl,
                 createdAt: setting.createdAt,
                 updatedAt: setting.updatedAt,
