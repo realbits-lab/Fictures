@@ -58,9 +58,9 @@ export async function GET(request: NextRequest) {
         // Calculate time cutoff
         const cutoffTime = Date.now() - parseTimeRange(timeRange);
 
-        // Filter metrics by time range
-        const filteredMetrics = stats.recentMetrics.filter(
-            (metric) => metric.timestamp >= cutoffTime,
+        // Filter metrics by time range (using available metrics property)
+        const filteredMetrics = stats.metrics.filter(
+            (metric: { lastUpdated: Date }) => metric.lastUpdated.getTime() >= cutoffTime,
         );
 
         // Build response based on groupBy parameter
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
                     }
                 > = {};
 
-                filteredMetrics.forEach((metric) => {
+                filteredMetrics.forEach((metric: any) => {
                     if (!typeGroups[metric.cacheType]) {
                         typeGroups[metric.cacheType] = {
                             hits: 0,
@@ -138,7 +138,7 @@ export async function GET(request: NextRequest) {
                     set: 0,
                 };
 
-                filteredMetrics.forEach((metric) => {
+                filteredMetrics.forEach((metric: any) => {
                     opGroups[metric.operation]++;
                 });
 
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
                     { hits: number; misses: number; hitRate: number }
                 > = {};
 
-                filteredMetrics.forEach((metric) => {
+                filteredMetrics.forEach((metric: any) => {
                     const hour = new Date(metric.timestamp)
                         .toISOString()
                         .slice(0, 13);
@@ -187,7 +187,7 @@ export async function GET(request: NextRequest) {
                     { hits: number; misses: number; hitRate: number }
                 > = {};
 
-                filteredMetrics.forEach((metric) => {
+                filteredMetrics.forEach((metric: any) => {
                     const day = new Date(metric.timestamp)
                         .toISOString()
                         .slice(0, 10);
@@ -223,10 +223,8 @@ export async function GET(request: NextRequest) {
                 totalHits: stats.totalHits,
                 totalMisses: stats.totalMisses,
                 hitRate: stats.hitRate,
-                averageDuration: stats.averageDuration,
                 totalMetrics: filteredMetrics.length,
             },
-            byType: stats.byType,
             grouped: groupedData,
             recentOperations: filteredMetrics.slice(-50).reverse(), // Last 50 operations
         };

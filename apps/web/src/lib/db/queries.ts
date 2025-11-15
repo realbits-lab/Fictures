@@ -160,23 +160,11 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
         // Get first chapter (already ordered by orderIndex)
         const firstChapter = storyChapters.length > 0 ? storyChapters[0] : null;
 
-        // Count completed chapters
-        const completedChapters = storyChapters.filter(
-            (ch) => ch.status === "published",
-        ).length;
-
-        // Check if story is actually published (has published chapters AND is public)
-        const hasPublishedChapters = storyChapters.some(
-            (chapter) => chapter.status === "published",
-        );
-        const actualStatus =
-            story.status === "published" && hasPublishedChapters
-                ? ("published" as const)
-                : (story.status as any);
+        // Count total chapters
+        const completedChapters = storyChapters.length;
 
         return {
             ...story,
-            status: actualStatus, // Override with actual publication status
             firstChapterId: firstChapter?.id || null,
             totalChapters: storyChapters.length,
             completedChapters,
@@ -623,7 +611,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
                 storyId: chapters.storyId,
                 partId: chapters.partId,
                 orderIndex: chapters.orderIndex,
-                status: chapters.status,
                 purpose: chapters.purpose,
                 hook: chapters.hook,
                 publishedAt: chapters.publishedAt,

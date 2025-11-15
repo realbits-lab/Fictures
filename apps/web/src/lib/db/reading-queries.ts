@@ -83,7 +83,6 @@ async function fetchStoryForReading(storyId: string) {
                 partId: chapters.partId,
                 title: chapters.title,
                 summary: chapters.summary,
-                status: chapters.status,
                 orderIndex: chapters.orderIndex,
                 createdAt: chapters.createdAt,
                 updatedAt: chapters.updatedAt,
@@ -167,7 +166,6 @@ async function fetchChapterScenesForReading(chapterId: string) {
             content: scenes.content,
             summary: scenes.summary,
             orderIndex: scenes.orderIndex,
-            visibility: scenes.visibility,
             publishedAt: scenes.publishedAt,
             imageUrl: scenes.imageUrl,
             imageVariants: scenes.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization

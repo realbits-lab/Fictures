@@ -92,7 +92,6 @@ export async function getCachedUserStories(userId: string) {
                 storyId: chapters.storyId,
                 id: chapters.id,
                 orderIndex: chapters.orderIndex,
-                status: chapters.status,
             })
             .from(chapters)
             .where(inArray(chapters.storyId, storyIds))

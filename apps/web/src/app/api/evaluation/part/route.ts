@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     try {
         const body: PartEvaluationRequest = await request.json();
 
-        const validation = validateRequiredFields(body, ["partId"]);
+        const validation = validateRequiredFields(body as Record<string, unknown>, ["partId"]);
         if (!validation.valid) {
             return NextResponse.json(
                 createErrorResponse(
