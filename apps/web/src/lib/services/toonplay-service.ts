@@ -8,7 +8,14 @@
  */
 
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
-import type { Character, Scene, Setting, Story } from "@/lib/schemas/database";
+import { type InferSelectModel } from "drizzle-orm";
+import { characters, scenes, settings, stories } from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Scene = InferSelectModel<typeof scenes>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
 import {
     type GeneratedPanelResult,
     generateComicPanels,
