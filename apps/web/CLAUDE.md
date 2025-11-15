@@ -645,6 +645,63 @@ node scripts/validate-auth-credentials.mjs --verbose
 - **API Keys**: For scripts, external services, cross-system calls
 - **Sessions**: For web app users (NextAuth.js with Google OAuth + email/password)
 
+**Troubleshooting API Key Authentication:**
+
+⚠️ **CRITICAL**: Web app and AI server must share the same API keys in the database
+
+**Common Issue - 401 Unauthorized Error:**
+
+**Symptom:**
+```
+AI Server error: 401 - {"detail":"Invalid or expired API key"}
+```
+
+**Root Cause:**
+- API keys in `.auth/user.json` don't exist in the shared database
+- Stale API keys from previous setup
+- Web app and AI server using different databases
+- AI server hasn't reloaded database connections
+
+**Diagnosis Steps:**
+```bash
+# 1. Verify API keys in database
+pnpm dotenv -e .env.local -- pnpm exec tsx scripts/verify-auth-setup.ts
+
+# 2. Check .auth/user.json structure
+cat .auth/user.json | jq '.profiles.writer.apiKey'
+
+# 3. Check AI server is using same DATABASE_URL
+grep "DATABASE_URL" ../../.env.local
+```
+
+**Resolution:**
+```bash
+# 1. Regenerate and sync API keys to database
+pnpm dotenv -e .env.local -- pnpm exec tsx scripts/setup-auth-users.ts
+
+# 2. Restart AI server to reload database connections
+cd ../ai-server
+fuser -k 8000/tcp
+sleep 3
+source venv/bin/activate
+python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload > ../../logs/ai-server.log 2>&1 &
+
+# 3. Verify new API keys work
+cd ../web
+pnpm dotenv -e .env.local -- pnpm exec tsx scripts/verify-auth-setup.ts
+```
+
+**Verification:**
+- ✅ `verify-auth-setup.ts` shows 3 users with active API keys
+- ✅ `.auth/user.json` profiles match database key prefixes
+- ✅ Both `main` and `develop` environments have same keys
+- ✅ AI server responds without 401 errors
+
+**Prevention:**
+- Always run `verify-auth-setup.ts` before testing
+- Keep AI server and web app in sync
+- Restart AI server after database changes
+
 See [cross-system-authentication.md](../../docs/operation/cross-system-authentication.md) for complete details.
 
 ## Development Workflow
