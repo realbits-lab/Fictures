@@ -70,15 +70,15 @@ Return URLs + Metadata (database storage)
 
 ### 2.1 Image Type System
 
-| Image Type | Purpose | Aspect Ratio | Gemini Dimensions | AI Server Dimensions |
-|------------|---------|--------------|-------------------|----------------------|
+| Image Type | Purpose | Aspect Ratio | Gemini Dimensions | Qwen Dimensions |
+|------------|---------|--------------|-------------------|-----------------|
 | **Story Cover** | Story thumbnails | 16:9 | 1024×576 | 1664×928 |
 | **Character Portrait** | Character images | 1:1 | 1024×1024 | 1328×1328 |
 | **Setting Visual** | Environment images | 1:1 | 1024×1024 | 1328×1328 |
 | **Scene Image** | Scene illustrations | 16:9 | 1024×576 | 1664×928 |
 | **Comic Panel** | Webtoon panels | 9:16 | 576×1024 | 928×1664 |
 
-**Design Principle**: Aspect ratio automatically determined by image type. Dimensions vary by provider but ratios remain consistent.
+**Design Principle**: Aspect ratio automatically determined by image type. Original dimensions vary by provider, but variants are generated relative to original size (50% for 1x, 100% for 2x).
 
 ### 2.2 Aspect Ratio Mapping
 
@@ -94,7 +94,7 @@ const IMAGE_TYPE_ASPECT_RATIOS: Record<StoryImageType, AspectRatio> = {
 };
 ```
 
-**Rationale by Type**:
+**Supported Aspect Ratios**:
 
 1. **16:9 (Widescreen)** - Story covers, scene images
    - Cinematic composition
@@ -122,7 +122,6 @@ gemini: {
   '1:1': { width: 1024, height: 1024 },    // Square
   '16:9': { width: 1024, height: 576 },    // Widescreen
   '9:16': { width: 576, height: 1024 },    // Vertical
-  '2:3': { width: 683, height: 1024 },     // Portrait
 }
 ```
 
@@ -131,7 +130,7 @@ gemini: {
 - Gemini API accepts aspect ratio strings, actual output may vary slightly
 - Sufficient quality for web delivery after optimization
 
-#### AI Server (Qwen-Image-Lightning)
+#### Qwen-Image-Lightning (AI Server)
 
 **Configuration**: `src/lib/ai/image-config.ts`
 
@@ -140,13 +139,13 @@ gemini: {
   '1:1': { width: 1328, height: 1328 },    // Square
   '16:9': { width: 1664, height: 928 },    // Widescreen
   '9:16': { width: 928, height: 1664 },    // Vertical (optimal for mobile)
-  '2:3': { width: 1024, height: 1536 },    // Portrait
 }
 ```
 
 **Notes**:
 - Official supported resolutions from Qwen-Image model specifications
 - Higher resolution than Gemini for premium quality
+- Primary provider for production use
 - Optimized during model training for best results
 
 ---
@@ -157,14 +156,31 @@ gemini: {
 
 **Philosophy**: Comics have many panels per scene. Generate fewer, higher-quality variants focused on mobile devices.
 
-**Variants Generated**:
+**Variant Generation Strategy**:
+- **Mobile 1x**: 50% of original dimensions (resize + format conversion)
+- **Mobile 2x**: 100% of original dimensions (format conversion only)
+- **Desktop**: Uses Mobile 2x variant (no separate desktop variants)
+
+**Example (Qwen 16:9 - Primary Provider)**:
 
 ```
-Original Image (1344×768 PNG for Gemini 16:9)
-     ├─ AVIF Mobile 1x: 672×384 (resize + convert)
-     ├─ AVIF Mobile 2x: 1344×768 (convert only - uses original)
-     ├─ JPEG Mobile 1x: 672×384 (resize + convert)
-     └─ JPEG Mobile 2x: 1344×768 (convert only - uses original)
+Original Image (1664×928 PNG)
+     ├─ AVIF Mobile 1x: 832×464 (50% resize + convert)
+     ├─ AVIF Mobile 2x: 1664×928 (convert only)
+     ├─ JPEG Mobile 1x: 832×464 (50% resize + convert)
+     └─ JPEG Mobile 2x: 1664×928 (convert only)
+
+Desktop Strategy: Uses Mobile 2x (original size, no upscaling)
+```
+
+**Example (Gemini 16:9 - Fallback Provider)**:
+
+```
+Original Image (1024×576 PNG)
+     ├─ AVIF Mobile 1x: 512×288 (50% resize + convert)
+     ├─ AVIF Mobile 2x: 1024×576 (convert only)
+     ├─ JPEG Mobile 1x: 512×288 (50% resize + convert)
+     └─ JPEG Mobile 2x: 1024×576 (convert only)
 
 Desktop Strategy: Uses Mobile 2x (original size, no upscaling)
 ```
@@ -189,43 +205,39 @@ Desktop Strategy: Uses Mobile 2x (original size, no upscaling)
    - Universal compatibility
    - Baseline for older browsers
 
-**Why No WebP?**
-- AVIF (93.8%) + JPEG (100%) = 100% coverage
-- WebP only adds 1.5% coverage (95.29% - 93.8%)
-- Adding WebP would increase variants by 50% (4 → 6)
-- Not cost-effective for marginal benefit
+**Combined Coverage**: 100% (AVIF primary + JPEG fallback)
 
 ### 3.3 Responsive Loading
 
 **Mobile Viewport (320-640px)**:
-- **Standard displays (1x)**: Load 672×384 variant
-- **Retina displays (2x)**: Load 1344×768 variant (no resize needed)
+- **Standard displays (1x)**: Load 1x variant (50% of original)
+- **Retina displays (2x)**: Load 2x variant (original size, no resize)
 
 **Desktop Viewport (1440-1920px)**:
-- **All displays**: Load 1344×768 variant (mobile 2x)
-- **Why**: Original Gemini size provides perfect quality
+- **All displays**: Load 2x variant (original size)
+- **Why**: Original size provides optimal quality for both providers
 - **Strategy**: No separate desktop variants needed
 
-**Implementation**:
+**Implementation Example (Qwen 16:9)**:
 ```html
 <picture>
   <source
     type="image/avif"
     srcset="
-      /path/672x384.avif 672w,
-      /path/1344x768.avif 1344w
+      /path/832x464.avif 832w,
+      /path/1664x928.avif 1664w
     "
     sizes="100vw"
   />
   <source
     type="image/jpeg"
     srcset="
-      /path/672x384.jpeg 672w,
-      /path/1344x768.jpeg 1344w
+      /path/832x464.jpeg 832w,
+      /path/1664x928.jpeg 1664w
     "
     sizes="100vw"
   />
-  <img src="/path/1344x768.jpeg" alt="..." />
+  <img src="/path/1664x928.jpeg" alt="..." />
 </picture>
 ```
 
@@ -298,29 +310,36 @@ stories/{storyId}/{imageType}/
   ├── original/
   │   └── {imageId}.png                  (Original generated image)
   ├── avif/
-  │   ├── 672x384/{imageId}.avif        (Mobile 1x)
-  │   └── 1344x768/{imageId}.avif       (Mobile 2x / Desktop)
+  │   ├── {width}x{height}/{imageId}.avif        (Mobile 1x - 50% of original)
+  │   └── {width}x{height}/{imageId}.avif       (Mobile 2x / Desktop - original size)
   └── jpeg/
-      ├── 672x384/{imageId}.jpeg        (Mobile 1x)
-      └── 1344x768/{imageId}.jpeg       (Mobile 2x / Desktop)
+      ├── {width}x{height}/{imageId}.jpeg        (Mobile 1x - 50% of original)
+      └── {width}x{height}/{imageId}.jpeg       (Mobile 2x / Desktop - original size)
 ```
 
 **Path Examples**:
 
 ```
-Story Cover (Gemini 16:9):
+Story Cover (Qwen 16:9 - Primary):
 develop/stories/abc123/story/original/img_xyz789.png
-develop/stories/abc123/story/avif/672x384/img_xyz789.avif
-develop/stories/abc123/story/avif/1344x768/img_xyz789.avif
-develop/stories/abc123/story/jpeg/672x384/img_xyz789.jpeg
-develop/stories/abc123/story/jpeg/1344x768/img_xyz789.jpeg
+develop/stories/abc123/story/avif/832x464/img_xyz789.avif    (Mobile 1x)
+develop/stories/abc123/story/avif/1664x928/img_xyz789.avif   (Mobile 2x/Desktop)
+develop/stories/abc123/story/jpeg/832x464/img_xyz789.jpeg    (Mobile 1x)
+develop/stories/abc123/story/jpeg/1664x928/img_xyz789.jpeg   (Mobile 2x/Desktop)
 
-Comic Panel (AI Server 9:16):
+Story Cover (Gemini 16:9 - Fallback):
+develop/stories/abc123/story/original/img_xyz789.png
+develop/stories/abc123/story/avif/512x288/img_xyz789.avif    (Mobile 1x)
+develop/stories/abc123/story/avif/1024x576/img_xyz789.avif   (Mobile 2x/Desktop)
+develop/stories/abc123/story/jpeg/512x288/img_xyz789.jpeg    (Mobile 1x)
+develop/stories/abc123/story/jpeg/1024x576/img_xyz789.jpeg   (Mobile 2x/Desktop)
+
+Comic Panel (Qwen 9:16):
 develop/stories/abc123/comics/scene_def456/panel/original/panel-1.png
-develop/stories/abc123/comics/scene_def456/panel/avif/464x832/panel-1.avif
-develop/stories/abc123/comics/scene_def456/panel/avif/928x1664/panel-1.avif
-develop/stories/abc123/comics/scene_def456/panel/jpeg/464x832/panel-1.jpeg
-develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg
+develop/stories/abc123/comics/scene_def456/panel/avif/464x832/panel-1.avif     (Mobile 1x)
+develop/stories/abc123/comics/scene_def456/panel/avif/928x1664/panel-1.avif    (Mobile 2x/Desktop)
+develop/stories/abc123/comics/scene_def456/panel/jpeg/464x832/panel-1.jpeg     (Mobile 1x)
+develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg    (Mobile 2x/Desktop)
 ```
 
 ### 5.2 Environment-Aware Paths
@@ -355,40 +374,47 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg
 
 ### 6.2 Loading Performance
 
-**Original Image (Gemini 1344×768 PNG)**: ~300KB
+**Original Image Size Examples**:
+- **Qwen 16:9** (1664×928 PNG): ~450KB
+- **Gemini 16:9** (1024×576 PNG): ~300KB
 
-**Optimized Variants (4-variant system)**:
-- AVIF mobile 1x (672×384): **~10KB** (97% smaller)
-- AVIF mobile 2x (1344×768): **~20KB** (93% smaller)
-- JPEG mobile 1x (672×384): **~30KB** (90% smaller)
-- JPEG mobile 2x (1344×768): **~55KB** (82% smaller)
+**Optimized Variants (Qwen 16:9 Primary)**:
+- AVIF mobile 1x (832×464): **~15KB** (97% smaller)
+- AVIF mobile 2x (1664×928): **~30KB** (93% smaller)
+- JPEG mobile 1x (832×464): **~45KB** (90% smaller)
+- JPEG mobile 2x (1664×928): **~80KB** (82% smaller)
 
-**Total Storage Per Image**: ~115KB for all 4 variants
+**Total Storage Per Image**: ~170KB for all 4 variants (Qwen), ~115KB (Gemini)
 
-**Loading Speed by Network**:
+**Loading Speed by Network (Qwen 16:9)**:
 
-| Device | Original | Optimized | Improvement |
-|--------|----------|-----------|-------------|
-| Mobile 3G | 5.0s | **0.5s** | **90% faster** |
-| Mobile 4G | 2.5s | **0.3s** | **88% faster** |
-| Desktop Wi-Fi | 0.8s | **0.12s** | **85% faster** |
+| Device | Original (450KB) | Optimized AVIF (15-30KB) | Improvement |
+|--------|------------------|--------------------------|-------------|
+| Mobile 3G | 7.5s | **0.5s** | **93% faster** |
+| Mobile 4G | 3.8s | **0.3s** | **92% faster** |
+| Desktop Wi-Fi | 1.2s | **0.1s** | **92% faster** |
 
 ### 6.3 Storage Impact
 
-**Per Scene (10 comic panels)**:
-- Original only: 10 × 300KB = 3MB
-- With 4 variants: 10 × 115KB = 1.15MB (4 variants each)
-- **Total per scene**: ~4.15MB (original + all variants)
+**Per Scene (10 comic panels) - Qwen Primary**:
+- Original only: 10 × 450KB = 4.5MB
+- With 4 variants: 10 × 170KB = 1.7MB (4 variants each)
+- **Total per scene**: ~6.2MB (original + all variants)
 
-**Per Story (50 scenes with comics)**:
+**Per Story (50 scenes with comics) - Qwen**:
+- Original only: 225MB
+- With optimization: ~310MB
+- **Incremental cost**: +85MB for optimization variants
+
+**Per Story (50 scenes with comics) - Gemini**:
 - Original only: 150MB
 - With optimization: ~210MB
 - **Incremental cost**: +60MB for optimization variants
 
 **Vercel Blob Pricing** ($0.15/GB/month):
-- 100 images: ~12MB = **$0.002/month**
-- 1,000 images: ~120MB = **$0.018/month**
-- 10,000 images: ~1.2GB = **$0.18/month**
+- 100 images (Qwen): ~18MB = **$0.003/month**
+- 1,000 images (Qwen): ~180MB = **$0.027/month**
+- 10,000 images (Qwen): ~1.8GB = **$0.27/month**
 
 ---
 
@@ -408,16 +434,19 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg
 
 ### 7.2 Aspect Ratio Precision
 
-**Gemini 2.5 Flash**:
-- Requested: 16:9 (1.777...)
-- Actual: 1024×576 = 1.778 (✓ accurate)
-- Requested: 9:16 (0.5625)
-- Actual: 576×1024 = 0.563 (✓ accurate)
+**Supported Ratios**: 1:1, 16:9, 9:16
 
-**AI Server (Qwen-Image)**:
-- Uses official supported resolutions
-- Exact aspect ratios from model training
-- No approximation needed
+**Gemini 2.5 Flash**:
+- 1:1 → 1024×1024 = 1.000 (✓ exact)
+- 16:9 → 1024×576 = 1.778 (✓ accurate, requested 1.777...)
+- 9:16 → 576×1024 = 0.563 (✓ accurate, requested 0.5625)
+
+**Qwen-Image-Lightning**:
+- 1:1 → 1328×1328 = 1.000 (✓ exact)
+- 16:9 → 1664×928 = 1.793 (✓ accurate, requested 1.777...)
+- 9:16 → 928×1664 = 0.558 (✓ accurate, requested 0.5625)
+- Uses official supported resolutions from model training
+- Higher precision than Gemini
 
 ### 7.3 Supported Browsers
 
@@ -512,25 +541,3 @@ develop/stories/abc123/comics/scene_def456/panel/jpeg/928x1664/panel-1.jpeg
 - With optimization: 500 panels × 10-20KB AVIF = 5-10MB per view
 - **Bandwidth savings**: 93-95% reduction
 
----
-
-## Conclusion
-
-The image system provides:
-
-1. **Dual Provider Support**: Gemini (cloud) + AI Server (self-hosted)
-2. **Automatic Aspect Ratios**: Type-based selection (story/character/scene/panel)
-3. **4-Variant Optimization**: Mobile-first AVIF + JPEG
-4. **Environment Isolation**: Separate development and production storage
-5. **Cost-Effective**: Minimal variants while maintaining quality
-
-**Key Benefits**:
-- ✅ 85-90% faster loading on mobile
-- ✅ 93% storage savings via AVIF compression
-- ✅ 100% browser support (AVIF + JPEG fallback)
-- ✅ Flexible provider selection based on needs
-- ✅ Graceful degradation and placeholder system
-
-**Next Steps:**
-- See `image-development.md` for API specifications and implementation
-- See `image-evaluation.md` for quality metrics and performance benchmarks
