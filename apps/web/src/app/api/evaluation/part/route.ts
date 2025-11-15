@@ -6,8 +6,11 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import type {
+    PartEvaluationRequest,
+    PartEvaluationResponse,
+} from "@/lib/schemas/api/evaluation";
 import { parts } from "@/lib/schemas/database";
-import type { PartEvaluationRequest, PartEvaluationResponse } from "@/lib/schemas/api/evaluation";
 import {
     calculateOverallScore,
     createErrorResponse,
@@ -134,7 +137,7 @@ export async function POST(request: Request) {
 function detectPhases(text: string): string[] {
     const phaseKeywords = {
         setup: ["setup", "introduction", "begin"],
-        confrontation: ["confrontation", "conflict", "struggle"],
+        adversity: ["adversity", "conflict", "struggle"],
         virtue: ["virtue", "goodness", "moral"],
         consequence: ["consequence", "result", "outcome"],
         transition: ["transition", "next", "following"],

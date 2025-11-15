@@ -6,11 +6,11 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { scenes } from "@/lib/schemas/database";
 import type {
     SceneSummaryEvaluationRequest,
     SceneSummaryEvaluationResponse,
 } from "@/lib/schemas/api/evaluation";
+import { scenes } from "@/lib/schemas/database";
 import {
     calculateOverallScore,
     createErrorResponse,
@@ -66,7 +66,7 @@ export async function POST(request: Request) {
             }),
             phasesRepresented: [
                 "setup",
-                "confrontation",
+                "adversity",
                 "virtue",
                 "consequence",
                 "transition",

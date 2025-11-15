@@ -459,7 +459,7 @@ export const updateScene = tool({
             cyclePhase: z
                 .enum([
                     "setup",
-                    "confrontation",
+                    "adversity",
                     "virtue",
                     "consequence",
                     "transition",

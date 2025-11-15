@@ -8,7 +8,12 @@
 import { gateway } from "@ai-sdk/gateway";
 import { generateObject } from "ai";
 import { z } from "zod";
-import type { characters, scenes, settings, stories } from "@/lib/schemas/database";
+import type {
+    characters,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
 
 // ============================================
 // SCHEMA DEFINITIONS

@@ -277,7 +277,7 @@ describe("Scene Content API", () => {
             scene.cyclePhase === null ||
                 [
                     "setup",
-                    "confrontation",
+                    "adversity",
                     "virtue",
                     "consequence",
                     "transition",
