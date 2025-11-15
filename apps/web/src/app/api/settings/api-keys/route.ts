@@ -33,7 +33,7 @@ export const GET = requireScopes("admin:all")(
             const auth = getAuth();
 
             // Only session-based auth can manage API keys (security measure)
-            if (auth.type !== "session") {
+            if (auth.type !== "session" || !auth.userId) {
                 return NextResponse.json(
                     {
                         error: "Session authentication required for API key management",
@@ -42,7 +42,7 @@ export const GET = requireScopes("admin:all")(
                 );
             }
 
-            const apiKeys = await getUserApiKeys(auth.userId!);
+            const apiKeys = await getUserApiKeys(auth.userId);
 
             // Transform for frontend consumption
             const formattedKeys = apiKeys.map((key) => ({
@@ -88,7 +88,7 @@ export const POST = requireScopes("admin:all")(
             const auth = getAuth();
 
             // Only session-based auth can manage API keys
-            if (auth.type !== "session") {
+            if (auth.type !== "session" || !auth.userId) {
                 return NextResponse.json(
                     {
                         error: "Session authentication required for API key management",
@@ -121,7 +121,7 @@ export const POST = requireScopes("admin:all")(
 
             // Create API key in database
             const dbApiKey = await createApiKey({
-                userId: auth.userId!,
+                userId: auth.userId,
                 name: validatedData.name,
                 keyHash: hash,
                 keyPrefix: prefix,
