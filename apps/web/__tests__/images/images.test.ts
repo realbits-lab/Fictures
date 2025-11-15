@@ -17,7 +17,7 @@ import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { characters, scenes, settings, stories, users } from "@/lib/schemas/database";
+import { chapters, characters, parts, scenes, settings, stories, users } from "@/lib/schemas/database";
 
 // ============================================================================
 // Test Configuration
@@ -88,6 +88,8 @@ let authData: AuthData;
 let writerApiKey: string;
 let writerUserId: string;
 let testStoryId: string;
+let testPartId: string;
+let testChapterId: string;
 let testCharacterId: string;
 let testSettingId: string;
 let testScene1Id: string;
@@ -127,6 +129,8 @@ beforeAll(async () => {
 
     // 4. Create test database records
     testStoryId = "story_test_001";
+    testPartId = "part_test_001";
+    testChapterId = "chapter_test_001";
     testCharacterId = "char_test_001";
     testSettingId = "setting_test_001";
     testScene1Id = "scene_test_001";
@@ -144,6 +148,11 @@ beforeAll(async () => {
         language: "en",
         targetAudience: "general",
         userPrompt: "A test story",
+        moralFramework: {
+            adversity: { type: "external-conflict", description: "Test adversity" },
+            virtue: { virtue: "courage", description: "Test virtue" },
+            consequence: { type: "character-growth", description: "Test consequence" }
+        },
     }).onConflictDoNothing();
 
     // Create test character
@@ -153,6 +162,26 @@ beforeAll(async () => {
         name: "Test Character",
         role: "protagonist",
         summary: "A test character for image generation",
+        coreTrait: "courage",
+        internalFlaw: "Fears failure because of past mistakes",
+        externalGoal: "Prove their worth to the kingdom",
+        backstory: "A brave hero with a mysterious past",
+        personality: {
+            traits: ["brave", "curious"],
+            mannerisms: ["speaks softly"],
+            quirks: ["always smiles"]
+        },
+        physicalDescription: {
+            age: "young adult",
+            build: "average",
+            height: "average",
+            features: ["brown hair", "blue eyes"]
+        },
+        voiceStyle: {
+            tone: "warm",
+            vocabulary: "simple",
+            speechPatterns: ["direct"]
+        }
     }).onConflictDoNothing();
 
     // Create test setting
@@ -161,6 +190,64 @@ beforeAll(async () => {
         storyId: testStoryId,
         name: "Test Setting",
         summary: "A test setting for image generation",
+        adversityElements: {
+            physicalObstacles: ["rocky terrain"],
+            scarcityFactors: ["limited resources"],
+            dangerSources: ["wild beasts"],
+            socialDynamics: ["isolated community"]
+        },
+        virtueElements: {
+            witnessElements: ["ancient monuments"],
+            contrastElements: ["harsh environment"],
+            opportunityElements: ["hidden sanctuaries"],
+            sacredSpaces: ["temple ruins"]
+        },
+        consequenceElements: {
+            transformativeElements: ["seasonal changes"],
+            rewardSources: ["natural springs"],
+            revelationTriggers: ["old inscriptions"],
+            communityResponses: ["gathering places"]
+        },
+        symbolicMeaning: "A place of trial and transformation",
+        mood: "mysterious and hopeful",
+        emotionalResonance: "wonder",
+        sensory: {
+            sight: ["golden light", "ancient ruins"],
+            sound: ["wind chimes", "rustling leaves"],
+            smell: ["fresh air", "wildflowers"],
+            touch: ["cool stone", "soft grass"],
+            taste: []
+        },
+        architecturalStyle: "Ancient ruins with natural overgrowth",
+        visualReferences: ["ancient temples", "overgrown ruins"],
+        colorPalette: ["golden", "green", "blue"]
+    }).onConflictDoNothing();
+
+    // Create test part
+    await db.insert(parts).values({
+        id: testPartId,
+        storyId: testStoryId,
+        title: "Test Part",
+        summary: "A test part for chapters",
+        characterArcs: [],
+        orderIndex: 0,
+    }).onConflictDoNothing();
+
+    // Create test chapter
+    await db.insert(chapters).values({
+        id: testChapterId,
+        storyId: testStoryId,
+        partId: testPartId,
+        characterId: testCharacterId,
+        title: "Test Chapter",
+        summary: "A test chapter for scenes",
+        arcPosition: "middle",
+        contributesToMacroArc: "Tests the protagonist's core trait through adversity",
+        adversityType: "external",
+        virtueType: "courage",
+        connectsToPreviousChapter: "Initial adversity presents challenge to the character",
+        createsNextAdversity: "Character's action leads to new complication",
+        orderIndex: 0,
     }).onConflictDoNothing();
 
     // Create test scenes
@@ -168,20 +255,41 @@ beforeAll(async () => {
         {
             id: testScene1Id,
             storyId: testStoryId,
+            chapterId: testChapterId,
+            settingId: testSettingId,
             title: "Test Scene 1",
             summary: "First test scene for image generation",
+            cyclePhase: "adversity",
+            emotionalBeat: "tension",
+            dialogueVsDescription: "50% dialogue, 50% description",
+            suggestedLength: "medium",
+            orderIndex: 0,
         },
         {
             id: testScene2Id,
             storyId: testStoryId,
+            chapterId: testChapterId,
+            settingId: testSettingId,
             title: "Test Scene 2",
             summary: "Second test scene for comic panel",
+            cyclePhase: "virtue",
+            emotionalBeat: "hope",
+            dialogueVsDescription: "60% dialogue, 40% description",
+            suggestedLength: "medium",
+            orderIndex: 1,
         },
         {
             id: testScene3Id,
             storyId: testStoryId,
+            chapterId: testChapterId,
+            settingId: testSettingId,
             title: "Test Scene 3",
             summary: "Third test scene for metadata testing",
+            cyclePhase: "consequence",
+            emotionalBeat: "relief",
+            dialogueVsDescription: "40% dialogue, 60% description",
+            suggestedLength: "medium",
+            orderIndex: 2,
         },
     ]).onConflictDoNothing();
 
@@ -191,7 +299,13 @@ beforeAll(async () => {
 // Cleanup test data after all tests
 afterAll(async () => {
     // Delete test scenes
-    await db.delete(scenes).where(eq(scenes.storyId, testStoryId));
+    await db.delete(scenes).where(eq(scenes.chapterId, testChapterId));
+
+    // Delete test chapter
+    await db.delete(chapters).where(eq(chapters.id, testChapterId));
+
+    // Delete test part
+    await db.delete(parts).where(eq(parts.id, testPartId));
 
     // Delete test character
     await db.delete(characters).where(eq(characters.id, testCharacterId));

@@ -262,6 +262,20 @@ pnpm generate:client  # Generates TypeScript client from OpenAPI spec
 
 ## Running the Server
 
+**CRITICAL: ComfyUI Server Dependency**
+
+When `AI_SERVER_GENERATION_MODE` is set to `image` or `both`, you **MUST** start the ComfyUI server before starting the AI server. The AI server will fail to initialize image generation services if ComfyUI is not running.
+
+**Start ComfyUI First (when using image mode):**
+```bash
+# 1. Start ComfyUI server (required for image generation)
+cd ~/.local/comfyui
+nohup python main.py --listen 127.0.0.1 --port 8188 > comfyui.log 2>&1 &
+
+# 2. Verify ComfyUI is running
+curl -s http://127.0.0.1:8188/ > /dev/null && echo "ComfyUI is running" || echo "ComfyUI is NOT running"
+```
+
 ### Development Mode (with auto-reload)
 ```bash
 source venv/bin/activate
