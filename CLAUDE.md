@@ -2,6 +2,44 @@
 
 This file provides guidance to Claude Code when working with this repository.
 
+## 🤖 Autonomous Task Execution Policy
+
+### Todo List Execution
+- Execute all todos continuously without stopping between items
+- Mark tasks as completed immediately and proceed to next task
+- Only pause for critical blockers or security-sensitive decisions
+- After creating a todo list, automatically begin execution without waiting for confirmation
+- Execute todos sequentially and autonomously
+- For minor decisions, use your best judgment and document the choice in code comments
+
+### When to Stop and Ask
+- **DO STOP FOR**:
+  - Security decisions (API keys, permissions, authentication)
+  - Destructive operations (data deletion, breaking changes)
+  - Ambiguous architecture choices that could lead to wasted work
+  - Unclear requirements that affect core functionality
+- **DON'T STOP FOR**:
+  - Minor implementation details
+  - Variable naming conventions
+  - Code organization and refactoring
+  - Non-blocking errors that can be fixed automatically
+  - Standard code quality improvements
+
+### Error Handling During Todos
+- Attempt automatic error recovery first
+- Fix non-blocking errors and continue
+- Only stop for blocking errors that prevent continuation
+- Document error fixes in code comments or commit messages
+- Run type-check and lint to verify fixes before moving to next todo
+
+### Progress Communication
+- Provide brief updates as you complete major milestones
+- Show final summary when all todos are complete
+- Don't wait for acknowledgment between individual todo items
+- Keep working through the list while providing status updates
+
+---
+
 ## 🎯 Most Critical Documents for Claude Code
 
 When working on this project, these are the **TOP PRIORITY** documents to reference:

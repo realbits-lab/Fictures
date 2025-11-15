@@ -67,6 +67,7 @@ export const AiComicPanelSpecZodSchema = z.object({
 
     character_poses: z
         .record(z.string(), z.string())
+        .optional()
         .describe(
             "Specific body language for each character (characterId → pose description)",
         ),
