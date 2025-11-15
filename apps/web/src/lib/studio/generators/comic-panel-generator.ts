@@ -13,10 +13,8 @@ import type {
     AiComicToonplayType,
 } from "@/lib/schemas/ai/ai-toonplay";
 import type { Character, Setting } from "@/lib/schemas/database";
-import {
-    generateStoryImage,
-    type StoryImageGenerationResult,
-} from "@/lib/services/image-generation";
+import { generateImage } from "@/lib/studio/generators/images-generator";
+import type { GeneratorImageResult } from "@/lib/schemas/generators/types";
 
 /**
  * Parameters for comic panel generation
@@ -41,7 +39,7 @@ export interface GeneratedPanelResult {
     blobUrl: string;
     width: number;
     height: number;
-    optimizedSet?: StoryImageGenerationResult["optimizedSet"];
+    optimizedSet?: any; // OptimizedImageSet from image-optimization-service
     model: string;
     provider: string;
     toonplaySpec: AiComicPanelSpecType;
@@ -134,15 +132,11 @@ export async function generateComicPanels(
             `[comic-panel-generator] Panel ${panel.panel_number} prompt: ${imagePrompt.substring(0, 100)}...`,
         );
 
-        // 5. Generate panel image using AI Server
-        const result: StoryImageGenerationResult = await generateStoryImage({
+        // 5. Generate panel image using studio images-generator
+        const result: GeneratorImageResult = await generateImage({
             prompt: imagePrompt,
-            storyId,
-            chapterId,
-            sceneId,
+            aspectRatio: "9:16",
             imageType: "comic-panel",
-            style: "vivid",
-            quality: "standard",
         });
 
         // Track first model/provider for metadata
@@ -153,18 +147,18 @@ export async function generateComicPanels(
 
         generatedPanels.push({
             panel_number: panel.panel_number,
-            imageUrl: result.url,
-            blobUrl: result.blobUrl,
+            imageUrl: result.imageUrl,
+            blobUrl: result.imageUrl,
             width: result.width,
             height: result.height,
-            optimizedSet: result.optimizedSet,
+            optimizedSet: undefined, // No optimization in generator layer
             model: result.model,
             provider: result.provider,
             toonplaySpec: panel,
         });
 
         console.log(
-            `[comic-panel-generator] ✅ Generated panel ${panel.panel_number}: ${result.url}`,
+            `[comic-panel-generator] ✅ Generated panel ${panel.panel_number}: ${result.imageUrl}`,
         );
     }
 

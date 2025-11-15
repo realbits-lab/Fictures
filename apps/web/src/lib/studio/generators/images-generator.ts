@@ -2,7 +2,7 @@
  * Images Generator (Core Business Logic)
  *
  * Pure generation function - NO database operations, NO Vercel Blob uploads.
- * Orchestrates AI image generation and optimization.
+ * Calls AI server directly with authentication context.
  *
  * Following Adversity-Triumph Engine pattern:
  * - Generator layer: Core business logic only
@@ -13,11 +13,28 @@
  * Database operations and uploads are handled by the caller (Service layer).
  */
 
-import { createImageGenerationClient } from "@/lib/ai/image-generation";
+import { getApiKey } from "@/lib/auth/server-context";
 import type {
     GeneratorImageParams,
     GeneratorImageResult,
 } from "@/lib/schemas/generators/types";
+import type { AspectRatio } from "@/lib/schemas/domain/image";
+
+/**
+ * Get dimensions for aspect ratio
+ */
+function getImageDimensions(aspectRatio: AspectRatio): { width: number; height: number } {
+    const dimensionsMap: Record<AspectRatio, { width: number; height: number }> = {
+        "1:1": { width: 1024, height: 1024 },
+        "16:9": { width: 1664, height: 936 },
+        "9:16": { width: 928, height: 1664 },
+        "2:3": { width: 832, height: 1248 },
+        "3:2": { width: 1248, height: 832 },
+        "4:3": { width: 1280, height: 960 },
+        "3:4": { width: 960, height: 1280 },
+    };
+    return dimensionsMap[aspectRatio];
+}
 
 /**
  * Generate image using AI provider
@@ -46,27 +63,55 @@ export async function generateImage(
         `[images-generator] Prompt preview: ${prompt.substring(0, 100)}...`,
     );
 
-    // 1. Create AI client (API key from auth context)
-    const client = createImageGenerationClient();
-    const providerType: string = client.getProviderType();
+    // 1. Get API key from auth context
+    const apiKey = getApiKey();
 
-    console.log(`[images-generator] Using provider: ${providerType}`);
+    if (!apiKey) {
+        console.error("[images-generator] ERROR: No API key found in authentication context!");
+        throw new Error("No API key available for AI server image generation");
+    }
 
-    // 2. Generate image via AI provider
-    const result = await client.generate({
-        prompt,
-        aspectRatio,
-        seed,
+    console.log("[images-generator] API key from context:", apiKey.substring(0, 10) + "...");
+
+    // 2. Get dimensions for aspect ratio
+    const dimensions = getImageDimensions(aspectRatio);
+    console.log(`[images-generator] Dimensions: ${dimensions.width}×${dimensions.height}`);
+
+    // 3. Call AI server directly
+    const aiServerUrl = process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
+    const timeout = parseInt(process.env.AI_SERVER_IMAGE_TIMEOUT || "120000", 10);
+
+    console.log(`[images-generator] Calling AI server: ${aiServerUrl}`);
+
+    const response = await fetch(`${aiServerUrl}/api/v1/images/generate`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+        },
+        body: JSON.stringify({
+            prompt,
+            width: dimensions.width,
+            height: dimensions.height,
+            num_inference_steps: 4,
+            guidance_scale: 1.0,
+            seed,
+        }),
+        signal: AbortSignal.timeout(timeout),
     });
 
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`AI Server error: ${response.status} - ${error}`);
+    }
+
+    const result = await response.json();
+
     console.log(`[images-generator] ✓ Image generated successfully`);
-    console.log(
-        `[images-generator] Dimensions: ${result.width}×${result.height}`,
-    );
     console.log(`[images-generator] Model: ${result.model}`);
 
-    // 3. Fetch image data from provider URL
-    const imageResponse: Response = await fetch(result.imageUrl);
+    // 4. Fetch image data from AI server URL
+    const imageResponse: Response = await fetch(result.image_url);
     if (!imageResponse.ok) {
         throw new Error(
             `Failed to fetch generated image: ${imageResponse.statusText}`,
@@ -86,16 +131,16 @@ export async function generateImage(
         `[images-generator] ✓ Generation complete (${generationTime}ms)`,
     );
 
-    // 4. Return image data (caller handles upload and database save)
+    // 5. Return image data (caller handles upload and database save)
     return {
-        imageUrl: result.imageUrl,
+        imageUrl: result.image_url,
         imageBuffer,
         width: result.width,
         height: result.height,
         size: imageSize,
         aspectRatio,
         model: result.model,
-        provider: result.provider,
+        provider: "ai-server",
         generationTime,
     };
 }
