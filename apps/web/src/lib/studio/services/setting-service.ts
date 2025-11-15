@@ -4,17 +4,20 @@
  * Service layer for setting generation and database persistence.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { settings, stories } from "@/lib/schemas/database";
-import type { Setting, Story } from "@/lib/schemas/zod/ai";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Setting = InferSelectModel<typeof settings>;
 import { insertSettingSchema } from "@/lib/schemas/zod/generated";
 import { generateSettings } from "../generators/settings-generator";
 import type {
-    GeneratorSettingsParams,
-    GeneratorSettingsResult,
-} from "../generators/types";
+    GenerateSettingsParams,
+    GenerateSettingsResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceSettingsParams {
     storyId: string;
@@ -57,12 +60,12 @@ export class SettingService {
         }
 
         // 3. Generate settings using pure generator
-        const generateParams: GeneratorSettingsParams = {
+        const generateParams: GenerateSettingsParams = {
             story,
             settingCount,
         };
 
-        const generationResult: GeneratorSettingsResult =
+        const generationResult: GenerateSettingsResult =
             await generateSettings(generateParams);
 
         // 4. Save settings to database
