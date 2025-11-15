@@ -2,7 +2,7 @@ import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, stories } from "@/lib/schemas/database";
+import { chapters, scenes, stories } from "@/lib/schemas/database";
 
 export async function GET(_request: NextRequest) {
     try {
@@ -15,36 +15,37 @@ export async function GET(_request: NextRequest) {
             );
         }
 
-        // Get the latest published chapter for analysis
-        // Join with stories table to filter by author
-        const latestChapter = await db
+        // Get the latest published scene for analysis
+        // Join with chapters and stories tables to filter by author
+        const latestScene = await db
             .select({
-                id: chapters.id,
-                title: chapters.title,
-                publishedAt: chapters.publishedAt,
-                storyId: chapters.storyId,
+                id: scenes.id,
+                title: scenes.title,
+                publishedAt: scenes.publishedAt,
+                chapterId: scenes.chapterId,
             })
-            .from(chapters)
+            .from(scenes)
+            .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
             .innerJoin(stories, eq(chapters.storyId, stories.id))
             .where(
                 and(
                     eq(stories.authorId, session.user.id),
-                    isNotNull(chapters.publishedAt),
+                    isNotNull(scenes.publishedAt),
                 ),
             )
-            .orderBy(desc(chapters.publishedAt))
+            .orderBy(desc(scenes.publishedAt))
             .limit(1);
 
-        const chapter = latestChapter[0];
+        const scene = latestScene[0];
 
         // Mock analysis data
         const publishAnalysis = {
-            latestChapter: chapter
+            latestChapter: scene
                 ? {
-                      id: chapter.id,
-                      title: chapter.title || "Latest Chapter",
-                      publishedAgo: chapter.publishedAt
-                          ? getTimeAgo(chapter.publishedAt as unknown as string)
+                      id: scene.id,
+                      title: scene.title || "Latest Scene",
+                      publishedAgo: scene.publishedAt
+                          ? getTimeAgo(scene.publishedAt)
                           : "Never",
                       views: Math.floor(Math.random() * 5000) + 1000,
                       comments: Math.floor(Math.random() * 200) + 50,
@@ -55,7 +56,7 @@ export async function GET(_request: NextRequest) {
                       genre: "Fantasy",
                   }
                 : {
-                      title: "No published chapters",
+                      title: "No published scenes",
                       publishedAgo: "N/A",
                       views: 0,
                       comments: 0,

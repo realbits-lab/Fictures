@@ -50,11 +50,13 @@ export const GET = requireScopes("admin:all")(
                 name: key.name,
                 keyPrefix: key.keyPrefix,
                 scopes: key.scopes,
-                scopeDescriptions: getScopeDescriptions(key.scopes),
+                scopeDescriptions: getScopeDescriptions(key.scopes as string[]),
                 lastUsedAt: key.lastUsedAt,
                 expiresAt: key.expiresAt,
                 isActive: key.isActive,
-                isExpired: key.expiresAt ? new Date() > key.expiresAt : false,
+                isExpired: key.expiresAt
+                    ? new Date() > new Date(key.expiresAt)
+                    : false,
                 createdAt: key.createdAt,
                 updatedAt: key.updatedAt,
             }));
@@ -138,7 +140,7 @@ export const POST = requireScopes("admin:all")(
                         keyPrefix: dbApiKey.keyPrefix,
                         scopes: dbApiKey.scopes,
                         scopeDescriptions: getScopeDescriptions(
-                            dbApiKey.scopes,
+                            dbApiKey.scopes as string[],
                         ),
                         expiresAt: dbApiKey.expiresAt,
                         isActive: dbApiKey.isActive,

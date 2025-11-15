@@ -57,12 +57,14 @@ export const GET = requireScopes("admin:all")(
                     name: apiKey.name,
                     keyPrefix: apiKey.keyPrefix,
                     scopes: apiKey.scopes,
-                    scopeDescriptions: getScopeDescriptions(apiKey.scopes),
+                    scopeDescriptions: getScopeDescriptions(
+                        apiKey.scopes as string[],
+                    ),
                     lastUsedAt: apiKey.lastUsedAt,
                     expiresAt: apiKey.expiresAt,
                     isActive: apiKey.isActive,
                     isExpired: apiKey.expiresAt
-                        ? new Date() > apiKey.expiresAt
+                        ? new Date() > new Date(apiKey.expiresAt)
                         : false,
                     createdAt: apiKey.createdAt,
                     updatedAt: apiKey.updatedAt,
@@ -166,13 +168,13 @@ export const PATCH = requireScopes("admin:all")(
                     keyPrefix: updatedApiKey.keyPrefix,
                     scopes: updatedApiKey.scopes,
                     scopeDescriptions: getScopeDescriptions(
-                        updatedApiKey.scopes,
+                        updatedApiKey.scopes as string[],
                     ),
                     lastUsedAt: updatedApiKey.lastUsedAt,
                     expiresAt: updatedApiKey.expiresAt,
                     isActive: updatedApiKey.isActive,
                     isExpired: updatedApiKey.expiresAt
-                        ? new Date() > updatedApiKey.expiresAt
+                        ? new Date() > new Date(updatedApiKey.expiresAt)
                         : false,
                     createdAt: updatedApiKey.createdAt,
                     updatedAt: updatedApiKey.updatedAt,

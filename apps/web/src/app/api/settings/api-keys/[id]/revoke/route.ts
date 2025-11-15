@@ -63,13 +63,13 @@ export const POST = requireScopes("admin:all")(
                     keyPrefix: revokedApiKey.keyPrefix,
                     scopes: revokedApiKey.scopes,
                     scopeDescriptions: getScopeDescriptions(
-                        revokedApiKey.scopes,
+                        revokedApiKey.scopes as string[],
                     ),
                     lastUsedAt: revokedApiKey.lastUsedAt,
                     expiresAt: revokedApiKey.expiresAt,
                     isActive: revokedApiKey.isActive,
                     isExpired: revokedApiKey.expiresAt
-                        ? new Date() > revokedApiKey.expiresAt
+                        ? new Date() > new Date(revokedApiKey.expiresAt)
                         : false,
                     createdAt: revokedApiKey.createdAt,
                     updatedAt: revokedApiKey.updatedAt,

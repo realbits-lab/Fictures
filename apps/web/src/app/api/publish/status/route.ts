@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, stories } from "@/lib/schemas/database";
+import { chapters, scenes, stories } from "@/lib/schemas/database";
 
 export async function GET(_request: NextRequest) {
     try {
@@ -15,7 +15,7 @@ export async function GET(_request: NextRequest) {
             );
         }
 
-        // Get user's stories and chapters for scheduling
+        // Get user's stories for scheduling
         const _userStories = await db
             .select()
             .from(stories)
@@ -23,41 +23,40 @@ export async function GET(_request: NextRequest) {
             .orderBy(desc(stories.updatedAt))
             .limit(10);
 
-        // Get user's chapters by joining with stories
-        const userChapters = await db
+        // Get user's scenes by joining with chapters and stories
+        const userScenes = await db
             .select({
-                id: chapters.id,
-                title: chapters.title,
-                summary: chapters.summary,
-                status: chapters.status,
-                storyId: chapters.storyId,
-                updatedAt: chapters.updatedAt,
+                id: scenes.id,
+                title: scenes.title,
+                summary: scenes.summary,
+                novelStatus: scenes.novelStatus,
+                chapterId: scenes.chapterId,
+                updatedAt: scenes.updatedAt,
             })
-            .from(chapters)
+            .from(scenes)
+            .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
             .innerJoin(stories, eq(chapters.storyId, stories.id))
             .where(eq(stories.authorId, session.user.id))
-            .orderBy(desc(chapters.updatedAt))
+            .orderBy(desc(scenes.updatedAt))
             .limit(20);
 
         // Mock publish status data based on actual user data
-        const scheduledItems = userChapters
-            .slice(0, 4)
-            .map((chapter, index) => ({
-                id: chapter.id,
-                date: new Date(
-                    Date.now() + (index + 1) * 24 * 60 * 60 * 1000,
-                ).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    month: "short",
-                    day: "numeric",
-                }),
-                title: chapter.title || `Chapter ${index + 1}`,
-                time: ["12:00 PM", "2:00 PM", "6:00 PM", "9:00 AM"][index],
-                status: ["ready", "draft", "planned", "idea"][index],
-            }));
+        const scheduledItems = userScenes.slice(0, 4).map((scene, index) => ({
+            id: scene.id,
+            date: new Date(
+                Date.now() + (index + 1) * 24 * 60 * 60 * 1000,
+            ).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+            }),
+            title: scene.title || `Scene ${index + 1}`,
+            time: ["12:00 PM", "2:00 PM", "6:00 PM", "9:00 AM"][index],
+            status: ["ready", "draft", "planned", "idea"][index],
+        }));
 
-        // For now, just use the first chapter since there's no 'completed' status
-        const readyToPublish = userChapters[0];
+        // For now, just use the first scene since there's no 'completed' status
+        const readyToPublish = userScenes[0];
 
         const publishStatus = {
             scheduledItems,
@@ -74,7 +73,7 @@ export async function GET(_request: NextRequest) {
                       communityPoll: '"What happens next?"',
                   }
                 : null,
-            pending: userChapters.filter((c) => c.status === "writing").length,
+            pending: userScenes.filter((s) => s.novelStatus === "draft").length,
         };
 
         return NextResponse.json(publishStatus);

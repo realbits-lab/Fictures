@@ -2,7 +2,7 @@ import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { chapters, stories } from "@/lib/schemas/database";
+import { chapters, scenes, stories } from "@/lib/schemas/database";
 
 export async function GET(_request: NextRequest) {
     try {
@@ -15,30 +15,31 @@ export async function GET(_request: NextRequest) {
             );
         }
 
-        // Get published chapters as publication history
-        // Join with stories table to filter by author
-        const publishedChapters = await db
+        // Get published scenes as publication history
+        // Join with chapters and stories tables to filter by author
+        const publishedScenes = await db
             .select({
-                id: chapters.id,
-                title: chapters.title,
-                publishedAt: chapters.publishedAt,
-                storyId: chapters.storyId,
+                id: scenes.id,
+                title: scenes.title,
+                publishedAt: scenes.publishedAt,
+                chapterId: scenes.chapterId,
             })
-            .from(chapters)
+            .from(scenes)
+            .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
             .innerJoin(stories, eq(chapters.storyId, stories.id))
             .where(
                 and(
                     eq(stories.authorId, session.user.id),
-                    isNotNull(chapters.publishedAt),
+                    isNotNull(scenes.publishedAt),
                 ),
             )
-            .orderBy(desc(chapters.publishedAt))
+            .orderBy(desc(scenes.publishedAt))
             .limit(50);
 
-        const publications = publishedChapters.map((chapter) => ({
-            id: chapter.id,
-            title: chapter.title || "Untitled Chapter",
-            publishedAt: chapter.publishedAt,
+        const publications = publishedScenes.map((scene) => ({
+            id: scene.id,
+            title: scene.title || "Untitled Scene",
+            publishedAt: scene.publishedAt,
             views: Math.floor(Math.random() * 1000) + 100, // Mock data
             comments: Math.floor(Math.random() * 50) + 5,
             reactions: Math.floor(Math.random() * 200) + 20,
