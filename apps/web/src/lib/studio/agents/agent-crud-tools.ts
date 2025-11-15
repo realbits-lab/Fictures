@@ -16,12 +16,14 @@ import {
 // STORY CRUD TOOLS
 // ==============================================================================
 
+const getStorySchema = z.object({
+    storyId: z.string().describe("The story ID to retrieve"),
+});
+
 export const getStory = tool({
     summary: "Get complete story details including all metadata fields",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID to retrieve"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: getStorySchema,
+    execute: async ({ storyId }: z.infer<typeof getStorySchema>) => {
         const [story] = await db
             .select()
             .from(stories)
@@ -53,30 +55,35 @@ export const getStory = tool({
     },
 });
 
+const updateStorySchema = z.object({
+    storyId: z.string().describe("The story ID to update"),
+    updates: z.object({
+        title: z.string().optional().describe("Story title"),
+        genre: z.string().optional().describe("Story genre"),
+        status: z
+            .enum(["writing", "published"])
+            .optional()
+            .describe("Story status"),
+        summary: z
+            .string()
+            .optional()
+            .describe("Story summary and thematic premise"),
+        tone: z.enum(STORY_TONES).optional().describe("Emotional tone"),
+        moralFramework: z
+            .string()
+            .optional()
+            .describe("Moral framework and valued virtues"),
+    }),
+});
+
 export const updateStory = tool({
     summary:
         "Update story metadata (title, genre, status, summary, tone, moralFramework)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID to update"),
-        updates: z.object({
-            title: z.string().optional().describe("Story title"),
-            genre: z.string().optional().describe("Story genre"),
-            status: z
-                .enum(["writing", "published"])
-                .optional()
-                .describe("Story status"),
-            summary: z
-                .string()
-                .optional()
-                .describe("Story summary and thematic premise"),
-            tone: z.enum(STORY_TONES).optional().describe("Emotional tone"),
-            moralFramework: z
-                .string()
-                .optional()
-                .describe("Moral framework and valued virtues"),
-        }),
-    }),
-    execute: async ({ storyId, updates }) => {
+    parameters: updateStorySchema,
+    execute: async ({
+        storyId,
+        updates,
+    }: z.infer<typeof updateStorySchema>) => {
         const [updated] = await db
             .update(stories)
             .set({

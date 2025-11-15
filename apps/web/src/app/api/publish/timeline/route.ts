@@ -53,13 +53,19 @@ export async function GET(request: NextRequest) {
 
         if (startDate) {
             conditions.push(
-                gte(scheduledPublications.scheduledFor, new Date(startDate)),
+                gte(
+                    scheduledPublications.scheduledFor,
+                    new Date(startDate).toISOString(),
+                ),
             );
         }
 
         if (endDate) {
             conditions.push(
-                lte(scheduledPublications.scheduledFor, new Date(endDate)),
+                lte(
+                    scheduledPublications.scheduledFor,
+                    new Date(endDate).toISOString(),
+                ),
             );
         }
 
