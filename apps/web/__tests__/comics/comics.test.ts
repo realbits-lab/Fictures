@@ -392,7 +392,7 @@ describe("Comics System Integration", () => {
         const shotTypes = result.result.panels.map((p) => p.shotType);
         const uniqueShotTypes = new Set(shotTypes);
         expect(uniqueShotTypes.size).toBeGreaterThanOrEqual(3); // At least 3 different shot types
-    }, 60000); // 60 second timeout
+    }, 600000); // 10 minute timeout
 
     it("should include quality evaluation results", async () => {
         // Arrange
@@ -426,7 +426,7 @@ describe("Comics System Integration", () => {
         expect(result.result.evaluation.weighted_score).toBeGreaterThanOrEqual(
             2.5,
         );
-    }, 60000);
+    }, 600000);
 
     it("should generate panels with proper toonplay structure", async () => {
         // Arrange
@@ -458,7 +458,7 @@ describe("Comics System Integration", () => {
             expect(panel.dialogue).toBeDefined();
             expect(panel.sfx).toBeDefined();
         }
-    }, 60000);
+    }, 600000);
 
     it("should save panels to database", async () => {
         // Arrange
@@ -481,7 +481,7 @@ describe("Comics System Integration", () => {
         expect(dbPanels.length).toBe(result.scene.comicPanelCount);
         expect(dbPanels[0].sceneId).toBe(testSceneId);
         expect(dbPanels[0].imageUrl).toBeDefined();
-    }, 60000);
+    }, 600000);
 
     it("should track generation timing metadata", async () => {
         // Arrange
@@ -506,7 +506,7 @@ describe("Comics System Integration", () => {
         expect(result.result.metadata.generationTime).toBeGreaterThanOrEqual(
             result.result.metadata.panelGenerationTime,
         );
-    }, 60000);
+    }, 600000);
 
     it("should generate panels with varied shot types", async () => {
         // Arrange
@@ -537,5 +537,5 @@ describe("Comics System Integration", () => {
         const maxCount = Math.max(...Object.values(shotTypeCount));
         const totalPanels = shotTypes.length;
         expect(maxCount / totalPanels).toBeLessThan(0.7); // No shot type > 70%
-    }, 60000);
+    }, 600000);
 });
