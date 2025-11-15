@@ -44,13 +44,13 @@ This document provides implementation specifications for the image generation an
   originalUrl: "https://blob.vercel-storage.com/...",
   blobUrl: "https://blob.vercel-storage.com/...",
   dimensions: {
-    width: 1024,
-    height: 576
+    width: 1664,    // Qwen: 1664×928 OR Gemini: 1024×576
+    height: 928
   },
-  size: 300000,
+  size: 450000,     // Original PNG size (varies by provider)
   aspectRatio: "16:9",
-  model: "gemini-2.5-flash",
-  provider: "gemini",
+  model: "qwen-image-lightning",  // or "gemini-2.5-flash"
+  provider: "ai-server",           // or "gemini"
   optimizedSet: {
     imageId: "opt_1234567890_abc123",
     originalUrl: "https://...",
@@ -59,18 +59,46 @@ This document provides implementation specifications for the image generation an
         format: "avif",
         device: "mobile",
         resolution: "1x",
-        width: 672,
-        height: 384,
+        width: 832,      // Unified: 50% of Qwen dimensions
+        height: 464,
         url: "https://...",
-        size: 10240
+        size: 15360
       },
-      // ... 3 more variants
+      {
+        format: "avif",
+        device: "mobile",
+        resolution: "2x",
+        width: 1664,     // Unified: 100% of Qwen dimensions
+        height: 928,
+        url: "https://...",
+        size: 30720
+      },
+      {
+        format: "jpeg",
+        device: "mobile",
+        resolution: "1x",
+        width: 832,      // Unified: Same sizes for all providers
+        height: 464,
+        url: "https://...",
+        size: 46080
+      },
+      {
+        format: "jpeg",
+        device: "mobile",
+        resolution: "2x",
+        width: 1664,     // Unified: Client always receives same dimensions
+        height: 928,
+        url: "https://...",
+        size: 81920
+      }
     ],
     generatedAt: "2025-01-07T12:00:00.000Z"
   },
   isPlaceholder: false
 }
 ```
+
+**Note**: Variant dimensions are **unified across all providers** based on Qwen sizes. Gemini originals are resized during optimization to match these dimensions.
 
 **Example Request**:
 ```typescript
@@ -120,17 +148,24 @@ export async function generateStoryImage(
 ```
 1. Determine aspect ratio (automatic by image type)
 2. Generate image using AI provider
-   ├─ Gemini 2.5 Flash (cloud API)
-   └─ AI Server (self-hosted)
+   ├─ Qwen-Image-Lightning (AI Server) - Primary
+   └─ Gemini 2.5 Flash (cloud API) - Fallback
 3. Upload original to Vercel Blob
-4. Create 4 optimized variants
-   ├─ AVIF mobile 1x (resize + convert)
-   ├─ AVIF mobile 2x (convert only)
-   ├─ JPEG mobile 1x (resize + convert)
-   └─ JPEG mobile 2x (convert only)
+4. Create 4 unified-size variants (based on Qwen dimensions)
+   ├─ AVIF mobile 1x: 832×464 (16:9) - downscale to 50% of Qwen + convert
+   ├─ AVIF mobile 2x: 1664×928 (16:9) - resize to Qwen size + convert
+   ├─ JPEG mobile 1x: 832×464 (16:9) - downscale to 50% of Qwen + convert
+   └─ JPEG mobile 2x: 1664×928 (16:9) - resize to Qwen size + convert
+   Note: For Qwen originals, 2x = format conversion only (no resize)
+         For Gemini originals, 2x = upscale to Qwen size + convert
 5. Upload all variants to Vercel Blob
 6. Return URLs + metadata
 ```
+
+**Unified Variant Dimensions**:
+- **16:9**: 832×464 (1x), 1664×928 (2x)
+- **1:1**: 664×664 (1x), 1328×1328 (2x)
+- **9:16**: 464×832 (1x), 928×1664 (2x)
 
 **Usage**:
 ```typescript
@@ -172,60 +207,62 @@ async function optimizeImage(
   originalImageUrl: string,
   imageId: string,
   storyId: string,
-  imageType: StoryImageType
+  imageType: StoryImageType,
+  aspectRatio: AspectRatio
 ): Promise<OptimizedImageSet> {
-  console.log('[Image Optimization] Starting 4-variant optimization');
+  console.log('[Image Optimization] Starting unified 4-variant optimization');
 
   // Download original image
   const imageBuffer = await downloadImage(originalImageUrl);
   const variants: ImageVariant[] = [];
 
-  // Generate 4 variants (2 formats × 2 sizes)
-  for (const format of IMAGE_FORMATS) {
-    for (const [device, resolutions] of Object.entries(IMAGE_SIZES)) {
-      for (const [resolution, config] of Object.entries(resolutions)) {
-        const { width, height, noResize } = config;
+  // Get unified target dimensions based on aspect ratio (Qwen sizes)
+  const targetDimensions = UNIFIED_VARIANT_DIMENSIONS[aspectRatio];
 
-        // Process image
-        let processedBuffer: Buffer;
-        if (noResize) {
-          // Mobile 2x: Convert format only (no resize)
-          processedBuffer = await sharp(imageBuffer)
-            [format]({ quality: QUALITY_SETTINGS[format] })
-            .toBuffer();
-        } else {
-          // Mobile 1x: Resize + convert
-          processedBuffer = await sharp(imageBuffer)
-            .resize(width, height, { fit: 'cover' })
-            [format]({ quality: QUALITY_SETTINGS[format] })
-            .toBuffer();
-        }
+  // UNIFIED_VARIANT_DIMENSIONS = {
+  //   '16:9': { '1x': { width: 832, height: 464 }, '2x': { width: 1664, height: 928 } },
+  //   '1:1':  { '1x': { width: 664, height: 664 }, '2x': { width: 1328, height: 1328 } },
+  //   '9:16': { '1x': { width: 464, height: 832 }, '2x': { width: 928, height: 1664 } }
+  // }
 
-        // Upload to Vercel Blob
-        const path = getBlobPath(
-          `stories/${storyId}/${imageType}/${format}/${width}x${height}/${imageId}.${format}`
-        );
-        const blob = await put(path, processedBuffer, {
-          access: 'public',
-          contentType: `image/${format}`,
-        });
+  // Generate 4 variants (2 formats × 2 sizes) - ALL use unified dimensions
+  for (const format of ['avif', 'jpeg']) {
+    for (const resolution of ['1x', '2x']) {
+      const { width, height } = targetDimensions[resolution];
 
-        variants.push({
-          format,
-          device,
-          resolution,
-          width,
-          height,
-          url: blob.url,
-          size: processedBuffer.length,
-        });
+      // Process image: ALWAYS resize to unified dimensions
+      // - Qwen 2x: Convert only (original already at target size)
+      // - Gemini 2x: Upscale to match Qwen size
+      // - All 1x: Downscale to 50% of Qwen size
+      const processedBuffer = await sharp(imageBuffer)
+        .resize(width, height, { fit: 'cover' })
+        [format]({ quality: QUALITY_SETTINGS[format] })
+        .toBuffer();
 
-        console.log(`[Image Optimization] ✓ Generated ${format} ${width}x${height}`);
-      }
+      // Upload to Vercel Blob
+      const path = getBlobPath(
+        `stories/${storyId}/${imageType}/${format}/${width}x${height}/${imageId}.${format}`
+      );
+      const blob = await put(path, processedBuffer, {
+        access: 'public',
+        contentType: `image/${format}`,
+      });
+
+      variants.push({
+        format,
+        device: 'mobile',
+        resolution,
+        width,
+        height,
+        url: blob.url,
+        size: processedBuffer.length,
+      });
+
+      console.log(`[Image Optimization] ✓ Generated ${format} ${width}x${height} (unified)`);
     }
   }
 
-  console.log(`[Image Optimization] Complete! Generated 4/4 variants`);
+  console.log(`[Image Optimization] Complete! Generated 4/4 unified variants`);
 
   return {
     imageId,
@@ -236,11 +273,17 @@ async function optimizeImage(
 }
 ```
 
+**Key Changes**:
+- ✅ **Unified dimensions**: All variants use Qwen-based sizes regardless of provider
+- ✅ **Consistent resizing**: Both providers' images resized to same target dimensions
+- ✅ **Client simplicity**: Browser always receives same sizes (832×464, 1664×928 for 16:9)
+- ✅ **Backend flexibility**: Optimization handled server-side, transparent to client
+
 ---
 
 ## Part III: Provider Integration
 
-### 3.1 Gemini 2.5 Flash
+### 3.1 Gemini 2.5 Flash (Fallback Provider)
 
 **File**: `src/lib/ai/providers/gemini-image.ts`
 
@@ -251,9 +294,10 @@ gemini: {
   '1:1': { width: 1024, height: 1024 },
   '16:9': { width: 1024, height: 576 },
   '9:16': { width: 576, height: 1024 },
-  '2:3': { width: 683, height: 1024 },
 }
 ```
+
+**Note**: Gemini originals are resized during optimization to match unified Qwen-based variant dimensions.
 
 **API Call**:
 ```typescript
@@ -283,7 +327,7 @@ const response = await fetch(
 );
 ```
 
-### 3.2 AI Server (Qwen-Image-Lightning)
+### 3.2 Qwen-Image-Lightning (Primary Provider)
 
 **File**: `src/lib/ai/providers/ai-server-image.ts`
 
@@ -294,9 +338,10 @@ const response = await fetch(
   '1:1': { width: 1328, height: 1328 },
   '16:9': { width: 1664, height: 928 },
   '9:16': { width: 928, height: 1664 },
-  '2:3': { width: 1024, height: 1536 },
 }
 ```
+
+**Note**: Qwen dimensions define the unified variant sizes. For 2x variants, Qwen originals only need format conversion (no resize).
 
 **API Call**:
 ```typescript
@@ -424,20 +469,37 @@ export function CharacterImage({ character, className }: Props) {
 dotenv --file .env.local run node scripts/test-imagen-generation.mjs
 ```
 
-**Expected Output**:
+**Expected Output (Qwen Provider)**:
+```
+[Image Generation] Starting story image generation...
+[Image Generation] Using provider: ai-server (qwen-image-lightning)
+[Image Generation] Aspect ratio: 16:9
+[Image Generation] ✓ Image generated (1664×928)
+[Image Generation] ✓ Original uploaded
+[Image Optimization] Processing 4 unified variants...
+[Image Optimization] ✓ Generated avif 832x464 (15KB) - unified 1x
+[Image Optimization] ✓ Generated avif 1664x928 (30KB) - unified 2x
+[Image Optimization] ✓ Generated jpeg 832x464 (45KB) - unified 1x
+[Image Optimization] ✓ Generated jpeg 1664x928 (80KB) - unified 2x
+[Image Optimization] Complete! Total: 170KB (unified sizes)
+```
+
+**Expected Output (Gemini Provider)**:
 ```
 [Image Generation] Starting story image generation...
 [Image Generation] Using provider: gemini
 [Image Generation] Aspect ratio: 16:9
 [Image Generation] ✓ Image generated (1024×576)
 [Image Generation] ✓ Original uploaded
-[Image Optimization] Processing 4 variants...
-[Image Optimization] ✓ Generated avif 672x384 (10KB)
-[Image Optimization] ✓ Generated avif 1344x768 (20KB)
-[Image Optimization] ✓ Generated jpeg 672x384 (30KB)
-[Image Optimization] ✓ Generated jpeg 1344x768 (55KB)
-[Image Optimization] Complete! Total: 115KB
+[Image Optimization] Processing 4 unified variants...
+[Image Optimization] ✓ Generated avif 832x464 (15KB) - unified 1x (downscaled)
+[Image Optimization] ✓ Generated avif 1664x928 (30KB) - unified 2x (upscaled)
+[Image Optimization] ✓ Generated jpeg 832x464 (45KB) - unified 1x (downscaled)
+[Image Optimization] ✓ Generated jpeg 1664x928 (80KB) - unified 2x (upscaled)
+[Image Optimization] Complete! Total: 170KB (unified sizes)
 ```
+
+**Note**: Variant dimensions and file sizes are identical regardless of provider.
 
 ### 5.2 Unit Tests
 
@@ -449,7 +511,7 @@ describe('Image Generation', () => {
     expect(getAspectRatioForImageType('comic-panel')).toBe('9:16');
   });
 
-  it('should generate 4 variants', async () => {
+  it('should generate 4 unified variants', async () => {
     const result = await generateStoryImage({
       prompt: 'test image',
       storyId: 'test',
@@ -459,6 +521,41 @@ describe('Image Generation', () => {
     expect(result.optimizedSet.variants).toHaveLength(4);
     expect(result.optimizedSet.variants.filter(v => v.format === 'avif')).toHaveLength(2);
     expect(result.optimizedSet.variants.filter(v => v.format === 'jpeg')).toHaveLength(2);
+  });
+
+  it('should use unified dimensions regardless of provider', async () => {
+    // Test with Qwen provider
+    const qwenResult = await generateStoryImage({
+      prompt: 'test image',
+      storyId: 'test',
+      imageType: 'scene',
+      provider: 'ai-server',
+    });
+
+    // Test with Gemini provider
+    const geminiResult = await generateStoryImage({
+      prompt: 'test image',
+      storyId: 'test',
+      imageType: 'scene',
+      provider: 'gemini',
+    });
+
+    // Both should have same variant dimensions (16:9 unified sizes)
+    const qwen1x = qwenResult.optimizedSet.variants.find(v => v.resolution === '1x');
+    const gemini1x = geminiResult.optimizedSet.variants.find(v => v.resolution === '1x');
+
+    expect(qwen1x.width).toBe(832);
+    expect(qwen1x.height).toBe(464);
+    expect(gemini1x.width).toBe(832);
+    expect(gemini1x.height).toBe(464);
+
+    const qwen2x = qwenResult.optimizedSet.variants.find(v => v.resolution === '2x');
+    const gemini2x = geminiResult.optimizedSet.variants.find(v => v.resolution === '2x');
+
+    expect(qwen2x.width).toBe(1664);
+    expect(qwen2x.height).toBe(928);
+    expect(gemini2x.width).toBe(1664);
+    expect(gemini2x.height).toBe(928);
   });
 });
 ```
@@ -509,25 +606,3 @@ epic and determined mood, golden hour sunset with dramatic backlighting,
 cinematic widescreen composition"
 ```
 
----
-
-## Conclusion
-
-The image development system provides:
-
-1. **Simple API**: Single endpoint for all image types
-2. **Automatic Optimization**: 4 variants generated automatically
-3. **Dual Provider Support**: Gemini (cloud) + AI Server (self-hosted)
-4. **Frontend Components**: Ready-to-use React components
-5. **Environment Isolation**: Separate dev/prod storage
-
-**Key Features**:
-- ✅ Type-based aspect ratio selection
-- ✅ Provider-specific configurations
-- ✅ Automatic 4-variant optimization
-- ✅ Graceful fallback to placeholders
-- ✅ Responsive image loading
-
-**Next Steps:**
-- See `image-specification.md` for core concepts and architecture
-- See `image-evaluation.md` for quality metrics and benchmarks

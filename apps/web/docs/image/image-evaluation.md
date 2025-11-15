@@ -14,55 +14,52 @@ This document specifies quality metrics, performance benchmarks, and testing str
 
 ### 1.1 Image Generation Quality
 
-**Evaluation Criteria**:
-
-| Metric | Target | Measurement | Priority |
-|--------|--------|-------------|----------|
-| **Visual Fidelity** | High | Manual review | Critical |
-| **Prompt Adherence** | > 90% | AI evaluation | High |
-| **Aspect Ratio Accuracy** | ±0.5% | Automated check | Critical |
-| **Resolution** | Meets spec | Dimension validation | Critical |
-| **Artifact Rate** | < 5% | Manual review | Medium |
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Aspect Ratio Accuracy** | Validates generated image matches expected aspect ratio | ±0.5% deviation | Critical failure if > 1% | Automated dimension check |
+| **Resolution Compliance** | Validates image dimensions match specification | Exact match | Critical failure if incorrect | Automated dimension validation |
+| **Prompt Adherence** | Measures how well image matches text prompt | > 90% match | Warning if < 85% | Automated AI evaluation |
+| **Format Validation** | Validates image is in correct format (PNG original) | 100% PNG | Critical failure if wrong format | Automated file type check |
+| **File Size** | Validates original image size is reasonable | 200-400KB | Warning if > 500KB | Automated file size check |
 
 ### 1.2 Optimization Quality
 
 **Compression Metrics**:
 
-| Format | Quality Setting | Target Size Reduction | Visual Quality |
-|--------|----------------|----------------------|----------------|
-| **AVIF** | 75 | 93-97% vs original PNG | Excellent |
-| **JPEG** | 85 | 82-90% vs original PNG | Good |
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **AVIF Compression Ratio** | Size reduction vs original PNG | 93-97% reduction | Warning if < 90% | Automated size comparison |
+| **JPEG Compression Ratio** | Size reduction vs original PNG | 82-90% reduction | Warning if < 80% | Automated size comparison |
+| **AVIF Quality Setting** | AVIF encoder quality parameter | 75 | Fixed parameter | Configuration validation |
+| **JPEG Quality Setting** | JPEG encoder quality parameter | 85 | Fixed parameter | Configuration validation |
 
-**Target File Sizes** (per variant):
+**Target File Sizes**:
 
-| Variant | Expected Size | Tolerance |
-|---------|--------------|-----------|
-| AVIF mobile 1x (672×384) | ~10KB | ±5KB |
-| AVIF mobile 2x (1344×768) | ~20KB | ±10KB |
-| JPEG mobile 1x (672×384) | ~30KB | ±10KB |
-| JPEG mobile 2x (1344×768) | ~55KB | ±15KB |
-
-**Total Per Image**: ~115KB for all 4 variants
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **AVIF Mobile 1x** | File size for 672×384 AVIF | ~10KB | Warning if > 15KB | Automated size check |
+| **AVIF Mobile 2x** | File size for 1344×768 AVIF | ~20KB | Warning if > 30KB | Automated size check |
+| **JPEG Mobile 1x** | File size for 672×384 JPEG | ~30KB | Warning if > 40KB | Automated size check |
+| **JPEG Mobile 2x** | File size for 1344×768 JPEG | ~55KB | Warning if > 70KB | Automated size check |
+| **Total Per Image** | Combined size of all 4 variants | ~115KB | Warning if > 150KB | Automated total calculation |
 
 ### 1.3 Visual Quality Assessment
 
-**Scoring Scale** (1-5):
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Aspect Ratio Preservation** | Variants maintain original aspect ratio | ±0.1% deviation | Critical failure if > 0.5% | Automated ratio calculation |
+| **Variant Count** | Correct number of variants generated | 4 variants (2 formats × 2 sizes) | Critical failure if ≠ 4 | Automated count validation |
+| **Format Distribution** | Correct format mix in variants | 2 AVIF + 2 JPEG | Critical failure if incorrect | Automated format check |
+| **Resolution Distribution** | Correct size mix in variants | 2 × 1x + 2 × 2x | Critical failure if incorrect | Automated resolution check |
+| **Image Accessibility** | All variant URLs are accessible | 100% accessible | Critical failure if any unreachable | Automated HTTP check |
 
-```
-5 = Exceptional - Professional-grade, no visible compression artifacts
-4 = High - Minor artifacts only visible on close inspection
-3 = Acceptable - Meets minimum standards, suitable for web
-2 = Poor - Visible artifacts, quality degradation
-1 = Unacceptable - Severe quality loss, unusable
-```
+**Visual Quality Scoring Scale** (1-5):
 
-**Manual Review Checklist**:
-- [ ] Sharp focus on main subject
-- [ ] No obvious compression artifacts
-- [ ] Colors accurate and vibrant
-- [ ] Text readable (if present)
-- [ ] No banding in gradients
-- [ ] Acceptable noise levels
+- **5 = Exceptional** - Professional-grade, no visible compression artifacts
+- **4 = High** - Minor artifacts only visible on close inspection
+- **3 = Acceptable** - Meets minimum standards, suitable for web
+- **2 = Poor** - Visible artifacts, quality degradation
+- **1 = Unacceptable** - Severe quality loss, unusable
 
 ---
 
@@ -72,234 +69,136 @@ This document specifies quality metrics, performance benchmarks, and testing str
 
 **Gemini 2.5 Flash**:
 
-| Metric | Target | Typical | Acceptable Range |
-|--------|--------|---------|------------------|
-| Single image | 5-15s | 8-10s | 5-20s |
-| Optimization | +2-3s | +2.5s | +2-5s |
-| Total time | 7-18s | 10-12s | 7-25s |
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Single Image Generation** | Time to generate one image | 8-10s | Warning if > 15s, Critical if > 20s | Automated timing measurement |
+| **Image Optimization** | Time to create 4 variants | +2-3s | Warning if > 4s, Critical if > 5s | Automated timing measurement |
+| **Total Generation Time** | End-to-end image creation | 10-12s | Warning if > 18s, Critical if > 25s | Automated timing measurement |
+| **Success Rate** | Percentage of successful generations | > 95% | Warning if < 90%, Critical if < 85% | Automated success tracking |
+| **95th Percentile Time** | 95% of generations complete within | < 20s | Critical if > 25s | Automated percentile calculation |
 
 **AI Server (Qwen-Image)**:
 
-| Metric | Target | Typical | Acceptable Range |
-|--------|--------|---------|------------------|
-| Single image | 2-5s | 3-4s | 2-8s |
-| Optimization | +2-3s | +2.5s | +2-5s |
-| Total time | 4-8s | 5-7s | 4-13s |
-
-**Performance Goals**:
-- ✅ Gemini: < 20 seconds total
-- ✅ AI Server: < 10 seconds total
-- ✅ 95th percentile under targets
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Single Image Generation** | Time to generate one image | 3-4s | Warning if > 6s, Critical if > 8s | Automated timing measurement |
+| **Image Optimization** | Time to create 4 variants | +2-3s | Warning if > 4s, Critical if > 5s | Automated timing measurement |
+| **Total Generation Time** | End-to-end image creation | 5-7s | Warning if > 10s, Critical if > 13s | Automated timing measurement |
+| **Success Rate** | Percentage of successful generations | > 95% | Warning if < 90%, Critical if < 85% | Automated success tracking |
+| **95th Percentile Time** | 95% of generations complete within | < 10s | Critical if > 13s | Automated percentile calculation |
 
 ### 2.2 Loading Performance
 
-**Network Simulations**:
+**Network Performance Metrics**:
 
-```typescript
-// Test configuration
-const NETWORK_PROFILES = {
-  '3G': { latency: 400, downloadSpeed: 0.4, uploadSpeed: 0.4 }, // Mbps
-  '4G': { latency: 100, downloadSpeed: 4, uploadSpeed: 2 },
-  'WiFi': { latency: 20, downloadSpeed: 50, uploadSpeed: 25 },
-};
-```
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **3G Load Time (Original)** | 300KB PNG load on 3G (0.4 Mbps) | 6.0s baseline | N/A - baseline measurement | Automated network simulation |
+| **3G Load Time (AVIF 1x)** | 10KB AVIF load on 3G (0.4 Mbps) | 0.2s (30× faster) | Warning if > 0.5s | Automated network simulation |
+| **4G Load Time (Original)** | 300KB PNG load on 4G (4 Mbps) | 0.6s baseline | N/A - baseline measurement | Automated network simulation |
+| **4G Load Time (AVIF 1x)** | 10KB AVIF load on 4G (4 Mbps) | 0.02s (30× faster) | Warning if > 0.1s | Automated network simulation |
+| **WiFi Load Time (Original)** | 300KB PNG load on WiFi (50 Mbps) | 0.05s baseline | N/A - baseline measurement | Automated network simulation |
+| **WiFi Load Time (AVIF 1x)** | 10KB AVIF load on WiFi (50 Mbps) | < 0.01s (5× faster) | Warning if > 0.05s | Automated network simulation |
 
-**Target Loading Times**:
+**Lighthouse Core Web Vitals**:
 
-| Network | Original (300KB) | AVIF Mobile 1x (10KB) | Improvement |
-|---------|------------------|----------------------|-------------|
-| 3G (0.4 Mbps) | 6.0s | **0.2s** | **30× faster** |
-| 4G (4 Mbps) | 0.6s | **0.02s** | **30× faster** |
-| WiFi (50 Mbps) | 0.05s | **< 0.01s** | **5× faster** |
-
-**Lighthouse Scores** (target):
-- Performance: > 90
-- LCP (Largest Contentful Paint): < 2.5s
-- CLS (Cumulative Layout Shift): < 0.1
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Performance Score** | Overall Lighthouse performance score | > 90 | Warning if < 85, Critical if < 80 | Automated Lighthouse audit |
+| **LCP (Largest Contentful Paint)** | Time to render largest content element | < 2.5s | Warning if > 3.0s, Critical if > 4.0s | Automated Lighthouse audit |
+| **CLS (Cumulative Layout Shift)** | Visual stability during page load | < 0.1 | Warning if > 0.15, Critical if > 0.25 | Automated Lighthouse audit |
+| **FID (First Input Delay)** | Time to first user interaction | < 100ms | Warning if > 200ms, Critical if > 300ms | Automated Lighthouse audit |
+| **TBT (Total Blocking Time)** | Sum of blocking time during load | < 200ms | Warning if > 400ms, Critical if > 600ms | Automated Lighthouse audit |
 
 ### 2.3 Storage Efficiency
 
-**Per Image Metrics**:
+**Per Image Storage Metrics**:
 
-```
-Original PNG: 300KB
-4 Optimized Variants: ~115KB total
-Storage Ratio: 38% of original
-Compression: 62% reduction
-```
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Original Image Size** | Size of original PNG image | ~300KB | Warning if > 400KB | Automated file size check |
+| **Variants Total Size** | Combined size of 4 optimized variants | ~115KB | Warning if > 150KB | Automated total calculation |
+| **Storage Ratio** | Variants size as % of original | ~38% | Warning if > 50% | Automated percentage calculation |
+| **Compression Efficiency** | Storage reduction from optimization | ~62% reduction | Warning if < 50% | Automated percentage calculation |
 
-**Per Story (50 scenes with comics)**:
+**Per Story Storage Metrics** (50 scenes):
 
-```
-Original only: 500 images × 300KB = 150MB
-With optimization: 500 × 115KB = 57.5MB
-Incremental: +57.5MB for variants
-Total: 207.5MB (original + variants)
-```
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Original Images Only** | 500 images × 300KB | 150MB | N/A - baseline | Automated calculation |
+| **Optimized Variants** | 500 images × 115KB | 57.5MB | Warning if > 75MB | Automated calculation |
+| **Total Storage** | Original + variants | 207.5MB | Warning if > 250MB | Automated calculation |
+| **Incremental Cost** | Additional storage for variants | +38% | N/A - acceptable overhead | Automated percentage |
 
-**Cost Efficiency**:
-- Vercel Blob: $0.15/GB/month
-- 1,000 images: ~115MB = **$0.017/month**
-- Bandwidth saved: 93% (AVIF vs original PNG)
+**Cost Efficiency Metrics**:
+
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Storage Cost (1000 images)** | Monthly Vercel Blob cost | ~$0.017/month | N/A - very low cost | Automated cost calculation |
+| **Bandwidth Savings** | AVIF vs original PNG bandwidth | 93% reduction | Warning if < 85% | Automated bandwidth tracking |
+| **Cost per User Session** | Average cost per reader | < $0.001 | N/A - negligible | Automated session cost calc |
 
 ---
 
 ## Part III: Testing Strategies
 
-### 3.1 Unit Tests
+### 3.1 Automated Unit Testing
 
-**Image Generation Service**:
+**Image Generation Service Tests**:
 
-```typescript
-describe('Image Generation Service', () => {
-  it('should select correct aspect ratio for image type', () => {
-    expect(getAspectRatioForImageType('story')).toBe('16:9');
-    expect(getAspectRatioForImageType('character')).toBe('1:1');
-    expect(getAspectRatioForImageType('comic-panel')).toBe('9:16');
-  });
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Aspect Ratio Selection** | Validates correct aspect ratio for image type | 100% correct | Critical failure if wrong | Automated unit test |
+| **Provider Dimensions** | Validates provider-specific dimensions | Exact match | Critical failure if mismatch | Automated unit test |
+| **Metadata Completeness** | Validates all required metadata fields present | 100% complete | Critical failure if missing | Automated unit test |
+| **Optimized Set Structure** | Validates optimizedSet contains 4 variants | Exactly 4 variants | Critical failure if ≠ 4 | Automated unit test |
 
-  it('should return provider-specific dimensions', () => {
-    const geminiDims = getImageDimensions('gemini', '16:9');
-    expect(geminiDims).toEqual({ width: 1024, height: 576 });
+**Image Optimization Service Tests**:
 
-    const aiServerDims = getImageDimensions('ai-server', '16:9');
-    expect(aiServerDims).toEqual({ width: 1664, height: 928 });
-  });
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Variant Count** | Validates 4 variants generated (2 formats × 2 sizes) | Exactly 4 | Critical failure if ≠ 4 | Automated unit test |
+| **Format Distribution** | Validates 2 AVIF + 2 JPEG variants | Correct mix | Critical failure if wrong | Automated unit test |
+| **Aspect Ratio Preservation** | Validates variants maintain original aspect ratio | ±0.1% deviation | Critical failure if > 0.5% | Automated unit test |
+| **File Size Reduction** | Validates AVIF 1x < 20KB and > 5KB | Within range | Warning if out of range | Automated unit test |
+| **Resolution Distribution** | Validates 2 × 1x + 2 × 2x variants | Correct mix | Critical failure if wrong | Automated unit test |
 
-  it('should generate image with correct metadata', async () => {
-    const result = await generateStoryImage({
-      prompt: 'test scene',
-      storyId: 'test',
-      imageType: 'scene',
-    });
+### 3.2 Automated Integration Testing
 
-    expect(result.aspectRatio).toBe('16:9');
-    expect(result.width).toBeGreaterThan(0);
-    expect(result.height).toBeGreaterThan(0);
-    expect(result.optimizedSet).toBeDefined();
-    expect(result.optimizedSet.variants).toHaveLength(4);
-  });
-});
-```
+**End-to-End Image Generation Flow**:
 
-**Image Optimization Service**:
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Image Generation UI** | Validates image generation button triggers process | Success | Critical failure if error | Automated E2E test |
+| **Image Display** | Validates generated image displays correctly | Visible | Critical failure if not visible | Automated E2E test |
+| **AVIF Source Presence** | Validates AVIF source in picture element | Present | Warning if missing | Automated E2E test |
+| **JPEG Fallback** | Validates JPEG fallback source present | Present | Critical failure if missing | Automated E2E test |
+| **Responsive srcset** | Validates srcset contains 1x and 2x variants | Both present | Critical failure if missing | Automated E2E test |
+| **Generation Timeout** | Validates generation completes within time limit | < 30s | Critical failure if > 30s | Automated E2E test |
 
-```typescript
-describe('Image Optimization Service', () => {
-  it('should generate 4 variants (2 formats × 2 sizes)', async () => {
-    const optimized = await optimizeImage(
-      originalUrl,
-      'test-image',
-      'story-123',
-      'scene'
-    );
+### 3.3 Automated Performance Testing
 
-    expect(optimized.variants).toHaveLength(4);
-    expect(optimized.variants.filter(v => v.format === 'avif')).toHaveLength(2);
-    expect(optimized.variants.filter(v => v.format === 'jpeg')).toHaveLength(2);
-    expect(optimized.variants.filter(v => v.resolution === '1x')).toHaveLength(2);
-    expect(optimized.variants.filter(v => v.resolution === '2x')).toHaveLength(2);
-  });
+**Core Web Vitals Monitoring**:
 
-  it('should maintain aspect ratio across variants', async () => {
-    const optimized = await optimizeImage(originalUrl, 'test', 'story', 'scene');
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **LCP Measurement** | Measures Largest Contentful Paint time | < 2.5s | Warning if > 3.0s, Critical if > 4.0s | Automated performance test |
+| **Network Throttling (4G)** | Tests image load on 4G simulation | < 0.1s | Warning if > 0.2s | Automated network simulation |
+| **Network Throttling (3G)** | Tests image load on 3G simulation | < 0.5s | Warning if > 1.0s | Automated network simulation |
+| **Image Decode Time** | Measures time to decode AVIF/JPEG | < 50ms | Warning if > 100ms | Automated timing measurement |
+| **Total Page Load Time** | Measures complete page load with images | < 3.0s | Warning if > 4.0s, Critical if > 5.0s | Automated performance test |
 
-    for (const variant of optimized.variants) {
-      const ratio = variant.width / variant.height;
-      expect(ratio).toBeCloseTo(1.75, 1); // 7:4 = 1.75
-    }
-  });
+### 3.4 Automated Visual Regression Testing
 
-  it('should reduce file size significantly', async () => {
-    const optimized = await optimizeImage(originalUrl, 'test', 'story', 'scene');
+**Visual Consistency Tests**:
 
-    const avif1x = optimized.variants.find(v => v.format === 'avif' && v.resolution === '1x');
-    expect(avif1x.size).toBeLessThan(20000); // < 20KB
-    expect(avif1x.size).toBeGreaterThan(5000); // > 5KB
-  });
-});
-```
-
-### 3.2 Integration Tests (Playwright)
-
-```typescript
-test('Generate and display optimized image', async ({ page }) => {
-  // Login as writer
-  await login(page, writer.email, writer.password);
-
-  // Navigate to story creation
-  await page.goto('http://localhost:3000/studio/new');
-
-  // Generate story cover
-  await page.click('button:has-text("Generate Cover Image")');
-
-  // Wait for generation
-  await page.waitForSelector('[data-testid="cover-image"]', {
-    timeout: 30000,
-  });
-
-  // Verify image loaded
-  const image = page.locator('[data-testid="cover-image"] img');
-  await expect(image).toBeVisible();
-
-  // Check for AVIF source (if browser supports)
-  const picture = page.locator('[data-testid="cover-image"] picture');
-  const avifSource = picture.locator('source[type="image/avif"]');
-  await expect(avifSource).toBeVisible();
-
-  // Verify responsive srcset
-  const srcset = await avifSource.getAttribute('srcset');
-  expect(srcset).toContain('672w');
-  expect(srcset).toContain('1344w');
-});
-```
-
-### 3.3 Performance Testing
-
-```typescript
-test('Image loading performance', async ({ page }) => {
-  // Set network throttling (4G)
-  await page.route('**/*', route => route.continue());
-
-  await page.goto('http://localhost:3000/novels/test-story');
-
-  // Measure LCP (Largest Contentful Paint)
-  const lcp = await page.evaluate(() => {
-    return new Promise(resolve => {
-      new PerformanceObserver(list => {
-        const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        resolve(lastEntry.renderTime || lastEntry.loadTime);
-      }).observe({ entryTypes: ['largest-contentful-paint'] });
-    });
-  });
-
-  expect(lcp).toBeLessThan(2500); // < 2.5s for LCP
-});
-```
-
-### 3.4 Visual Regression Testing
-
-```typescript
-test('Visual consistency across variants', async ({ page }) => {
-  await page.goto('http://localhost:3000/novels/test-story');
-
-  // Take screenshot at mobile resolution
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.screenshot({ path: 'screenshots/mobile-scene.png' });
-
-  // Take screenshot at desktop resolution
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.screenshot({ path: 'screenshots/desktop-scene.png' });
-
-  // Compare with baseline (using pixelmatch or similar)
-  const mobileMatch = await compareImages(
-    'screenshots/mobile-scene.png',
-    'baselines/mobile-scene.png'
-  );
-  expect(mobileMatch).toBeGreaterThan(0.95); // 95% similarity
-});
-```
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Mobile Screenshot Comparison** | Compares mobile rendering to baseline | > 95% similarity | Warning if < 90% | Automated screenshot diff |
+| **Desktop Screenshot Comparison** | Compares desktop rendering to baseline | > 95% similarity | Warning if < 90% | Automated screenshot diff |
+| **Cross-Browser AVIF Support** | Validates AVIF loads in supporting browsers | 100% success | Critical failure if fails | Automated browser testing |
+| **Cross-Browser JPEG Fallback** | Validates JPEG loads in all browsers | 100% success | Critical failure if fails | Automated browser testing |
+| **Responsive Layout** | Validates correct variant loads per viewport | Correct variant | Critical failure if wrong | Automated responsive test |
 
 ---
 
@@ -337,151 +236,33 @@ test('Visual consistency across variants', async ({ page }) => {
 
 ### 4.2 Monitoring Dashboard
 
-**Key Metrics to Track**:
+**Generation Metrics**:
 
-```typescript
-// Generation metrics
-{
-  successRate: number;           // % successful generations
-  averageGenerationTime: number; // Seconds
-  failureReasons: Record<string, number>;
-  provider: 'gemini' | 'ai-server';
-}
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Success Rate** | Percentage of successful generations | > 95% | Warning if < 90%, Critical if < 85% | Automated tracking |
+| **Average Generation Time** | Mean time to generate image | 8-10s (Gemini), 3-4s (AI Server) | Warning if > targets | Automated timing |
+| **Failure Reasons** | Categorized failure counts | N/A - diagnostic | N/A - for analysis | Automated error logging |
+| **Provider Status** | Active provider (gemini/ai-server) | N/A - informational | N/A - monitoring | Automated status check |
 
-// Optimization metrics
-{
-  averageOptimizationTime: number; // Seconds
-  averageFileSize: {
-    avif1x: number;
-    avif2x: number;
-    jpeg1x: number;
-    jpeg2x: number;
-  };
-  compressionRatio: number; // vs original
-}
+**Optimization Metrics**:
 
-// Loading metrics
-{
-  averageLCP: number;        // Largest Contentful Paint
-  cacheHitRate: number;      // % served from cache
-  formatDistribution: {
-    avif: number;            // % served as AVIF
-    jpeg: number;            // % served as JPEG
-  };
-}
-```
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Average Optimization Time** | Mean time to create 4 variants | 2-3s | Warning if > 4s, Critical if > 5s | Automated timing |
+| **Average AVIF 1x Size** | Mean file size for AVIF mobile 1x | ~10KB | Warning if > 15KB | Automated size tracking |
+| **Average AVIF 2x Size** | Mean file size for AVIF mobile 2x | ~20KB | Warning if > 30KB | Automated size tracking |
+| **Average JPEG 1x Size** | Mean file size for JPEG mobile 1x | ~30KB | Warning if > 40KB | Automated size tracking |
+| **Average JPEG 2x Size** | Mean file size for JPEG mobile 2x | ~55KB | Warning if > 70KB | Automated size tracking |
+| **Compression Ratio** | Average size reduction vs original | 62% reduction | Warning if < 50% | Automated calculation |
 
----
+**Loading Metrics**:
 
-## Part V: Troubleshooting Guide
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Average LCP** | Mean Largest Contentful Paint time | < 2.5s | Warning if > 3.0s, Critical if > 4.0s | Automated LCP tracking |
+| **Cache Hit Rate** | Percentage served from cache | > 80% | Warning if < 70% | Automated cache analytics |
+| **AVIF Distribution** | Percentage served as AVIF | > 70% | Warning if < 60% | Automated format tracking |
+| **JPEG Distribution** | Percentage served as JPEG fallback | < 30% | Warning if > 40% | Automated format tracking |
+| **CDN Cache Hit Rate** | Percentage served from CDN cache | > 90% | Warning if < 80% | Automated CDN analytics |
 
-### 5.1 Common Issues
-
-**Issue: Images not generating**
-```
-Symptom: API returns error or timeout
-Causes:
-  - Missing API key (Gemini)
-  - AI Server unavailable
-  - Network timeout
-  - Rate limit exceeded
-
-Solutions:
-  1. Check environment variables (GOOGLE_GENERATIVE_AI_API_KEY)
-  2. Verify AI Server is running (if using)
-  3. Check API quota/billing
-  4. Verify network connectivity
-  5. Check logs for specific error messages
-```
-
-**Issue: Optimization failing**
-```
-Symptom: Only original image saved, no variants
-Causes:
-  - Sharp library error
-  - Vercel Blob upload failure
-  - Insufficient memory
-  - Invalid image format
-
-Solutions:
-  1. Check Sharp is installed: `pnpm list sharp`
-  2. Verify BLOB_READ_WRITE_TOKEN
-  3. Check Vercel Blob storage limits
-  4. Review server logs for Sharp errors
-  5. Verify original image is valid PNG/JPEG
-```
-
-**Issue: AVIF not loading**
-```
-Symptom: Images always load as JPEG
-Causes:
-  - Browser doesn't support AVIF
-  - AVIF variant missing
-  - Incorrect MIME type
-
-Solutions:
-  1. Check browser support (Safari 16+, Chrome 85+)
-  2. Verify AVIF variants in database
-  3. Check Content-Type header
-  4. Ensure <source type="image/avif"> in HTML
-```
-
-**Issue: Poor image quality**
-```
-Symptom: Visible compression artifacts
-Causes:
-  - Quality setting too low
-  - Incorrect aspect ratio
-  - Over-compression
-
-Solutions:
-  1. Increase quality settings (AVIF: 75 → 80, JPEG: 85 → 90)
-  2. Verify aspect ratio matches expected
-  3. Check original image quality
-  4. Test different quality settings
-```
-
-### 5.2 Performance Debugging
-
-**Slow Generation**:
-```bash
-# Enable detailed logging
-DEBUG=image-generation node scripts/test-imagen-generation.mjs
-
-# Monitor provider response times
-# Check AI Server GPU usage (if using)
-# Verify network latency to Gemini API
-```
-
-**Slow Loading**:
-```bash
-# Check Lighthouse performance
-npx lighthouse http://localhost:3000/novels/test-story
-
-# Analyze network waterfall in DevTools
-# Verify CDN caching headers
-# Check image sizes in Network tab
-```
-
----
-
-## Conclusion
-
-The image evaluation system ensures quality through:
-
-1. **Automated Metrics**: File size, dimensions, aspect ratios
-2. **Performance Benchmarks**: Generation time, loading speed
-3. **Visual Quality**: Manual review and automated checks
-4. **Comprehensive Testing**: Unit, integration, E2E, visual regression
-5. **Monitoring**: Real-time metrics and alerting
-
-**Quality Targets**:
-- Generation success rate: > 95%
-- Average generation time: < 15s (Gemini), < 8s (AI Server)
-- File size reduction: > 85% vs original
-- LCP (Largest Contentful Paint): < 2.5s
-- Visual quality score: ≥ 4/5
-
-**Next Steps:**
-- See `image-specification.md` for core concepts and architecture
-- See `image-development.md` for API specifications and implementation
