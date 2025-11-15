@@ -1,430 +1,352 @@
 /**
- * Unit Tests for Images System
+ * Integration Tests for Images System
  *
- * Tests the complete image generation system following 3-layer architecture:
- * - Generator Layer: Pure image generation (no DB, no uploads)
- * - Service Layer: Orchestration with DB operations and Vercel Blob uploads
- * - API Layer: HTTP requests (tested separately)
+ * Tests the complete image generation system using real API calls.
+ * Uses writer@fictures.xyz API key from .auth/user.json (develop env).
+ *
+ * Test coverage:
+ * - Image generation with different types and aspect ratios via API
+ * - API authentication with writer API key
+ * - Service layer orchestration (generation + upload + optimization)
+ * - Vercel Blob upload integration
+ * - Image optimization (AVIF variants only)
  */
 
-import { beforeEach, describe, expect, it, jest } from "@jest/globals";
-import { put } from "@vercel/blob";
-import { createImageGenerationClient } from "@/lib/ai/image-generation";
-import type {
-    GeneratorImageParams,
-    GeneratorImageResult,
-} from "@/lib/schemas/generators/types";
-import { generateImage } from "@/lib/studio/generators/images-generator";
-import { optimizeImage } from "@/lib/studio/services/image-optimization-service";
-import type {
-    ServiceImagesParams,
-    ServiceImagesResult,
-} from "@/lib/studio/services/images-service";
-import { ImagesService } from "@/lib/studio/services/images-service";
+import fs from "node:fs";
+import path from "node:path";
+import { beforeAll, describe, expect, it } from "@jest/globals";
 
-// Mock dependencies
-jest.mock("@/lib/ai/image-generation");
-jest.mock("@/lib/studio/generators/images-generator");
-jest.mock("@/lib/studio/services/image-optimization-service");
-jest.mock("@vercel/blob");
+// ============================================================================
+// Test Configuration
+// ============================================================================
 
-describe("Images System", () => {
-    describe("Generator Layer - generateImage()", () => {
-        beforeEach(() => {
-            jest.clearAllMocks();
-        });
+const AUTH_FILE_PATH: string = path.resolve(__dirname, "../../.auth/user.json");
 
-        it("should generate image with correct parameters", async () => {
-            // Arrange
-            const mockImageUrl = "https://provider.com/image.png";
-            const mockWidth = 1664;
-            const mockHeight = 928;
-            const mockModel = "gemini-2.5-flash";
-            const mockProvider = "gemini";
-            const mockImageBuffer = new ArrayBuffer(1024 * 1024);
+const API_BASE_URL: string = "http://localhost:3000";
+const API_ENDPOINT: string = "/api/studio/images";
 
-            const mockGenerate = jest.fn().mockResolvedValue({
-                imageUrl: mockImageUrl,
-                width: mockWidth,
-                height: mockHeight,
-                model: mockModel,
-                provider: mockProvider,
-            });
-
-            const mockClient = {
-                generate: mockGenerate,
-                getProviderType: jest.fn().mockReturnValue("gemini"),
+interface AuthData {
+    develop: {
+        profiles: {
+            writer: {
+                email: string;
+                password: string;
+                apiKey: string;
             };
+        };
+    };
+}
 
-            (createImageGenerationClient as jest.Mock).mockReturnValue(
-                mockClient,
-            );
+interface ApiImagesRequest {
+    prompt: string;
+    contentId: string;
+    imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
+}
 
-            global.fetch = jest.fn().mockResolvedValue({
-                ok: true,
-                arrayBuffer: jest.fn().mockResolvedValue(mockImageBuffer),
-            } as any);
+interface ImageVariant {
+    format: string;
+    device: string;
+    resolution: string;
+    width: number;
+    height: number;
+    url: string;
+    size: number;
+}
 
-            const params: GeneratorImageParams = {
-                prompt: "A mysterious forest at twilight",
-                aspectRatio: "16:9",
-                seed: 12345,
-                imageType: "scene",
-            };
+interface OptimizedImageSet {
+    imageId: string;
+    originalUrl: string;
+    variants: ImageVariant[];
+    generatedAt: string;
+}
 
-            // Act
-            const result: GeneratorImageResult = await generateImage(params);
+interface ApiImagesResponse {
+    imageId: string;
+    imageUrl: string;
+    blobUrl: string;
+    width: number;
+    height: number;
+    size: number;
+    aspectRatio: string;
+    optimizedSet: OptimizedImageSet;
+    isPlaceholder: boolean;
+    model: string;
+    provider: string;
+    metadata: {
+        generationTime: number;
+        uploadTime: number;
+        optimizationTime: number;
+        dbUpdateTime: number;
+        totalTime: number;
+    };
+}
 
-            // Assert
-            expect(mockGenerate).toHaveBeenCalledWith({
-                prompt: params.prompt,
-                aspectRatio: params.aspectRatio,
-                seed: params.seed,
-            });
-            expect(result.imageUrl).toBe(mockImageUrl);
-            expect(result.imageBuffer).toBe(mockImageBuffer);
-            expect(result.width).toBe(mockWidth);
-            expect(result.height).toBe(mockHeight);
-            expect(result.size).toBe(mockImageBuffer.byteLength);
-            expect(result.aspectRatio).toBe(params.aspectRatio);
-            expect(result.model).toBe(mockModel);
-            expect(result.provider).toBe(mockProvider);
-            expect(result.generationTime).toBeGreaterThan(0);
-            expect(global.fetch).toHaveBeenCalledWith(mockImageUrl);
-        });
+let authData: AuthData;
+let writerApiKey: string;
 
-        it("should handle different image types", async () => {
-            // Arrange
-            const mockClient = {
-                generate: jest.fn().mockResolvedValue({
-                    imageUrl: "https://provider.com/image.png",
-                    width: 1024,
-                    height: 1024,
-                    model: "gemini-2.5-flash",
-                    provider: "gemini",
-                }),
-                getProviderType: jest.fn().mockReturnValue("gemini"),
-            };
+// ============================================================================
+// Test Setup
+// ============================================================================
 
-            (createImageGenerationClient as jest.Mock).mockReturnValue(
-                mockClient,
-            );
+beforeAll(() => {
+    // 1. Load authentication data
+    const authContent: string = fs.readFileSync(AUTH_FILE_PATH, "utf-8");
+    authData = JSON.parse(authContent) as AuthData;
 
-            global.fetch = jest.fn().mockResolvedValue({
-                ok: true,
-                arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(1024)),
-            } as any);
+    // 2. Get writer API key
+    writerApiKey = authData.develop.profiles.writer.apiKey;
 
-            const imageTypes: Array<
-                "story" | "character" | "setting" | "scene" | "comic-panel"
-            > = ["story", "character", "setting", "scene", "comic-panel"];
+    // 3. Verify environment variables
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+        throw new Error("BLOB_READ_WRITE_TOKEN not set in environment");
+    }
 
-            // Act & Assert
-            for (const imageType of imageTypes) {
-                const params: GeneratorImageParams = {
-                    prompt: `Test ${imageType} image`,
-                    aspectRatio: "1:1",
-                    imageType,
-                };
+    console.log("✓ Test setup complete - using writer API key");
+});
 
-                const result = await generateImage(params);
+// ============================================================================
+// Helper Function
+// ============================================================================
 
-                expect(result.imageUrl).toBeDefined();
-                expect(result.imageBuffer).toBeDefined();
-                expect(result.width).toBeGreaterThan(0);
-                expect(result.height).toBeGreaterThan(0);
-            }
-        });
+/**
+ * Call the images API endpoint with fetch
+ */
+async function generateImage(
+    requestBody: ApiImagesRequest,
+): Promise<ApiImagesResponse> {
+    const url: string = `${API_BASE_URL}${API_ENDPOINT}`;
 
-        it("should throw error when image fetch fails", async () => {
-            // Arrange
-            const mockClient = {
-                generate: jest.fn().mockResolvedValue({
-                    imageUrl: "https://provider.com/image.png",
-                    width: 1024,
-                    height: 576,
-                    model: "gemini-2.5-flash",
-                    provider: "gemini",
-                }),
-                getProviderType: jest.fn().mockReturnValue("gemini"),
-            };
-
-            (createImageGenerationClient as jest.Mock).mockReturnValue(
-                mockClient,
-            );
-
-            global.fetch = jest.fn().mockResolvedValue({
-                ok: false,
-                statusText: "Not Found",
-            } as any);
-
-            const params: GeneratorImageParams = {
-                prompt: "Test image",
-                aspectRatio: "16:9",
-                imageType: "scene",
-            };
-
-            // Act & Assert
-            await expect(generateImage(params)).rejects.toThrow(
-                "Failed to fetch generated image: Not Found",
-            );
-        });
-
-        it("should handle AI server provider", async () => {
-            // Arrange
-            const mockClient = {
-                generate: jest.fn().mockResolvedValue({
-                    imageUrl: "https://ai-server.com/image.png",
-                    width: 1664,
-                    height: 928,
-                    model: "qwen-vl-plus",
-                    provider: "ai-server",
-                }),
-                getProviderType: jest.fn().mockReturnValue("ai-server"),
-            };
-
-            (createImageGenerationClient as jest.Mock).mockReturnValue(
-                mockClient,
-            );
-
-            global.fetch = jest.fn().mockResolvedValue({
-                ok: true,
-                arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(2048)),
-            } as any);
-
-            const params: GeneratorImageParams = {
-                prompt: "Test AI server image",
-                aspectRatio: "16:9",
-                imageType: "scene",
-            };
-
-            // Act
-            const result = await generateImage(params);
-
-            // Assert
-            expect(result.provider).toBe("ai-server");
-            expect(result.model).toBe("qwen-vl-plus");
-        });
-
-        it("should work without optional seed parameter", async () => {
-            // Arrange
-            const mockClient = {
-                generate: jest.fn().mockResolvedValue({
-                    imageUrl: "https://provider.com/image.png",
-                    width: 1024,
-                    height: 1024,
-                    model: "gemini-2.5-flash",
-                    provider: "gemini",
-                }),
-                getProviderType: jest.fn().mockReturnValue("gemini"),
-            };
-
-            (createImageGenerationClient as jest.Mock).mockReturnValue(
-                mockClient,
-            );
-
-            global.fetch = jest.fn().mockResolvedValue({
-                ok: true,
-                arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(1024)),
-            } as any);
-
-            const params: GeneratorImageParams = {
-                prompt: "Test image without seed",
-                aspectRatio: "1:1",
-                imageType: "character",
-            };
-
-            // Act
-            const result = await generateImage(params);
-
-            // Assert
-            expect(mockClient.generate).toHaveBeenCalledWith({
-                prompt: params.prompt,
-                aspectRatio: params.aspectRatio,
-                seed: undefined,
-            });
-            expect(result).toBeDefined();
-        });
+    const response: Response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${writerApiKey}`,
+        },
+        body: JSON.stringify(requestBody),
     });
 
-    describe("Service Layer - ImagesService.generateAndSave()", () => {
-        let service: ImagesService;
+    if (!response.ok) {
+        const errorText: string = await response.text();
+        throw new Error(
+            `API request failed: ${response.status} ${response.statusText} - ${errorText}`,
+        );
+    }
 
-        beforeEach(() => {
-            jest.clearAllMocks();
-            service = new ImagesService();
+    const result: ApiImagesResponse =
+        (await response.json()) as ApiImagesResponse;
+    return result;
+}
+
+// ============================================================================
+// Image Generation Tests
+// ============================================================================
+
+describe("Images System Integration", () => {
+    it("should generate story cover image with 16:9 aspect ratio", async () => {
+        // Arrange
+        const requestBody: ApiImagesRequest = {
+            prompt: "A mysterious ancient library filled with glowing books",
+            contentId: "story_test_001",
+            imageType: "story",
+        };
+
+        // Act
+        const result: ApiImagesResponse = await generateImage(requestBody);
+
+        // Assert - Basic properties
+        expect(result.imageId).toBeDefined();
+        expect(result.imageUrl).toContain("blob.vercel-storage.com");
+        expect(result.blobUrl).toBe(result.imageUrl);
+        expect(result.aspectRatio).toBe("16:9");
+        expect(result.isPlaceholder).toBe(false);
+
+        // Assert - Dimensions (16:9 = 1664x928 or 1344x768)
+        expect(result.width).toBeGreaterThan(1000);
+        expect(result.height).toBeGreaterThan(500);
+        const aspectRatioValue: number = result.width / result.height;
+        expect(aspectRatioValue).toBeGreaterThan(1.7);
+        expect(aspectRatioValue).toBeLessThan(1.8);
+
+        // Assert - Image size
+        expect(result.size).toBeGreaterThan(0);
+
+        // Assert - AI provider metadata
+        expect(result.model).toBeDefined();
+        expect(result.provider).toBeDefined();
+
+        // Assert - Timing metadata
+        expect(result.metadata.generationTime).toBeGreaterThan(0);
+        expect(result.metadata.uploadTime).toBeGreaterThan(0);
+        expect(result.metadata.optimizationTime).toBeGreaterThan(0);
+        expect(result.metadata.totalTime).toBeGreaterThan(0);
+
+        // Assert - Optimized variants
+        expect(result.optimizedSet).toBeDefined();
+        expect(result.optimizedSet.imageId).toBeDefined();
+        expect(result.optimizedSet.originalUrl).toBe(result.imageUrl);
+        expect(result.optimizedSet.variants).toBeInstanceOf(Array);
+        expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
+
+        // Assert - Variant structure (AVIF format only)
+        const avifVariants: ImageVariant[] =
+            result.optimizedSet.variants.filter(
+                (v: ImageVariant) => v.format === "avif",
+            );
+        expect(avifVariants.length).toBeGreaterThan(0);
+
+        // Assert - Multiple resolutions (1x, 2x)
+        const has1x: boolean = result.optimizedSet.variants.some(
+            (v: ImageVariant) => v.resolution === "1x",
+        );
+        const has2x: boolean = result.optimizedSet.variants.some(
+            (v: ImageVariant) => v.resolution === "2x",
+        );
+        expect(has1x).toBe(true);
+        expect(has2x).toBe(true);
+    }, 60000); // 60s timeout for image generation
+
+    it("should generate character portrait with 1:1 aspect ratio", async () => {
+        // Arrange
+        const requestBody: ApiImagesRequest = {
+            prompt: "A wise elderly wizard with a long white beard and piercing blue eyes",
+            contentId: "char_test_001",
+            imageType: "character",
+        };
+
+        // Act
+        const result: ApiImagesResponse = await generateImage(requestBody);
+
+        // Assert - Aspect ratio
+        expect(result.aspectRatio).toBe("1:1");
+
+        // Assert - Dimensions (1:1 = 1024x1024)
+        expect(result.width).toBeGreaterThan(900);
+        expect(result.height).toBeGreaterThan(900);
+        const aspectRatioValue: number = result.width / result.height;
+        expect(aspectRatioValue).toBeGreaterThan(0.95);
+        expect(aspectRatioValue).toBeLessThan(1.05);
+
+        // Assert - All other standard checks
+        expect(result.imageUrl).toContain("blob.vercel-storage.com");
+        expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
+        expect(result.metadata.totalTime).toBeGreaterThan(0);
+    }, 60000);
+
+    it("should generate setting image with 1:1 aspect ratio", async () => {
+        // Arrange
+        const requestBody: ApiImagesRequest = {
+            prompt: "A bustling medieval marketplace with colorful tents and merchants",
+            contentId: "setting_test_001",
+            imageType: "setting",
+        };
+
+        // Act
+        const result: ApiImagesResponse = await generateImage(requestBody);
+
+        // Assert - Aspect ratio
+        expect(result.aspectRatio).toBe("1:1");
+
+        // Assert - Square dimensions
+        const aspectRatioValue: number = result.width / result.height;
+        expect(aspectRatioValue).toBeGreaterThan(0.95);
+        expect(aspectRatioValue).toBeLessThan(1.05);
+    }, 60000);
+
+    it("should generate scene image with 16:9 aspect ratio", async () => {
+        // Arrange
+        const requestBody: ApiImagesRequest = {
+            prompt: "A dramatic sunset over a vast desert with ancient ruins",
+            contentId: "scene_test_001",
+            imageType: "scene",
+        };
+
+        // Act
+        const result: ApiImagesResponse = await generateImage(requestBody);
+
+        // Assert - Aspect ratio
+        expect(result.aspectRatio).toBe("16:9");
+
+        // Assert - Widescreen dimensions
+        const aspectRatioValue: number = result.width / result.height;
+        expect(aspectRatioValue).toBeGreaterThan(1.7);
+        expect(aspectRatioValue).toBeLessThan(1.8);
+    }, 60000);
+
+    it("should generate comic panel with 9:16 aspect ratio", async () => {
+        // Arrange
+        const requestBody: ApiImagesRequest = {
+            prompt: "A superhero leaping between skyscrapers in a dynamic action pose",
+            contentId: "scene_test_002",
+            imageType: "comic-panel",
+        };
+
+        // Act
+        const result: ApiImagesResponse = await generateImage(requestBody);
+
+        // Assert - Aspect ratio
+        expect(result.aspectRatio).toBe("9:16");
+
+        // Assert - Portrait dimensions (taller than wide)
+        const aspectRatioValue: number = result.width / result.height;
+        expect(aspectRatioValue).toBeGreaterThan(0.55);
+        expect(aspectRatioValue).toBeLessThan(0.58);
+        expect(result.height).toBeGreaterThan(result.width);
+    }, 60000);
+
+    it("should include comprehensive metadata in results", async () => {
+        // Arrange
+        const requestBody: ApiImagesRequest = {
+            prompt: "A serene Japanese garden with cherry blossoms and a koi pond",
+            contentId: "scene_test_003",
+            imageType: "scene",
+        };
+
+        // Act
+        const result: ApiImagesResponse = await generateImage(requestBody);
+
+        // Assert - Metadata completeness
+        expect(result.metadata).toMatchObject({
+            generationTime: expect.any(Number),
+            uploadTime: expect.any(Number),
+            optimizationTime: expect.any(Number),
+            totalTime: expect.any(Number),
         });
 
-        it("should orchestrate image generation, upload, and optimization", async () => {
-            // Arrange
-            const mockImageBuffer = new ArrayBuffer(1024 * 300);
-            const mockBlobUrl = "https://blob.vercel-storage.com/image.png";
+        // Assert - Timing relationships
+        expect(result.metadata.totalTime).toBeGreaterThanOrEqual(
+            result.metadata.generationTime,
+        );
+        expect(result.metadata.totalTime).toBeGreaterThanOrEqual(
+            result.metadata.uploadTime,
+        );
+        expect(result.metadata.totalTime).toBeGreaterThanOrEqual(
+            result.metadata.optimizationTime,
+        );
 
-            (generateImage as jest.Mock).mockResolvedValue({
-                imageUrl: "https://provider.com/temp-image.png",
-                imageBuffer: mockImageBuffer,
-                width: 1664,
-                height: 928,
-                size: mockImageBuffer.byteLength,
-                aspectRatio: "16:9",
-                model: "gemini-2.5-flash",
-                provider: "gemini",
-                generationTime: 5000,
-            });
-
-            (put as jest.Mock).mockResolvedValue({
-                url: mockBlobUrl,
-            });
-
-            const mockOptimizedSet = {
-                imageId: "opt_123",
-                originalUrl: mockBlobUrl,
-                variants: [
-                    {
-                        format: "avif" as const,
-                        device: "mobile" as const,
-                        resolution: "1x" as const,
-                        width: 832,
-                        height: 464,
-                        url: "https://blob.vercel-storage.com/avif-1x.avif",
-                        size: 10240,
-                    },
-                    {
-                        format: "avif" as const,
-                        device: "mobile" as const,
-                        resolution: "2x" as const,
-                        width: 1664,
-                        height: 928,
-                        url: "https://blob.vercel-storage.com/avif-2x.avif",
-                        size: 20480,
-                    },
-                ],
-                generatedAt: new Date().toISOString(),
-            };
-
-            (optimizeImage as jest.Mock).mockResolvedValue(mockOptimizedSet);
-
-            const params: ServiceImagesParams = {
-                prompt: "A mysterious forest at twilight",
-                contentId: "scene_789",
-                imageType: "scene",
-                userId: "user_123",
-            };
-
-            // Act
-            const result: ServiceImagesResult =
-                await service.generateAndSave(params);
-
-            // Assert - Generator was called correctly
-            expect(generateImage).toHaveBeenCalledWith({
-                prompt: params.prompt,
-                aspectRatio: "16:9",
-                imageType: params.imageType,
-            });
-
-            // Assert - Vercel Blob upload was called
-            expect(put).toHaveBeenCalledWith(
-                expect.stringContaining("stories/scene_789/scene"),
-                mockImageBuffer,
-                {
-                    access: "public",
-                    contentType: "image/png",
-                },
-            );
-
-            // Assert - Optimization was called
-            expect(optimizeImage).toHaveBeenCalledWith(
-                mockBlobUrl,
-                expect.stringMatching(/^img_\d+_[a-z0-9]+$/),
-                params.contentId,
-                "scene",
-                params.contentId,
-            );
-
-            // Assert - Result structure
-            expect(result.imageUrl).toBe(mockBlobUrl);
-            expect(result.blobUrl).toBe(mockBlobUrl);
-            expect(result.width).toBe(1664);
-            expect(result.height).toBe(928);
-            expect(result.size).toBe(mockImageBuffer.byteLength);
-            expect(result.aspectRatio).toBe("16:9");
-            expect(result.optimizedSet).toEqual(mockOptimizedSet);
-            expect(result.isPlaceholder).toBe(false);
-            expect(result.model).toBe("gemini-2.5-flash");
-            expect(result.provider).toBe("gemini");
-            expect(result.metadata.generationTime).toBe(5000);
-            expect(result.metadata.optimizationTime).toBeGreaterThan(0);
-            expect(result.metadata.uploadTime).toBeGreaterThan(0);
-            expect(result.metadata.totalTime).toBeGreaterThan(0);
+        // Assert - Optimized set structure
+        expect(result.optimizedSet).toMatchObject({
+            imageId: expect.any(String),
+            originalUrl: expect.any(String),
+            variants: expect.any(Array),
+            generatedAt: expect.any(String),
         });
 
-        it("should use correct aspect ratios for different image types", async () => {
-            // Arrange
-            const mockImageBuffer = new ArrayBuffer(1024);
-            (generateImage as jest.Mock).mockResolvedValue({
-                imageUrl: "https://provider.com/image.png",
-                imageBuffer: mockImageBuffer,
-                width: 1024,
-                height: 1024,
-                size: mockImageBuffer.byteLength,
-                aspectRatio: "1:1",
-                model: "gemini-2.5-flash",
-                provider: "gemini",
-                generationTime: 3000,
+        // Assert - Variant properties
+        for (const variant of result.optimizedSet.variants) {
+            expect(variant).toMatchObject({
+                format: expect.stringMatching(/^(avif)$/),
+                device: expect.stringMatching(/^mobile$/),
+                resolution: expect.stringMatching(/^(1x|2x)$/),
+                width: expect.any(Number),
+                height: expect.any(Number),
+                url: expect.stringContaining("blob.vercel-storage.com"),
+                size: expect.any(Number),
             });
 
-            (put as jest.Mock).mockResolvedValue({
-                url: "https://blob.vercel-storage.com/image.png",
-            });
-
-            (optimizeImage as jest.Mock).mockResolvedValue({
-                imageId: "opt_123",
-                originalUrl: "https://blob.vercel-storage.com/image.png",
-                variants: [],
-                generatedAt: new Date().toISOString(),
-            });
-
-            // Act & Assert - Story (16:9)
-            await service.generateAndSave({
-                prompt: "Story cover",
-                contentId: "story_123",
-                imageType: "story",
-                userId: "user_123",
-            });
-
-            expect(generateImage).toHaveBeenLastCalledWith(
-                expect.objectContaining({
-                    aspectRatio: "16:9",
-                }),
-            );
-
-            // Act & Assert - Character (1:1)
-            await service.generateAndSave({
-                prompt: "Character portrait",
-                contentId: "char_123",
-                imageType: "character",
-                userId: "user_123",
-            });
-
-            expect(generateImage).toHaveBeenLastCalledWith(
-                expect.objectContaining({
-                    aspectRatio: "1:1",
-                }),
-            );
-
-            // Act & Assert - Comic Panel (9:16)
-            await service.generateAndSave({
-                prompt: "Comic panel",
-                contentId: "scene_123",
-                imageType: "comic-panel",
-                userId: "user_123",
-            });
-
-            expect(generateImage).toHaveBeenLastCalledWith(
-                expect.objectContaining({
-                    aspectRatio: "9:16",
-                }),
-            );
-        });
-    });
+            // Assert - Variant dimensions are positive
+            expect(variant.width).toBeGreaterThan(0);
+            expect(variant.height).toBeGreaterThan(0);
+            expect(variant.size).toBeGreaterThan(0);
+        }
+    }, 60000);
 });
