@@ -131,6 +131,12 @@ This approach ensured:
 Fictures/
 ├── docs/                              # Platform-wide documentation
 │   ├── CLAUDE.md                      # This file - Documentation guide
+│   ├── CONTRIBUTING.md                # Contribution guidelines
+│   ├── FEATURES.md                    # Platform features overview
+│   ├── GETTING_STARTED.md             # Quick start guide
+│   ├── TESTING.md                     # Testing guidelines
+│   ├── USER_GUIDE.md                  # User guide
+│   ├── architecture/                  # Architecture documentation
 │   ├── monorepo/                      # Monorepo architecture docs
 │   └── operation/                     # Platform operations (environment, API keys)
 │
@@ -138,9 +144,10 @@ Fictures/
 │   ├── web/
 │   │   ├── CLAUDE.md                  # Web app development guide
 │   │   └── docs/                      # Web app documentation
-│   │       ├── README.md              # Web docs index
+│   │       ├── CLAUDE.md              # Web docs index
 │   │       ├── novels/                # Novel generation (Adversity-Triumph Engine)
-│   │       ├── comics/                # Comics generation & display
+│   │       ├── toonplay/              # Novel-to-Webtoon adaptation system
+│   │       ├── comics/                # Comics reader interface & display
 │   │       ├── studio/                # Studio workspace
 │   │       ├── publish/               # Publishing & scheduling
 │   │       ├── scene/                 # Scene quality & tracking
@@ -148,23 +155,27 @@ Fictures/
 │   │       ├── ui/                    # UI components & themes
 │   │       ├── mobile/                # Mobile UX improvements
 │   │       ├── adsense/               # Google AdSense integration
-│   │       ├── analytics/             # Platform analytics setup
 │   │       ├── analysis/              # Reader analytics & insights
 │   │       ├── auth/                  # Authentication system
 │   │       ├── community/             # Community features
 │   │       ├── notification/          # User notification system
 │   │       ├── performance/           # Performance optimization
-│   │       └── test/                  # Testing specifications
+│   │       ├── test/                  # Testing specifications
+│   │       ├── api/                   # API documentation
+│   │       └── architecture/          # Architecture documentation
 │   │
 │   └── ai-server/
 │       ├── CLAUDE.md                  # AI server development guide
 │       └── docs/                      # AI server documentation
 │           ├── readme.md              # AI server docs index
-│           ├── quick-start.md         # Quick start guide
-│           ├── setup.md               # Setup instructions
-│           ├── architecture.md        # System architecture
-│           ├── api-reference.md       # API documentation
-│           └── python-version-guide.md # Python setup guide
+│           ├── api/                   # API documentation
+│           │   └── api-reference.md   # API reference
+│           └── general/               # General documentation
+│               ├── quick-start.md     # Quick start guide
+│               ├── setup.md           # Setup instructions
+│               ├── architecture.md    # System architecture
+│               ├── authentication.md  # Authentication guide
+│               └── python-version-guide.md # Python setup guide
 ```
 
 ---
@@ -173,11 +184,46 @@ Fictures/
 
 This root `docs/` directory contains only platform-wide documentation that applies to the entire monorepo.
 
+### Root Documentation Files
+
+**Purpose**: High-level project documentation and guides.
+
+**Files**:
+- `CLAUDE.md` - This file - Master documentation guide for Claude Code
+- `CONTRIBUTING.md` - Contribution guidelines and workflow
+- `FEATURES.md` - Platform features overview
+- `GETTING_STARTED.md` - Quick start guide for new developers
+- `TESTING.md` - Testing strategy and guidelines
+- `USER_GUIDE.md` - End-user documentation
+
+**Status**: ✅ Current
+
+---
+
+### `/architecture/` - Architecture Documentation
+
+**Purpose**: System architecture patterns and design documentation.
+
+**Files**:
+- `authentication-layer-pattern.md` - Authentication layer architecture pattern
+
+**Status**: ✅ Implemented
+
+---
+
 ### `/monorepo/` - Monorepo Architecture
 
 **Purpose**: Monorepo structure and organization documentation.
 
-**Status**: 📋 Documentation
+**Files**:
+- `index.md` - Monorepo documentation index
+- `readme.md` - Monorepo overview
+- `architecture.md` - Monorepo architecture design
+- `setup-guide.md` - Setup instructions
+- `setup-checklist.md` - Setup verification checklist
+- `migration-summary.md` - Migration summary and history
+
+**Status**: ✅ Implemented
 
 ---
 
@@ -189,6 +235,7 @@ This root `docs/` directory contains only platform-wide documentation that appli
 - `environment-architecture.md` - Multi-environment architecture (main/develop)
 - `google-ai-api-key-setup.md` - Google AI API key setup
 - `test-page-protection.md` - Test page security
+- `cross-system-authentication.md` - Cross-system authentication setup
 
 **Status**: ✅ Implemented
 
@@ -202,15 +249,17 @@ For detailed feature documentation, see the respective app's `docs/` directory:
 
 **Location**: `apps/web/docs/`
 
-**Access**: See [apps/web/docs/README.md](../apps/web/docs/README.md) for complete web app documentation index
+**Access**: See [apps/web/docs/CLAUDE.md](../apps/web/docs/CLAUDE.md) for complete web app documentation index
 
 **Key Categories**:
-- **Story Generation**: novels/, comics/, studio/, publish/, scene/
+- **Story Generation**: novels/, toonplay/, comics/, studio/, publish/, scene/
 - **UI/UX**: ui/, mobile/, image/
 - **Community**: community/, notification/, auth/
-- **Analytics**: adsense/, analytics/, analysis/
+- **Analytics**: adsense/, analysis/
 - **Performance**: performance/
 - **Testing**: test/
+- **API**: api/
+- **Architecture**: architecture/
 
 ### AI Server Docs
 
@@ -218,20 +267,25 @@ For detailed feature documentation, see the respective app's `docs/` directory:
 
 **Access**: See [apps/ai-server/docs/readme.md](../apps/ai-server/docs/readme.md) for AI server documentation
 
-**Key Files**:
-- `quick-start.md` - Quick start guide
-- `setup.md` - Setup instructions
-- `architecture.md` - System architecture
-- `api-reference.md` - API documentation
-- `python-version-guide.md` - Python setup guide
+**Key Directories**:
+- `api/` - API documentation
+  - `api-reference.md` - Complete API reference
+- `general/` - General documentation
+  - `quick-start.md` - Quick start guide
+  - `setup.md` - Setup instructions
+  - `architecture.md` - System architecture
+  - `authentication.md` - Authentication guide
+  - `python-version-guide.md` - Python setup guide
+  - `implementation-summary.md` - Implementation summary
+  - `qwen-image-setup.md` - Qwen image model setup
 
 ---
 
-## 📄 Legacy Content (Archived)
+## 📄 Web Application Feature Documentation
 
-The following sections document features that were previously in the root docs directory but have been moved to app-specific locations:
+The following sections provide detailed information about features implemented in the web application. All documentation is located in `apps/web/docs/`. See [apps/web/docs/CLAUDE.md](../apps/web/docs/CLAUDE.md) for the complete index.
 
-### `/adsense/` → `apps/web/docs/adsense/` - Google AdSense Integration
+### `/adsense/` - Google AdSense Integration
 
 **Purpose**: Documentation for Google AdSense integration and monetization.
 
@@ -290,26 +344,47 @@ The following sections document features that were previously in the root docs d
 
 ---
 
-### `/comics/` - Comics Generation & Display
+### `/toonplay/` - Novel-to-Webtoon Adaptation System
 
-**Purpose**: Comic panel generation using Toonplay methodology and webtoon display.
+**Purpose**: AI-powered system for converting narrative prose into production-ready webtoon scripts.
 
 **Files**:
-- `comics-architecture.md` - ⭐ Overview of comics system architecture
-- `comics-generation.md` - Panel generation process (9-step pipeline)
-- `comics-optimization.md` - Performance optimization for comics
-- `comics-toonplay.md` - Toonplay methodology (70% dialogue, 30% visual action)
+- `toonplay-specification.md` - ⭐ Core concepts, visual grammar, and data model
+- `toonplay-development.md` - Implementation, API specs, and process flows
+- `toonplay-evaluation.md` - Quality metrics and testing strategies
+
+**Key Concepts**:
+- **Toonplay Methodology**: 70% dialogue, 30% visual action, <5% narration, <10% internal monologue
+- **Visual Grammar**: Strategic distillation, externalization, and webtoon-specific pacing
+- **Panel Generation**: Database-driven character descriptions for visual consistency
+- **Quality Evaluation**: 4-dimension rubric (Narrative Fidelity, Visual Transformation, Webtoon Pacing, Script Formatting)
 
 **Related**:
-- `scripts/generate-comic-panels.ts` - Comic panel generation script
-- API: `/studio/api/generation/toonplay` - SSE streaming comic generation
-- UI: `/comics/[storyId]` - Webtoon reader
+- API: `/studio/api/generation/toonplay` - SSE streaming toonplay generation
+- Database: `toonplays`, `toonplayScenes`, `toonplayPanels` tables
+
+**Status**: ✅ Implemented (Production-ready as of November 2024)
+
+---
+
+### `/comics/` - Comics Reader Interface & Display
+
+**Purpose**: Webtoon reader interface and comic panel display optimization.
+
+**Files**:
+- `comics-specification.md` - Comics reader specifications
+- `comics-development.md` - Implementation guide
+- `comics-evaluation.md` - Quality evaluation for comics display
 
 **Key Features**:
-- 7-12 panels per scene
-- Quality evaluation (5-category rubric)
 - Mobile-optimized webtoon layout
-- Gemini 2.5 Flash image generation (1344×768, 7:4)
+- Vertical scrolling reader
+- Panel display optimization
+- Image lazy loading
+
+**Related**:
+- UI: `/comics/[storyId]` - Webtoon reader
+- Image system: Gemini 2.5 Flash image generation (1344×768, 7:4)
 
 **Status**: ✅ Implemented
 
@@ -375,9 +450,9 @@ The following sections document features that were previously in the root docs d
 **Purpose**: AI image generation and multi-variant optimization system.
 
 **Files**:
-- `image-architecture.md` - ⭐ Complete image system overview
-- `image-generation.md` - Image generation using Gemini 2.5 Flash
-- `image-optimization.md` - 4-variant optimization pipeline (AVIF + JPEG × mobile 1x/2x)
+- `image-specification.md` - ⭐ Complete image system specifications
+- `image-development.md` - Implementation guide and API documentation
+- `image-evaluation.md` - Quality evaluation and testing strategies
 
 **Key Features**:
 - Gemini 2.5 Flash image generation (1344×768, 7:4 aspect ratio)
@@ -588,13 +663,14 @@ The following sections document features that were previously in the root docs d
 **Purpose**: Test specifications for automated testing.
 
 **Files**:
-- `gnb-menu-test-specification.md` - Global navigation menu test specs
+- `test-specification.md` - Testing strategy and specifications
+- `test-development.md` - Test implementation guide
 
 **Related**:
 - Playwright tests: `tests/*.spec.ts`
 - Jest tests: `__tests__/*.test.ts`
 
-**Status**: 🚧 Partial implementation
+**Status**: ✅ Implemented
 
 ---
 
@@ -608,9 +684,13 @@ The following sections document features that were previously in the root docs d
 - `ui-development.md` - UI development guidelines
 - `theme-system.md` - Theme system (light/dark mode)
 - `independent-scrolling.md` - Independent scroll implementation
+- `shadcn-component-guide.md` - shadcn/ui component guide
+- `shadcn-installation-report.md` - shadcn/ui installation report
+- `shadcn-mcp-reference.md` - shadcn/ui MCP reference
 
 **Key Features**:
 - Tailwind CSS v4
+- shadcn/ui component library
 - Dark mode support
 - Mobile-first responsive design
 - Accessibility standards
@@ -619,50 +699,69 @@ The following sections document features that were previously in the root docs d
 
 ---
 
-## 📄 Project-Level Documents
+### `/api/` - API Documentation
 
-These documents are in the root `docs/` directory:
+**Purpose**: Complete API endpoint documentation for the web application.
 
-### Cache & Performance Reports
-- `CACHE-INVALIDATION-ROLLOUT-GUIDE.md` - Cache invalidation deployment guide
-- `PHASE1-COMPLETION-REPORT.md` - Phase 1 completion report
-- `PHASE2-CACHE-INVALIDATION-FINDINGS.md` - Phase 2 cache findings
-- `PHASE2-COMPLETION-REPORT.md` - Phase 2 completion report
-- `PHASE2-PROGRESS-REPORT.md` - Phase 2 progress report
-- `PHASE2-UPDATE-REPORT.md` - Phase 2 update report
-- `ROLLOUT-EXECUTION-REPORT.md` - Rollout execution report
+**Files**:
+- `README.md` - API documentation index
+- `authentication.md` - Authentication endpoints
+- `studio.md` - Studio API endpoints
+- `images.md` - Image generation and management endpoints
+- `users.md` - User management endpoints
+- `admin.md` - Admin endpoints
+- `features.md` - Feature flags and configuration
+- `validation.md` - Validation schemas
+- `evaluation-api-structure.md` - Evaluation API structure
+- `cron.md` - Cron job endpoints
 
-**Status**: ✅ Historical reports (completed phases)
+**Status**: ✅ Implemented
+
+---
+
+### `/architecture/` - Architecture Documentation
+
+**Purpose**: System architecture and design patterns specific to web application.
+
+**Files**:
+- `schema-generation-architecture.md` - Database schema generation architecture
+
+**Status**: ✅ Implemented
 
 ---
 
 ## 🔍 Quick Navigation by Topic
 
 ### Getting Started
-1. **Project Setup**: `/CLAUDE.md` (root) - Main monorepo guide
-2. **Web App Setup**: `/apps/web/CLAUDE.md` - Next.js development guide
-3. **AI Server Setup**: `/apps/ai-server/CLAUDE.md` - Python development guide
-4. **Environment Setup**: `operation/environment-architecture.md` - Platform-wide
+1. **Quick Start**: `docs/GETTING_STARTED.md` - Project quick start guide
+2. **Project Setup**: Root `/CLAUDE.md` - Main monorepo guide
+3. **Web App Setup**: `apps/web/CLAUDE.md` - Next.js development guide
+4. **AI Server Setup**: `apps/ai-server/CLAUDE.md` - Python development guide
+5. **Environment Setup**: `docs/operation/environment-architecture.md` - Multi-environment architecture
+6. **Monorepo Setup**: `docs/monorepo/setup-guide.md` - Monorepo setup instructions
 
 ### Web Application Features
-See [apps/web/docs/README.md](../apps/web/docs/README.md) for complete index.
+See [apps/web/docs/CLAUDE.md](../apps/web/docs/CLAUDE.md) for complete index.
 
 **Quick Links**:
 1. **Novel Generation**: `apps/web/docs/novels/novels-specification.md`
-2. **Comics**: `apps/web/docs/comics/comics-architecture.md`
-3. **Image System**: `apps/web/docs/image/image-architecture.md`
-4. **Studio**: `apps/web/docs/studio/studio-api-quick-reference.md`
-5. **Performance**: `apps/web/docs/performance/performance-caching.md`
-6. **UI Development**: `apps/web/docs/ui/ui-development.md`
+2. **Toonplay System**: `apps/web/docs/toonplay/toonplay-specification.md`
+3. **Comics Reader**: `apps/web/docs/comics/comics-specification.md`
+4. **Image System**: `apps/web/docs/image/image-specification.md`
+5. **Studio**: `apps/web/docs/studio/studio-api-quick-reference.md`
+6. **Performance**: `apps/web/docs/performance/performance-caching.md`
+7. **UI Development**: `apps/web/docs/ui/ui-development.md`
+8. **API Documentation**: `apps/web/docs/api/README.md`
 
 ### AI Server
 See [apps/ai-server/docs/readme.md](../apps/ai-server/docs/readme.md) for complete guide.
 
 **Quick Links**:
-1. **Quick Start**: `apps/ai-server/docs/quick-start.md`
-2. **Python Setup**: `apps/ai-server/docs/python-version-guide.md`
-3. **Architecture**: `apps/ai-server/docs/architecture.md`
-4. **API Reference**: `apps/ai-server/docs/api-reference.md`
+1. **Quick Start**: `apps/ai-server/docs/general/quick-start.md`
+2. **Python Setup**: `apps/ai-server/docs/general/python-version-guide.md`
+3. **Architecture**: `apps/ai-server/docs/general/architecture.md`
+4. **API Reference**: `apps/ai-server/docs/api/api-reference.md`
+5. **Authentication**: `apps/ai-server/docs/general/authentication.md`
 
 ---
 
@@ -732,5 +831,5 @@ All documents should include:
 
 ---
 
-**Last Updated**: 2025-11-06
-**Status**: ✅ Current (Reorganized for monorepo structure)
+**Last Updated**: 2025-11-15
+**Status**: ✅ Current (Updated to reflect actual documentation structure and files)

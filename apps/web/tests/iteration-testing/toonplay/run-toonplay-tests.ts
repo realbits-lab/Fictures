@@ -254,15 +254,34 @@ async function generateToonplay(
     const startTime = Date.now();
 
     try {
-        // Call toonplay generation API
+        // Get API key from auth file
+        const fsSync = require("node:fs");
+        let apiKey: string | undefined;
+        if (fsSync.existsSync(".auth/user.json")) {
+            const authData = JSON.parse(
+                fsSync.readFileSync(".auth/user.json", "utf8"),
+            );
+            apiKey = authData.develop?.profiles?.writer?.apiKey;
+        }
+
+        if (!apiKey) {
+            throw new Error(
+                "API key not found in .auth/user.json. Please ensure writer profile exists in develop environment.",
+            );
+        }
+
+        // Call comic generation API (new endpoint with dual auth)
         const response = await fetch(
-            "http://localhost:3000/studio/api/toonplay",
+            `http://localhost:3000/api/studio/scenes/${sceneId}/comic/generate`,
             {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey,
+                },
                 body: JSON.stringify({
-                    sceneId,
-                    evaluationMode: EVALUATION_MODE,
+                    targetPanelCount: 10,
+                    regenerate: true,
                 }),
             },
         );

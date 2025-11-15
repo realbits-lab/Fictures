@@ -1843,5 +1843,169 @@ export const scheduledPublications = pgTable(
     ],
 );
 
-// Note: Drizzle relations temporarily removed due to schema issues
-// TODO: Re-add relations after resolving table reference errors
+// =============================================================================
+// Drizzle ORM Relations
+// =============================================================================
+// Relations enable nested queries like db.query.scenes.findFirst({ with: { chapter: ... } })
+
+// Stories Relations
+export const storiesRelations = relations(stories, ({ many, one }) => ({
+    chapters: many(chapters),
+    parts: many(parts),
+    characters: many(characters),
+    settings: many(settings),
+    author: one(users, {
+        fields: [stories.authorId],
+        references: [users.id],
+    }),
+}));
+
+// Parts Relations
+export const partsRelations = relations(parts, ({ one, many }) => ({
+    story: one(stories, {
+        fields: [parts.storyId],
+        references: [stories.id],
+    }),
+    chapters: many(chapters),
+}));
+
+// Chapters Relations
+export const chaptersRelations = relations(chapters, ({ one, many }) => ({
+    story: one(stories, {
+        fields: [chapters.storyId],
+        references: [stories.id],
+    }),
+    part: one(parts, {
+        fields: [chapters.partId],
+        references: [parts.id],
+    }),
+    scenes: many(scenes),
+}));
+
+// Scenes Relations
+export const scenesRelations = relations(scenes, ({ one, many }) => ({
+    chapter: one(chapters, {
+        fields: [scenes.chapterId],
+        references: [chapters.id],
+    }),
+    comicPanels: many(comicPanels),
+    evaluations: many(sceneEvaluations),
+}));
+
+// Characters Relations
+export const charactersRelations = relations(characters, ({ one }) => ({
+    story: one(stories, {
+        fields: [characters.storyId],
+        references: [stories.id],
+    }),
+}));
+
+// Settings Relations
+export const settingsRelations = relations(settings, ({ one }) => ({
+    story: one(stories, {
+        fields: [settings.storyId],
+        references: [stories.id],
+    }),
+}));
+
+// Comic Panels Relations
+export const comicPanelsRelations = relations(comicPanels, ({ one }) => ({
+    scene: one(scenes, {
+        fields: [comicPanels.sceneId],
+        references: [scenes.id],
+    }),
+}));
+
+// Scene Evaluations Relations
+export const sceneEvaluationsRelations = relations(sceneEvaluations, ({ one }) => ({
+    scene: one(scenes, {
+        fields: [sceneEvaluations.sceneId],
+        references: [scenes.id],
+    }),
+}));
+
+// Users Relations
+export const usersRelations = relations(users, ({ many }) => ({
+    stories: many(stories),
+    apiKeys: many(apiKeys),
+    comments: many(comments),
+}));
+
+// API Keys Relations
+export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
+    user: one(users, {
+        fields: [apiKeys.userId],
+        references: [users.id],
+    }),
+}));
+
+// Community Posts Relations
+export const communityPostsRelations = relations(communityPosts, ({ one, many }) => ({
+    author: one(users, {
+        fields: [communityPosts.authorId],
+        references: [users.id],
+    }),
+    story: one(stories, {
+        fields: [communityPosts.storyId],
+        references: [stories.id],
+    }),
+    views: many(postViews),
+}));
+
+// Comments Relations (for story/chapter/scene comments)
+export const commentsRelations = relations(comments, ({ one, many }) => ({
+    user: one(users, {
+        fields: [comments.userId],
+        references: [users.id],
+    }),
+    story: one(stories, {
+        fields: [comments.storyId],
+        references: [stories.id],
+    }),
+    chapter: one(chapters, {
+        fields: [comments.chapterId],
+        references: [chapters.id],
+    }),
+    scene: one(scenes, {
+        fields: [comments.sceneId],
+        references: [scenes.id],
+    }),
+    parentComment: one(comments, {
+        fields: [comments.parentCommentId],
+        references: [comments.id],
+    }),
+    replies: many(comments),
+}));
+
+// Post Views Relations
+export const postViewsRelations = relations(postViews, ({ one }) => ({
+    post: one(communityPosts, {
+        fields: [postViews.postId],
+        references: [communityPosts.id],
+    }),
+    user: one(users, {
+        fields: [postViews.userId],
+        references: [users.id],
+    }),
+}));
+
+// Studio Agent Chats Relations
+export const studioAgentChatsRelations = relations(studioAgentChats, ({ one, many }) => ({
+    user: one(users, {
+        fields: [studioAgentChats.userId],
+        references: [users.id],
+    }),
+    story: one(stories, {
+        fields: [studioAgentChats.storyId],
+        references: [stories.id],
+    }),
+    messages: many(studioAgentMessages),
+}));
+
+// Studio Agent Messages Relations
+export const studioAgentMessagesRelations = relations(studioAgentMessages, ({ one }) => ({
+    chat: one(studioAgentChats, {
+        fields: [studioAgentMessages.chatId],
+        references: [studioAgentChats.id],
+    }),
+}));

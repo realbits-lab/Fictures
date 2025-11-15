@@ -12,10 +12,9 @@ This section provides a complete index of all feature documentation. Each direct
 
 #### Story Generation & Management
 - **[novels/](novels/)** - Novel generation using Adversity-Triumph Engine
-  - `novels-specification.md` - Core concepts and data model
+  - `novels-specification.md` - Core concepts and data model (SSOT)
   - `novels-development.md` - API specs and system prompts
   - `novels-evaluation.md` - Validation and quality metrics
-  - `novels-optimization.md` - Performance tuning
 
 - **[toonplay/](toonplay/)** - Novel-to-Webtoon Adaptation System
   - `toonplay-specification.md` - Core concepts, visual grammar, and data model
@@ -25,82 +24,142 @@ This section provides a complete index of all feature documentation. Each direct
   - Panel generation pipeline with character consistency
   - Database-driven character descriptions for visual consistency
 
-- **[comics/](comics/)** - Comic reader interface and display
+- **[comics/](comics/)** - Comics reader interface and display
+  - `comics-specification.md` - Comics reader specifications
+  - `comics-development.md` - Implementation guide
+  - `comics-evaluation.md` - Quality evaluation for comics display
   - Webtoon reader UI
   - Panel display optimization
   - Mobile reading experience
 
 - **[studio/](studio/)** - Story creation workspace
-  - AI agent specifications
-  - API quick reference
-  - UI components
+  - `studio-agent-specification.md` - AI agent specifications
+  - `studio-agent-development.md` - Agent development guide
+  - `studio-agent-implementation.md` - Agent implementation details
+  - `studio-agent-ui.md` - Agent UI components
+  - `studio-api-quick-reference.md` - Quick API reference
+  - `studio-api-analysis.md` - API architecture analysis
 
 #### Content Display & Reading
 - **[scene/](scene/)** - Scene quality evaluation and tracking
-  - Quality pipeline
-  - View tracking
-  - Analytics
+  - `scene-quality-pipeline.md` - Quality evaluation framework
+  - `scene-improvement-api.md` - Scene improvement API
+  - `scene-view-tracking.md` - View tracking implementation
+  - `scene-view-analysis.md` - View analytics
+  - `scene-writing-discipline.md` - Writing best practices
 
 - **[image/](image/)** - Image generation and optimization
+  - `image-specification.md` - Image system specifications
+  - `image-development.md` - Implementation guide and API documentation
+  - `image-evaluation.md` - Quality evaluation and testing strategies
   - Generation pipeline (Gemini 2.5 Flash)
   - 4-variant optimization (AVIF + JPEG × mobile 1x/2x)
-  - Architecture overview
 
 #### Community & Engagement
 - **[community/](community/)** - Community features
-  - Story sharing
-  - Comments and discussions
+  - `community-specification.md` - Community feature specifications
+  - `community-caching-implementation.md` - Caching strategy
+  - `community-performance-fix.md` - Performance improvements
+  - `community-metrics-help.md` - Metrics and analytics
+  - Story sharing and discussions
+  - Comments and replies
   - Performance optimizations
 
 - **[notification/](notification/)** - Notification system
+  - `notification-specification.md` - System specification
+  - `notification-development.md` - Implementation guide
+  - `real-time-story-updates.md` - SSE implementation
+  - `real-time-implementation-summary.md` - SSE completion report
+  - `real-time-comparison.md` - Technology comparison
   - Real-time updates (SSE)
   - Multi-channel notifications
   - User preferences
 
 - **[publish/](publish/)** - Publishing & scheduling
+  - `publish-specification.md` - Publishing system specification
+  - `publish-development.md` - Implementation guide
+  - `publish-ui.md` - UI components
   - Weekly scene-by-scene publishing
   - Timeline visualization
   - Automated scheduling
 
 #### Analytics & Monitoring
 - **[analysis/](analysis/)** - Reader analytics & insights
+  - `analysis-specification.md` - Analytics feature specifications
+  - `analysis-development.md` - Implementation guide
+  - `google-analytics-setup.md` - Google Analytics 4 setup
+  - `vercel-analytics-setup.md` - Vercel Analytics setup
+  - `data-tracking-strategy.md` - Data tracking strategy
   - Story performance metrics
   - Reader engagement tracking
 
-- **[analytics/](analytics/)** - Platform analytics setup
-  - Google Analytics 4 integration
-  - Vercel Analytics setup
-
 - **[adsense/](adsense/)** - Google AdSense integration
+  - `google-adsense-complete-guide.md` - Complete AdSense guide
   - Ad placement
   - Revenue optimization
 
 #### Authentication & User Management
 - **[auth/](auth/)** - Authentication system
+  - `authentication-profiles.md` - User roles and API key management
+  - `authentication-examples.md` - Authentication examples
   - User profiles and roles
   - API key management
   - Multi-environment auth
 
 #### UI & UX
 - **[ui/](ui/)** - UI components & design system
-  - Component specifications
-  - Theme system (light/dark mode)
-  - Independent scrolling
+  - `README.md` - UI directory overview
+  - `ui-specification.md` - Component specifications
+  - `ui-development.md` - Development guidelines
+  - `theme-system.md` - Theme system (light/dark mode)
+  - `independent-scrolling.md` - Independent scroll implementation
+  - `shadcn-component-guide.md` - shadcn/ui component guide
+  - `shadcn-installation-report.md` - shadcn/ui installation report
+  - `shadcn-mcp-reference.md` - shadcn/ui MCP reference
 
 - **[mobile/](mobile/)** - Mobile UX improvements
+  - `mobile-reading-improvements.md` - Mobile reading experience
+  - `mobile-improvements-summary.md` - Mobile UX enhancements summary
   - Touch-optimized controls
   - Mobile-first optimization
   - Responsive design
 
+#### API Documentation
+- **[api/](api/)** - API endpoint documentation
+  - `README.md` - API documentation index
+  - `authentication.md` - Authentication endpoints
+  - `studio.md` - Studio API endpoints
+  - `images.md` - Image generation and management
+  - `users.md` - User management endpoints
+  - `admin.md` - Admin endpoints
+  - `features.md` - Feature flags and configuration
+  - `validation.md` - Validation schemas
+  - `evaluation-api-structure.md` - Evaluation API structure
+  - `cron.md` - Cron job endpoints
+
+#### Architecture
+- **[architecture/](architecture/)** - Architecture documentation
+  - `schema-generation-architecture.md` - Database schema generation architecture
+
 #### Performance & Optimization
 - **[performance/](performance/)** - Performance optimization
-  - Caching strategies (SWR, localStorage, Redis)
-  - Database optimization
-  - Blob deletion optimization
-  - Feature-specific optimizations
+  - `IMPLEMENTATION-SUMMARY.md` - Performance implementation summary
+  - `performance-caching.md` - Caching strategies (SWR, localStorage, Redis)
+  - `performance-database.md` - Database optimization
+  - `performance-blob-deletion.md` - Blob deletion optimization
+  - `performance-cache-invalidation.md` - Cache invalidation
+  - `performance-novels.md` - Novel generation performance
+  - `performance-comics.md` - Comics performance
+  - `performance-studio.md` - Studio performance
+  - `performance-community.md` - Community features performance
+  - `performance-comments.md` - Comments system performance
+  - `cache-testing-guide.md` - Cache testing procedures
+  - `novels-optimization.md` - Novel optimization strategies
 
 #### Testing
 - **[test/](test/)** - Testing specifications
+  - `test-specification.md` - Testing strategy and specifications
+  - `test-development.md` - Test implementation guide
   - E2E test specs (Playwright)
   - Component testing
   - Integration tests
@@ -110,12 +169,18 @@ This section provides a complete index of all feature documentation. Each direct
 **Common Development Tasks:**
 - **Generate novels** → `novels/novels-specification.md`
 - **Adapt novels to webtoons** → `toonplay/toonplay-specification.md`
-- **Optimize images** → `image/image-optimization.md`
-- **Add UI components** → `ui/ui-specification.md`
-- **Improve performance** → `performance/performance-caching.md`
+- **Display comics/webtoons** → `comics/comics-specification.md`
+- **Generate images** → `image/image-specification.md`
+- **Optimize images** → `image/image-development.md`
+- **Add UI components** → `ui/ui-specification.md` + `ui/shadcn-component-guide.md`
+- **Improve performance** → `performance/performance-caching.md` + `performance/IMPLEMENTATION-SUMMARY.md`
 - **Set up testing** → `test/test-specification.md`
-- **Understand story system** → `novels/novels-specification.md`
+- **Understand story system** → `novels/novels-specification.md` (SSOT for data model)
 - **Work with community features** → `community/community-specification.md`
+- **Check API endpoints** → `api/README.md`
+- **Understand auth system** → `auth/authentication-profiles.md`
+- **Mobile optimization** → `mobile/mobile-reading-improvements.md`
+- **Analytics setup** → `analysis/google-analytics-setup.md` + `analysis/vercel-analytics-setup.md`
 
 ## Platform-Wide Documentation
 

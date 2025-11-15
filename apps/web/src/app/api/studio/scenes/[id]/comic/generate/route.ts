@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { generateComicPanels } from "@/lib/ai/comic-panel-generator";
-import { auth } from "@/lib/auth";
+import { authenticateRequest } from "@/lib/auth/dual-auth";
 import { db } from "@/lib/db";
 import {
     characters,
@@ -17,6 +17,10 @@ export const maxDuration = 300; // 5 minutes
  * POST /api/scenes/[id]/comic/generate
  * Generate comic panels for a scene with SSE progress updates
  *
+ * Authentication: Dual auth (API key OR session)
+ * - API key: x-api-key header (requires stories:write scope)
+ * - Session: NextAuth.js session (story owner or admin)
+ *
  * Response format:
  * - With Accept: text/event-stream - Returns SSE stream with progress updates
  * - Otherwise - Returns JSON response after completion
@@ -27,13 +31,23 @@ export async function POST(
 ) {
     try {
         const { id } = await params;
-        const session = await auth();
+        const authResult = await authenticateRequest(request);
 
-        if (!session?.user?.id) {
+        if (!authResult?.user?.id) {
             return NextResponse.json(
                 { error: "Unauthorized" },
                 { status: 401 },
             );
+        }
+
+        // For API key auth, verify stories:write scope
+        if (authResult.type === "api_key") {
+            if (!authResult.scopes?.includes("stories:write")) {
+                return NextResponse.json(
+                    { error: "Forbidden: requires stories:write scope" },
+                    { status: 403 },
+                );
+            }
         }
 
         // Parse optional parameters
@@ -92,11 +106,13 @@ export async function POST(
         const story = sceneWithStory.chapter.story;
 
         // Verify ownership (allow story owner or manager/admin)
-        const isOwner = story.authorId === session.user.id;
+        // For API key auth, bypass ownership check if user has stories:write scope
+        const isOwner = story.authorId === authResult.user.id;
         const isAdmin =
-            session.user.role === "manager" || session.user.role === "admin";
+            authResult.user.role === "manager" || authResult.user.role === "admin";
+        const hasApiKeyAccess = authResult.type === "api_key" && authResult.scopes?.includes("stories:write");
 
-        if (!isOwner && !isAdmin) {
+        if (!isOwner && !isAdmin && !hasApiKeyAccess) {
             return NextResponse.json(
                 { error: "Access denied" },
                 { status: 403 },
