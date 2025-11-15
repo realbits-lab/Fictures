@@ -329,6 +329,7 @@ export interface GenerateChapterParams {
     settings?: (AiSettingType & { id: string })[]; // Optional settings for atmospheric context
     previousChapters: (AiChapterType & { id: string; partId: string })[];
     chapterIndex: number; // Global index (position in entire story)
+    promptVersion?: string; // Optional prompt version (e.g., "v1.1")
 }
 
 export interface GenerateChapterResult {

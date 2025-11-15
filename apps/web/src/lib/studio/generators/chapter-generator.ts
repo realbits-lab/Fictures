@@ -44,6 +44,7 @@ export async function generateChapter(
         settings,
         previousChapters,
         chapterIndex,
+        promptVersion,
     }: GeneratorChapterParams = params;
 
     // 2. Create text generation client with API key
@@ -138,6 +139,7 @@ export async function generateChapter(
         client.getProviderType(),
         "chapter",
         promptParams,
+        promptVersion,
     );
 
     console.log(

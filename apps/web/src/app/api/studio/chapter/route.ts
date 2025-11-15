@@ -15,6 +15,7 @@ export const runtime = "nodejs";
 const generateChapterSchema = z.object({
     storyId: z.string().min(1, "storyId is required"),
     partId: z.string().min(1, "partId is required"),
+    promptVersion: z.string().optional(), // Optional chapter prompt version (e.g., "v1.1")
 });
 
 /**
@@ -59,6 +60,7 @@ export const POST = requireScopes("stories:write")(
                 storyId: validatedData.storyId,
                 partId: validatedData.partId,
                 userId: auth.userId!,
+                promptVersion: validatedData.promptVersion, // Pass chapter prompt version to service
             });
 
             console.log(

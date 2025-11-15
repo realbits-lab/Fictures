@@ -24,17 +24,18 @@ type Chapter = InferSelectModel<typeof chapters>;
 type Character = InferSelectModel<typeof characters>;
 type Setting = InferSelectModel<typeof settings>;
 
-import { insertChapterSchema } from "@/lib/schemas/zod/generated";
-import { generateChapter } from "../generators/chapter-generator";
 import type {
     GenerateChapterParams,
     GenerateChapterResult,
 } from "@/lib/schemas/generators/types";
+import { insertChapterSchema } from "@/lib/schemas/zod/generated";
+import { generateChapter } from "../generators/chapter-generator";
 
 export interface ServiceChapterParams {
     storyId: string;
     partId: string;
     userId: string;
+    promptVersion?: string; // Optional chapter prompt version (e.g., "v1.1")
 }
 
 export interface ServiceChapterResult {
@@ -56,7 +57,7 @@ export class ChapterService {
     async generateAndSave(
         params: ServiceChapterParams,
     ): Promise<ServiceChapterResult> {
-        const { storyId, partId, userId } = params;
+        const { storyId, partId, userId, promptVersion } = params;
 
         console.log(
             "[chapter-service] 📖 Generating next chapter with full context...",
@@ -171,6 +172,7 @@ export class ChapterService {
             settings: storySettings.length > 0 ? storySettings : undefined,
             previousChapters: allPreviousChapters,
             chapterIndex: nextChapterIndex,
+            promptVersion,
         };
 
         const generationResult: GenerateChapterResult =

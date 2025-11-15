@@ -38,6 +38,7 @@ import {
     insertSceneSchema,
     insertSettingSchema,
 } from "@/lib/schemas/zod/generated";
+
 // TODO: Restore orchestrator import when script is available
 // import {
 //     type GeneratedNovelResult,
@@ -89,6 +90,7 @@ export const POST = requireScopes("stories:write")(
                 scenesPerChapter,
                 language,
                 skipImages,
+                chapterPromptVersion, // Chapter prompt version (e.g., "v1.1")
             } = body;
 
             if (!userPrompt?.trim()) {
@@ -174,6 +176,7 @@ export const POST = requireScopes("stories:write")(
                                 scenesPerChapter,
                                 language,
                                 skipImages,
+                                chapterPromptVersion, // Pass chapter prompt version to orchestrator
                             },
                             onProgress,
                         );
