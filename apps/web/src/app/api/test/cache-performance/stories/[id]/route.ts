@@ -114,7 +114,6 @@ export async function GET(
                 title: chapter.title,
                 summary: chapter.summary,
                 orderIndex: chapter.orderIndex,
-                status: chapter.status,
                 scenesCount: scenesByChapter[chapter.id]?.length || 0,
                 scenes: scenesByChapter[chapter.id] || [],
             })),

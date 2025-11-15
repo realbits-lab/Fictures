@@ -569,13 +569,11 @@ export async function getStoryWithStructure(
             .sort((a, b) => a.orderIndex - b.orderIndex);
 
         const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
-        const finalStatus =
-            chapter.status === "published" ? "published" : dynamicChapterStatus;
 
         // Return ALL chapter fields from database
         return {
             ...chapter,
-            status: finalStatus,
+            status: dynamicChapterStatus,
             scenes: chapterScenes,
         };
     });
