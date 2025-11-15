@@ -6,7 +6,7 @@
  * one at a time, seeing all previous chapters.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
@@ -16,19 +16,20 @@ import {
     settings,
     stories,
 } from "@/lib/schemas/database";
-import type {
-    Chapter,
-    Character,
-    Part,
-    Setting,
-    Story,
-} from "@/lib/schemas/zod/ai";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Part = InferSelectModel<typeof parts>;
+type Chapter = InferSelectModel<typeof chapters>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
+
 import { insertChapterSchema } from "@/lib/schemas/zod/generated";
 import { generateChapter } from "../generators/chapter-generator";
 import type {
-    GeneratorChapterParams,
-    GeneratorChapterResult,
-} from "../generators/types";
+    GenerateChapterParams,
+    GenerateChapterResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceChapterParams {
     storyId: string;
@@ -163,7 +164,7 @@ export class ChapterService {
         );
 
         // 6. Generate next chapter using singular generator with full context
-        const generateParams: GeneratorChapterParams = {
+        const generateParams: GenerateChapterParams = {
             story,
             part,
             characters: storyCharacters,
@@ -172,7 +173,7 @@ export class ChapterService {
             chapterIndex: nextChapterIndex,
         };
 
-        const generationResult: GeneratorChapterResult =
+        const generationResult: GenerateChapterResult =
             await generateChapter(generateParams);
 
         // 8. Save chapter to database

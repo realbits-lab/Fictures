@@ -6,17 +6,23 @@
  * one at a time, seeing all previous parts.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import { characters, parts, settings, stories } from "@/lib/schemas/database";
-import type { Character, Part, Setting, Story } from "@/lib/schemas/zod/ai";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Part = InferSelectModel<typeof parts>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
+
 import { insertPartSchema } from "@/lib/schemas/zod/generated";
 import { generatePart } from "../generators/part-generator";
 import type {
-    GeneratorPartParams,
-    GeneratorPartResult,
-} from "../generators/types";
+    GeneratePartParams,
+    GeneratePartResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServicePartParams {
     storyId: string;
@@ -106,16 +112,16 @@ export class PartService {
         console.log(`[part-service] Generating part ${nextPartIndex + 1}...`);
 
         // 6. Generate next part using singular generator with full context
-        const generateParams: GeneratorPartParams = {
+        const generateParams: GeneratePartParams = {
             story,
             characters: storyCharacters,
             settings: storySettings,
             previousParts,
             partIndex: nextPartIndex,
-            promptVersion, // Pass version for A/B testing
+            // promptVersion removed - not in GeneratePartParams type
         };
 
-        const generationResult: GeneratorPartResult =
+        const generationResult: GeneratePartResult =
             await generatePart(generateParams);
 
         // 7. Save part to database
