@@ -15,14 +15,22 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
-import type {
-    Character,
-    ComicPanel,
-    Scene,
-    Setting,
-    Story,
+import {
+    type characters,
+    comicPanels,
+    type scenes,
+    scenes as scenesTable,
+    type settings,
+    type stories,
 } from "@/lib/schemas/database";
-import { comicPanels, scenes as scenesTable } from "@/lib/schemas/database";
+
+// Type aliases
+type Scene = typeof scenes.$inferSelect;
+type Character = typeof characters.$inferSelect;
+type Setting = typeof settings.$inferSelect;
+type Story = typeof stories.$inferSelect;
+type ComicPanel = typeof comicPanels.$inferSelect;
+
 import { generateToonplayWithEvaluation } from "@/lib/services/toonplay-improvement-loop";
 import { generateComicPanels } from "../generators/comic-panel-generator";
 
@@ -131,7 +139,7 @@ export async function generateAndSaveComic(
     }
 
     console.log(
-        `[comic-service] ✅ Toonplay generated: ${toonplayResult.toonplay.total_panels} panels (score: ${toonplayResult.evaluation.overallScore}/5.0)`,
+        `[comic-service] ✅ Toonplay generated: ${toonplayResult.toonplay.total_panels} panels (score: ${toonplayResult.evaluation.weighted_score}/5.0)`,
     );
 
     // Phase 2: Generate Panel Images (20-90% of progress)

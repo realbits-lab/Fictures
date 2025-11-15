@@ -226,6 +226,14 @@ export async function POST(
                             where: eq(scenes.id, id),
                         });
 
+                        if (!updatedScene) {
+                            sendEvent("error", {
+                                error: "Failed to retrieve updated scene",
+                            });
+                            controller.close();
+                            return;
+                        }
+
                         console.log(
                             `✅ Generated ${result.panels.length} comic panels for scene: ${scene.title}`,
                         );
@@ -276,31 +284,27 @@ export async function POST(
             // Return regular JSON response
             console.log(`🎨 Generating comic panels for scene: ${scene.title}`);
 
-            // Database objects now match HNS types - just cast directly
-            const result = await generateComicPanels({
+            // Use service layer for generation
+            const result = await generateAndSaveComic({
                 sceneId: id,
                 scene: scene as any,
+                story: story as any,
                 characters: storyCharacters as any,
-                setting: primarySetting as any,
-                story: {
-                    story_id: story.id,
-                    genre: story.genre || "drama",
-                },
+                settings: storySettings as any,
                 targetPanelCount,
             });
 
-            // Update scene metadata with comic status
-            const [updatedScene] = await db
-                .update(scenes)
-                .set({
-                    comicStatus: "draft", // Uses unified status enum
-                    comicGeneratedAt: new Date().toISOString(),
-                    comicPanelCount: result.panels.length,
-                    comicVersion: (scene.comicVersion || 0) + 1,
-                    updatedAt: new Date().toISOString(),
-                })
-                .where(eq(scenes.id, id))
-                .returning();
+            // Fetch updated scene after generation
+            const updatedScene = await db.query.scenes.findFirst({
+                where: eq(scenes.id, id),
+            });
+
+            if (!updatedScene) {
+                return NextResponse.json(
+                    { error: "Failed to retrieve updated scene" },
+                    { status: 500 },
+                );
+            }
 
             console.log(
                 `✅ Generated ${result.panels.length} comic panels for scene: ${scene.title}`,
@@ -321,14 +325,14 @@ export async function POST(
                     toonplay: result.toonplay,
                     panels: result.panels.map((p) => ({
                         id: p.id,
-                        panel_number: p.panel_number,
-                        shot_type: p.shot_type,
-                        image_url: p.image_url,
+                        panelNumber: p.panelNumber,
+                        shotType: p.shotType,
+                        imageUrl: p.imageUrl,
                         narrative: p.narrative,
                         dialogue: p.dialogue,
                         sfx: p.sfx,
                     })),
-                    evaluation: result.evaluation, // Include quality evaluation results
+                    evaluation: result.evaluation,
                     metadata: result.metadata,
                 },
             });

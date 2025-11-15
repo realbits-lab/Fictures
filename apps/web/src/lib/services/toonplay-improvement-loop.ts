@@ -21,6 +21,7 @@ type StoryCharacter = typeof characters.$inferSelect;
 type StorySetting = typeof settings.$inferSelect;
 
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
+import { AiComicToonplayZodSchema } from "@/lib/schemas/ai/ai-toonplay";
 import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
 import {
     evaluateToonplay,
@@ -320,7 +321,7 @@ CHARACTERS PRESENT:
 ${characterDescriptions}
 
 SETTING:
-${setting.name}: ${setting.description}
+${setting.name}: ${setting.summary || setting.mood || "A scene setting"}
 
 CURRENT TOONPLAY (TO BE IMPROVED):
 Total Panels: ${currentToonplay.total_panels}
@@ -384,7 +385,7 @@ Return the IMPROVED toonplay as a valid JSON object matching the ComicToonplay s
 
     const result = await generateObject({
         model: gateway("google/gemini-2.5-flash-lite"),
-        schema: AiComicToonplayTypeSchema,
+        schema: AiComicToonplayZodSchema,
         prompt: improvementPrompt,
         temperature: 0.7,
     });
