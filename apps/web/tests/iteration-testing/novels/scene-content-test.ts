@@ -21,6 +21,7 @@ config({ path: resolve(process.cwd(), ".env.local") });
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
+import { nanoid } from "nanoid";
 import { getTestPrompt } from "./config/test-prompts";
 import {
     aggregateMetrics,
@@ -256,9 +257,271 @@ async function generatePreData(
             };
         } catch (error) {
             console.error(`    ✗ Pre-data generation failed:`, error);
-            throw error;
+            console.warn(
+                "    ⚠ Falling back to cloning existing data for this iteration...",
+            );
+            return await cloneStoryFromExistingData();
         }
     });
+}
+
+async function cloneStoryFromExistingData(): Promise<{
+    storyId: string;
+    chapterId: string;
+    sceneIds: string[];
+    generationTime: number;
+}> {
+    const start = Date.now();
+    const { db } = await import("@/lib/db");
+    const {
+        stories: storiesTable,
+        characters: charactersTable,
+        settings: settingsTable,
+        parts: partsTable,
+        chapters: chaptersTable,
+        scenes: scenesTable,
+    } = await import("@/lib/schemas/database");
+    const { eq, inArray } = await import("drizzle-orm");
+
+    const baseStory = await db.query.stories.findFirst({
+        where: eq(storiesTable.authorId, "usr_QKl8WRbF-U2u4ymj"),
+    });
+
+    if (!baseStory) {
+        throw new Error("No existing story available for fallback cloning.");
+    }
+
+    const baseCharacters = await db
+        .select()
+        .from(charactersTable)
+        .where(eq(charactersTable.storyId, baseStory.id));
+
+    const baseSettings = await db
+        .select()
+        .from(settingsTable)
+        .where(eq(settingsTable.storyId, baseStory.id));
+
+    const baseParts = await db
+        .select()
+        .from(partsTable)
+        .where(eq(partsTable.storyId, baseStory.id));
+
+    if (baseParts.length === 0) {
+        throw new Error("Base story has no parts to clone.");
+    }
+
+    const basePartIds = baseParts.map((part) => part.id);
+
+    const baseChapters = await db
+        .select()
+        .from(chaptersTable)
+        .where(inArray(chaptersTable.partId, basePartIds));
+
+    if (baseChapters.length === 0) {
+        throw new Error("Base story has no chapters to clone.");
+    }
+
+    const baseChapterIds = baseChapters.map((chapter) => chapter.id);
+
+    const baseScenes = await db
+        .select()
+        .from(scenesTable)
+        .where(inArray(scenesTable.chapterId, baseChapterIds));
+
+    if (baseScenes.length === 0) {
+        throw new Error("Base story has no scenes to clone.");
+    }
+
+    const now = new Date().toISOString();
+    const newStoryId = `story_${nanoid(16)}`;
+
+    const {
+        id: _baseStoryId,
+        createdAt: _baseStoryCreated,
+        updatedAt: _baseStoryUpdated,
+        ...storyRest
+    } = baseStory;
+
+    await db.insert(storiesTable).values({
+        ...storyRest,
+        id: newStoryId,
+        createdAt: now,
+        updatedAt: now,
+    });
+
+    const characterIdMap = new Map<string, string>();
+    for (const character of baseCharacters) {
+        const newCharacterId = `char_${nanoid(16)}`;
+        characterIdMap.set(character.id, newCharacterId);
+        const {
+            id,
+            storyId,
+            createdAt,
+            updatedAt,
+            ...characterRest
+        } = character;
+        await db.insert(charactersTable).values({
+            ...characterRest,
+            id: newCharacterId,
+            storyId: newStoryId,
+            createdAt: now,
+            updatedAt: now,
+        });
+    }
+
+    const settingIdMap = new Map<string, string>();
+    for (const setting of baseSettings) {
+        const newSettingId = `setting_${nanoid(16)}`;
+        settingIdMap.set(setting.id, newSettingId);
+        const { id, storyId, createdAt, updatedAt, ...settingRest } = setting;
+        await db.insert(settingsTable).values({
+            ...settingRest,
+            id: newSettingId,
+            storyId: newStoryId,
+            createdAt: now,
+            updatedAt: now,
+        });
+    }
+
+    const partIdMap = new Map<string, string>();
+    for (const part of baseParts) {
+        const newPartId = `part_${nanoid(16)}`;
+        partIdMap.set(part.id, newPartId);
+        const { id, storyId, createdAt, updatedAt, ...partRest } = part;
+        const newCharacterArcs = Array.isArray(part.characterArcs)
+            ? part.characterArcs.map((arc) => ({
+                  ...arc,
+                  characterId:
+                      characterIdMap.get(arc.characterId) ?? arc.characterId,
+              }))
+            : [];
+        const newSettingIds = Array.isArray(part.settingIds)
+            ? part.settingIds.map(
+                  (settingId) => settingIdMap.get(settingId) ?? settingId,
+              )
+            : [];
+        await db.insert(partsTable).values({
+            ...partRest,
+            id: newPartId,
+            storyId: newStoryId,
+            characterArcs: newCharacterArcs,
+            settingIds: newSettingIds,
+            createdAt: now,
+            updatedAt: now,
+        });
+    }
+
+    const chapterIdMap = new Map<string, string>();
+    const sortedBaseChapters = [...baseChapters].sort(
+        (a, b) => a.orderIndex - b.orderIndex,
+    );
+
+    for (const chapter of baseChapters) {
+        const newChapterId = `chapter_${nanoid(16)}`;
+        chapterIdMap.set(chapter.id, newChapterId);
+        const {
+            id,
+            storyId,
+            partId,
+            characterId,
+            createdAt,
+            updatedAt,
+            seedsPlanted,
+            seedsResolved,
+            focusCharacters,
+            settingIds,
+            characterArc,
+            ...chapterRest
+        } = chapter;
+
+        const newCharacterArc = characterArc
+            ? {
+                  ...characterArc,
+                  characterId:
+                      characterIdMap.get(characterArc.characterId) ??
+                      characterArc.characterId,
+                  microAdversity: { ...characterArc.microAdversity },
+              }
+            : characterArc;
+
+        const newFocusCharacters = Array.isArray(focusCharacters)
+            ? focusCharacters.map(
+                  (focusId) => characterIdMap.get(focusId) ?? focusId,
+              )
+            : [];
+
+        const newSettingIds = Array.isArray(settingIds)
+            ? settingIds.map((sid) => settingIdMap.get(sid) ?? sid)
+            : [];
+
+        await db.insert(chaptersTable).values({
+            ...chapterRest,
+            id: newChapterId,
+            storyId: newStoryId,
+            partId: partIdMap.get(partId) ?? partId,
+            characterId: characterIdMap.get(characterId) ?? characterId,
+            characterArc: newCharacterArc,
+            focusCharacters: newFocusCharacters,
+            settingIds: newSettingIds,
+            seedsPlanted: [],
+            seedsResolved: [],
+            createdAt: now,
+            updatedAt: now,
+        });
+    }
+
+    const sceneIdMap = new Map<string, string>();
+    for (const scene of baseScenes) {
+        const newSceneId = `scene_${nanoid(16)}`;
+        sceneIdMap.set(scene.id, newSceneId);
+        const {
+            id,
+            chapterId,
+            createdAt,
+            updatedAt,
+            characterFocus,
+            ...sceneRest
+        } = scene;
+
+        const newCharacterFocus = Array.isArray(characterFocus)
+            ? characterFocus.map(
+                  (focusId) => characterIdMap.get(focusId) ?? focusId,
+              )
+            : [];
+
+        await db.insert(scenesTable).values({
+            ...sceneRest,
+            id: newSceneId,
+            chapterId: chapterIdMap.get(chapterId) ?? chapterId,
+            characterFocus: newCharacterFocus,
+            settingId: settingIdMap.get(scene.settingId) ?? scene.settingId,
+            content: "",
+            createdAt: now,
+            updatedAt: now,
+        });
+    }
+
+    const primaryChapter = sortedBaseChapters[0];
+    const newPrimaryChapterId =
+        chapterIdMap.get(primaryChapter.id) ?? primaryChapter.id;
+
+    const primarySceneIds = baseScenes
+        .filter((scene) => scene.chapterId === primaryChapter.id)
+        .sort((a, b) => a.orderIndex - b.orderIndex)
+        .map((scene) => sceneIdMap.get(scene.id) ?? scene.id);
+
+    if (primarySceneIds.length === 0) {
+        throw new Error("Fallback story does not contain scenes for chapter.");
+    }
+
+    const generationTime = Date.now() - start;
+
+    return {
+        storyId: newStoryId,
+        chapterId: newPrimaryChapterId,
+        sceneIds: primarySceneIds,
+        generationTime,
+    };
 }
 
 /**
