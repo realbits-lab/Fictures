@@ -1256,7 +1256,7 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
                 if (version === "v1.1") {
                     promptPath = path.resolve(
                         __dirname,
-                        "../../prompts/v1.1/chapter-prompt.js",
+                        "../prompts/v1.1/chapter-prompt.js",
                     );
                     templateKey = "chapterPromptV1_1";
                 } else {

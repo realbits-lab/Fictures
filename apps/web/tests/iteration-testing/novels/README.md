@@ -27,6 +27,7 @@ test-scripts/iteration-testing/
 ├── reports/               # Generated reports (gitignored)
 ├── run-evaluation-suite.ts # Main evaluation script
 ├── ab-test.ts             # A/B testing script
+├── chapter-prompt-test.ts # Chapter prompt iteration test
 └── README.md             # This file
 ```
 
@@ -116,15 +117,35 @@ Review the output file for:
 
 After identifying issues from baseline testing, create prompt refinements and test them:
 
+**For Part/Story-Level Prompts:**
 ```bash
 # Example: Test virtue scene improvements
-pnpm tsx test-scripts/iteration-testing/ab-test.ts \
+pnpm tsx tests/iteration-testing/novels/ab-test.ts \
   --control v1.0 \
   --experiment v1.1 \
   --prompts "last-garden" \
   --sample-size 5 \
   --hypothesis "Virtue scenes will increase from 683 to 900+ words"
 ```
+
+**For Chapter-Level Prompts:**
+```bash
+# Example: Test chapter prompt improvements (causal linking, seed tracking)
+pnpm tsx tests/iteration-testing/novels/chapter-prompt-test.ts \
+  --control v1.0 \
+  --experiment v1.1 \
+  --prompts "last-garden" \
+  --iterations 5 \
+  --hypothesis "Adversity connection will improve from 2/4 to 4/4"
+```
+
+The chapter prompt test focuses specifically on chapter-level metrics:
+- `adversityConnection`: Causal link to previous chapter
+- `seedTrackingCompleteness`: Seed resolution tracking
+- `singleCycleFocus`: One complete micro-cycle per chapter
+- `stakesEscalation`: Progressive intensity
+- `resolutionAdversityTransition`: Quality of chapter transitions
+- `narrativeMomentum`: Forward movement
 
 **Options:**
 - `--control`: Control version (baseline)
@@ -180,12 +201,19 @@ cat results/v1.0/suite-*.json | jq '.failurePatterns'
 # 3. Create improved prompts (v1.1) with fixes
 # ... edit prompt files ...
 
-# 4. Run A/B test
-pnpm tsx test-scripts/iteration-testing/ab-test.ts \
+# 4. Run A/B test (for part/story prompts)
+pnpm tsx tests/iteration-testing/novels/ab-test.ts \
   --control v1.0 \
   --experiment v1.1 \
   --prompts "last-garden" \
   --sample-size 5
+
+# Or for chapter prompts specifically:
+pnpm tsx tests/iteration-testing/novels/chapter-prompt-test.ts \
+  --control v1.0 \
+  --experiment v1.1 \
+  --prompts "last-garden" \
+  --iterations 5
 
 # 5. Review A/B test results
 cat results/ab-test-v1.0-vs-v1.1-*.json | jq '.comparison.recommendation'
