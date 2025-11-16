@@ -299,6 +299,7 @@ async function deleteScenes(sceneIds: string[]): Promise<void> {
  */
 async function evaluateSceneSummaries(
     sceneIds: string[],
+    chapterId: string,
 ): Promise<Array<{ sceneId: string; evaluation: any }>> {
     console.log(`  → Evaluating ${sceneIds.length} scene summaries...`);
 
@@ -313,6 +314,7 @@ async function evaluateSceneSummaries(
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         sceneId,
+                        chapterId,
                         evaluationMode: "thorough",
                     }),
                 },
@@ -335,6 +337,43 @@ async function evaluateSceneSummaries(
     }
 
     return evaluations;
+}
+
+/**
+ * Calculate t-test p-value for statistical significance
+ */
+function calculateTTest(control: number[], experiment: number[]): number {
+    if (control.length === 0 || experiment.length === 0) return 1.0;
+
+    const controlStats = calculateMetricStatistics(control);
+    const experimentStats = calculateMetricStatistics(experiment);
+
+    // Welch's t-test (for potentially unequal variances)
+    const t =
+        (experimentStats.mean - controlStats.mean) /
+        Math.sqrt(
+            controlStats.variance / control.length +
+                experimentStats.variance / experiment.length,
+        );
+
+    // Approximate p-value (two-tailed)
+    const pValue = 2 * (1 - normalCDF(Math.abs(t), 0, 1));
+    return Math.min(1, Math.max(0, pValue));
+}
+
+/**
+ * Normal cumulative distribution function (approximation)
+ */
+function normalCDF(x: number, mean: number, stdDev: number): number {
+    const z = (x - mean) / stdDev;
+    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+    const d = 0.3989423 * Math.exp((-z * z) / 2);
+    const prob =
+        d *
+        t *
+        (0.3193815 +
+            t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return z > 0 ? 1 - prob : prob;
 }
 
 /**
@@ -420,6 +459,7 @@ async function main() {
 
                 const controlEvaluations = await evaluateSceneSummaries(
                     controlScenes.sceneIds,
+                    chapterId,
                 );
                 const controlMetrics = extractSceneSummaryMetrics(controlEvaluations);
 
@@ -449,6 +489,7 @@ async function main() {
 
                 const experimentEvaluations = await evaluateSceneSummaries(
                     experimentScenes.sceneIds,
+                    chapterId,
                 );
                 const experimentMetrics = extractSceneSummaryMetrics(
                     experimentEvaluations,
@@ -517,22 +558,37 @@ async function main() {
         };
     }
 
-    // Calculate p-value (simplified t-test)
-    const pValue = calculateMetricStatistics(
-        controlResults.map((r) => r.metrics),
-        experimentResults.map((r) => r.metrics),
-    );
-
-    // Determine recommendation
+    // Calculate p-value using t-test
+    let pValue: number = 1.0;
     let recommendation = "REVERT";
-    if (pValue < 0.05) {
-        const improvements = Object.values(deltas).filter((d) => d.improved).length;
-        const regressions = Object.values(deltas).filter((d) => !d.improved && d.percentage < -5).length;
-        if (improvements > regressions * 2) {
-            recommendation = "ADOPT";
-        } else if (improvements > regressions) {
-            recommendation = "REVISE";
+    
+    if (controlResults.length > 0 && experimentResults.length > 0 && Object.keys(deltas).length > 0) {
+        try {
+            // Extract metric values for t-test (use first available metric)
+            const metricName = Object.keys(deltas)[0];
+            const controlValues = controlResults.map((r) => r.metrics[metricName] || 0).filter(v => v > 0);
+            const experimentValues = experimentResults.map((r) => r.metrics[metricName] || 0).filter(v => v > 0);
+            
+            if (controlValues.length > 0 && experimentValues.length > 0) {
+                pValue = calculateTTest(controlValues, experimentValues);
+            }
+
+            // Determine recommendation
+            if (pValue < 0.05) {
+                const improvements = Object.values(deltas).filter((d) => d.improved).length;
+                const regressions = Object.values(deltas).filter((d) => !d.improved && d.percentage < -5).length;
+                if (improvements > regressions * 2) {
+                    recommendation = "ADOPT";
+                } else if (improvements > regressions) {
+                    recommendation = "REVISE";
+                }
+            }
+        } catch (error) {
+            console.warn("⚠ Error calculating statistics:", error);
+            pValue = 1.0;
         }
+    } else {
+        console.warn("⚠ No results to compare - cannot calculate statistics");
     }
 
     // Build result object
@@ -619,7 +675,7 @@ function generateReport(result: ABTestResult): string {
 **Date**: ${date}
 **Hypothesis**: ${result.config.hypothesis}
 **Sample Size**: ${result.config.sampleSize} stories per version
-**Statistical Significance**: p=${comparison.pValue.toFixed(4)} ${comparison.pValue < 0.05 ? "✅ Significant" : "❌ Not Significant"}
+**Statistical Significance**: p=${typeof comparison.pValue === 'number' ? comparison.pValue.toFixed(4) : 'N/A'} ${typeof comparison.pValue === 'number' && comparison.pValue < 0.05 ? "✅ Significant" : "❌ Not Significant"}
 
 ## Recommendation: ${comparison.recommendation}
 

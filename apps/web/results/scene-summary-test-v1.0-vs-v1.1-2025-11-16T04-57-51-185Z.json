@@ -1,0 +1,54 @@
+{
+  "config": {
+    "controlVersion": "v1.0",
+    "experimentVersion": "v1.1",
+    "testPrompts": [
+      "last-garden"
+    ],
+    "sampleSize": 2,
+    "hypothesis": "Experiment version will improve scene summary metrics (phase distribution, emotional beat, pacing)",
+    "expectedImprovement": "See hypothesis"
+  },
+  "testDate": "2025-11-16T05:04:51.694Z",
+  "control": [
+    {
+      "storyId": "story_TyJAEQuWhdI18VD8",
+      "chapterId": "chapter_zRSR5Fk5TuU6sD4Q",
+      "sceneIds": [
+        "scene_bRvwOqZ15I_ypRJI",
+        "scene_pvDWVWHTTFpsHg8z",
+        "scene_UakECKzET4iEg2a1",
+        "scene_OzZIK65Hwy6WFfOn",
+        "scene_-C4UAYi_VPxR-Y4q"
+      ],
+      "evaluations": []
+    },
+    {
+      "storyId": "story_RJqmQCNF1G7Sb-yH",
+      "chapterId": "chapter_KPErs5-ZIfeEM0uj",
+      "sceneIds": [
+        "scene_XXSmNmkkpWS1tHIw",
+        "scene_NXPhULmG23zR-kt-",
+        "scene_gfGZQLlYErSP5vLq",
+        "scene_ZkCljeRmB1ePS5sr",
+        "scene_4s2PTJKwoG2qJWgR"
+      ],
+      "evaluations": []
+    }
+  ],
+  "experiment": [],
+  "comparison": {
+    "controlSnapshot": {},
+    "experimentSnapshot": {},
+    "deltas": {},
+    "pValue": {
+      "mean": null,
+      "median": null,
+      "variance": null,
+      "stdDev": null,
+      "min": null,
+      "max": null
+    },
+    "recommendation": "REVERT"
+  }
+}
