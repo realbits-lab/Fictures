@@ -587,7 +587,10 @@ async function clearSceneContent(sceneIds: string[]): Promise<void> {
             try {
                 await db
                     .update(scenes)
-                    .set({ content: null })
+                    .set({
+                        content: "",
+                        updatedAt: new Date().toISOString(),
+                    })
                     .where(eq(scenes.id, sceneId));
             } catch (error) {
                 console.warn(`    ⚠ Failed to clear content for scene ${sceneId}:`, error);
