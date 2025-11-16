@@ -33,6 +33,8 @@ import {
 const AUTH_FILE_PATH: string = path.resolve(__dirname, "../../.auth/user.json");
 const API_BASE_URL: string = "http://localhost:3000";
 
+jest.setTimeout(1_200_000);
+
 interface AuthData {
     develop: {
         profiles: {
@@ -96,6 +98,24 @@ interface ApiToonplayResponse {
         message: string;
         details?: unknown;
     };
+}
+
+type SuccessfulToonplayResponse = ApiToonplayResponse & {
+    success: true;
+    result: NonNullable<ApiToonplayResponse["result"]>;
+};
+
+function assertSuccessfulResult(
+    response: ApiToonplayResponse,
+    label: string,
+): asserts response is SuccessfulToonplayResponse {
+    if (!response.success || !response.result) {
+        throw new Error(
+            `[TEST] ${label} failed: ${
+                response.error?.message || response.error?.code || "Unknown error"
+            }`,
+        );
+    }
 }
 
 let authData: AuthData;
@@ -436,30 +456,37 @@ async function generateToonplayViaAPI(
 // ============================================================================
 
 describe("Toonplay Generation Integration (API)", () => {
-    it("should generate toonplay from scene narrative via API", async () => {
-        logTestStart("toonplay narrative generation");
-        // Arrange
-        const requestBody: ApiToonplayRequest = {
+    let quickResult: SuccessfulToonplayResponse;
+    let standardResult: SuccessfulToonplayResponse;
+
+    beforeAll(async () => {
+        logTestStart("initial quick generation");
+        const quickResponse = await generateToonplayViaAPI({
             sceneId: testSceneId,
             evaluationMode: "quick",
-        };
+        });
+        assertSuccessfulResult(quickResponse, "initial quick generation");
+        quickResult = quickResponse;
 
-        // Act
-        const result = await generateToonplayViaAPI(requestBody);
+        logTestStart("initial standard generation");
+        const standardResponse = await generateToonplayViaAPI({
+            sceneId: testSceneId,
+            evaluationMode: "standard",
+        });
+        assertSuccessfulResult(
+            standardResponse,
+            "initial standard generation",
+        );
+        standardResult = standardResponse;
+    });
+    it("should generate toonplay from scene narrative via API", () => {
+        logTestStart("toonplay narrative generation");
 
-        // Assert - API response structure
-        if (!result.success) {
-            console.error("[TEST] API call failed:", result.error);
-            throw new Error(
-                `API call failed: ${result.error?.code || "UNKNOWN"} - ${result.error?.message || "Unknown error"}`,
-            );
-        }
+        const result = quickResult;
         expect(result.success).toBe(true);
         expect(result.result).toBeDefined();
-        expect(result.result?.toonplay).toBeDefined();
 
-        // Assert - Toonplay basic properties
-        const toonplay = result.result!.toonplay;
+        const toonplay = result.result.toonplay;
         expect(toonplay.scene_id).toBe(testSceneId);
         expect(toonplay.scene_title).toBeDefined();
         expect(toonplay.total_panels).toBeGreaterThanOrEqual(8);
@@ -484,29 +511,10 @@ describe("Toonplay Generation Integration (API)", () => {
         });
     }, 900000); // 15 minute timeout
 
-    it("should include quality evaluation results in API response", async () => {
+    it("should include quality evaluation results in API response", () => {
         logTestStart("toonplay evaluation results");
-        // Arrange
-        const requestBody: ApiToonplayRequest = {
-            sceneId: testSceneId,
-            evaluationMode: "standard",
-        };
 
-        // Act
-        const result = await generateToonplayViaAPI(requestBody);
-
-        // Assert - API response success
-        if (!result.success) {
-            console.error("[TEST] API call failed:", result.error);
-            throw new Error(
-                `API call failed: ${result.error?.code || "UNKNOWN"} - ${result.error?.message || "Unknown error"}`,
-            );
-        }
-        expect(result.success).toBe(true);
-        expect(result.result?.evaluation).toBeDefined();
-
-        // Assert - Evaluation completeness
-        const evaluation = result.result!.evaluation;
+        const evaluation = standardResult.result.evaluation;
         expect(evaluation.weighted_score).toBeGreaterThan(0);
         expect(evaluation.weighted_score).toBeLessThanOrEqual(5);
         expect(typeof evaluation.passes).toBe("boolean");
@@ -525,25 +533,10 @@ describe("Toonplay Generation Integration (API)", () => {
         });
     }, 900000);
 
-    it("should generate toonplay with proper structure via API", async () => {
+    it("should generate toonplay with proper structure via API", () => {
         logTestStart("toonplay structure validation");
-        // Arrange
-        const requestBody: ApiToonplayRequest = {
-            sceneId: testSceneId,
-        };
 
-        // Act
-        const result = await generateToonplayViaAPI(requestBody);
-
-        // Assert - API response
-        if (!result.success) {
-            console.error("[TEST] API call failed:", result.error);
-            throw new Error(
-                `API call failed: ${result.error?.code || "UNKNOWN"} - ${result.error?.message || "Unknown error"}`,
-            );
-        }
-        expect(result.success).toBe(true);
-        const toonplay = result.result!.toonplay;
+        const toonplay = quickResult.result.toonplay;
 
         // Assert - Panel count
         expect(toonplay.total_panels).toBeGreaterThanOrEqual(8);
@@ -571,19 +564,10 @@ describe("Toonplay Generation Integration (API)", () => {
         });
     }, 900000);
 
-    it("should track generation timing metadata in API response", async () => {
+    it("should track generation timing metadata in API response", () => {
         logTestStart("metadata tracking");
-        // Arrange
-        const requestBody: ApiToonplayRequest = {
-            sceneId: testSceneId,
-        };
 
-        // Act
-        const result = await generateToonplayViaAPI(requestBody);
-
-        // Assert - Metadata completeness
-        expect(result.result?.metadata).toBeDefined();
-        const metadata = result.result!.metadata;
+        const metadata = standardResult.result.metadata;
         expect(metadata.generationTime).toBeGreaterThan(0);
         if (metadata.toonplayTime !== undefined) {
             expect(metadata.toonplayTime).toBeGreaterThan(0);
@@ -594,18 +578,12 @@ describe("Toonplay Generation Integration (API)", () => {
         logTestResult("metadata tracking", metadata);
     }, 900000);
 
-    it("should generate toonplay with varied shot types via API", async () => {
+    it("should generate toonplay with varied shot types via API", () => {
         logTestStart("shot type diversity");
-        // Arrange
-        const requestBody: ApiToonplayRequest = {
-            sceneId: testSceneId,
-        };
 
-        // Act
-        const result = await generateToonplayViaAPI(requestBody);
-
-        // Assert - Shot type distribution
-        const shotTypes = result.result!.toonplay.panels.map((p) => p.shot_type);
+        const shotTypes = quickResult.result.toonplay.panels.map(
+            (p) => p.shot_type,
+        );
         const shotTypeCount: Record<string, number> = {};
 
         for (const shotType of shotTypes) {
@@ -622,39 +600,25 @@ describe("Toonplay Generation Integration (API)", () => {
         });
     }, 900000);
 
-    it("should handle different evaluation modes via API", async () => {
+    it("should handle different evaluation modes via API", () => {
         logTestStart("evaluation mode coverage");
-        // Arrange - Test quick mode
-        const quickRequest: ApiToonplayRequest = {
-            sceneId: testSceneId,
-            evaluationMode: "quick",
-        };
+        const quickScore = quickResult.result.evaluation.weighted_score;
+        const standardScore = standardResult.result.evaluation.weighted_score;
 
-        // Act
-        const quickResult = await generateToonplayViaAPI(quickRequest);
+        expect(quickScore).toBeGreaterThan(0);
+        expect(standardScore).toBeGreaterThan(0);
+        expect(quickScore).not.toBe(standardScore);
 
-        // Assert
-        expect(quickResult.success).toBe(true);
-        expect(quickResult.result?.evaluation).toBeDefined();
-        expect(quickResult.result?.evaluation.weighted_score).toBeGreaterThan(0);
         logTestResult("evaluation mode coverage", {
-            quickScore: quickResult.result?.evaluation.weighted_score,
-            passes: quickResult.result?.evaluation.passes,
+            quickScore,
+            standardScore,
         });
     }, 900000);
 
-    it("should validate dialogue structure in API response", async () => {
+    it("should validate dialogue structure in API response", () => {
         logTestStart("dialogue validation");
-        // Arrange
-        const requestBody: ApiToonplayRequest = {
-            sceneId: testSceneId,
-        };
 
-        // Act
-        const result = await generateToonplayViaAPI(requestBody);
-
-        // Assert - Dialogue structure
-        for (const panel of result.result!.toonplay.panels) {
+        for (const panel of quickResult.result.toonplay.panels) {
             for (const dialogue of panel.dialogue) {
                 expect(dialogue.character_id).toBeDefined();
                 expect(dialogue.text).toBeDefined();
@@ -663,22 +627,14 @@ describe("Toonplay Generation Integration (API)", () => {
             }
         }
         logTestResult("dialogue validation", {
-            panelCount: result.result?.toonplay.panels.length,
+            panelCount: quickResult.result.toonplay.panels.length,
         });
     }, 900000);
 
-    it("should validate SFX structure in API response", async () => {
+    it("should validate SFX structure in API response", () => {
         logTestStart("sfx validation");
-        // Arrange
-        const requestBody: ApiToonplayRequest = {
-            sceneId: testSceneId,
-        };
 
-        // Act
-        const result = await generateToonplayViaAPI(requestBody);
-
-        // Assert - SFX structure
-        for (const panel of result.result!.toonplay.panels) {
+        for (const panel of quickResult.result.toonplay.panels) {
             for (const sfx of panel.sfx) {
                 expect(sfx.text).toBeDefined();
                 expect(sfx.text.length).toBeGreaterThan(0);
@@ -687,7 +643,7 @@ describe("Toonplay Generation Integration (API)", () => {
             }
         }
         logTestResult("sfx validation", {
-            panelCount: result.result?.toonplay.panels.length,
+            panelCount: quickResult.result.toonplay.panels.length,
         });
     }, 900000);
 });
