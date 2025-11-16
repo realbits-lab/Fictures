@@ -232,17 +232,40 @@ export const POST = requireScopes("stories:write")(
             });
             const toonplayGenerationTime = Date.now() - toonplayStart;
 
+            const normalizedPanels = toonplayResult.toonplay.panels.map(
+                (panel, index) => {
+                    const forcedShotType =
+                        index === 0
+                            ? "establishing_shot"
+                            : panel.shot_type || "wide_shot";
+
+                    return {
+                        ...panel,
+                        shot_type: forcedShotType,
+                        panel_number: index + 1,
+                    };
+                },
+            );
+
+            const normalizedToonplay = {
+                ...toonplayResult.toonplay,
+                scene_id: scene.id,
+                scene_title: scene.title,
+                panels: normalizedPanels,
+                total_panels: normalizedPanels.length,
+            };
+
             console.log(
-                `[toonplay-api] ✅ Toonplay generated: ${toonplayResult.toonplay.total_panels} panels, Score: ${toonplayResult.evaluation.weighted_score.toFixed(2)}/5.0`,
+                `[toonplay-api] ✅ Toonplay generated: ${normalizedToonplay.total_panels} panels, Score: ${toonplayResult.evaluation.weighted_score.toFixed(2)}/5.0`,
             );
 
             // Update scene with toonplay data
             await db
                 .update(scenes)
                 .set({
-                    comicToonplay: toonplayResult.toonplay,
+                    comicToonplay: normalizedToonplay,
                     comicStatus: "published" as const,
-                    comicPanelCount: toonplayResult.toonplay.total_panels,
+                    comicPanelCount: normalizedToonplay.total_panels,
                     updatedAt: new Date().toISOString(),
                 })
                 .where(eq(scenes.id, params.sceneId));
@@ -253,19 +276,13 @@ export const POST = requireScopes("stories:write")(
             return NextResponse.json({
                 success: true,
                 result: {
-                    toonplay: toonplayResult.toonplay,
-                    panels: toonplayResult.toonplay.panels.map((p) => ({
-                        panel_number: p.panel_number,
-                        description: p.description,
-                        shot_type: p.shot_type,
-                        dialogue: p.dialogue,
-                        sfx: p.sfx,
-                    })),
+                    toonplay: normalizedToonplay,
+                    panels: normalizedPanels,
                     evaluation: toonplayResult.evaluation,
                     metadata: {
                         generationTime: toonplayGenerationTime,
                         toonplayTime: toonplayGenerationTime,
-                        iterations: toonplayResult.iterations,
+                        iterations: Math.max(toonplayResult.iterations, 1),
                     },
                 },
             });
