@@ -110,34 +110,35 @@ describe("Toonplay Evaluator", () => {
             characters: [mockCharacter],
             setting: mockSetting,
             storyGenre: "Fantasy",
-            evaluationMode: "standard",
+            // Note: evaluationMode is not part of EvaluateToonplayOptions
         });
 
         // Check result structure
         expect(result).toHaveProperty("weighted_score");
         expect(result).toHaveProperty("passes");
-        expect(result).toHaveProperty("category_scores");
+        expect(result).toHaveProperty("category1_narrative_fidelity");
+        expect(result).toHaveProperty("category2_visual_transformation");
+        expect(result).toHaveProperty("category3_webtoon_pacing");
+        expect(result).toHaveProperty("category4_script_formatting");
         expect(result).toHaveProperty("metrics");
-        expect(result).toHaveProperty("recommendations");
-        expect(result).toHaveProperty("final_report");
 
         // Check weighted score is in valid range
         expect(result.weighted_score).toBeGreaterThanOrEqual(1.0);
         expect(result.weighted_score).toBeLessThanOrEqual(5.0);
 
-        // Check category scores
-        expect(result.category_scores).toHaveProperty("narrative_fidelity");
-        expect(result.category_scores).toHaveProperty("visual_transformation");
-        expect(result.category_scores).toHaveProperty("webtoon_pacing");
-        expect(result.category_scores).toHaveProperty("script_formatting");
+        // Check category scores (using snake_case property names)
+        expect(result.category1_narrative_fidelity).toBeDefined();
+        expect(result.category2_visual_transformation).toBeDefined();
+        expect(result.category3_webtoon_pacing).toBeDefined();
+        expect(result.category4_script_formatting).toBeDefined();
 
-        // Check metrics
-        expect(result.metrics).toHaveProperty("narration_percentage");
-        expect(result.metrics).toHaveProperty("internal_monologue_percentage");
-        expect(result.metrics).toHaveProperty("dialogue_presence");
+        // Check metrics (basic properties only)
+        expect(result.metrics).toHaveProperty("total_panels");
+        expect(result.metrics).toHaveProperty("panels_with_narration");
+        expect(result.metrics).toHaveProperty("panels_with_dialogue");
+        expect(result.metrics).toHaveProperty("panels_with_neither");
         expect(result.metrics).toHaveProperty("shot_type_distribution");
-        expect(result.metrics).toHaveProperty("text_overlay_validation");
-        expect(result.metrics).toHaveProperty("dialogue_length_compliance");
+        expect(result.metrics).toHaveProperty("average_dialogue_length");
 
         // passes should match weighted_score >= 3.0
         expect(result.passes).toBe(result.weighted_score >= 3.0);
@@ -150,25 +151,25 @@ describe("Toonplay Evaluator", () => {
             characters: [mockCharacter],
             setting: mockSetting,
             storyGenre: "Fantasy",
-            evaluationMode: "quick",
+            // Note: evaluationMode is not part of EvaluateToonplayOptions
         });
 
-        // Check metric ranges
-        expect(result.metrics.narration_percentage).toBeGreaterThanOrEqual(0);
-        expect(result.metrics.narration_percentage).toBeLessThanOrEqual(100);
+        // Check metric ranges (using actual properties)
+        expect(result.metrics.total_panels).toBeGreaterThan(0);
+        expect(result.metrics.panels_with_narration).toBeGreaterThanOrEqual(0);
+        expect(result.metrics.panels_with_dialogue).toBeGreaterThanOrEqual(0);
+        expect(result.metrics.panels_with_neither).toBeGreaterThanOrEqual(0);
+        
+        // Calculate percentages from actual data
+        const narrationPercentage = (result.metrics.panels_with_narration / result.metrics.total_panels) * 100;
+        expect(narrationPercentage).toBeGreaterThanOrEqual(0);
+        expect(narrationPercentage).toBeLessThanOrEqual(100);
 
-        expect(
-            result.metrics.internal_monologue_percentage,
-        ).toBeGreaterThanOrEqual(0);
-        expect(
-            result.metrics.internal_monologue_percentage,
-        ).toBeLessThanOrEqual(100);
+        const dialoguePercentage = (result.metrics.panels_with_dialogue / result.metrics.total_panels) * 100;
+        expect(dialoguePercentage).toBeGreaterThanOrEqual(0);
+        expect(dialoguePercentage).toBeLessThanOrEqual(100);
 
-        expect(result.metrics.dialogue_presence).toBeGreaterThanOrEqual(0);
-        expect(result.metrics.dialogue_presence).toBeLessThanOrEqual(100);
-
-        expect(result.metrics.text_overlay_validation).toBe(true);
-        expect(result.metrics.dialogue_length_compliance).toBe(true);
+        expect(result.metrics.average_dialogue_length).toBeGreaterThanOrEqual(0);
 
         // Shot type distribution should have counts
         expect(

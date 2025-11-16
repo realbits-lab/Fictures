@@ -53,11 +53,18 @@ async function StoryContent({ storyId }: { storyId: string }) {
             notFound();
         }
 
+        // Convert posts to match Post interface (createdAt/updatedAt as Date)
+        const postsWithDates = posts.map((post) => ({
+            ...post,
+            createdAt: new Date(post.createdAt),
+            updatedAt: new Date(post.updatedAt),
+        }));
+
         // Pass SSR data to client component
         return (
             <CommunityStoryDetailClient
                 initialStory={story}
-                initialPosts={posts}
+                initialPosts={postsWithDates}
                 storyId={storyId}
             />
         );

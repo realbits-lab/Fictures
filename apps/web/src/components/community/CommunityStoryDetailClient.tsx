@@ -111,7 +111,7 @@ export function CommunityStoryDetailClient({
     const { data: storyData } = useCommunityStory(storyId);
     const { data: postsData } = useCommunityPosts(storyId);
 
-    const revalidatePosts = useRevalidateCommunityPosts(storyId);
+    const { revalidate: revalidatePosts } = useRevalidateCommunityPosts();
 
     const { executeAction: handleCreatePost } = useProtectedAction(() => {
         setShowCreateForm(true);
@@ -119,16 +119,16 @@ export function CommunityStoryDetailClient({
 
     const handlePostCreated = async () => {
         setShowCreateForm(false);
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     const handlePostDeleted = async () => {
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     // Use SSR data as fallback
     const story = storyData?.story || initialStory;
-    const posts = postsData?.posts || initialPosts;
+    const posts = Array.isArray(postsData) ? postsData : (postsData as any)?.posts || initialPosts;
 
     return (
         <div className="flex gap-6">

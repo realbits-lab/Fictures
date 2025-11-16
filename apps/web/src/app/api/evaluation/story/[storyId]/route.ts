@@ -8,10 +8,10 @@ import { createErrorResponse } from "../../utils";
 
 export async function GET(
     _request: Request,
-    { params }: { params: { storyId: string } },
+    { params }: { params: Promise<{ storyId: string }> },
 ) {
     try {
-        const { storyId: _storyId } = params;
+        const { storyId: _storyId } = await params;
 
         // TODO: Implement database query to fetch latest evaluation
         // For now, return a placeholder response

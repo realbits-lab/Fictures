@@ -98,7 +98,7 @@ export default function StoryCommunityPage() {
         elapsedTime: `${(performance.now() - componentStartTime).toFixed(2)}ms`,
     });
 
-    const revalidatePosts = useRevalidateCommunityPosts(storyId);
+    const { revalidate: revalidatePosts } = useRevalidateCommunityPosts();
 
     const { executeAction: handleCreatePost } = useProtectedAction(() => {
         setShowCreateForm(true);
@@ -107,12 +107,12 @@ export default function StoryCommunityPage() {
     const handlePostCreated = async () => {
         setShowCreateForm(false);
         // Revalidate cache to show new post immediately
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     const handlePostDeleted = async () => {
         // Revalidate cache after post deletion
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     // Show error toasts if data fetching fails

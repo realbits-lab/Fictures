@@ -75,7 +75,8 @@ test.describe("Performance", () => {
 
         page.on("response", (response) => {
             if (response.url().includes("/api/")) {
-                const timing = response.timing();
+                // Note: response.timing() may not be available in all Playwright versions
+                const timing = (response as any).timing?.();
                 if (timing) {
                     apiCalls.push(timing.responseEnd);
                 }

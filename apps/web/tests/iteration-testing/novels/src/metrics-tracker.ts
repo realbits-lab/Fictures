@@ -4,6 +4,11 @@
 
 import type {
     CorePrincipleMetrics,
+    CyclicStructureMetrics,
+    IntrinsicMotivationMetrics,
+    EarnedConsequenceMetrics,
+    CharacterTransformationMetrics,
+    EmotionalResonanceMetrics,
     MetricDelta,
     MetricSnapshot,
     TestStoryResult,
@@ -81,11 +86,11 @@ export function aggregateMetrics(
     stories: TestStoryResult[],
 ): CorePrincipleMetrics {
     const aggregated: CorePrincipleMetrics = {
-        cyclicStructure: createEmptyMetrics("cyclicStructure"),
-        intrinsicMotivation: createEmptyMetrics("intrinsicMotivation"),
-        earnedConsequence: createEmptyMetrics("earnedConsequence"),
-        characterTransformation: createEmptyMetrics("characterTransformation"),
-        emotionalResonance: createEmptyMetrics("emotionalResonance"),
+        cyclicStructure: createEmptyMetrics("cyclicStructure") as CyclicStructureMetrics,
+        intrinsicMotivation: createEmptyMetrics("intrinsicMotivation") as IntrinsicMotivationMetrics,
+        earnedConsequence: createEmptyMetrics("earnedConsequence") as EarnedConsequenceMetrics,
+        characterTransformation: createEmptyMetrics("characterTransformation") as CharacterTransformationMetrics,
+        emotionalResonance: createEmptyMetrics("emotionalResonance") as EmotionalResonanceMetrics,
     };
 
     if (stories.length === 0) return aggregated;
@@ -106,7 +111,7 @@ export function aggregateMetrics(
  */
 function createEmptyMetrics(
     principle: keyof CorePrincipleMetrics,
-): Record<string, number> {
+): CyclicStructureMetrics | IntrinsicMotivationMetrics | EarnedConsequenceMetrics | CharacterTransformationMetrics | EmotionalResonanceMetrics {
     switch (principle) {
         case "cyclicStructure":
             return {
@@ -119,7 +124,7 @@ function createEmptyMetrics(
                 nestedCycleAlignment: 0,
                 causalChainContinuity: 0,
                 forwardMomentum: 0,
-            };
+            } as CyclicStructureMetrics;
         case "intrinsicMotivation":
             return {
                 characterActionAuthenticity: 0,
@@ -129,7 +134,7 @@ function createEmptyMetrics(
                 genuineGoodnessPerception: 0,
                 moralElevationTrigger: 0,
                 dramaticIrony: 0,
-            };
+            } as IntrinsicMotivationMetrics;
         case "earnedConsequence":
             return {
                 causalConnectionClarity: 0,
@@ -143,7 +148,7 @@ function createEmptyMetrics(
                 seedTrackingCompleteness: 0,
                 seedResolutionQuality: 0,
                 relationshipSeedDepth: 0,
-            };
+            } as EarnedConsequenceMetrics;
         case "characterTransformation":
             return {
                 internalFlawDefinition: 0,
@@ -155,7 +160,7 @@ function createEmptyMetrics(
                 transformationArticulation: 0,
                 earnedTransformation: 0,
                 arcStructureClarity: 0,
-            };
+            } as CharacterTransformationMetrics;
         case "emotionalResonance":
             return {
                 sceneQualityScore: 0,
@@ -172,7 +177,9 @@ function createEmptyMetrics(
                 wordCountAccuracy: 0,
                 formattingCompliance: 0,
                 proseVariety: 0,
-            };
+            } as EmotionalResonanceMetrics;
+        default:
+            throw new Error(`Unknown principle: ${principle}`);
     }
 }
 
@@ -282,8 +289,9 @@ function normalizeMetrics(
         keyof CorePrincipleMetrics
     >) {
         for (const metric of Object.keys(aggregated[principle]) as string[]) {
-            (aggregated[principle] as Record<string, number>)[metric] /=
-                storyCount;
+            // Type-safe access to metric values
+            const principleMetrics = aggregated[principle] as unknown as Record<string, number>;
+            principleMetrics[metric] /= storyCount;
         }
     }
 }

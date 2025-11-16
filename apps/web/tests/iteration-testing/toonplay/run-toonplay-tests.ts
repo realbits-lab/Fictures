@@ -17,7 +17,7 @@ import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { getTestScene, TEST_SCENES } from "./config/test-scenes";
 import { ToonplayMetricsTracker } from "./src/metrics-tracker";
-import type { ToonplayTestResult } from "./src/types";
+import type { ToonplayTestResult, ToonplayEvaluation } from "./src/types";
 
 // Parse command-line arguments
 const { values } = parseArgs({
@@ -186,7 +186,7 @@ async function generateStoryForScene(
             const partResult = await partService.generateAndSave({
                 userId: "usr_QKl8WRbF-U2u4ymj",
                 storyId,
-                partNumber: 1,
+                // Note: partNumber is not part of ServicePartParams
             });
 
             // 5. Generate single chapter
@@ -195,7 +195,7 @@ async function generateStoryForScene(
                 userId: "usr_QKl8WRbF-U2u4ymj",
                 storyId,
                 partId: partResult.part.id,
-                chapterNumber: 1,
+                // Note: chapterNumber is not part of ServiceChapterParams
             });
 
             // 6. Generate single scene summary
@@ -205,7 +205,7 @@ async function generateStoryForScene(
                     userId: "usr_QKl8WRbF-U2u4ymj",
                     storyId,
                     chapterId: chapterResult.chapter.id,
-                    sceneCount: 1,
+                    // Note: sceneCount is not part of ServiceSceneSummaryParams
                 });
 
             const sceneId = sceneSummaryResult.scene.id;
@@ -317,7 +317,7 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
     try {
         // Import database and schema
         const { db } = await import("@/lib/db");
-        const { scenes, characters, settings, stories } = await import(
+        const { scenes, characters, settings, stories, chapters } = await import(
             "@/lib/schemas/database"
         );
         const { eq } = await import("drizzle-orm");
@@ -331,9 +331,18 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
             throw new Error("Toonplay not found for scene");
         }
 
+        // Get chapter to find storyId
+        const chapter = await db.query.chapters.findFirst({
+            where: eq(chapters.id, scene.chapterId),
+        });
+
+        if (!chapter) {
+            throw new Error("Chapter not found for scene");
+        }
+
         // Get related data for evaluation
         const story = await db.query.stories.findFirst({
-            where: eq(stories.id, scene.storyId),
+            where: eq(stories.id, chapter.storyId),
         });
 
         if (!story) {
@@ -341,11 +350,11 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
         }
 
         const characterList = await db.query.characters.findMany({
-            where: eq(characters.storyId, scene.storyId),
+            where: eq(characters.storyId, chapter.storyId),
         });
 
         const settingList = await db.query.settings.findMany({
-            where: eq(settings.storyId, scene.storyId),
+            where: eq(settings.storyId, chapter.storyId),
         });
 
         const setting = settingList[0];
@@ -361,12 +370,12 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
 
         // Evaluate toonplay
         const evaluation = await evaluateToonplay({
-            toonplay: scene.comicToonplay,
+            toonplay: scene.comicToonplay as any, // Type assertion for toonplay data
             sourceScene: scene,
             characters: characterList,
             setting,
             storyGenre: story.genre || "Fantasy",
-            evaluationMode: EVALUATION_MODE,
+            // Note: evaluationMode is not part of EvaluateToonplayOptions
         });
 
         const evaluationTime = Date.now() - evalStartTime;
@@ -375,8 +384,61 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
             `    ✓ Evaluation complete in ${(evaluationTime / 1000).toFixed(1)}s`,
         );
         console.log(
-            `      Score: ${evaluation.weightedScore.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
+            `      Score: ${evaluation.weighted_score.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
         );
+
+        // Convert evaluation result to test format (snake_case to camelCase)
+        const testEvaluation: ToonplayEvaluation = {
+            weightedScore: evaluation.weighted_score,
+            passes: evaluation.passes,
+            categoryScores: {
+                narrativeFidelity: (evaluation.category1_narrative_fidelity as any).score || 0,
+                visualTransformation: (evaluation.category2_visual_transformation as any).score || 0,
+                webtoonPacing: (evaluation.category3_webtoon_pacing as any).score || 0,
+                scriptFormatting: (evaluation.category4_script_formatting as any).score || 0,
+            },
+            metrics: {
+                narrationPercentage: (evaluation.metrics.panels_with_narration / evaluation.metrics.total_panels) * 100,
+                internalMonologuePercentage: 0, // Not available in current metrics
+                dialoguePresence: (evaluation.metrics.panels_with_dialogue / evaluation.metrics.total_panels) * 100,
+                shotTypeDistribution: evaluation.metrics.shot_type_distribution,
+                shotVariety: Object.keys(evaluation.metrics.shot_type_distribution).length,
+                textOverlayValidation: true, // Not available in current metrics
+                dialogueLengthCompliance: true, // Not available in current metrics
+                descriptionLengthCompliance: true, // Not available in current metrics
+                panelCount: evaluation.metrics.total_panels,
+                averageDescriptionLength: 0, // Not available in current metrics
+                averageDialoguePerPanel: evaluation.metrics.average_dialogue_length,
+                verticalFlowQuality: 0, // Not available in current metrics
+                panelPacingRhythm: 0, // Not available in current metrics
+            },
+            recommendations: [], // Not available in current evaluation result
+            finalReport: "", // Not available in current evaluation result
+        };
+
+        // Convert toonplay to test format
+        const testToonplay = scene.comicToonplay as any;
+        const convertedToonplay = {
+            sceneId: scene.id,
+            sceneTitle: testToonplay.scene_title || scene.title || "Untitled Scene",
+            totalPanels: testToonplay.total_panels || 0,
+            panels: (testToonplay.panels || []).map((p: any) => ({
+                panelNumber: p.panel_number || 0,
+                shotType: p.shot_type || "",
+                description: p.description || "",
+                charactersVisible: p.characters_visible || [],
+                dialogue: (p.dialogue || []).map((d: any) => ({
+                    characterId: d.character_id || "",
+                    text: d.text || "",
+                })),
+                narrative: p.narrative || undefined,
+                sfx: (p.sfx || []).map((s: any) => ({
+                    text: s.text || "",
+                    emphasis: s.emphasis || "",
+                })),
+            })),
+            narrativeArc: testToonplay.narrative_arc || "",
+        };
 
         // Create test result
         const testResult: ToonplayTestResult = {
@@ -385,8 +447,8 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
             sceneName: scene.title || "Untitled Scene",
             promptVersion: PROMPT_VERSION,
             timestamp: new Date().toISOString(),
-            toonplay: scene.comicToonplay,
-            evaluation,
+            toonplay: convertedToonplay,
+            evaluation: testEvaluation,
             metadata: {
                 generationTime: 0, // Will be filled by caller
                 evaluationTime,

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { MainLayout } from "@/components/layout";
-import { PublishClient } from "@/components/publish";
+import { PublishClient } from "@/components/publish/PublishClient";
 import { auth } from "@/lib/auth";
 import { hasAnyRole } from "@/lib/auth/permissions";
 

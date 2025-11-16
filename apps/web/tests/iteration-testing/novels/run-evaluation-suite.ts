@@ -17,6 +17,7 @@ import * as path from "node:path";
 import { parseArgs } from "node:util";
 import { getTestPrompt, TEST_PROMPTS } from "./config/test-prompts";
 import type { TestStoryResult, TestSuiteResult } from "./src/types";
+import { FailureCategory } from "./src/types";
 
 // Parse command-line arguments
 const { values } = parseArgs({
@@ -183,7 +184,7 @@ async function generateStory(
             const partResult = await partService.generateAndSave({
                 userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                 storyId,
-                partNumber: 1,
+                // Note: partNumber is not part of ServicePartParams - parts are generated sequentially
                 promptVersion:
                     PROMPT_VERSION !== "v1.0" ? PROMPT_VERSION : undefined, // Pass version for A/B testing
             });
@@ -194,14 +195,14 @@ async function generateStory(
                 userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                 storyId,
                 partId: partResult.part.id,
-                chapterNumber: 1,
+                // Note: chapterNumber is not part of ServiceChapterParams - chapters are generated sequentially
             });
 
             const _chapter2Result = await chapterService.generateAndSave({
                 userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                 storyId,
                 partId: partResult.part.id,
-                chapterNumber: 2,
+                // Note: chapterNumber is not part of ServiceChapterParams - chapters are generated sequentially
             });
 
             // 6. Generate scene summaries for chapter 1 (one at a time)
@@ -628,11 +629,11 @@ async function main() {
   Results Saved:   ${OUTPUT_FILE}
 
   Summary:
-  - Cyclic Structure:        ${((aggregatedMetrics.cyclicStructure.cycleCompleteness || 0) * 100).toFixed(0)}%
-  - Intrinsic Motivation:    ${((aggregatedMetrics.intrinsicMotivation.cycleCompleteness || 0) * 100).toFixed(0)}%
-  - Earned Consequence:      ${((aggregatedMetrics.earnedConsequence.cycleCompleteness || 0) * 100).toFixed(0)}%
-  - Character Transformation: ${((aggregatedMetrics.characterTransformation.cycleCompleteness || 0) * 100).toFixed(0)}%
-  - Emotional Resonance:     ${((aggregatedMetrics.emotionalResonance.cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Cyclic Structure:        ${(((aggregatedMetrics.cyclicStructure as any).cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Intrinsic Motivation:    ${(((aggregatedMetrics.intrinsicMotivation as any).cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Earned Consequence:      ${(((aggregatedMetrics.earnedConsequence as any).cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Character Transformation: ${(((aggregatedMetrics.characterTransformation as any).cycleCompleteness || 0) * 100).toFixed(0)}%
+  - Emotional Resonance:     ${(((aggregatedMetrics.emotionalResonance as any).cycleCompleteness || 0) * 100).toFixed(0)}%
 
   Top Issues:
 ${failurePatterns
@@ -743,18 +744,18 @@ function identifyFailurePatterns(
  */
 function categorizeFailure(
     metricName: string,
-): TestSuiteResult["failurePatterns"][0]["category"] {
+): FailureCategory {
     if (metricName.includes("cycle") || metricName.includes("phase"))
-        return "structural";
+        return FailureCategory.STRUCTURAL;
     if (metricName.includes("emotion") || metricName.includes("gamdong"))
-        return "emotional";
+        return FailureCategory.EMOTIONAL;
     if (metricName.includes("word") || metricName.includes("prose"))
-        return "prose";
+        return FailureCategory.PROSE;
     if (metricName.includes("seed") || metricName.includes("causal"))
-        return "causal";
+        return FailureCategory.CAUSAL;
     if (metricName.includes("character") || metricName.includes("arc"))
-        return "character";
-    return "structural";
+        return FailureCategory.CHARACTER;
+    return FailureCategory.STRUCTURAL;
 }
 
 // Run the suite
