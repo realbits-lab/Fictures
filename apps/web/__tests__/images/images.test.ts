@@ -36,6 +36,14 @@ const AUTH_FILE_PATH: string = path.resolve(__dirname, "../../.auth/user.json");
 
 const API_BASE_URL: string = "http://localhost:3000";
 const API_ENDPOINT: string = "/api/studio/images";
+const IMAGE_GENERATION_TIMEOUT_MS = 180000;
+const IMAGE_TEST_PREFIX = "[images.test.ts]";
+
+jest.setTimeout(IMAGE_GENERATION_TIMEOUT_MS);
+
+function logImageTest(testCase: string, message: string): void {
+    console.log(`${IMAGE_TEST_PREFIX}[${testCase}] ${message}`);
+}
 
 interface AuthData {
     develop: {
@@ -293,8 +301,9 @@ beforeAll(async () => {
         ])
         .onConflictDoNothing();
 
-    console.log(
-        "✓ Test setup complete - using writer API key and test database records",
+    logImageTest(
+        "setup",
+        "Test data ready - writer API key loaded and baseline records created",
     );
 });
 
@@ -318,7 +327,7 @@ afterAll(async () => {
     // Delete test story
     await db.delete(stories).where(eq(stories.id, testStoryId));
 
-    console.log("✓ Test cleanup complete - removed test database records");
+    logImageTest("cleanup", "Removed test database records");
 });
 
 // ============================================================================
@@ -332,6 +341,11 @@ async function generateImage(
     requestBody: ApiImagesRequest,
 ): Promise<ApiImagesResponse> {
     const url: string = `${API_BASE_URL}${API_ENDPOINT}`;
+
+    logImageTest(
+        requestBody.imageType,
+        `Sending request to ${url} with contentId=${requestBody.contentId}`,
+    );
 
     const response: Response = await fetch(url, {
         method: "POST",
@@ -351,6 +365,12 @@ async function generateImage(
 
     const result: ApiImagesResponse =
         (await response.json()) as ApiImagesResponse;
+
+    logImageTest(
+        requestBody.imageType,
+        `Image generated: aspectRatio=${result.aspectRatio} dimensions=${result.dimensions.width}x${result.dimensions.height}`,
+    );
+
     return result;
 }
 
@@ -360,6 +380,7 @@ async function generateImage(
 
 describe("Images System Integration", () => {
     it("should generate story cover image with 16:9 aspect ratio", async () => {
+        logImageTest("story-cover", "Starting story cover generation test");
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A mysterious ancient library filled with glowing books",
@@ -369,6 +390,11 @@ describe("Images System Integration", () => {
 
         // Act
         const result: ApiImagesResponse = await generateImage(requestBody);
+
+        logImageTest(
+            "story-cover",
+            `Received story cover imageId=${result.imageId} (${result.dimensions.width}x${result.dimensions.height})`,
+        );
 
         // Assert - Basic properties
         expect(result.imageId).toBeDefined();
@@ -422,9 +448,10 @@ describe("Images System Integration", () => {
         );
         expect(has1x).toBe(true);
         expect(has2x).toBe(true);
-    }, 60000); // 60s timeout for image generation
+    }, IMAGE_GENERATION_TIMEOUT_MS); // allow up to 3 minutes for ComfyUI render
 
     it("should generate character portrait with 1:1 aspect ratio", async () => {
+        logImageTest("character", "Generating character portrait");
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A wise elderly wizard with a long white beard and piercing blue eyes",
@@ -434,6 +461,11 @@ describe("Images System Integration", () => {
 
         // Act
         const result: ApiImagesResponse = await generateImage(requestBody);
+
+        logImageTest(
+            "character",
+            `Character portrait imageId=${result.imageId} (${result.dimensions.width}x${result.dimensions.height})`,
+        );
 
         // Assert - Aspect ratio
         expect(result.aspectRatio).toBe("1:1");
@@ -449,9 +481,10 @@ describe("Images System Integration", () => {
         // Assert - All other standard checks
         expect(result.originalUrl).toContain("blob.vercel-storage.com");
         expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
-    }, 60000);
+    }, IMAGE_GENERATION_TIMEOUT_MS);
 
     it("should generate setting image with 1:1 aspect ratio", async () => {
+        logImageTest("setting", "Generating setting illustration");
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A bustling medieval marketplace with colorful tents and merchants",
@@ -462,6 +495,11 @@ describe("Images System Integration", () => {
         // Act
         const result: ApiImagesResponse = await generateImage(requestBody);
 
+        logImageTest(
+            "setting",
+            `Setting image created width=${result.dimensions.width} height=${result.dimensions.height}`,
+        );
+
         // Assert - Aspect ratio
         expect(result.aspectRatio).toBe("1:1");
 
@@ -470,9 +508,10 @@ describe("Images System Integration", () => {
             result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(0.95);
         expect(aspectRatioValue).toBeLessThan(1.05);
-    }, 60000);
+    }, IMAGE_GENERATION_TIMEOUT_MS);
 
     it("should generate scene image with 16:9 aspect ratio", async () => {
+        logImageTest("scene", "Generating scene image");
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A dramatic sunset over a vast desert with ancient ruins",
@@ -483,6 +522,11 @@ describe("Images System Integration", () => {
         // Act
         const result: ApiImagesResponse = await generateImage(requestBody);
 
+        logImageTest(
+            "scene",
+            `Scene image produced width=${result.dimensions.width} height=${result.dimensions.height}`,
+        );
+
         // Assert - Aspect ratio
         expect(result.aspectRatio).toBe("16:9");
 
@@ -491,33 +535,10 @@ describe("Images System Integration", () => {
             result.dimensions.width / result.dimensions.height;
         expect(aspectRatioValue).toBeGreaterThan(1.7);
         expect(aspectRatioValue).toBeLessThan(1.8);
-    }, 60000);
-
-    it("should generate comic panel with 9:16 aspect ratio", async () => {
-        // Arrange
-        const requestBody: ApiImagesRequest = {
-            prompt: "A superhero leaping between skyscrapers in a dynamic action pose",
-            contentId: "scene_test_002",
-            imageType: "comic-panel",
-        };
-
-        // Act
-        const result: ApiImagesResponse = await generateImage(requestBody);
-
-        // Assert - Aspect ratio
-        expect(result.aspectRatio).toBe("9:16");
-
-        // Assert - Portrait dimensions (taller than wide)
-        const aspectRatioValue: number =
-            result.dimensions.width / result.dimensions.height;
-        expect(aspectRatioValue).toBeGreaterThan(0.55);
-        expect(aspectRatioValue).toBeLessThan(0.58);
-        expect(result.dimensions.height).toBeGreaterThan(
-            result.dimensions.width,
-        );
-    }, 60000);
+    }, IMAGE_GENERATION_TIMEOUT_MS);
 
     it("should include comprehensive metadata in results", async () => {
+        logImageTest("metadata", "Validating metadata response");
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A serene Japanese garden with cherry blossoms and a koi pond",
@@ -527,6 +548,11 @@ describe("Images System Integration", () => {
 
         // Act
         const result: ApiImagesResponse = await generateImage(requestBody);
+
+        logImageTest(
+            "metadata",
+            `Metadata: model=${result.model} provider=${result.provider} variants=${result.optimizedSet.variants.length}`,
+        );
 
         // Assert - Response completeness (API doesn't return metadata, only service layer has it)
         expect(result.success).toBe(true);
@@ -562,5 +588,5 @@ describe("Images System Integration", () => {
             expect(variant.height).toBeGreaterThan(0);
             expect(variant.size).toBeGreaterThan(0);
         }
-    }, 60000);
+    }, IMAGE_GENERATION_TIMEOUT_MS);
 });

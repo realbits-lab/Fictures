@@ -35,6 +35,11 @@ import type { AuthContext } from "@/lib/auth/context";
 // ============================================================================
 
 const AUTH_FILE_PATH: string = path.resolve(__dirname, "../../.auth/user.json");
+const COMICS_TEST_PREFIX = "[comics.test.ts]";
+
+function logComicsTest(testCase: string, message: string): void {
+    console.log(`${COMICS_TEST_PREFIX}[${testCase}] ${message}`);
+}
 
 interface AuthData {
     develop: {
@@ -246,8 +251,9 @@ beforeAll(async () => {
         })
         .onConflictDoNothing();
 
-    console.log(
-        "✓ Test setup complete - using writer API key and test database records",
+    logComicsTest(
+        "setup",
+        "Finished creating test story/character/scene records for comic panels",
     );
 });
 
@@ -265,7 +271,7 @@ afterAll(async () => {
     await db.delete(characters).where(eq(characters.id, testCharacterId));
     await db.delete(stories).where(eq(stories.id, testStoryId));
 
-    console.log("✓ Test cleanup complete - removed test database records");
+    logComicsTest("cleanup", "Removed comic panel test fixtures from database");
 });
 
 // ============================================================================
@@ -402,8 +408,13 @@ async function generatePanelImages(
     };
 
     // Generate panel images within auth context
+    logComicsTest(
+        "generate-panels",
+        `Invoking generateComicPanels for scene=${scene.id} toonplayPanels=${toonplay.total_panels}`,
+    );
+
     return await withAuth(authContext, async () => {
-        return await generateComicPanels({
+        const result = await generateComicPanels({
             toonplay,
             storyId: scene.chapter.story.id,
             chapterId: scene.chapter.id,
@@ -412,6 +423,13 @@ async function generatePanelImages(
             settings: storySettings as any,
             storyGenre: scene.chapter.story.genre || "drama",
         });
+
+        logComicsTest(
+            "generate-panels",
+            `Generation complete in ${result.metadata.generationTime}ms with model=${result.metadata.model}`,
+        );
+
+        return result;
     });
 }
 
@@ -421,11 +439,19 @@ async function generatePanelImages(
 
 describe("Comic Panel Image Generation Integration", () => {
     it("should generate images for all panels in toonplay", async () => {
+        logComicsTest("panel-count", "Generating comic panels for toonplay spec");
         // Arrange
         const toonplay = createMockToonplay();
 
         // Act
         const result = await generatePanelImages(toonplay);
+
+        result.panels.forEach((panel) =>
+            logComicsTest(
+                "panel-count",
+                `Panel ${panel.panel_number} imageUrl=${panel.imageUrl}`,
+            ),
+        );
 
         // Assert - Basic properties
         expect(result.panels).toBeDefined();
@@ -444,6 +470,7 @@ describe("Comic Panel Image Generation Integration", () => {
     }, 600000); // 10 minute timeout
 
     it("should generate images with correct aspect ratio (9:16)", async () => {
+        logComicsTest("aspect-ratio", "Validating comic panel aspect ratios");
         // Arrange
         const toonplay = createMockToonplay();
 
@@ -463,6 +490,7 @@ describe("Comic Panel Image Generation Integration", () => {
     }, 600000);
 
     it("should preserve toonplay specifications in results", async () => {
+        logComicsTest("spec-sync", "Ensuring toonplay specs preserved");
         // Arrange
         const toonplay = createMockToonplay();
 
@@ -483,11 +511,17 @@ describe("Comic Panel Image Generation Integration", () => {
     }, 600000);
 
     it("should track generation metadata", async () => {
+        logComicsTest("metadata", "Validating metadata block");
         // Arrange
         const toonplay = createMockToonplay();
 
         // Act
         const result = await generatePanelImages(toonplay);
+
+        logComicsTest(
+            "metadata",
+            `Metadata: panels=${result.metadata.totalPanels} time=${result.metadata.generationTime}ms model=${result.metadata.model}`,
+        );
 
         // Assert - Metadata completeness
         expect(result.metadata).toBeDefined();
@@ -498,6 +532,7 @@ describe("Comic Panel Image Generation Integration", () => {
     }, 600000);
 
     it("should generate images with consistent model/provider", async () => {
+        logComicsTest("consistency", "Checking panel model/provider consistency");
         // Arrange
         const toonplay = createMockToonplay();
 
@@ -509,6 +544,10 @@ describe("Comic Panel Image Generation Integration", () => {
         const firstProvider = result.panels[0]?.provider;
 
         for (const panel of result.panels) {
+            logComicsTest(
+                "consistency",
+                `Panel ${panel.panel_number} model=${panel.model} provider=${panel.provider}`,
+            );
             expect(panel.model).toBe(firstModel);
             expect(panel.provider).toBe(firstProvider);
         }
