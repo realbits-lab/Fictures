@@ -14,11 +14,10 @@
  * Passing Score: 3.0/5.0 ("Effective" level)
  */
 
-import { gateway } from "@ai-sdk/gateway";
-import { generateObject } from "ai";
 import { z } from "zod";
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import type { characters, scenes, settings } from "@/lib/schemas/database";
+import { TextGenerationWrapper } from "@/lib/studio/generators/ai-client";
 
 // ============================================
 // EVALUATION SCHEMA
@@ -124,14 +123,15 @@ export async function evaluateToonplay(
 
     console.log(`   Sending evaluation request to AI...`);
 
-    const result = await generateObject({
-        model: gateway("google/gemini-2.5-flash-lite"),
+    // Use TextGenerationWrapper to support ai-server provider
+    const aiClient = new TextGenerationWrapper();
+    const result = await aiClient.generateStructured({
         schema: ToonplayEvaluationSchema,
         prompt: evaluationPrompt,
         temperature: 0.3, // Lower temperature for more consistent evaluation
     });
 
-    const evaluation = result.object;
+    const evaluation = result;
 
     // Calculate weighted score
     const weightedScore = calculateWeightedScore(evaluation);
