@@ -61,7 +61,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "./zod-schemas.generated";
+} from "../zod/ai";
 
 // ============================================================================
 // AI Provider Types
@@ -157,7 +157,7 @@ export type ArcPosition = ChapterArcPosition;
  * Uses CYCLE_PHASES constant from zod-schemas.generated.ts
  */
 export type CyclePhase =
-    typeof import("./zod-schemas.generated").CYCLE_PHASES[number];
+    typeof import("../zod/ai").CYCLE_PHASES[number];
 
 // ============================================================================
 // Base Generator Interfaces

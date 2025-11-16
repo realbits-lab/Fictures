@@ -14,7 +14,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../db";
 import { getStoryWithStructure } from "../db/queries";
-import { characters, settings } from "../db/schema";
+import { characters, settings } from "@/lib/schemas/database";
 import { getCache } from "./redis-cache";
 
 // Cache TTL Configuration

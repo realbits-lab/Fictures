@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { generateImages } from "@/lib/studio/generators/images-generator";
+import { generateImage } from "@/lib/studio/generators/images-generator";
 
 /**
  * Test API: Generate Image (No Vercel Blob Upload)
@@ -37,10 +37,11 @@ export async function POST(request: NextRequest) {
         console.log("[TEST-IMAGE-GEN] Aspect Ratio:", aspectRatio);
 
         // Generate image using AI provider
-        const result = await imageGenerationClient.generate({
+        const result = await generateImage({
             prompt,
-            aspectRatio,
+            aspectRatio: aspectRatio as any,
             seed,
+            imageType: "story",
         });
 
         console.log("[TEST-IMAGE-GEN] Image generated successfully");
