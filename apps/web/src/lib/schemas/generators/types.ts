@@ -382,6 +382,7 @@ export interface GenerateSceneSummaryParams {
         chapterId: string;
     })[];
     sceneIndex: number; // Global index (position in entire story)
+    promptVersion?: string; // Optional scene_summary prompt version (e.g., "v1.1")
 }
 
 export interface GenerateSceneSummaryResult {
@@ -404,6 +405,7 @@ export interface GeneratorSceneContentParams {
 
     // === Optional ===
     language?: string;
+    promptVersion?: string; // Optional scene_content prompt version (e.g., "v1.1")
 }
 
 export interface SceneContentPromptParams extends Record<string, string> {

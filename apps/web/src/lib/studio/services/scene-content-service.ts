@@ -33,6 +33,7 @@ export interface ServiceSceneContentParams {
     sceneId: string;
     language?: string;
     userId: string;
+    promptVersion?: string; // Optional scene_content prompt version (e.g., "v1.1")
 }
 
 export interface ServiceSceneContentResult {
@@ -47,7 +48,7 @@ export class SceneContentService {
     async generateAndSave(
         params: ServiceSceneContentParams,
     ): Promise<ServiceSceneContentResult> {
-        const { sceneId, language = "English", userId } = params;
+        const { sceneId, language = "English", userId, promptVersion } = params;
 
         // 1. Fetch scene
         const sceneResult = await db
@@ -125,6 +126,7 @@ export class SceneContentService {
             characters: storyCharacters,
             settings: storySettings,
             language,
+            promptVersion,
         };
 
         const generationResult: GeneratorSceneContentResult =

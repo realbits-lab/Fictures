@@ -49,6 +49,7 @@ export async function generateSceneSummary(
         settings,
         previousScenes,
         sceneIndex,
+        promptVersion,
     }: GenerateSceneSummaryParams = params;
 
     // 2. Create text generation client with API key
@@ -102,6 +103,7 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         client.getProviderType(),
         "scene_summary",
         promptParams,
+        promptVersion !== "v1.0" ? promptVersion : undefined,
     );
 
     console.log(

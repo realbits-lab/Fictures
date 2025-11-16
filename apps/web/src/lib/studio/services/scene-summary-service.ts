@@ -36,6 +36,7 @@ export interface ServiceSceneSummaryParams {
     storyId: string;
     chapterId: string;
     userId: string;
+    promptVersion?: string; // Optional scene_summary prompt version (e.g., "v1.1")
 }
 
 export interface ServiceSceneSummaryResult {
@@ -58,7 +59,7 @@ export class SceneSummaryService {
     async generateAndSave(
         params: ServiceSceneSummaryParams,
     ): Promise<ServiceSceneSummaryResult> {
-        const { storyId, chapterId, userId } = params;
+        const { storyId, chapterId, userId, promptVersion } = params;
 
         console.log(
             "[scene-summary-service] 📄 Generating next scene summary with full context...",
@@ -149,6 +150,7 @@ export class SceneSummaryService {
             settings: storySettings,
             previousScenes: allPreviousScenes,
             sceneIndex: nextSceneIndex,
+            promptVersion,
         };
 
         const generationResult: GenerateSceneSummaryResult =

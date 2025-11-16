@@ -1207,7 +1207,9 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
             version &&
             (promptType === "part" ||
                 promptType === "story" ||
-                promptType === "chapter")
+                promptType === "chapter" ||
+                promptType === "scene_summary" ||
+                promptType === "scene_content")
         ) {
             // Load versioned prompt for iteration testing
             // Use __dirname-based path for reliable module resolution across different runtimes
@@ -1262,6 +1264,34 @@ OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
                 } else {
                     throw new Error(
                         `Unknown chapter prompt version: ${version}`,
+                    );
+                }
+            }
+            // Scene summary prompt versioning
+            else if (promptType === "scene_summary") {
+                if (version === "v1.1") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../prompts/v1.1/scene-summary-prompt.js",
+                    );
+                    templateKey = "sceneSummaryPromptV1_1";
+                } else {
+                    throw new Error(
+                        `Unknown scene_summary prompt version: ${version}`,
+                    );
+                }
+            }
+            // Scene content prompt versioning
+            else if (promptType === "scene_content") {
+                if (version === "v1.1") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../prompts/v1.1/scene-content-prompt.js",
+                    );
+                    templateKey = "sceneContentPromptV1_1";
+                } else {
+                    throw new Error(
+                        `Unknown scene_content prompt version: ${version}`,
                     );
                 }
             } else {

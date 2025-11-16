@@ -45,6 +45,7 @@ export async function generateSceneContent(
         characters,
         settings,
         language = "English",
+        promptVersion,
     }: GeneratorSceneContentParams = params;
 
     // 2. Create text generation client with API key
@@ -91,6 +92,7 @@ export async function generateSceneContent(
         client.getProviderType(),
         "scene_content",
         promptParams,
+        promptVersion !== "v1.0" ? promptVersion : undefined,
     );
 
     console.log(
