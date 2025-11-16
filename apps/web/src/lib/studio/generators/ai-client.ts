@@ -6,6 +6,7 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Agent as UndiciAgent, setGlobalDispatcher as setUndiciDispatcher } from "undici";
 import { z } from "zod";
 // Note: undici is a Node.js built-in module (Node 18+)
 // Using global fetch instead for compatibility
@@ -69,6 +70,33 @@ const getConfig = () => {
 
     return config;
 };
+
+let undiciDispatcherConfigured = false;
+function configureUndiciDispatcher(timeout: number) {
+    if (undiciDispatcherConfigured) {
+        return;
+    }
+
+    try {
+        if (typeof setUndiciDispatcher === "function") {
+            const agent = new UndiciAgent({
+                headersTimeout: timeout,
+                bodyTimeout: timeout,
+                connectTimeout: timeout,
+            });
+            setUndiciDispatcher(agent);
+            undiciDispatcherConfigured = true;
+            console.log("[ai-client] ✅ Configured undici dispatcher", {
+                headersTimeout: timeout,
+            });
+        }
+    } catch (error) {
+        console.warn(
+            "[ai-client] ⚠️ Failed to configure undici dispatcher. Falling back to defaults.",
+            error,
+        );
+    }
+}
 
 /**
  * Abstract base class for text generation providers
@@ -359,6 +387,7 @@ class AIServerProvider extends TextGenerationProvider {
     constructor() {
         super();
         this.config = getConfig().aiServer;
+        configureUndiciDispatcher(this.config.timeout);
     }
 
     /**
