@@ -78,6 +78,8 @@ export async function generateToonplayWithEvaluation(
     );
     console.log(`   TOONPLAY GENERATION WITH EVALUATION`);
     console.log(`   Scene: "${sceneTitle}"`);
+    console.log(`   Characters: ${characters.length}`);
+    console.log(`   Setting: ${setting.id}`);
     console.log(`   Max Iterations: ${maxIterations}`);
     console.log(`   Passing Score: ${passingScore}/5.0`);
     console.log(
@@ -104,6 +106,12 @@ export async function generateToonplayWithEvaluation(
 
     const safeStoryGenre = storyGenre || "Unknown";
 
+    console.log("[toonplay-loop] ⚙️ convertSceneToToonplay input:", {
+        sceneId: scene.id,
+        characterIds: characters.map((c) => c.id),
+        settingId: setting.id,
+        targetPanelCount,
+    });
     const generatorResult = await convertSceneToToonplay({
         scene: scene as any,
         story: {

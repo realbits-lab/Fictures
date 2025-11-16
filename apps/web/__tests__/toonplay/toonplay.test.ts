@@ -107,6 +107,17 @@ let testCharacterId: string;
 let testSettingId: string;
 let testSceneId: string;
 
+function logTestStart(name: string): void {
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log(`[TEST] 🧪 Starting: ${name}`);
+}
+
+function logTestResult(name: string, details: Record<string, unknown>): void {
+    console.log(`[TEST] ✅ Completed: ${name}`);
+    console.log("[TEST] Result summary:", details);
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+}
+
 // ============================================================================
 // Test Setup
 // ============================================================================
@@ -344,10 +355,14 @@ afterAll(async () => {
 async function generateToonplayViaAPI(
     requestBody: ApiToonplayRequest,
 ): Promise<ApiToonplayResponse> {
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("[TEST] ▶️ generateToonplayViaAPI invoked");
+    console.log("[TEST] Request body:", requestBody);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 900000); // 15 minute timeout
 
     try {
+        console.log("[TEST] 🌐 Sending POST request to /api/studio/toonplay");
         const response = await fetch(`${API_BASE_URL}/api/studio/toonplay`, {
             method: "POST",
             headers: {
@@ -357,7 +372,11 @@ async function generateToonplayViaAPI(
             body: JSON.stringify(requestBody),
             signal: controller.signal,
         });
-
+        console.log(
+            "[TEST] 🌐 Response status:",
+            response.status,
+            response.statusText,
+        );
         clearTimeout(timeout);
 
         if (!response.ok) {
@@ -381,18 +400,28 @@ async function generateToonplayViaAPI(
             };
         }
 
-        const data = await response.json();
-        
+        const rawBody = await response.text();
+        console.log("[TEST] 📦 Raw response body:", rawBody);
+        const data = JSON.parse(rawBody);
+
         if (!data.success) {
             console.error("[TEST] API returned success=false:", data);
+        } else {
+            console.log("[TEST] ✅ API success payload summary:", {
+                totalPanels: data.result?.toonplay?.total_panels,
+                firstPanelShot: data.result?.toonplay?.panels?.[0]?.shot_type,
+                evaluationScore: data.result?.evaluation?.weighted_score,
+                evaluationPass: data.result?.evaluation?.passes,
+            });
         }
-        
+
         return data as ApiToonplayResponse;
     } catch (error) {
         clearTimeout(timeout);
         if (error instanceof Error && error.name === "AbortError") {
             throw new Error("Request timeout after 15 minutes");
         }
+        console.error("[TEST] ❌ generateToonplayViaAPI unexpected error:", error);
         throw error;
     }
 }
@@ -403,6 +432,7 @@ async function generateToonplayViaAPI(
 
 describe("Toonplay Generation Integration (API)", () => {
     it("should generate toonplay from scene narrative via API", async () => {
+        logTestStart("toonplay narrative generation");
         // Arrange
         const requestBody: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -442,9 +472,15 @@ describe("Toonplay Generation Integration (API)", () => {
         expect(Array.isArray(firstPanel.dialogue)).toBe(true);
         expect(Array.isArray(firstPanel.sfx)).toBe(true);
         expect(firstPanel.mood).toBeDefined();
+        logTestResult("toonplay narrative generation", {
+            totalPanels: toonplay.total_panels,
+            firstPanelShot: firstPanel.shot_type,
+            sceneId: toonplay.scene_id,
+        });
     }, 900000); // 15 minute timeout
 
     it("should include quality evaluation results in API response", async () => {
+        logTestStart("toonplay evaluation results");
         // Arrange
         const requestBody: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -478,9 +514,14 @@ describe("Toonplay Generation Integration (API)", () => {
 
         // Assert - Quality threshold (should pass or be close)
         expect(evaluation.weighted_score).toBeGreaterThanOrEqual(2.5);
+        logTestResult("toonplay evaluation results", {
+            weightedScore: evaluation.weighted_score,
+            passes: evaluation.passes,
+        });
     }, 900000);
 
     it("should generate toonplay with proper structure via API", async () => {
+        logTestStart("toonplay structure validation");
         // Arrange
         const requestBody: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -519,9 +560,14 @@ describe("Toonplay Generation Integration (API)", () => {
             expect(Array.isArray(panel.sfx)).toBe(true);
             expect(panel.mood).toBeDefined();
         }
+        logTestResult("toonplay structure validation", {
+            totalPanels: toonplay.total_panels,
+            sceneTitle: toonplay.scene_title,
+        });
     }, 900000);
 
     it("should track generation timing metadata in API response", async () => {
+        logTestStart("metadata tracking");
         // Arrange
         const requestBody: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -540,9 +586,11 @@ describe("Toonplay Generation Integration (API)", () => {
         if (metadata.iterations !== undefined) {
             expect(metadata.iterations).toBeGreaterThanOrEqual(1);
         }
+        logTestResult("metadata tracking", metadata);
     }, 900000);
 
     it("should generate toonplay with varied shot types via API", async () => {
+        logTestStart("shot type diversity");
         // Arrange
         const requestBody: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -564,9 +612,13 @@ describe("Toonplay Generation Integration (API)", () => {
 
         // Should include establishing shot (usually first panel)
         expect(shotTypes).toContain("establishing_shot");
+        logTestResult("shot type diversity", {
+            shotTypeCount,
+        });
     }, 900000);
 
     it("should handle different evaluation modes via API", async () => {
+        logTestStart("evaluation mode coverage");
         // Arrange - Test quick mode
         const quickRequest: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -580,9 +632,14 @@ describe("Toonplay Generation Integration (API)", () => {
         expect(quickResult.success).toBe(true);
         expect(quickResult.result?.evaluation).toBeDefined();
         expect(quickResult.result?.evaluation.weighted_score).toBeGreaterThan(0);
+        logTestResult("evaluation mode coverage", {
+            quickScore: quickResult.result?.evaluation.weighted_score,
+            passes: quickResult.result?.evaluation.passes,
+        });
     }, 900000);
 
     it("should validate dialogue structure in API response", async () => {
+        logTestStart("dialogue validation");
         // Arrange
         const requestBody: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -600,9 +657,13 @@ describe("Toonplay Generation Integration (API)", () => {
                 expect(dialogue.text.length).toBeLessThanOrEqual(150); // Max dialogue length
             }
         }
+        logTestResult("dialogue validation", {
+            panelCount: result.result?.toonplay.panels.length,
+        });
     }, 900000);
 
     it("should validate SFX structure in API response", async () => {
+        logTestStart("sfx validation");
         // Arrange
         const requestBody: ApiToonplayRequest = {
             sceneId: testSceneId,
@@ -620,6 +681,9 @@ describe("Toonplay Generation Integration (API)", () => {
                 expect(["normal", "large", "dramatic"]).toContain(sfx.emphasis);
             }
         }
+        logTestResult("sfx validation", {
+            panelCount: result.result?.toonplay.panels.length,
+        });
     }, 900000);
 });
 

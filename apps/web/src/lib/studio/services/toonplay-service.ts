@@ -19,7 +19,7 @@ type Setting = InferSelectModel<typeof settings>;
 import {
     type GeneratedPanelResult,
     generateComicPanels,
-} from "../studio/generators/comic-panel-generator";
+} from "../generators/comic-panel-generator";
 import { generateToonplayWithEvaluation } from "./toonplay-improvement-loop";
 
 /**
@@ -75,9 +75,19 @@ export async function generateCompleteToonplay(params: {
 
     const totalStartTime: number = Date.now();
 
-    console.log("[toonplay-service] =� Starting complete toonplay generation");
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.log("[toonplay-service] 🚀 Starting complete toonplay generation");
+    console.log("[toonplay-service] Input summary:", {
+        sceneId,
+        chapterId,
+        storyId,
+        language,
+        evaluationMode,
+        characterCount: characters.length,
+        settingCount: settings.length,
+    });
     console.log(
-        `[toonplay-service] Scene: ${scene.title}, Story: ${story.title}`,
+        `[toonplay-service] Scene: ${scene.title} | Story: ${story.title}`,
     );
 
     // Stage 1: Generate toonplay with iterative improvement
@@ -93,7 +103,7 @@ export async function generateCompleteToonplay(params: {
     const toonplayGenerationTime: number = Date.now() - toonplayStartTime;
 
     console.log(
-        `[toonplay-service]  Toonplay generated in ${toonplayGenerationTime}ms`,
+        `[toonplay-service] 🧠 Toonplay generated in ${toonplayGenerationTime}ms`,
     );
     console.log(
         `[toonplay-service] Score: ${toonplayResult.evaluation.weighted_score.toFixed(2)}/5.0, Iterations: ${toonplayResult.iterations}`,
@@ -114,14 +124,14 @@ export async function generateCompleteToonplay(params: {
         characters,
         settings,
         storyGenre: story.genre,
-        onProgress: (current, total) => {
+        onProgress: (current: number, total: number) => {
             if (onProgress) onProgress("panels", current, total);
         },
     });
     const panelsGenerationTime: number = Date.now() - panelsStartTime;
 
     console.log(
-        `[toonplay-service]  ${panelsResult.panels.length} panels generated in ${panelsGenerationTime}ms`,
+        `[toonplay-service] 🎨 ${panelsResult.panels.length} panels generated in ${panelsGenerationTime}ms`,
     );
 
     if (onProgress)
@@ -135,8 +145,15 @@ export async function generateCompleteToonplay(params: {
     const totalGenerationTime: number = Date.now() - totalStartTime;
 
     console.log(
-        `[toonplay-service]  Complete toonplay generation finished in ${totalGenerationTime}ms`,
+        `[toonplay-service] ✅ Complete toonplay generation finished in ${totalGenerationTime}ms`,
     );
+    console.log("[toonplay-service] Output metadata:", {
+        totalGenerationTime,
+        toonplayGenerationTime,
+        panelsGenerationTime,
+        panelCount: panelsResult.panels.length,
+    });
+    console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
     return {
         toonplay: toonplayResult.toonplay,
