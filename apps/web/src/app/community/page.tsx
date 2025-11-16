@@ -78,8 +78,8 @@ export default function CommunityPage() {
     });
 
     // Transform data when available - convert to StoryGrid compatible format
-    const stories = data?.success
-        ? data.stories.map((story: any) => ({
+    const stories = Array.isArray(data) && data.length > 0
+        ? data.map((story: any) => ({
               id: story.id,
               title: story.title,
               summary: story.summary || "No summary available",

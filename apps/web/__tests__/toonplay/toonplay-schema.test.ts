@@ -4,7 +4,7 @@
  * Tests for toonplay schema validation (no API calls)
  */
 
-import { describe, expect, it } from "@jest/globals";
+// Jest globals are available in test environment via jest.setup.js
 import {
     AiComicPanelSpecZodSchema,
     AiComicToonplayZodSchema,

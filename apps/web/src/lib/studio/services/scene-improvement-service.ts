@@ -25,7 +25,8 @@ import { improveScene } from "../generators/scene-improvement-generator";
 import type {
     GeneratorSceneImprovementParams,
     GeneratorSceneImprovementResult,
-} from "@/lib/schemas/generators/types";
+    SceneImprovementStoryContext,
+} from "@/lib/schemas/services/generators";
 
 /**
  * Service parameters for scene improvement
@@ -157,15 +158,14 @@ export class SceneImprovementService {
             );
         }
 
-        const storyContext: import("@/lib/schemas/generators/types").SceneImprovementStoryContext =
-            {
-                id: story.id,
-                title: story.title,
-                genre: story.genre || GENRE.SLICE,
-                moralFramework: story.moralFramework || "courage",
-                summary: story.summary || "",
-                tone: story.tone || "hopeful",
-            };
+        const storyContext: SceneImprovementStoryContext = {
+            id: story.id,
+            title: story.title,
+            genre: story.genre || GENRE.SLICE,
+            moralFramework: story.moralFramework || "courage",
+            summary: story.summary || "",
+            tone: story.tone || "hopeful",
+        };
 
         // 5. Call pure generator for evaluation
         const improvementParams: GeneratorSceneImprovementParams = {

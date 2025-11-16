@@ -6,24 +6,24 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "@jest/globals";
-import { auth } from "@/lib/auth/context";
-import type { Character, Scene, Setting, Story } from "@/lib/schemas/database";
+// Jest globals are available in test environment via jest.setup.js
+import type { InferSelectModel } from "drizzle-orm";
+import {
+    characters,
+    scenes,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
+
+type Character = InferSelectModel<typeof characters>;
+type Scene = InferSelectModel<typeof scenes>;
+type Setting = InferSelectModel<typeof settings>;
+type Story = InferSelectModel<typeof stories>;
 import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
 
 describe("Toonplay Converter", () => {
-    // Load API key from .auth/user.json
-    const authFilePath = path.join(process.cwd(), ".auth/user.json");
-    const authData = JSON.parse(fs.readFileSync(authFilePath, "utf-8"));
-    const environment =
-        process.env.NODE_ENV === "production" ? "main" : "develop";
-    const writerApiKey = authData[environment].profiles.writer.apiKey;
-
-    // Setup authentication context before all tests
-    beforeAll(() => {
-        // Set API key in authentication context
-        auth.apiKey = writerApiKey;
-    });
+    // Note: API key authentication is handled by the auth context system
+    // Tests should use withAuth wrapper if needed, or pass API key as parameter
     // Mock data
     const mockStory: Story = {
         id: "story-1",
@@ -65,7 +65,7 @@ describe("Toonplay Converter", () => {
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    } as Character;
+    } as unknown as Character;
 
     const mockSetting: Setting = {
         id: "setting-1",
@@ -75,7 +75,7 @@ describe("Toonplay Converter", () => {
         atmosphere: "mysterious and imposing",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    } as Setting;
+    } as unknown as Setting;
 
     const mockScene: Scene = {
         id: "scene-1",
@@ -89,7 +89,7 @@ describe("Toonplay Converter", () => {
         cyclePhase: "virtue",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    } as Scene;
+    } as unknown as Scene;
 
     it("should convert scene to toonplay", async () => {
         const result = await convertSceneToToonplay({

@@ -9,9 +9,9 @@
  */
 
 import type {
-    SceneImprovementParams,
-    SceneImprovementResult,
-} from "@/lib/schemas/generators/types";
+    GeneratorSceneImprovementParams,
+    GeneratorSceneImprovementResult,
+} from "@/lib/schemas/services/generators";
 import {
     type AiSceneImprovementType,
     AiSceneImprovementZodSchema,
@@ -25,8 +25,8 @@ import { createTextGenerationClient } from "./ai-client";
  * @returns Evaluated and improved scene content
  */
 export async function improveScene(
-    params: SceneImprovementParams,
-): Promise<SceneImprovementResult> {
+    params: GeneratorSceneImprovementParams,
+): Promise<GeneratorSceneImprovementResult> {
     const startTime = Date.now();
     const { content, story, maxIterations = 2 } = params;
 
@@ -39,7 +39,7 @@ export async function improveScene(
     let improved = false;
 
     // Initialize evaluation categories based on "Architectonics of Engagement"
-    type EvaluationCategories = SceneImprovementResult["categories"];
+    type EvaluationCategories = GeneratorSceneImprovementResult["categories"];
 
     const categories: EvaluationCategories = {
         plot: 0,

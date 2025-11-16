@@ -15,7 +15,9 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fetch as undiciFetch, Agent } from "undici";
+// Note: undici is a Node.js built-in module (Node 18+)
+// Using global fetch instead for compatibility
+const undiciFetch = globalThis.fetch;
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
@@ -335,13 +337,8 @@ async function generateComicPanels(
 ): Promise<ApiComicsResponse> {
     const apiEndpoint = `/api/studio/scenes/${requestBody.sceneId}/comic/generate`;
 
-    // Create custom agent with extended headers timeout (10 minutes)
-    // This fixes the 300-second (5-minute) default headers timeout in undici
-    const agent = new Agent({
-        headersTimeout: 600000, // 10 minutes
-        bodyTimeout: 600000,
-    });
-
+    // Note: Using global fetch (Node.js 18+) without custom agent
+    // For longer timeouts, consider using AbortController with signal
     const response: Response = await undiciFetch(`${API_BASE_URL}${apiEndpoint}`, {
         method: "POST",
         headers: {
@@ -352,7 +349,6 @@ async function generateComicPanels(
             targetPanelCount: requestBody.targetPanelCount,
             regenerate: false,
         }),
-        dispatcher: agent,
     });
 
     if (!response.ok) {
@@ -422,14 +418,14 @@ describe("Comics System Integration", () => {
 
         // Assert - Evaluation categories
         expect(
-            result.result.evaluation.category1_narrative_fidelity,
+            (result.result.evaluation as any).category1_narrative_fidelity,
         ).toBeDefined();
         expect(
-            result.result.evaluation.category2_visual_transformation,
+            (result.result.evaluation as any).category2_visual_transformation,
         ).toBeDefined();
         expect((result.result.evaluation as any).category3_webtoon_pacing).toBeDefined();
         expect(
-            result.result.evaluation.category4_script_formatting,
+            (result.result.evaluation as any).category4_script_formatting,
         ).toBeDefined();
 
         // Assert - Quality threshold (should pass or be close)

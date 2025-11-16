@@ -4,9 +4,14 @@
  * Tests for toonplay quality evaluation
  */
 
-import { describe, expect, it } from "@jest/globals";
+// Jest globals are available in test environment via jest.setup.js
+import type { InferSelectModel } from "drizzle-orm";
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
-import type { Character, Scene, Setting } from "@/lib/schemas/database";
+import { characters, scenes, settings } from "@/lib/schemas/database";
+
+type Character = InferSelectModel<typeof characters>;
+type Scene = InferSelectModel<typeof scenes>;
+type Setting = InferSelectModel<typeof settings>;
 import { evaluateToonplay } from "@/lib/services/toonplay-evaluator";
 
 describe("Toonplay Evaluator", () => {
@@ -38,7 +43,7 @@ describe("Toonplay Evaluator", () => {
         },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    } as Character;
+    } as unknown as Character;
 
     const mockSetting: Setting = {
         id: "setting-1",
@@ -48,7 +53,7 @@ describe("Toonplay Evaluator", () => {
         atmosphere: "mysterious and imposing",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    } as Setting;
+    } as unknown as Setting;
 
     const mockScene: Scene = {
         id: "scene-1",
@@ -60,7 +65,7 @@ describe("Toonplay Evaluator", () => {
         cyclePhase: "virtue",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-    } as Scene;
+    } as unknown as Scene;
 
     const mockToonplay: AiComicToonplayType = {
         scene_id: "scene-1",
