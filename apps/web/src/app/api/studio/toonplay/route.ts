@@ -18,7 +18,7 @@ import {
     settings,
     stories,
 } from "@/lib/schemas/database";
-import { generateCompleteToonplay } from "@/lib/studio/services/toonplay-service";
+import { generateToonplayWithEvaluation } from "@/lib/studio/services/toonplay-improvement-loop";
 import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 
@@ -223,35 +223,26 @@ export const POST = requireScopes("stories:write")(
                 );
             }
 
-            // 7. Generate toonplay with panel images
-            const result = await generateCompleteToonplay({
+            const toonplayStart = Date.now();
+            const toonplayResult = await generateToonplayWithEvaluation({
                 scene,
-                story,
                 characters: storyCharacters,
-                settings: storySettings,
-                storyId: story.id,
-                chapterId: chapter.id,
-                sceneId: scene.id,
-                language: params.language,
-                evaluationMode: params.evaluationMode,
+                setting: storySettings[0],
+                storyGenre: story.genre,
             });
+            const toonplayGenerationTime = Date.now() - toonplayStart;
 
             console.log(
-                `[toonplay-api] ✅ Toonplay generated: ${result.panels.length} panels, Score: ${result.evaluation.weighted_score.toFixed(2)}/5.0`,
+                `[toonplay-api] ✅ Toonplay generated: ${toonplayResult.toonplay.total_panels} panels, Score: ${toonplayResult.evaluation.weighted_score.toFixed(2)}/5.0`,
             );
-            console.log("[toonplay-api] Toonplay metadata:", {
-                totalGenerationTime: result.metadata.totalGenerationTime,
-                toonplayGenerationTime: result.metadata.toonplayGenerationTime,
-                panelsGenerationTime: result.metadata.panelsGenerationTime,
-            });
 
-            // 4. Update scene with toonplay data
+            // Update scene with toonplay data
             await db
                 .update(scenes)
                 .set({
-                    comicToonplay: result.toonplay,
+                    comicToonplay: toonplayResult.toonplay,
                     comicStatus: "published" as const,
-                    comicPanelCount: result.panels.length,
+                    comicPanelCount: toonplayResult.toonplay.total_panels,
                     updatedAt: new Date().toISOString(),
                 })
                 .where(eq(scenes.id, params.sceneId));
@@ -262,20 +253,19 @@ export const POST = requireScopes("stories:write")(
             return NextResponse.json({
                 success: true,
                 result: {
-                    toonplay: result.toonplay,
-                    panels: result.panels.map((p) => ({
+                    toonplay: toonplayResult.toonplay,
+                    panels: toonplayResult.toonplay.panels.map((p) => ({
                         panel_number: p.panel_number,
-                        imageUrl: p.imageUrl,
-                        blobUrl: p.blobUrl,
-                        width: p.width,
-                        height: p.height,
-                        optimizedSet: p.optimizedSet,
+                        description: p.description,
+                        shot_type: p.shot_type,
+                        dialogue: p.dialogue,
+                        sfx: p.sfx,
                     })),
-                    evaluation: result.evaluation,
+                    evaluation: toonplayResult.evaluation,
                     metadata: {
-                        generationTime: result.metadata.totalGenerationTime,
-                        toonplayTime: result.metadata.toonplayGenerationTime,
-                        iterations: result.evaluation.iterations,
+                        generationTime: toonplayGenerationTime,
+                        toonplayTime: toonplayGenerationTime,
+                        iterations: toonplayResult.iterations,
                     },
                 },
             });
