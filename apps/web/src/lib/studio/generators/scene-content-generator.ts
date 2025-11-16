@@ -56,17 +56,17 @@ export async function generateSceneContent(
 
     // 2. Find setting if scene has one
     const setting = scene.settingId
-        ? settings.find((s) => s.id === scene.settingId)
+        ? settings.find((s: any) => s.id === scene.settingId)
         : undefined;
 
     // 3. Build context strings using common builders
-    const storyContext: string = buildStoryContext(story);
-    const partContext: string = buildPartContext(part, characters);
-    const chapterContext: string = buildChapterContext(chapter);
-    const sceneContext: string = buildSceneContext(scene);
-    const charactersStr: string = buildCharactersContext(characters);
+    const storyContext: string = buildStoryContext(story as any);
+    const partContext: string = buildPartContext(part as any, characters as any);
+    const chapterContext: string = buildChapterContext(chapter as any);
+    const sceneContext: string = buildSceneContext(scene as any);
+    const charactersStr: string = buildCharactersContext(characters as any);
     const settingStr: string = setting
-        ? buildSettingContext(setting)
+        ? buildSettingContext(setting as any)
         : buildGenericSettingContext();
 
     console.log(
@@ -135,7 +135,7 @@ export async function generateSceneContent(
     const totalTime: number = Date.now() - startTime;
 
     console.log("[scene-content-generator] ✅ Generated scene content:", {
-        sceneId: scene.id,
+        sceneId: (scene as any).id || "unknown",
         cyclePhase: scene.cyclePhase,
         wordCount,
         tokenLimit: maxTokens,

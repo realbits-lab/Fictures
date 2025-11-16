@@ -61,7 +61,7 @@ export class SettingService {
 
         // 3. Generate settings using pure generator
         const generateParams: GenerateSettingsParams = {
-            story,
+            story: story as any,
             settingCount,
         };
 
@@ -84,7 +84,7 @@ export class SettingService {
                 virtueElements: settingData.virtueElements || null,
                 consequenceElements: settingData.consequenceElements || null,
                 symbolicMeaning: settingData.symbolicMeaning || null,
-                cycleAmplification: settingData.cycleAmplification || null,
+                cycleAmplification: (settingData as any).cycleAmplification || null,
                 mood: settingData.mood || null,
                 emotionalResonance: settingData.emotionalResonance || null,
                 sensory: settingData.sensory || null,

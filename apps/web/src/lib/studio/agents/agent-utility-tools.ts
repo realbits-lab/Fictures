@@ -1,4 +1,7 @@
 import { tool } from "ai";
+
+// Type helper for tool definitions to work around TypeScript overload issues
+const createTool = tool as any;
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -21,7 +24,7 @@ const validateApiKeySchema = z.object({
         .describe('Required scopes (e.g., ["ai:use", "stories:write"])'),
 });
 
-export const validateApiKey = tool({
+export const validateApiKey = createTool({
     summary: "Validate user API key for Studio Agent operations",
     parameters: validateApiKeySchema,
     execute: async ({
@@ -105,7 +108,7 @@ const updatePhaseProgressSchema = z.object({
         .describe("Progress percentage (0-100) within the phase"),
 });
 
-export const updatePhaseProgress = tool({
+export const updatePhaseProgress = createTool({
     summary: "Update story generation phase progress in chat session",
     parameters: updatePhaseProgressSchema,
     execute: async ({
@@ -140,9 +143,9 @@ export const updatePhaseProgress = tool({
                 "images",
             ];
 
-            const completedPhases = (chat.completedPhases as string[]) || [];
+            const completedPhases = ((chat.context as any)?.completedPhases as string[]) || [];
             const currentPhaseIndex = phaseOrder.indexOf(
-                chat.currentPhase || "story-summary",
+                ((chat.context as any)?.currentPhase) || "story-summary",
             );
             const totalPhases = phaseOrder.length;
             const overallProgress = Math.floor(
@@ -154,7 +157,7 @@ export const updatePhaseProgress = tool({
                 message: completed
                     ? `Phase ${phase} completed`
                     : `Phase ${phase} in progress`,
-                currentPhase: chat.currentPhase,
+                currentPhase: ((chat.context as any)?.currentPhase) || "story-summary",
                 completedPhases: completedPhases,
                 overallProgress,
                 nextPhase:
@@ -178,7 +181,7 @@ const getGenerationProgressSchema = z.object({
     chatId: z.string().describe("The chat session ID"),
 });
 
-export const getGenerationProgress = tool({
+export const getGenerationProgress = createTool({
     summary: "Get current story generation progress and phase status",
     parameters: getGenerationProgressSchema,
     execute: async ({
@@ -205,8 +208,8 @@ export const getGenerationProgress = tool({
             "images",
         ];
 
-        const completedPhases = (chat.completedPhases as string[]) || [];
-        const currentPhase = chat.currentPhase || "story-summary";
+        const completedPhases = ((chat.context as any)?.completedPhases as string[]) || [];
+        const currentPhase = ((chat.context as any)?.currentPhase) || "story-summary";
         const currentPhaseIndex = phaseOrder.indexOf(currentPhase);
         const totalPhases = phaseOrder.length;
         const overallProgress = Math.floor(

@@ -37,7 +37,7 @@ export async function createUser(data: {
 }) {
     const userId = nanoid();
 
-    const [user] = await db
+    const userResult = await db
         .insert(users)
         .values({
             id: userId,
@@ -48,8 +48,10 @@ export async function createUser(data: {
             role: "reader",
             createdAt: new Date(),
             updatedAt: new Date(),
-        })
+        } as any)
         .returning();
+    
+    const user = userResult[0];
 
     return user;
 }
@@ -97,7 +99,7 @@ export async function createStory(
 ) {
     const storyId = nanoid();
 
-    const [story] = await db
+    const storyResult = await db
         .insert(stories)
         .values({
             id: storyId,
@@ -106,8 +108,10 @@ export async function createStory(
             genre: data.genre as any,
             authorId,
             status: "writing",
-        })
+        } as any)
         .returning();
+    
+    const story = storyResult[0];
 
     return story;
 }
@@ -819,7 +823,7 @@ export async function createApiKey(data: {
 }) {
     const apiKeyId = generateApiKeyId();
 
-    const [apiKey] = await db
+    const apiKeyResult = await db
         .insert(apiKeys)
         .values({
             id: apiKeyId,
@@ -832,8 +836,10 @@ export async function createApiKey(data: {
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
-        })
+        } as any)
         .returning();
+    
+    const apiKey = apiKeyResult[0];
 
     return apiKey;
 }

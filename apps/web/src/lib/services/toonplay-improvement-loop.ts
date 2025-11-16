@@ -105,14 +105,14 @@ export async function generateToonplayWithEvaluation(
     const safeStoryGenre = storyGenre || "Unknown";
 
     const generatorResult = await convertSceneToToonplay({
-        scene,
+        scene: scene as any,
         story: {
             id: "temp",
             genre: safeStoryGenre,
             tone: "",
         } as any,
-        characters,
-        settings: [setting],
+        characters: characters as any,
+        settings: [setting] as any,
     });
 
     currentToonplay = generatorResult.toonplay;

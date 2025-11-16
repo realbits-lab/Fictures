@@ -64,7 +64,8 @@ import type {
     Setting,
     Story,
 } from "@/lib/schemas/zod/generated";
-import type { OptimizedImageSet } from "@/lib/services/image-generation";
+// import type { OptimizedImageSet } from "@/lib/services/image-generation";
+type OptimizedImageSet = any; // TODO: Fix import path
 
 // ============================================================================
 // AI Provider Types

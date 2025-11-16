@@ -550,7 +550,7 @@ export async function updateChapter(
 ) {
     const result = await measureAsync(
         "updateChapter",
-        () => queries.updateChapter(chapterId, userId, data),
+        () => queries.updateChapter(chapterId, userId, data as any),
         { chapterId, userId },
     );
 

@@ -102,8 +102,9 @@ export function CacheManagerWidget() {
             ? Date.now() - new Date(pageStats.lastUpdated).getTime()
             : Infinity;
 
-        if (age < config.ttl * 0.5) return "fresh";
-        if (age < config.ttl) return "stale";
+        const ttl = config.ttl ?? Infinity;
+        if (age < ttl * 0.5) return "fresh";
+        if (age < ttl) return "stale";
         return "expired";
     };
 
@@ -190,7 +191,7 @@ export function CacheManagerWidget() {
                                 const pageStats = cacheStats.byPage?.[pageType];
                                 const health = getCacheHealth(pageType);
                                 const ttlMinutes = Math.round(
-                                    config.ttl / (1000 * 60),
+                                    (config.ttl ?? Infinity) / (1000 * 60),
                                 );
 
                                 return (

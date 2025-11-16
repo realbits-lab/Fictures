@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { CACHE_CONFIGS, usePersistedSWR } from "@/lib/hooks/use-persisted-swr";
+import { CACHE_CONFIGS, usePersistedSWR, type CacheConfig } from "@/lib/hooks/use-persisted-swr";
 
 export interface Scene {
     id: string;
@@ -164,8 +164,6 @@ export function useChapterScenes(chapterId: string | null) {
             {
                 ...CACHE_CONFIGS.reading,
                 ttl: 5 * 60 * 1000, // 5min localStorage cache for scenes
-            },
-            {
                 revalidateOnFocus: false,
                 revalidateOnReconnect: true,
                 refreshInterval: 0,
@@ -173,18 +171,18 @@ export function useChapterScenes(chapterId: string | null) {
                 keepPreviousData: true, // ⚡ OPTIMIZED: Keep previous scene data in memory when navigating between scenes
                 errorRetryCount: 3,
                 errorRetryInterval: 1000,
-                onError: (error) => {
+                onError: (error: any) => {
                     console.error(
                         `Chapter scenes error for ID ${chapterId}:`,
                         error,
                     );
                 },
-                onSuccess: (data) => {
+                onSuccess: (data: ChapterScenesResponse) => {
                     console.log(
                         `Chapter scenes loaded: ${data.scenes.length} scenes for chapter ${chapterId}`,
                     );
                 },
-            },
+            } as CacheConfig,
         );
 
     // Sort scenes by orderIndex to ensure correct reading order

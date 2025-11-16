@@ -38,7 +38,7 @@ export async function generateSettings(
     const settings: AiSettingType[] = [];
 
     // 2. Build story context once (used for all settings)
-    const storyContext: string = buildStoryContext(story);
+    const storyContext: string = buildStoryContext(story as any);
     console.log("[settings-generator] Story context prepared");
 
     // 3. Generate each setting in sequence

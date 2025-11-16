@@ -59,7 +59,6 @@ export class StoryService {
             language,
             preferredGenre,
             preferredTone,
-            promptVersion,
         };
 
         const generationResult: GenerateStoryResult =

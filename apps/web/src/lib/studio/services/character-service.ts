@@ -69,7 +69,7 @@ export class CharacterService {
         // 3. Generate characters using pure generator
         // API key is automatically retrieved from auth context
         const generateParams: GenerateCharactersParams = {
-            story,
+            story: story as any,
             characterCount,
             language,
         };

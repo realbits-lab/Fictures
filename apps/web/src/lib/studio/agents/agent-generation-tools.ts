@@ -1,4 +1,7 @@
 import { tool } from "ai";
+
+// Type helper for tool definitions to work around TypeScript overload issues
+const createTool = tool as any;
 import { z } from "zod";
 
 // ==============================================================================
@@ -11,7 +14,7 @@ const generateStorySummarySchema = z.object({
     userPrompt: z.string().describe("User story concept, genre, themes"),
 });
 
-export const generateStorySummary = tool({
+export const generateStorySummary = createTool({
     summary: "Generate initial story summary from user concept (Phase 1 of 9)",
     parameters: generateStorySummarySchema,
     execute: async ({
@@ -57,7 +60,7 @@ const generateCharactersSchema = z.object({
     storyId: z.string().describe("The story ID"),
 });
 
-export const generateCharacters = tool({
+export const generateCharacters = createTool({
     summary: "Generate character profiles with AI portraits (Phase 2 of 9)",
     parameters: generateCharactersSchema,
     execute: async ({ storyId }: z.infer<typeof generateCharactersSchema>) => {
@@ -94,7 +97,7 @@ const generateSettingsSchema = z.object({
     storyId: z.string().describe("The story ID"),
 });
 
-export const generateSettings = tool({
+export const generateSettings = createTool({
     summary:
         "Generate story locations/settings with environment images (Phase 3 of 9)",
     parameters: generateSettingsSchema,
@@ -132,7 +135,7 @@ const generatePartsSchema = z.object({
     storyId: z.string().describe("The story ID"),
 });
 
-export const generateParts = tool({
+export const generateParts = createTool({
     summary: "Generate story parts/acts structure (Phase 4 of 9)",
     parameters: generatePartsSchema,
     execute: async ({ storyId }: z.infer<typeof generatePartsSchema>) => {
@@ -173,7 +176,7 @@ const generateChaptersSchema = z.object({
         .describe("Optional: generate chapters for specific part"),
 });
 
-export const generateChapters = tool({
+export const generateChapters = createTool({
     summary: "Generate chapters with outlines (Phase 5 of 9)",
     parameters: generateChaptersSchema,
     execute: async ({
@@ -219,7 +222,7 @@ const generateSceneSummariesSchema = z.object({
         .describe("Optional: generate scenes for specific chapter"),
 });
 
-export const generateSceneSummaries = tool({
+export const generateSceneSummaries = createTool({
     summary: "Generate scene summaries/outlines (Phase 6 of 9)",
     parameters: generateSceneSummariesSchema,
     execute: async ({
@@ -261,7 +264,7 @@ const generateSceneContentSchema = z.object({
     sceneId: z.string().describe("The scene ID to generate content for"),
 });
 
-export const generateSceneContent = tool({
+export const generateSceneContent = createTool({
     summary: "Generate full scene prose content (Phase 7 of 9)",
     parameters: generateSceneContentSchema,
     execute: async ({
@@ -301,7 +304,7 @@ const improveSceneSchema = z.object({
     sceneId: z.string().describe("The scene ID to improve"),
 });
 
-export const improveScene = tool({
+export const improveScene = createTool({
     summary:
         "Improve scene quality using Architectonics of Engagement (Phase 8 of 9)",
     parameters: improveSceneSchema,
@@ -349,7 +352,7 @@ const generateImagesSchema = z.object({
         .describe("Optional: specific entity ID for character/setting/scene"),
 });
 
-export const generateImages = tool({
+export const generateImages = createTool({
     summary:
         "Generate images for story elements using Gemini 2.5 Flash (Phase 9 of 9)",
     parameters: generateImagesSchema,

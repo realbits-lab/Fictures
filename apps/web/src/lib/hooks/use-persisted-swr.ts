@@ -26,6 +26,13 @@ export const CACHE_CONFIGS = {
         ttl: 30 * 60 * 1000, // 30 minutes
         version: "1.1.0",
     } as CacheConfig,
+    reading: {
+        revalidateOnFocus: false,
+        revalidateOnReconnect: true,
+        dedupingInterval: 30 * 60 * 1000, // 30 minutes
+        ttl: 5 * 60 * 1000, // 5 minutes
+        version: "1.0.0",
+    } as CacheConfig,
 };
 
 export const cacheManager = {
@@ -59,9 +66,9 @@ export const cacheManager = {
 export function usePersistedSWR<T>(
     key: string | null,
     fetcher: ((key: string) => Promise<T>) | null,
-    config?: SWRConfiguration,
+    config?: CacheConfig,
 ) {
-    const { data, error, mutate } = useSWR<T>(key, fetcher, config);
+    const { data, error, mutate, isValidating } = useSWR<T>(key, fetcher, config);
 
     useEffect(() => {
         if (data && key && typeof window !== "undefined") {
@@ -73,5 +80,5 @@ export function usePersistedSWR<T>(
         }
     }, [data, key]);
 
-    return { data, error, mutate, isLoading: !data && !error };
+    return { data, error, mutate, isLoading: !data && !error, isValidating: isValidating ?? false };
 }

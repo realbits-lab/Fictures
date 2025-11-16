@@ -615,8 +615,7 @@ export function ChapterReader({ story, isOwner }: ChapterReaderProps) {
                                                     key={scene.id}
                                                     className="mb-8"
                                                 >
-                                                    {selectedChapter.scenes
-                                                        ?.length > 1 && (
+                                                    {(selectedChapter.scenes?.length ?? 0) > 1 && (
                                                         <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200 mb-4 opacity-75">
                                                             {scene.title}
                                                         </h3>

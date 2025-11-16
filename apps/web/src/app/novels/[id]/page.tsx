@@ -48,7 +48,7 @@ export default async function ReadPage({ params }: ReadPageProps) {
     return (
         <MainLayout>
             {/* Stream story content progressively */}
-            <Suspense fallback={<SkeletonLoader />}>
+            <Suspense fallback={<SkeletonLoader>{null}</SkeletonLoader>}>
                 <StoryHeader storyId={id} />
             </Suspense>
         </MainLayout>

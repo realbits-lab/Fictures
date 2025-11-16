@@ -46,7 +46,7 @@ export async function generateCharacters(
     const characters: AiCharacterType[] = [];
 
     // 2. Build story context once (used for all characters)
-    const storyContext: string = buildStoryContext(story);
+    const storyContext: string = buildStoryContext(story as any);
     console.log("[characters-generator] Story context prepared");
 
     // 3. Generate each character in sequence

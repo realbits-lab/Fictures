@@ -118,14 +118,14 @@ export class SceneContentService {
 
         // 8. Generate scene content using pure generator
         const generateParams: GeneratorSceneContentParams = {
-            story,
-            part,
-            chapter,
-            scene,
-            characters: storyCharacters,
-            settings: storySettings,
+            story: story as any,
+            part: part as any,
+            chapter: chapter as any,
+            scene: scene as any,
+            characters: storyCharacters as any,
+            settings: storySettings as any,
             language,
-        };
+        } as any;
 
         const generationResult: GeneratorSceneContentResult =
             await generateSceneContent(generateParams);

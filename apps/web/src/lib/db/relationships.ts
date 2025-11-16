@@ -23,10 +23,14 @@ export class RelationshipManager {
                 id: partId,
                 storyId,
                 title: partData.title!,
-                summary: partData.summary,
+                summary: partData.summary || "",
                 // authorId removed - access via story JOIN
                 orderIndex: partData.orderIndex!,
-            });
+                characterArcs: [],
+                settingIds: [],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            } as any);
 
             // Update story timestamp
             await tx
@@ -53,13 +57,28 @@ export class RelationshipManager {
             await tx.insert(chapters).values({
                 id: chapterId,
                 storyId,
-                partId: partId || null,
+                partId: partId || "",
                 title: chapterData.title!,
                 // authorId removed - access via story JOIN
                 orderIndex: chapterData.orderIndex!,
-                status: chapterData.status,
-                summary: chapterData.summary,
-            });
+                status: (chapterData as any).status || "writing",
+                summary: chapterData.summary || "",
+                characterId: "",
+                arcPosition: "beginning",
+                contributesToMacroArc: "",
+                characterArc: {
+                    characterId: "",
+                    microAdversity: { internal: "", external: "" },
+                    microVirtue: "",
+                    microConsequence: "",
+                    microNewAdversity: "",
+                },
+                focusCharacters: [],
+                adversityType: "internal",
+                virtueType: "courage",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            } as any);
 
             // Update parent timestamps
             await tx
@@ -94,10 +113,18 @@ export class RelationshipManager {
                 chapterId,
                 title: sceneData.title!,
                 orderIndex: sceneData.orderIndex!,
-                content: sceneData.content,
+                content: sceneData.content || "",
+                summary: sceneData.summary || "",
+                cyclePhase: "setup",
+                emotionalBeat: "hope",
                 characterFocus: (sceneData as any).characterFocus || [],
-                settingId: (sceneData as any).settingId,
-            });
+                settingId: (sceneData as any).settingId || "",
+                sensoryAnchors: [],
+                dialogueVsDescription: "50% dialogue, 50% description",
+                suggestedLength: "medium",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            } as any);
 
             // Update chapter timestamp
             await tx
@@ -130,9 +157,9 @@ export class RelationshipManager {
             await tx
                 .update(chapters)
                 .set({
-                    partId: newPartId || null,
+                    partId: newPartId || undefined,
                     updatedAt: new Date().toISOString(),
-                })
+                } as any)
                 .where(eq(chapters.id, chapterId));
 
             // Update timestamps on affected parts

@@ -35,9 +35,6 @@ function getImageDimensions(aspectRatio: AspectRatio): {
         "16:9": { width: 1664, height: 936 },
         "9:16": { width: 928, height: 1664 },
         "2:3": { width: 832, height: 1248 },
-        "3:2": { width: 1248, height: 832 },
-        "4:3": { width: 1280, height: 960 },
-        "3:4": { width: 960, height: 1280 },
     };
     return dimensionsMap[aspectRatio];
 }

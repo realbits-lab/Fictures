@@ -73,7 +73,7 @@ export function CommentForm({
 
                 // Track comment creation
                 if (data.comment?.id) {
-                    trackCommunity.comment(storyId);
+                    trackCommunity("comment", storyId);
                 }
 
                 setContent("");

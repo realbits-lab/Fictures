@@ -95,10 +95,10 @@ export async function generateChapter(
     );
 
     // 3. Build context strings using comprehensive builders
-    const charactersStr: string = buildCharactersContext(characters);
-    const storyContext: string = buildStoryContext(story);
+    const charactersStr: string = buildCharactersContext(characters as any);
+    const storyContext: string = buildStoryContext(story as any);
     const settingsStr: string = settings
-        ? buildSettingsContext(settings)
+        ? buildSettingsContext(settings as any)
         : "N/A";
 
     console.log(
@@ -106,14 +106,14 @@ export async function generateChapter(
     );
 
     // 4. Build comprehensive part context string using context builder
-    const partContext: string = buildPartContext(part, characters);
+    const partContext: string = buildPartContext(part as any, characters as any);
 
     // 5. Build previous chapters context string using context builder
     const previousChaptersContext: string =
         previousChapters.length > 0
             ? previousChapters
                   .map((ch: typeof previousChapters[0], idx: number) => {
-                      return `Chapter ${idx + 1}:\n${buildChapterContext(ch)}`;
+                      return `Chapter ${idx + 1}:\n${buildChapterContext(ch as any)}`;
                   })
                   .join("\n\n")
             : "None (this is the first chapter)";

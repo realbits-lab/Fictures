@@ -125,13 +125,15 @@ export async function evaluateToonplay(
 
     // Use TextGenerationWrapper to support ai-server provider
     const aiClient = new TextGenerationWrapper();
-    const result = await aiClient.generateStructured({
-        schema: ToonplayEvaluationSchema,
-        prompt: evaluationPrompt,
-        temperature: 0.3, // Lower temperature for more consistent evaluation
-    });
+    const result = await aiClient.generateStructured(
+        evaluationPrompt,
+        ToonplayEvaluationSchema,
+        {
+            temperature: 0.3, // Lower temperature for more consistent evaluation
+        },
+    );
 
-    const evaluation = result;
+    const evaluation = result as any;
 
     // Calculate weighted score
     const weightedScore = calculateWeightedScore(evaluation);

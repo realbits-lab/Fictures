@@ -102,3 +102,36 @@ export function trackEngagement(action: string, target: string): void {
         label: target,
     });
 }
+
+/**
+ * Track reading progress events
+ */
+export function trackReading(storyId: string, chapterId?: string, sceneId?: string): void {
+    event({
+        action: "reading_progress",
+        category: "Reading",
+        label: `Story: ${storyId}${chapterId ? `, Chapter: ${chapterId}` : ""}${sceneId ? `, Scene: ${sceneId}` : ""}`,
+    });
+}
+
+/**
+ * Track community engagement events
+ */
+export function trackCommunity(action: string, target: string): void {
+    event({
+        action,
+        category: "Community",
+        label: target,
+    });
+}
+
+/**
+ * Track story-related events (creation, update, etc.)
+ */
+export function trackStoryEvent(action: string, storyId: string, metadata?: string): void {
+    event({
+        action,
+        category: "Story",
+        label: `${storyId}${metadata ? `: ${metadata}` : ""}`,
+    });
+}
