@@ -314,6 +314,7 @@ async function generateToonplay(
                 body: JSON.stringify({
                     sceneId,
                     evaluationMode: EVALUATION_MODE,
+                    maxIterations: 0,
                 }),
             },
         );

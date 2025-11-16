@@ -49,6 +49,7 @@ interface ApiToonplayRequest {
     sceneId: string;
     evaluationMode?: "quick" | "standard" | "thorough";
     language?: string;
+    maxIterations?: number;
 }
 
 interface ApiToonplayResponse {
@@ -357,7 +358,11 @@ async function generateToonplayViaAPI(
 ): Promise<ApiToonplayResponse> {
     console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     console.log("[TEST] ▶️ generateToonplayViaAPI invoked");
-    console.log("[TEST] Request body:", requestBody);
+    const payload: ApiToonplayRequest = {
+        maxIterations: 0,
+        ...requestBody,
+    };
+    console.log("[TEST] Request body:", payload);
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 900000); // 15 minute timeout
 
@@ -369,7 +374,7 @@ async function generateToonplayViaAPI(
                 "Content-Type": "application/json",
                 "x-api-key": writerApiKey,
             },
-            body: JSON.stringify(requestBody),
+            body: JSON.stringify(payload),
             signal: controller.signal,
         });
         console.log(

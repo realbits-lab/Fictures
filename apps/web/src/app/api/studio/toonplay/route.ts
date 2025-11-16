@@ -32,6 +32,7 @@ const ToonplayRequestSchema = z.object({
     sceneId: z.string(),
     evaluationMode: z.enum(["quick", "standard", "thorough"]).optional(),
     language: z.string().optional(),
+    maxIterations: z.number().int().min(0).max(2).optional(),
 });
 
 /**
@@ -229,6 +230,9 @@ export const POST = requireScopes("stories:write")(
                 characters: storyCharacters,
                 setting: storySettings[0],
                 storyGenre: story.genre,
+                maxIterations:
+                    params.maxIterations ??
+                    (params.evaluationMode === "quick" ? 0 : 2),
             });
             const toonplayGenerationTime = Date.now() - toonplayStart;
 
