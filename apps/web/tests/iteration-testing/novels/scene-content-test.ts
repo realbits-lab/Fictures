@@ -130,6 +130,31 @@ function getAuthContext() {
     );
 }
 
+async function retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    attempts = 3,
+    delayMs = 2000,
+): Promise<T> {
+    let lastError: unknown;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        try {
+            return await fn();
+        } catch (error) {
+            lastError = error;
+            console.warn(
+                `    ⚠ Attempt ${attempt}/${attempts} failed:`,
+                (error as Error)?.message || error,
+            );
+            if (attempt < attempts) {
+                await new Promise((resolve) =>
+                    setTimeout(resolve, delayMs * attempt),
+                );
+            }
+        }
+    }
+    throw lastError;
+}
+
 /**
  * Generate pre-data (story, characters, settings, part, chapter, scene summaries) - shared across both versions
  */
@@ -459,13 +484,22 @@ async function main() {
             try {
                 // Step 1: Generate pre-data once (shared for both versions)
                 const { storyId, chapterId, sceneIds, generationTime: preDataTime } =
-                    await generatePreData(testPrompt.prompt);
+                    await retryWithBackoff(
+                        () => generatePreData(testPrompt.prompt),
+                        3,
+                        2000,
+                    );
 
                 // Step 2: Generate scene content with CONTROL version
                 console.log(`\n  Testing ${CONTROL_VERSION}...`);
-                const controlContent = await generateSceneContentWithVersion(
-                    sceneIds,
-                    CONTROL_VERSION,
+                const controlContent = await retryWithBackoff(
+                    () =>
+                        generateSceneContentWithVersion(
+                            sceneIds,
+                            CONTROL_VERSION,
+                        ),
+                    2,
+                    2000,
                 );
 
                 const controlEvaluations = await evaluateSceneContent(
@@ -491,9 +525,14 @@ async function main() {
 
                 // Step 4: Generate scene content with EXPERIMENT version (using same pre-data)
                 console.log(`\n  Testing ${EXPERIMENT_VERSION}...`);
-                const experimentContent = await generateSceneContentWithVersion(
-                    sceneIds,
-                    EXPERIMENT_VERSION,
+                const experimentContent = await retryWithBackoff(
+                    () =>
+                        generateSceneContentWithVersion(
+                            sceneIds,
+                            EXPERIMENT_VERSION,
+                        ),
+                    2,
+                    2000,
                 );
 
                 const experimentEvaluations = await evaluateSceneContent(
