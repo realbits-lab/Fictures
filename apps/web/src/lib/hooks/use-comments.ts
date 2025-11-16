@@ -143,8 +143,8 @@ export function useComments({
     } = usePersistedSWR<CommentsResponse>(
         cacheKey,
         fetcher as (url: string) => Promise<CommentsResponse>,
-        CACHE_CONFIGS.community, // 30min TTL, version 1.1.0
         {
+            ...CACHE_CONFIGS.community, // 30min TTL, version 1.1.0
             revalidateOnFocus: false, // Don't revalidate on window focus (comments don't change often)
             revalidateOnReconnect: true, // Revalidate when reconnecting
             dedupingInterval: 10000, // Dedupe requests within 10 seconds
@@ -158,7 +158,7 @@ export function useComments({
 
         // Clear both SWR memory cache and localStorage cache
         if (cacheKey) {
-            cacheManager.clearCachedData(cacheKey);
+            cacheManager.remove(cacheKey);
             // Clear ETag so next request fetches fresh data
             setETag(null);
             await swrMutate();

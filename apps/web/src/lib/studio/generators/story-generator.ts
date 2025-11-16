@@ -34,8 +34,8 @@ export async function generateStory(
         preferredGenre = "Slice" as const, // Default to Slice of Life genre
         preferredTone = "hopeful" as const,
         language = "English",
-        promptVersion,
     }: GenerateStoryParams = params;
+    const promptVersion = (params as any).promptVersion;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient();

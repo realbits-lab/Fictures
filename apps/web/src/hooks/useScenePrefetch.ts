@@ -25,10 +25,7 @@ export function useScenePrefetch() {
             const cacheCheckStartTime = performance.now();
 
             // First check localStorage (persistent cache)
-            const localStorageData = cacheManager.getCachedData(url, {
-                ...CACHE_CONFIGS.reading,
-                ttl: 5 * 60 * 1000, // 5min cache for scenes
-            });
+            const localStorageData = cacheManager.get(url);
 
             // Then check SWR in-memory cache
             const swrData = await mutate(url, undefined, { revalidate: false });

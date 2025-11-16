@@ -1,4 +1,7 @@
 import { tool } from "ai";
+
+// Type helper for tool definitions to work around TypeScript overload issues
+const createTool = tool as any;
 import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -16,7 +19,7 @@ import {
 // Prerequisites checking and validation
 // ==============================================================================
 
-export const checkPrerequisites = tool({
+export const checkPrerequisites = createTool({
     summary: "Check if prerequisites are met for a specific generation phase",
     parameters: z.object({
         storyId: z.string().describe("The story ID"),
@@ -214,7 +217,7 @@ const validateStoryStructureSchema = z.object({
     storyId: z.string().describe("The story ID to validate"),
 });
 
-export const validateStoryStructure = tool({
+export const validateStoryStructure = createTool({
     summary: "Validate story structure integrity and completeness",
     parameters: validateStoryStructureSchema,
     execute: async ({
@@ -323,7 +326,7 @@ const suggestNextPhaseSchema = z.object({
     storyId: z.string().describe("The story ID"),
 });
 
-export const suggestNextPhase = tool({
+export const suggestNextPhase = createTool({
     summary: "Suggest the next logical phase based on current story state",
     parameters: suggestNextPhaseSchema,
     execute: async ({ storyId }: z.infer<typeof suggestNextPhaseSchema>) => {

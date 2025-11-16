@@ -195,8 +195,6 @@ export function useStoryReader(
             {
                 ...CACHE_CONFIGS.reading, // 1hr TTL + compression
                 ttl: 10 * 60 * 1000, // 10min localStorage cache
-            },
-            {
                 fallbackData, // ⚡ SSR data hydration - instant display
                 revalidateOnFocus: false,
                 revalidateOnReconnect: true,
@@ -205,13 +203,13 @@ export function useStoryReader(
                 keepPreviousData: true, // ⚡ OPTIMIZED: Keep story data in memory when navigating
                 errorRetryCount: 3,
                 errorRetryInterval: 1000,
-                onError: (error) => {
+                onError: (error: any) => {
                     console.error(
                         `Story reader error for ID ${storyId}:`,
                         error,
                     );
                 },
-                onSuccess: (data) => {
+                onSuccess: (data: StoryReaderResponse) => {
                     console.log(
                         `Story data cached for: ${data.story.title} (${data.metadata.publishedChapters}/${data.metadata.totalChapters} chapters)`,
                     );

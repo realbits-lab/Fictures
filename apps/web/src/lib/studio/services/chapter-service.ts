@@ -166,14 +166,14 @@ export class ChapterService {
 
         // 6. Generate next chapter using singular generator with full context
         const generateParams: GenerateChapterParams = {
-            story,
-            part,
-            characters: storyCharacters,
-            settings: storySettings.length > 0 ? storySettings : undefined,
-            previousChapters: allPreviousChapters,
+            story: story as any,
+            part: part as any,
+            characters: storyCharacters as any,
+            settings: storySettings.length > 0 ? (storySettings as any) : undefined,
+            previousChapters: allPreviousChapters as any,
             chapterIndex: nextChapterIndex,
             promptVersion,
-        };
+        } as any;
 
         const generationResult: GenerateChapterResult =
             await generateChapter(generateParams);

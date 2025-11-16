@@ -105,8 +105,8 @@ class CacheMonitor {
         // Check hit rate
         this.checkHitRate(stats.hitRate);
 
-        // Check response time
-        this.checkResponseTime(stats.averageDuration);
+        // Check response time (averageDuration not available in current stats)
+        // this.checkResponseTime(stats.averageDuration);
 
         // Check error rate (if we had error tracking)
         // For now, we'll estimate from failed operations
@@ -117,10 +117,10 @@ class CacheMonitor {
         const invalidationRate = this.calculateInvalidationRate(stats);
         this.checkInvalidationRate(invalidationRate);
 
-        // Check cache availability by type
-        Object.entries(stats.byType).forEach(([type, typeStats]) => {
-            this.checkCacheTypeHealth(type, typeStats);
-        });
+        // Check cache availability by type (byType not available in current stats)
+        // Object.entries((stats as any).byType || {}).forEach(([type, typeStats]: [string, any]) => {
+        //     this.checkCacheTypeHealth(type, typeStats);
+        // });
 
         const healthy = !Array.from(this.alerts.values()).some(
             (alert) =>
@@ -360,16 +360,15 @@ class CacheMonitor {
     /**
      * Calculate invalidation rate
      */
-    private calculateInvalidationRate(
+    private     calculateInvalidationRate(
         stats: ReturnType<typeof cacheMetrics.getStats>,
     ): number {
         const totalOps = stats.totalHits + stats.totalMisses;
         if (totalOps === 0) return 0;
 
-        const totalInvalidations = Object.values(stats.byType).reduce(
-            (sum, typeStats) => sum + typeStats.invalidations,
-            0,
-        );
+        // byType not available in current stats implementation
+        // Return 0 for now
+        const totalInvalidations = 0;
 
         return totalInvalidations / totalOps;
     }

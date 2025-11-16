@@ -14,17 +14,48 @@ export interface ReadingHistoryEntry {
 export class ReadingHistoryManager {
     private static STORAGE_KEY = "reading_history";
 
-    static getHistory(): ReadingHistoryEntry[] {
+    static getHistory(format?: string): ReadingHistoryEntry[] {
         if (typeof window === "undefined") return [];
 
         try {
-            const data = localStorage.getItem(
-                ReadingHistoryManager.STORAGE_KEY,
-            );
+            const key = format 
+                ? `${ReadingHistoryManager.STORAGE_KEY}_${format}`
+                : ReadingHistoryManager.STORAGE_KEY;
+            const data = localStorage.getItem(key);
             return data ? JSON.parse(data) : [];
         } catch (error) {
             console.error("Failed to load reading history:", error);
             return [];
+        }
+    }
+
+    static addToHistory(storyId: string, format?: string): void {
+        if (typeof window === "undefined") return;
+
+        try {
+            const history = ReadingHistoryManager.getHistory(format);
+            const existingIndex = history.findIndex(
+                (h) => h.storyId === storyId,
+            );
+
+            const entry: ReadingHistoryEntry = {
+                storyId,
+                progress: 0,
+                lastReadAt: new Date().toISOString(),
+            };
+
+            if (existingIndex >= 0) {
+                history[existingIndex] = entry;
+            } else {
+                history.push(entry);
+            }
+
+            const key = format 
+                ? `${ReadingHistoryManager.STORAGE_KEY}_${format}`
+                : ReadingHistoryManager.STORAGE_KEY;
+            localStorage.setItem(key, JSON.stringify(history));
+        } catch (error) {
+            console.error("Failed to add to reading history:", error);
         }
     }
 

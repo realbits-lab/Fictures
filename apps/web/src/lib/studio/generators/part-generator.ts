@@ -42,8 +42,8 @@ export async function generatePart(
         settings,
         previousParts,
         partIndex,
-        promptVersion,
     }: GeneratePartParams = params;
+    const promptVersion = (params as any).promptVersion;
 
     // 2. Create text generation client with API key
     const client = createTextGenerationClient();
@@ -56,14 +56,14 @@ export async function generatePart(
     );
 
     // 2. Build context strings using comprehensive builders
-    const charactersStr: string = buildCharactersContext(characters);
-    const settingsStr: string = buildSettingsContext(settings);
-    const storyContext: string = buildStoryContext(story);
+    const charactersStr: string = buildCharactersContext(characters as any);
+    const settingsStr: string = buildSettingsContext(settings as any);
+    const storyContext: string = buildStoryContext(story as any);
 
     // 3. Build previous parts context string using builder function
     const previousPartsContext: string = buildPartsContext(
-        previousParts,
-        characters,
+        previousParts as any,
+        characters as any,
     );
 
     console.log(

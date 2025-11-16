@@ -114,7 +114,7 @@ export const POST = requireScopes("admin:all")(
             }
 
             // Generate new API key
-            const { fullKey, hash, prefix } = generateApiKey();
+            const { fullKey, hash, prefix } = await generateApiKey();
 
             // Parse expiration date if provided
             const expiresAt = validatedData.expiresAt

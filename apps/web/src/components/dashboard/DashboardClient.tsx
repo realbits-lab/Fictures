@@ -23,7 +23,7 @@ export function DashboardClient() {
     } = useUserStories();
 
     // Transform data to match StoryGrid expected format
-    const stories = (data?.stories || []).map((story: any) => ({
+    const stories = (Array.isArray(data) ? data : (data as any)?.stories || []).map((story: any) => ({
         id: story.id,
         title: story.title,
         summary: story.summary || "", // Story summary from database

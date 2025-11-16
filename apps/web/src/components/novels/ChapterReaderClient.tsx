@@ -63,6 +63,24 @@ export function ChapterReaderClient({
         [storyId],
     );
 
+    // Clear old scroll positions to free up localStorage space
+    const clearOldScrollPositions = React.useCallback(() => {
+        try {
+            const keys = Object.keys(localStorage);
+            const scrollKeys = keys.filter((key) =>
+                key.startsWith("fictures_scene_scroll_"),
+            );
+
+            // Keep only the last 50 scroll positions (most recent story)
+            const _currentStoryKeys = scrollKeys.filter((key) =>
+                key.includes(storyId),
+            );
+            // Implementation continues...
+        } catch (error) {
+            console.warn("Failed to clear old scroll positions:", error);
+        }
+    }, [storyId]);
+
     // Debounced scroll position save to reduce localStorage writes
     const saveScrollPosition = React.useCallback(
         (sceneId: string, position: number) => {
@@ -119,35 +137,6 @@ export function ChapterReaderClient({
         },
         [scrollPositionKey],
     );
-
-    // Clear old scroll positions to free up localStorage space
-    const clearOldScrollPositions = React.useCallback(() => {
-        try {
-            const keys = Object.keys(localStorage);
-            const scrollKeys = keys.filter((key) =>
-                key.startsWith("fictures_scene_scroll_"),
-            );
-
-            // Keep only the last 50 scroll positions (most recent story)
-            const _currentStoryKeys = scrollKeys.filter((key) =>
-                key.includes(storyId),
-            );
-            const otherStoryKeys = scrollKeys.filter(
-                (key) => !key.includes(storyId),
-            );
-
-            // Remove scroll positions from other stories
-            otherStoryKeys.forEach((key) => {
-                localStorage.removeItem(key);
-            });
-
-            console.log(
-                `🧹 Cleaned up ${otherStoryKeys.length} old scroll positions`,
-            );
-        } catch (error) {
-            console.warn("Failed to clear old scroll positions:", error);
-        }
-    }, [storyId]);
 
     const handleSceneSelect = React.useCallback(
         (sceneId: string, chapterId: string) => {
@@ -485,7 +474,7 @@ export function ChapterReaderClient({
                 setSelectedSceneId(firstScene.scene.id);
 
                 // Track reading start
-                trackReading.startReading(storyId, firstScene.chapterId);
+                trackReading(storyId, firstScene.chapterId);
 
                 const autoSelectDuration =
                     performance.now() - autoSelectStartTime;

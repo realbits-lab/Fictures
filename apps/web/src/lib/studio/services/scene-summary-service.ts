@@ -143,12 +143,12 @@ export class SceneSummaryService {
 
         // 7. Generate next scene summary using singular generator with full context
         const generateParams: GenerateSceneSummaryParams = {
-            story,
-            part,
-            chapter,
-            characters: storyCharacters,
-            settings: storySettings,
-            previousScenes: allPreviousScenes,
+            story: story as any,
+            part: part as any,
+            chapter: chapter as any,
+            characters: storyCharacters as any,
+            settings: storySettings as any,
+            previousScenes: allPreviousScenes as any,
             sceneIndex: nextSceneIndex,
             promptVersion,
         };
@@ -227,7 +227,11 @@ export class SceneSummaryService {
 
         const savedSceneArray: Scene[] = (await db
             .insert(scenes)
-            .values(validatedScene)
+            .values({
+                ...validatedScene,
+                dialogueVsDescription: validatedScene.dialogueVsDescription || "50% dialogue, 50% description",
+                suggestedLength: validatedScene.suggestedLength || "medium",
+            } as any)
             .returning()) as Scene[];
         const savedScene: Scene = savedSceneArray[0];
 

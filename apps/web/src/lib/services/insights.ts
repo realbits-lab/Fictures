@@ -204,7 +204,7 @@ async function generateReaderFeedbackInsights(story: any): Promise<void> {
         .where(
             and(
                 eq(comments.storyId, story.id),
-                gte(comments.createdAt, thirtyDaysAgo),
+                gte(comments.createdAt, thirtyDaysAgo.toISOString()),
             ),
         )
         .limit(50);

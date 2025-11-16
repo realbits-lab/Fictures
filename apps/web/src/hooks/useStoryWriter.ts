@@ -105,21 +105,19 @@ export function useStoryWriter(storyId: string | null): UseStoryWriterReturn {
                 ...CACHE_CONFIGS.writing, // 30min TTL + compression for frequent updates
                 // Override TTL based on story editing frequency
                 ttl: 30 * 60 * 1000, // 30min TTL for active writing sessions
-            },
-            {
                 revalidateOnFocus: true, // Revalidate when user returns to tab
                 revalidateOnReconnect: true,
                 refreshInterval: 0, // No automatic polling to avoid conflicts while writing
                 dedupingInterval: 10 * 1000, // 10 seconds deduplication for rapid edits
                 errorRetryCount: 3,
                 errorRetryInterval: 1000,
-                onError: (error) => {
+                onError: (error: any) => {
                     console.error(
                         `Story writer error for ID ${storyId}:`,
                         error,
                     );
                 },
-                onSuccess: (data) => {
+                onSuccess: (data: StoryWriterResponse) => {
                     console.log(
                         `Story writing data cached for: ${data.story.title} (${data.metadata.totalChapters} chapters, ${data.metadata.totalScenes} scenes)`,
                     );

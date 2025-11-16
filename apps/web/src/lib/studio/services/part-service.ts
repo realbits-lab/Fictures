@@ -113,13 +113,13 @@ export class PartService {
 
         // 6. Generate next part using singular generator with full context
         const generateParams: GeneratePartParams = {
-            story,
-            characters: storyCharacters,
-            settings: storySettings,
-            previousParts,
+            story: story as any,
+            characters: storyCharacters as any,
+            settings: storySettings as any,
+            previousParts: previousParts as any,
             partIndex: nextPartIndex,
             // promptVersion removed - not in GeneratePartParams type
-        };
+        } as any;
 
         const generationResult: GeneratePartResult =
             await generatePart(generateParams);

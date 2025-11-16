@@ -57,18 +57,16 @@ export function useStoryData(storyId: string | null) {
         fetcher,
         {
             ...CACHE_CONFIGS.writing, // 30min TTL with localStorage persistence
-        },
-        {
             revalidateOnFocus: true,
             revalidateOnReconnect: true,
             refreshInterval: 0, // No automatic polling during writing
             dedupingInterval: 10 * 1000, // 10 seconds deduplication for rapid navigation
             errorRetryCount: 3,
             errorRetryInterval: 1000,
-            onError: (error) => {
+            onError: (error: any) => {
                 console.error(`Story data error for ID ${storyId}:`, error);
             },
-            onSuccess: (data) => {
+            onSuccess: (data: any) => {
                 console.log(`Story writing data cached for: ${data?.title}`);
             },
         },
@@ -106,8 +104,6 @@ export function useStoriesData(storyIds: string[]) {
         {
             ...CACHE_CONFIGS.writing,
             ttl: 10 * 60 * 1000, // 10min TTL for story lists (shorter than individual stories)
-        },
-        {
             revalidateOnFocus: false, // Don't revalidate all stories on focus
             revalidateOnReconnect: true,
             errorRetryCount: 2,

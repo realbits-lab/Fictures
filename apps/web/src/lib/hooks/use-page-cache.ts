@@ -123,33 +123,42 @@ export function useUserStories() {
     const [error, setError] = useState<Error | null>(null);
     const [isValidating, setIsValidating] = useState(false);
 
-    useEffect(() => {
-        const fetchStories = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch("/studio/api/stories");
+    const fetchStories = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch("/studio/api/stories");
 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch user stories");
-                }
-
-                const result = await response.json();
-                setData(result.stories || []);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err
-                        : new Error("Failed to load user stories"),
-                );
-            } finally {
-                setIsLoading(false);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user stories");
             }
-        };
 
+            const result = await response.json();
+            setData(result.stories || []);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err
+                    : new Error("Failed to load user stories"),
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchStories();
     }, []);
 
-    return { data, error, isLoading, isValidating };
+    const mutate = async () => {
+        setIsValidating(true);
+        try {
+            await fetchStories();
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    return { data, error, isLoading, isValidating, mutate };
 }
 
 /**
@@ -161,33 +170,42 @@ export function useUserSettings() {
     const [error, setError] = useState<Error | null>(null);
     const [isValidating, setIsValidating] = useState(false);
 
-    useEffect(() => {
-        const fetchSettings = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch("/api/settings/user");
+    const fetchSettings = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch("/api/settings/user");
 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch user settings");
-                }
-
-                const result = await response.json();
-                setData(result);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err
-                        : new Error("Failed to load user settings"),
-                );
-            } finally {
-                setIsLoading(false);
+            if (!response.ok) {
+                throw new Error("Failed to fetch user settings");
             }
-        };
 
+            const result = await response.json();
+            setData(result);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err
+                    : new Error("Failed to load user settings"),
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchSettings();
     }, []);
 
-    return { data, error, isLoading, isValidating };
+    const mutate = async () => {
+        setIsValidating(true);
+        try {
+            await fetchSettings();
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    return { data, error, isLoading, isValidating, mutate };
 }
 
 /**
@@ -199,33 +217,42 @@ export function usePrivacySettings() {
     const [error, setError] = useState<Error | null>(null);
     const [isValidating, setIsValidating] = useState(false);
 
-    useEffect(() => {
-        const fetchSettings = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch("/api/settings/privacy");
+    const fetchSettings = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch("/api/settings/privacy");
 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch privacy settings");
-                }
-
-                const result = await response.json();
-                setData(result);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err
-                        : new Error("Failed to load privacy settings"),
-                );
-            } finally {
-                setIsLoading(false);
+            if (!response.ok) {
+                throw new Error("Failed to fetch privacy settings");
             }
-        };
 
+            const result = await response.json();
+            setData(result);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err
+                    : new Error("Failed to load privacy settings"),
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchSettings();
     }, []);
 
-    return { data, error, isLoading, isValidating };
+    const mutate = async () => {
+        setIsValidating(true);
+        try {
+            await fetchSettings();
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    return { data, error, isLoading, isValidating, mutate };
 }
 
 /**
@@ -237,33 +264,42 @@ export function usePublishStatus() {
     const [error, setError] = useState<Error | null>(null);
     const [isValidating, setIsValidating] = useState(false);
 
-    useEffect(() => {
-        const fetchStatus = async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch("/api/publish/status");
+    const fetchStatus = async () => {
+        try {
+            setIsLoading(true);
+            const response = await fetch("/api/publish/status");
 
-                if (!response.ok) {
-                    throw new Error("Failed to fetch publish status");
-                }
-
-                const result = await response.json();
-                setData(result);
-            } catch (err) {
-                setError(
-                    err instanceof Error
-                        ? err
-                        : new Error("Failed to load publish status"),
-                );
-            } finally {
-                setIsLoading(false);
+            if (!response.ok) {
+                throw new Error("Failed to fetch publish status");
             }
-        };
 
+            const result = await response.json();
+            setData(result);
+        } catch (err) {
+            setError(
+                err instanceof Error
+                    ? err
+                    : new Error("Failed to load publish status"),
+            );
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchStatus();
     }, []);
 
-    return { data, error, isLoading, isValidating };
+    const mutate = async () => {
+        setIsValidating(true);
+        try {
+            await fetchStatus();
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    return { data, error, isLoading, isValidating, mutate };
 }
 
 /**
@@ -293,5 +329,180 @@ export function useCacheManagement() {
         fetchStats();
     }, []);
 
-    return { stats, isLoading };
+    const getCacheStats = () => {
+        return stats || { totalSize: 0, totalEntries: 0 };
+    };
+
+    const clearAllCache = async () => {
+        try {
+            const response = await fetch("/studio/api/cache/clear", {
+                method: "POST",
+            });
+            if (response.ok) {
+                // Clear localStorage
+                if (typeof window !== "undefined") {
+                    localStorage.clear();
+                }
+                // Refresh stats
+                const refreshResponse = await fetch("/studio/api/cache/metrics");
+                if (refreshResponse.ok) {
+                    const result = await refreshResponse.json();
+                    setStats(result);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to clear cache:", err);
+        }
+    };
+
+    const clearPageCache = async (pageType: string) => {
+        try {
+            const response = await fetch(`/studio/api/cache/clear/${pageType}`, {
+                method: "POST",
+            });
+            if (response.ok) {
+                // Refresh stats
+                const refreshResponse = await fetch("/studio/api/cache/metrics");
+                if (refreshResponse.ok) {
+                    const result = await refreshResponse.json();
+                    setStats(result);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to clear page cache:", err);
+        }
+    };
+
+    const invalidatePageCache = async (pageType: string) => {
+        try {
+            const response = await fetch(`/studio/api/cache/invalidate/${pageType}`, {
+                method: "POST",
+            });
+            if (response.ok) {
+                // Refresh stats
+                const refreshResponse = await fetch("/studio/api/cache/metrics");
+                if (refreshResponse.ok) {
+                    const result = await refreshResponse.json();
+                    setStats(result);
+                }
+            }
+        } catch (err) {
+            console.error("Failed to invalidate page cache:", err);
+        }
+    };
+
+    return {
+        stats,
+        isLoading,
+        getCacheStats,
+        clearAllCache,
+        clearPageCache,
+        invalidatePageCache,
+    };
+}
+
+/**
+ * Hook for fetching publish history
+ */
+export function usePublishHistory() {
+    const [data, setData] = useState<any>(null);
+    const [error, setError] = useState<Error | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isValidating, setIsValidating] = useState(false);
+
+    useEffect(() => {
+        const fetchHistory = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch("/api/publish/history");
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch publish history");
+                }
+
+                const result = await response.json();
+                setData(result);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err
+                        : new Error("Failed to load publish history"),
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchHistory();
+    }, []);
+
+    const mutate = async () => {
+        setIsValidating(true);
+        try {
+            const response = await fetch("/api/publish/history");
+            if (response.ok) {
+                const result = await response.json();
+                setData(result);
+            }
+        } catch (err) {
+            console.error("Failed to refresh publish history:", err);
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    return { data, error, isLoading, isValidating, mutate };
+}
+
+/**
+ * Hook for fetching publish analysis
+ */
+export function usePublishAnalysis() {
+    const [data, setData] = useState<any>(null);
+    const [error, setError] = useState<Error | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isValidating, setIsValidating] = useState(false);
+
+    useEffect(() => {
+        const fetchAnalysis = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch("/api/publish/analysis");
+
+                if (!response.ok) {
+                    throw new Error("Failed to fetch publish analysis");
+                }
+
+                const result = await response.json();
+                setData(result);
+            } catch (err) {
+                setError(
+                    err instanceof Error
+                        ? err
+                        : new Error("Failed to load publish analysis"),
+                );
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchAnalysis();
+    }, []);
+
+    const mutate = async () => {
+        setIsValidating(true);
+        try {
+            const response = await fetch("/api/publish/analysis");
+            if (response.ok) {
+                const result = await response.json();
+                setData(result);
+            }
+        } catch (err) {
+            console.error("Failed to refresh publish analysis:", err);
+        } finally {
+            setIsValidating(false);
+        }
+    };
+
+    return { data, error, isLoading, isValidating, mutate };
 }

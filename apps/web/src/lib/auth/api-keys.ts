@@ -36,11 +36,11 @@ export const ALL_SCOPES = Object.keys(API_SCOPES) as ApiScope[];
  * Generate a cryptographically secure API key
  * Format: fic_[12_char_prefix]_[rest_of_key]
  */
-export function generateApiKey(): {
+export async function generateApiKey(): Promise<{
     fullKey: string;
     hash: string;
     prefix: string;
-} {
+}> {
     // Generate 32 random bytes and encode as base64url (URL-safe)
     const randomKey = randomBytes(32).toString("base64url");
 
@@ -52,7 +52,7 @@ export function generateApiKey(): {
     const fullKey = `${prefix}_${randomKey}`;
 
     // Hash the full key for secure storage
-    const hash = hashApiKey(fullKey);
+    const hash = await hashApiKey(fullKey);
 
     return {
         fullKey,

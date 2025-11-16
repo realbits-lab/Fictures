@@ -140,12 +140,14 @@ export type {
 } from "./reading-history";
 
 // Legacy API types (still in validation-evaluation.ts - will be migrated separately)
-export type {
-    ComprehensiveReport,
-    EvaluationRequest,
-    StoryAnalysisRequest,
-    StoryAnalysisResponse,
-    StoryAnalysisWithImprovementResponse,
-} from "./validation-evaluation";
+// TODO: Migrate these types to the appropriate schema layer
+// These types are currently not used - the evaluation APIs use types from @/lib/schemas/api/evaluation
+// export type {
+//     ComprehensiveReport,
+//     EvaluationRequest,
+//     StoryAnalysisRequest,
+//     StoryAnalysisResponse,
+//     StoryAnalysisWithImprovementResponse,
+// } from "./validation-evaluation";
 
 // Note: next-auth.d.ts augments global types and doesn't need re-export

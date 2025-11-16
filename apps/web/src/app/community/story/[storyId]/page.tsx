@@ -125,7 +125,7 @@ export default function StoryCommunityPage() {
     }
 
     const story = storyData?.story;
-    const posts = postsData?.posts || [];
+    const posts = Array.isArray(postsData) ? postsData : [];
 
     if (isLoadingStory || !story) {
         return (

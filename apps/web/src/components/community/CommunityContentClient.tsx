@@ -84,7 +84,8 @@ export function CommunityContentClient({
     const { data, error, isLoading, isValidating } = useCommunityStories();
 
     // Use SSR data as fallback if SWR data not ready
-    const stories = (data?.success ? data.stories : initialStories).map(
+    // data is an array, not an object with success/stories
+    const stories = (Array.isArray(data) && data.length > 0 ? data : initialStories).map(
         (story: any) => ({
             ...story,
             author: story.author?.name || story.author || "Unknown Author",
@@ -366,7 +367,11 @@ export function CommunityContentClient({
                                     <CommunityStoryCard
                                         story={{
                                             ...story,
-                                            author: story.author.name,
+                                            genre: story.genre || "",
+                                            author: typeof story.author === "string" ? story.author : story.author?.name || "Unknown Author",
+                                            isActive: typeof story.isActive === "boolean" 
+                                                ? story.isActive 
+                                                : (typeof story.isActive === "string" && story.isActive === "true") || (story.isActive as any) === true || false,
                                             coverImage: story.coverImage || "",
                                         }}
                                         priority={index === 0}

@@ -161,10 +161,10 @@ export class SceneImprovementService {
         const storyContext: SceneImprovementStoryContext = {
             id: story.id,
             title: story.title,
-            genre: story.genre || GENRE.SLICE,
+            genre: (story.genre as any) || GENRE.SLICE,
             moralFramework: story.moralFramework || "courage",
             summary: story.summary || "",
-            tone: story.tone || "hopeful",
+            tone: (story.tone as any) || "hopeful",
         };
 
         // 5. Call pure generator for evaluation
@@ -375,7 +375,7 @@ export class SceneImprovementService {
             story: {
                 id: "temp",
                 title: storyContext.title,
-                genre: storyContext.genre,
+                genre: storyContext.genre as any,
                 moralFramework: storyContext.moralFramework,
                 summary: "",
                 tone: "hopeful" as const,

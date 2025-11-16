@@ -57,7 +57,7 @@ export async function convertSceneToToonplay(
 
     // 5. Build settings descriptions string
     const settingsStr: string = settings
-        .map((s) => `- ${s.name}: ${s.description}`)
+        .map((s) => `- ${s.name}: ${s.summary || (s as any).description || "N/A"}`)
         .join("\n");
 
     console.log(
@@ -66,7 +66,7 @@ export async function convertSceneToToonplay(
 
     // 6. Build prompt parameters
     const promptParams: ToonplayPromptParams = {
-        sceneContent: scene.content || "",
+        sceneContent: (scene as any).content || "",
         sceneTitle: scene.title,
         sceneSummary: scene.summary || "",
         storyGenre: story.genre,
@@ -104,7 +104,7 @@ export async function convertSceneToToonplay(
     const totalTime: number = Date.now() - startTime;
 
     console.log("[toonplay-converter] ✅ Generated toonplay:", {
-        sceneId: scene.id,
+        sceneId: (scene as any).id || "unknown",
         totalPanels: toonplayData.total_panels,
         generationTime: totalTime,
     });

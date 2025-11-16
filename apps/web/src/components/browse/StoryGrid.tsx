@@ -85,7 +85,10 @@ export function StoryGrid({
             if (!session?.user?.id) {
                 // Anonymous user - use localStorage for specific format
                 const localHistory = ReadingHistoryManager.getHistory(format);
-                setReadingHistory(localHistory);
+                const storyIds = new Set<string>(
+                    localHistory.map((h) => h.storyId),
+                );
+                setReadingHistory(storyIds);
                 setIsLoadingHistory(false);
                 return;
             }
@@ -101,9 +104,11 @@ export function StoryGrid({
                     setReadingHistory(storyIds);
                 } else {
                     // API failed, fallback to localStorage
-                    const localHistory =
-                        ReadingHistoryManager.getHistory(format);
-                    setReadingHistory(localHistory);
+                    const localHistory = ReadingHistoryManager.getHistory(format);
+                    const storyIds = new Set<string>(
+                        localHistory.map((h) => h.storyId),
+                    );
+                    setReadingHistory(storyIds);
                 }
             } catch (error) {
                 console.error(
@@ -112,7 +117,10 @@ export function StoryGrid({
                 );
                 // Fallback to localStorage
                 const localHistory = ReadingHistoryManager.getHistory(format);
-                setReadingHistory(localHistory);
+                const storyIds = new Set<string>(
+                    localHistory.map((h) => h.storyId),
+                );
+                setReadingHistory(storyIds);
             } finally {
                 setIsLoadingHistory(false);
             }
@@ -129,7 +137,7 @@ export function StoryGrid({
         }
 
         // Track story view in GA (always track, regardless of auth)
-        trackStoryView(storyId, storyTitle);
+        trackStoryView(storyId, storyTitle || "");
 
         if (!session?.user?.id) {
             // Anonymous user - use localStorage only with format
