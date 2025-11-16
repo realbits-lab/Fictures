@@ -1,0 +1,832 @@
+{
+  "version": "v1.0",
+  "testDate": "2025-11-16T14:29:52.705Z",
+  "testScenes": [
+    "emotional-moment",
+    "action-sequence",
+    "dialogue-heavy",
+    "setting-atmosphere",
+    "mixed-elements"
+  ],
+  "evaluationMode": "quick",
+  "iterations": 1,
+  "toonplays": [
+    {
+      "testId": "test-1763302797253",
+      "sceneId": "scene_ieKd-aGh7zk9iGMe",
+      "sceneName": "The Rooftop Escape",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-16T14:19:57.253Z",
+      "toonplay": {
+        "sceneId": "scene_ieKd-aGh7zk9iGMe",
+        "sceneTitle": "The Rooftop Escape",
+        "totalPanels": 10,
+        "panels": [
+          {
+            "panelNumber": 1,
+            "shotType": "establishing_shot",
+            "description": "A wide shot of the city's labyrinthine alleys, neon signs flickering overhead as Marcus navigates the narrow path, his messenger bag slung over his shoulder. The cracked asphalt and rust-stained walls form a backdrop of decay and danger.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's alleys are a maze of danger and secrets.",
+            "sfx": [
+              {
+                "text": "SCREECH",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 2,
+            "shotType": "wide_shot",
+            "description": "Marcus stops abruptly, his hand gripping the messenger bag as he peers around a corner, eyes wide with suspicion. The faint sound of footsteps echoes in the alley behind him, the tension palpable in the air.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's dangers are always lurking.",
+            "sfx": [
+              {
+                "text": "SQUEAK",
+                "emphasis": "normal"
+              }
+            ]
+          },
+          {
+            "panelNumber": 3,
+            "shotType": "medium_shot",
+            "description": "Marcus turns sharply, his movements quick and precise as he darts into a side alley, the messenger bag bouncing against his side. His breath is visible in the cold air, his muscles tense with urgency.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "Every move is a risk in this city.",
+            "sfx": [
+              {
+                "text": "THUMP",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 4,
+            "shotType": "close_up",
+            "description": "Marcus's face is a mask of concentration, his brow furrowed as he listens, his eyes darting between the shadows. The faint scent of exhaust and damp earth lingers in the air, adding to the tension around him.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's secrets are in every breath.",
+            "sfx": [
+              {
+                "text": "WHISPER",
+                "emphasis": "normal"
+              }
+            ]
+          },
+          {
+            "panelNumber": 5,
+            "shotType": "medium_shot",
+            "description": "Marcus freezes as a figure emerges from the shadows, the silhouette of a rival gang member. His body tenses, muscles coiled as he prepares for a confrontation, the messenger bag a visible target in the dim light.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's dangers are always close.",
+            "sfx": [
+              {
+                "text": "THUD",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 6,
+            "shotType": "close_up",
+            "description": "Marcus's hand tightens around the messenger bag as he takes a step back, his face a mix of fear and determination. The weight of the package feels heavier, a silent reminder of the stakes at play around him.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "Every decision carries a price.",
+            "sfx": [
+              {
+                "text": "GRIP",
+                "emphasis": "normal"
+              }
+            ]
+          },
+          {
+            "panelNumber": 7,
+            "shotType": "wide_shot",
+            "description": "Marcus turns and sprints down the alley, the messenger bag bouncing against his side as he navigates the narrow path. The city's chaos echoes around him, the distant sound of sirens adding to the urgency.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's dangers are relentless.",
+            "sfx": [
+              {
+                "text": "SIREN",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 8,
+            "shotType": "medium_shot",
+            "description": "Marcus pauses at a rooftop edge, the city sprawling below him. His breath is visible in the cold air, the weight of the messenger bag a constant presence. His gaze flicks to the bag, a silent acknowledgment of its importance.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's skyline holds secrets yet to be revealed.",
+            "sfx": [
+              {
+                "text": "WHISPER",
+                "emphasis": "normal"
+              }
+            ]
+          },
+          {
+            "panelNumber": 9,
+            "shotType": "close_up",
+            "description": "Marcus's face is a mix of determination and fear as he looks down at the messenger bag, his fingers tracing the edges of the strap. The weight of the package feels heavier now, a silent reminder of the choices ahead.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's secrets are in every step.",
+            "sfx": [
+              {
+                "text": "THUMP",
+                "emphasis": "normal"
+              }
+            ]
+          },
+          {
+            "panelNumber": 10,
+            "shotType": "wide_shot",
+            "description": "Marcus takes a deep breath, the city's skyline stretching before him. His body tenses as he prepares to move forward, the messenger bag a silent companion in his journey through the city's dangers. The weight of the package feels like a promise of change.",
+            "charactersVisible": [
+              "Marcus Holloway"
+            ],
+            "dialogue": [],
+            "narrative": "The city's dangers are a test of will.",
+            "sfx": [
+              {
+                "text": "WHISPER",
+                "emphasis": "normal"
+              }
+            ]
+          }
+        ],
+        "narrativeArc": "The scene establishes Marcus's internal struggle with commitment through his physical and emotional responses to the city's dangers. The external threats of rival gang members and the ever-present threat of capture create a backdrop of adversity, while his realization of the package's importance fo…"
+      },
+      "evaluation": {
+        "weightedScore": 5,
+        "passes": true,
+        "categoryScores": {
+          "narrativeFidelity": 5,
+          "visualTransformation": 5,
+          "webtoonPacing": 5,
+          "scriptFormatting": 5
+        },
+        "metrics": {
+          "narrationPercentage": 100,
+          "internalMonologuePercentage": 0,
+          "dialoguePresence": 0,
+          "shotTypeDistribution": {
+            "establishing_shot": 1,
+            "wide_shot": 3,
+            "medium_shot": 3,
+            "close_up": 3
+          },
+          "shotVariety": 4,
+          "textOverlayValidation": true,
+          "dialogueLengthCompliance": true,
+          "descriptionLengthCompliance": true,
+          "panelCount": 10,
+          "averageDescriptionLength": 0,
+          "averageDialoguePerPanel": 0,
+          "verticalFlowQuality": 0,
+          "panelPacingRhythm": 0
+        },
+        "recommendations": [],
+        "finalReport": ""
+      },
+      "metadata": {
+        "generationTime": 173456,
+        "evaluationTime": 10781,
+        "totalTime": 184237,
+        "iterations": 0,
+        "model": "gemini-2.0-flash-exp",
+        "provider": "google"
+      }
+    },
+    {
+      "testId": "test-1763303204672",
+      "sceneId": "scene_49kaLQ9Iap1-pWx_",
+      "sceneName": "The Hidden Archive",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-16T14:26:44.672Z",
+      "toonplay": {
+        "sceneId": "scene_49kaLQ9Iap1-pWx_",
+        "sceneTitle": "The Hidden Archive",
+        "totalPanels": 10,
+        "panels": [
+          {
+            "panelNumber": 1,
+            "shotType": "establishing_shot",
+            "description": "A vast, dimly lit library with towering bookshelves stretching into the shadows. Dust motes swirl in the faint light from a single flickering lantern. The floor is cracked stone, and the air is thick with the scent of aged paper and mildew.",
+            "charactersVisible": [
+              "Maya"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Maya",
+                "text": "This place... it's been sealed for decades."
+              }
+            ],
+            "narrative": "The Forgotten Library, hidden beneath the university, awaited its next visitor.",
+            "sfx": [
+              {
+                "text": "Dust swirls",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 2,
+            "shotType": "wide_shot",
+            "description": "Maya steps cautiously into the library, her boots echoing on the cracked stone floor. The towering shelves loom around her, their contents untouched for years. A faint creak echoes from the far end of the hall.",
+            "charactersVisible": [
+              "Maya"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Maya",
+                "text": "What if I'm not meant to be here?"
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Creak",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 3,
+            "shotType": "medium_shot",
+            "description": "Maya walks slowly, her fingers trailing along the spines of ancient books. Her face is illuminated by the lantern's glow, showing her determined yet fearful expression. The air is thick with dust, and her movements stir it up.",
+            "charactersVisible": [
+              "Maya"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Maya",
+                "text": "My family's name... it's all but erased."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Dust swirls",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 4,
+            "shotType": "close_up",
+            "description": "Maya's face is illuminated by the lantern's glow, her eyes reflecting the flickering light. Her lips are parted in a silent gasp as she reads the title of a book she's found: 'The Lost Lineage of the Voss Family.'",
+            "charactersVisible": [
+              "Maya"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Maya",
+                "text": "This... this is my family's history."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Page turns",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 5,
+            "shotType": "wide_shot",
+            "description": "A figure emerges from the shadows of the library, his silhouette outlined by the lantern's glow. He is tall and lean, wearing a tweed jacket and glasses, his face partially obscured by the dim light. The ground creaks under his steps as he approaches Maya.",
+            "charactersVisible": [
+              "Maya",
+              "Elias"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Elias",
+                "text": "You shouldn't be here."
+              }
+            ],
+            "narrative": "Elias, the former librarian, steps out from the shadows.",
+            "sfx": [
+              {
+                "text": "Creak",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 6,
+            "shotType": "medium_shot",
+            "description": "Maya and Elias stand facing each other, the lantern's light casting long shadows between them. Maya's posture is defensive, clutching the book tightly, while Elias's hands are raised in a placating gesture.",
+            "charactersVisible": [
+              "Maya",
+              "Elias"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Maya",
+                "text": "I have to know the truth."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Lantern flickers",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 7,
+            "shotType": "close_up",
+            "description": "Elias's face is illuminated by the lantern's light, revealing a weathered face with a scar on his left hand. His eyes are filled with regret as he looks at Maya, his voice trembling slightly as he speaks.",
+            "charactersVisible": [
+              "Elias"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Elias",
+                "text": "I failed them... I failed you."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Soft sigh",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 8,
+            "shotType": "medium_shot",
+            "description": "Maya and Elias stand in the dim light, the lantern casting long shadows. Maya's expression softens slightly as she listens to Elias, her grip on the book loosening. The library around them seems to hold its breath.",
+            "charactersVisible": [
+              "Maya",
+              "Elias"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Maya",
+                "text": "Then help me find it."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Lantern flickers",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 9,
+            "shotType": "wide_shot",
+            "description": "Maya and Elias walk together down the aisle of books, their footsteps echoing in the silence. The lantern's light swings between them, illuminating the dust and the ancient tomes around them. The library seems to watch them, holding its breath.",
+            "charactersVisible": [
+              "Maya",
+              "Elias"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Elias",
+                "text": "The truth... it's not what you think."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Dust swirls",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 10,
+            "shotType": "close_up",
+            "description": "Maya's face is illuminated by the lantern's light, her eyes wide with determination. She looks at Elias, who is standing slightly ahead, his back to her, his hands gripping the edge of a bookshelf as if steadying himself.",
+            "charactersVisible": [
+              "Maya",
+              "Elias"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Maya",
+                "text": "Then I'll find it."
+              }
+            ],
+            "narrative": "The path to the truth begins.",
+            "sfx": [
+              {
+                "text": "Lantern flickers",
+                "emphasis": "dramatic"
+              }
+            ]
+          }
+        ],
+        "narrativeArc": "Setup introduces Maya's fear of obscurity and Elias's guilt, establishing their initial conflict and the library's secrets. The scene sets the stage for their journey to uncover deeper truths and the potential for renewal."
+      },
+      "evaluation": {
+        "weightedScore": 4.4,
+        "passes": true,
+        "categoryScores": {
+          "narrativeFidelity": 5,
+          "visualTransformation": 4,
+          "webtoonPacing": 4,
+          "scriptFormatting": 5
+        },
+        "metrics": {
+          "narrationPercentage": 30,
+          "internalMonologuePercentage": 0,
+          "dialoguePresence": 100,
+          "shotTypeDistribution": {
+            "establishing_shot": 1,
+            "wide_shot": 3,
+            "medium_shot": 3,
+            "close_up": 3
+          },
+          "shotVariety": 4,
+          "textOverlayValidation": true,
+          "dialogueLengthCompliance": true,
+          "descriptionLengthCompliance": true,
+          "panelCount": 10,
+          "averageDescriptionLength": 0,
+          "averageDialoguePerPanel": 30.5,
+          "verticalFlowQuality": 0,
+          "panelPacingRhythm": 0
+        },
+        "recommendations": [],
+        "finalReport": ""
+      },
+      "metadata": {
+        "generationTime": 225593,
+        "evaluationTime": 8202,
+        "totalTime": 233796,
+        "iterations": 0,
+        "model": "gemini-2.0-flash-exp",
+        "provider": "google"
+      }
+    },
+    {
+      "testId": "test-1763303392704",
+      "sceneId": "scene_Vvv_l_mHaU6vH4NN",
+      "sceneName": "The Arrival",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-16T14:29:52.704Z",
+      "toonplay": {
+        "sceneId": "scene_Vvv_l_mHaU6vH4NN",
+        "sceneTitle": "The Arrival",
+        "totalPanels": 10,
+        "panels": [
+          {
+            "panelNumber": 1,
+            "shotType": "establishing_shot",
+            "description": "A wide shot of Redemption's Hollow at dawn, with a mix of dilapidated buildings and new community projects, showing the town's struggle and cautious hope. The sun rises behind the church, casting long shadows across the cracked streets.",
+            "charactersVisible": [],
+            "dialogue": [],
+            "narrative": "Redemption's Hollow, a small town on the edge of recovery.",
+            "sfx": [
+              {
+                "text": "Dawn light",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 2,
+            "shotType": "wide_shot",
+            "description": "Thomas steps off the bus, looking around at the cracked asphalt and faded paint of the town, his backpack slung over one shoulder. The townspeople watch him from a distance, their expressions unreadable.",
+            "charactersVisible": [
+              "Thomas Wright"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Thomas Wright",
+                "text": "I should've known better than to come here."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Crunch",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 3,
+            "shotType": "medium_shot",
+            "description": "Thomas walks down the street, his hands clasped behind his back, his face showing a mix of determination and anxiety. The townspeople watch him from behind their windows and doorways, their expressions unreadable.",
+            "charactersVisible": [
+              "Thomas Wright"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Thomas Wright",
+                "text": "They don't trust me. I can feel it."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Footsteps",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 4,
+            "shotType": "close_up",
+            "description": "A close-up of Thomas's face, showing the tension in his jaw and the worry in his eyes as he looks around at the town. His lips are pressed into a thin line, and his brow is furrowed in concentration and anxiety.",
+            "charactersVisible": [
+              "Thomas Wright"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Thomas Wright",
+                "text": "I'm not here to cause more pain."
+              }
+            ],
+            "narrative": "Thomas feels the weight of the town's judgment.",
+            "sfx": [
+              {
+                "text": "Tension",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 5,
+            "shotType": "wide_shot",
+            "description": "A wide shot of the street as Thomas walks, with the townspeople watching him from behind their windows and doorways. The atmosphere is tense, with a sense of anticipation hanging in the air as if the town is waiting for something to happen.",
+            "charactersVisible": [
+              "Thomas Wright"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Thomas Wright",
+                "text": "They're waiting for me to fail."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Tension",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 6,
+            "shotType": "medium_shot",
+            "description": "Thomas turns a corner and sees a woman standing by the curb, her hands clasped in front of her, a small smile tugging at her lips. She is dressed in a faded blue scarf and practical clothing, showing her approachable nature.",
+            "charactersVisible": [
+              "Thomas Wright",
+              "Elena Marquez"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Elena Marquez",
+                "text": "Thomas Wright."
+              },
+              {
+                "characterId": "Thomas Wright",
+                "text": "Elena Marquez."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Meeting",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 7,
+            "shotType": "close_up",
+            "description": "A close-up of Elena's face, showing the warmth in her eyes and the slight smile on her lips as she looks at Thomas. Her expression is warm but measured, showing her approachable nature and the unspoken understanding between them.",
+            "charactersVisible": [
+              "Elena Marquez"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Elena Marquez",
+                "text": "I'm glad you're here."
+              }
+            ],
+            "narrative": "Elena's warm but measured smile.",
+            "sfx": [
+              {
+                "text": "Warmth",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 8,
+            "shotType": "medium_shot",
+            "description": "Thomas and Elena stand together, their hands clasped in a brief but charged handshake. The townspeople watch from a distance, their expressions unreadable, but the atmosphere is charged with unspoken understanding.",
+            "charactersVisible": [
+              "Thomas Wright",
+              "Elena Marquez"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Thomas Wright",
+                "text": "I hope I can make a difference."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "Understanding",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 9,
+            "shotType": "close_up",
+            "description": "A close-up of Thomas's face, showing the internal struggle as he looks at Elena. His eyes are filled with a mix of hope and fear, and his lips are pressed into a thin line, showing his determination and anxiety.",
+            "charactersVisible": [
+              "Thomas Wright"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Thomas Wright",
+                "text": "I'm not here to cause more pain."
+              }
+            ],
+            "narrative": "Thomas's internal struggle.",
+            "sfx": [
+              {
+                "text": "Struggle",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 10,
+            "shotType": "wide_shot",
+            "description": "A wide shot of the town as Thomas and Elena walk down the street, the townspeople watching them from a distance. The atmosphere is tense, with a sense of anticipation hanging in the air as if the town is waiting for something to happen.",
+            "charactersVisible": [
+              "Thomas Wright",
+              "Elena Marquez"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Elena Marquez",
+                "text": "We'll see."
+              }
+            ],
+            "narrative": "The town watches as Thomas and Elena walk down the street.",
+            "sfx": [
+              {
+                "text": "Anticipation",
+                "emphasis": "dramatic"
+              }
+            ]
+          }
+        ],
+        "narrativeArc": "The toonplay follows the setup of Thomas's arrival in Redemption's Hollow, establishing the town's atmosphere and the initial tension between Thomas and the community. The brief interaction with Elena Marquez introduces the first spark of connection and sets the stage for the challenges ahead and a,"
+      },
+      "evaluation": {
+        "weightedScore": 3.8,
+        "passes": true,
+        "categoryScores": {
+          "narrativeFidelity": 5,
+          "visualTransformation": 3,
+          "webtoonPacing": 3,
+          "scriptFormatting": 5
+        },
+        "metrics": {
+          "narrationPercentage": 50,
+          "internalMonologuePercentage": 0,
+          "dialoguePresence": 90,
+          "shotTypeDistribution": {
+            "establishing_shot": 1,
+            "wide_shot": 3,
+            "medium_shot": 3,
+            "close_up": 3
+          },
+          "shotVariety": 4,
+          "textOverlayValidation": true,
+          "dialogueLengthCompliance": true,
+          "descriptionLengthCompliance": true,
+          "panelCount": 10,
+          "averageDescriptionLength": 0,
+          "averageDialoguePerPanel": 26.3,
+          "verticalFlowQuality": 0,
+          "panelPacingRhythm": 0
+        },
+        "recommendations": [],
+        "finalReport": ""
+      },
+      "metadata": {
+        "generationTime": 178057,
+        "evaluationTime": 9974,
+        "totalTime": 188031,
+        "iterations": 0,
+        "model": "gemini-2.0-flash-exp",
+        "provider": "google"
+      }
+    }
+  ],
+  "aggregatedMetrics": {
+    "version": "v1.0",
+    "totalTests": 3,
+    "testDate": "2025-11-16T14:29:52.705Z",
+    "averageWeightedScore": 4.3999999999999995,
+    "passRate": 1,
+    "firstPassSuccessRate": 1,
+    "categoryAverages": {
+      "narrativeFidelity": 5,
+      "visualTransformation": 4,
+      "webtoonPacing": 4,
+      "scriptFormatting": 5
+    },
+    "averageNarrationPercentage": 60,
+    "averageInternalMonologuePercentage": 0,
+    "averageDialoguePresence": 63.333333333333336,
+    "narrationComplianceRate": 0,
+    "internalMonologueComplianceRate": 1,
+    "dialogueTargetRate": 0,
+    "averageShotVariety": 4,
+    "shotTypeDistributionAggregate": {
+      "establishing_shot": 3,
+      "wide_shot": 9,
+      "medium_shot": 9,
+      "close_up": 9
+    },
+    "averagePanelCount": 10,
+    "averageDescriptionLength": 0,
+    "descriptionComplianceRate": 1,
+    "averageDialoguePerPanel": 18.933333333333334,
+    "dialogueLengthComplianceRate": 1,
+    "averageVerticalFlowQuality": 0,
+    "averagePanelPacingRhythm": 0,
+    "averageGenerationTime": 192368.66666666666,
+    "averageIterations": 0,
+    "averageTotalTime": 202021.33333333334,
+    "failurePatterns": [
+      {
+        "category": "proportion",
+        "description": "Excessive narration (≥5%): 60.0% average",
+        "frequency": 3,
+        "averageScore": 60,
+        "priority": "critical",
+        "suggestedFix": "Add \"show, don't tell\" rules to prompt. Transform internal states to visual actions."
+      },
+      {
+        "category": "visual",
+        "description": "Low shot variety (<5 types): 4.0 average",
+        "frequency": 3,
+        "averageScore": 4,
+        "priority": "medium",
+        "suggestedFix": "Encourage variety: establishing, wide, medium, close-up, extreme close-up, special angles."
+      },
+      {
+        "category": "proportion",
+        "description": "Insufficient dialogue (<60%): 0.0% average",
+        "frequency": 1,
+        "averageScore": 0,
+        "priority": "medium",
+        "suggestedFix": "Emphasize 70% dialogue target. Convert narration to dialogue wherever possible."
+      },
+      {
+        "category": "visual",
+        "description": "Weak visual transformation (<3.5): 3.00 average",
+        "frequency": 1,
+        "averageScore": 3,
+        "priority": "medium",
+        "suggestedFix": "Enhance panel description requirements. Mandate body language, expressions, environmental details."
+      },
+      {
+        "category": "pacing",
+        "description": "Poor webtoon pacing (<3.5): 3.00 average",
+        "frequency": 1,
+        "averageScore": 3,
+        "priority": "medium",
+        "suggestedFix": "Add pacing rhythm guidance: establish → build → peak → release → transition."
+      }
+    ]
+  }
+}

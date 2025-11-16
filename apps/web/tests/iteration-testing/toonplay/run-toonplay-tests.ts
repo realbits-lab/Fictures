@@ -18,6 +18,7 @@ import { parseArgs } from "node:util";
 import { getTestScene, TEST_SCENES } from "./config/test-scenes";
 import { ToonplayMetricsTracker } from "./src/metrics-tracker";
 import type { ToonplayTestResult, ToonplayEvaluation } from "./src/types";
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 
 // Parse command-line arguments
 const { values } = parseArgs({
@@ -28,6 +29,7 @@ const { values } = parseArgs({
         iterations: { type: "string", default: "5" },
         mode: { type: "string", default: "standard" },
         output: { type: "string" },
+        aiServerUrl: { type: "string" },
         help: { type: "boolean", default: false },
     },
 });
@@ -45,6 +47,7 @@ Options:
   --iterations <number>  Number of toonplays per scene (default: 5)
   --mode       <string>  Evaluation mode: quick|standard|thorough (default: standard)
   --output     <string>  Output file path (default: results/{version}/suite-{timestamp}.json)
+  --aiServerUrl<string>  Override AI server URL (default: process.env.AI_SERVER_TEXT_URL)
   --help                 Show this help message
 
 Examples:
@@ -69,6 +72,10 @@ const TEST_SCENE_IDS = values.scenes
     ? values.scenes.split(",").map((s) => s.trim())
     : TEST_SCENES.map((s) => s.id);
 
+if (values.aiServerUrl) {
+    process.env.AI_SERVER_TEXT_URL = values.aiServerUrl;
+}
+
 // Output configuration
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 const OUTPUT_FILE =
@@ -84,8 +91,77 @@ console.log(`
   Iterations:      ${ITERATIONS} per scene
   Total Toonplays: ${TEST_SCENE_IDS.length * ITERATIONS}
   Output:          ${OUTPUT_FILE}
+  AI Server URL:   ${process.env.AI_SERVER_TEXT_URL || "default"}
 ═══════════════════════════════════════════════════════════════
 `);
+
+type ApiCredentials = {
+    apiKey: string;
+    userId: string;
+    email: string;
+    scopes: string[];
+};
+
+let cachedCredentials: ApiCredentials | null = null;
+
+async function getApiCredentials(): Promise<ApiCredentials> {
+    if (cachedCredentials) {
+        return cachedCredentials;
+    }
+
+    const authFile = path.resolve(process.cwd(), ".auth/user.json");
+    const authRaw = await fs.readFile(authFile, "utf8");
+    const authData = JSON.parse(authRaw);
+    const writerProfile = authData.develop?.profiles?.writer;
+
+    if (!writerProfile?.apiKey || !writerProfile.email) {
+        throw new Error(
+            "Writer profile not found in .auth/user.json (develop.profiles.writer)",
+        );
+    }
+
+    const writerEmail = writerProfile.email as string;
+
+    const { db } = await import("@/lib/db");
+    const { users } = await import("@/lib/schemas/database");
+    const { eq } = await import("drizzle-orm");
+
+    const user = await db.query.users.findFirst({
+        where: eq(users.email, writerEmail),
+    });
+
+    if (!user) {
+        throw new Error(`Writer user not found in database: ${writerEmail}`);
+    }
+
+    cachedCredentials = {
+        apiKey: writerProfile.apiKey as string,
+        userId: user.id,
+        email: writerEmail,
+        scopes: ["stories:write", "images:write", "ai:use"],
+    };
+
+    return cachedCredentials;
+}
+
+async function runWithAuth<T>(fn: () => Promise<T>): Promise<T> {
+    const creds = await getApiCredentials();
+    const { createApiKeyContext } = await import("@/lib/auth/context");
+    const { withAuth } = await import("@/lib/auth/server-context");
+
+    const authContext = createApiKeyContext(
+        creds.apiKey,
+        creds.userId,
+        creds.email,
+        creds.scopes,
+        {
+            requestId: `toonplay-iteration-${Date.now()}`,
+            timestamp: Date.now(),
+        },
+    );
+
+    return withAuth(authContext, fn);
+}
 
 /**
  * Generate a story for the test scene (minimal 1 chapter, 1 scene)
@@ -97,37 +173,7 @@ async function generateStoryForScene(
 
     const startTime = Date.now();
 
-    // Get API key from auth file
-    const fsSync = require("node:fs");
-    let apiKey: string | undefined;
-    if (fsSync.existsSync(".auth/user.json")) {
-        const authData = JSON.parse(
-            fsSync.readFileSync(".auth/user.json", "utf8"),
-        );
-        apiKey = authData.develop?.profiles?.writer?.apiKey;
-    }
-
-    if (!apiKey) {
-        throw new Error(
-            "API key not found in .auth/user.json. Please ensure writer profile exists in develop environment.",
-        );
-    }
-
-    // Import authentication context functions
-    const { withAuth } = await import("@/lib/auth/server-context");
-    const { createApiKeyContext } = await import("@/lib/auth/context");
-
-    // Create authentication context
-    const authContext = createApiKeyContext(
-        apiKey,
-        "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
-        "writer@fictures.xyz",
-        ["stories:write", "images:write", "ai:use"],
-        { requestId: `test-${Date.now()}`, timestamp: Date.now() },
-    );
-
-    // Wrap generation logic in authentication context
-    return await withAuth(authContext, async () => {
+    return await runWithAuth(async () => {
         // Import generation services
         const { storyService } = await import(
             "@/lib/studio/services/story-service"
@@ -254,21 +300,7 @@ async function generateToonplay(
     const startTime = Date.now();
 
     try {
-        // Get API key from auth file
-        const fsSync = require("node:fs");
-        let apiKey: string | undefined;
-        if (fsSync.existsSync(".auth/user.json")) {
-            const authData = JSON.parse(
-                fsSync.readFileSync(".auth/user.json", "utf8"),
-            );
-            apiKey = authData.develop?.profiles?.writer?.apiKey;
-        }
-
-        if (!apiKey) {
-            throw new Error(
-                "API key not found in .auth/user.json. Please ensure writer profile exists in develop environment.",
-            );
-        }
+        const { apiKey } = await getApiCredentials();
 
         // Call toonplay API (text-only) to generate structured script
         const response = await fetch(
@@ -315,151 +347,157 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
     const evalStartTime = Date.now();
 
     try {
-        // Import database and schema
-        const { db } = await import("@/lib/db");
-        const { scenes, characters, settings, stories, chapters } = await import(
-            "@/lib/schemas/database"
-        );
-        const { eq } = await import("drizzle-orm");
+        return await runWithAuth(async () => {
+            const { db } = await import("@/lib/db");
+            const { scenes, characters, settings, stories, chapters } =
+                await import("@/lib/schemas/database");
+            const { eq } = await import("drizzle-orm");
 
-        // Get scene with toonplay
-        const scene = await db.query.scenes.findFirst({
-            where: eq(scenes.id, sceneId),
-        });
+            const scene = await db.query.scenes.findFirst({
+                where: eq(scenes.id, sceneId),
+            });
 
-        if (!scene?.comicToonplay) {
-            throw new Error("Toonplay not found for scene");
-        }
+            if (!scene?.comicToonplay) {
+                throw new Error("Toonplay not found for scene");
+            }
 
-        // Get chapter to find storyId
-        const chapter = await db.query.chapters.findFirst({
-            where: eq(chapters.id, scene.chapterId),
-        });
+            const chapter = await db.query.chapters.findFirst({
+                where: eq(chapters.id, scene.chapterId),
+            });
 
-        if (!chapter) {
-            throw new Error("Chapter not found for scene");
-        }
+            if (!chapter) {
+                throw new Error("Chapter not found for scene");
+            }
 
-        // Get related data for evaluation
-        const story = await db.query.stories.findFirst({
-            where: eq(stories.id, chapter.storyId),
-        });
+            const story = await db.query.stories.findFirst({
+                where: eq(stories.id, chapter.storyId),
+            });
 
-        if (!story) {
-            throw new Error("Story not found");
-        }
+            if (!story) {
+                throw new Error("Story not found");
+            }
 
-        const characterList = await db.query.characters.findMany({
-            where: eq(characters.storyId, chapter.storyId),
-        });
+            const characterList = await db.query.characters.findMany({
+                where: eq(characters.storyId, chapter.storyId),
+            });
 
-        const settingList = await db.query.settings.findMany({
-            where: eq(settings.storyId, chapter.storyId),
-        });
+            const settingList = await db.query.settings.findMany({
+                where: eq(settings.storyId, chapter.storyId),
+            });
 
-        const setting = settingList[0];
+            const setting = settingList[0];
 
-        if (!setting) {
-            throw new Error("Setting not found");
-        }
+            if (!setting) {
+                throw new Error("Setting not found");
+            }
 
-        // Import evaluator
-        const { evaluateToonplay } = await import(
-            "@/lib/studio/services/toonplay-evaluator"
-        );
+            const { evaluateToonplay } = await import(
+                "@/lib/studio/services/toonplay-evaluator"
+            );
 
-        // Evaluate toonplay
-        const evaluation = await evaluateToonplay({
-            toonplay: scene.comicToonplay as any, // Type assertion for toonplay data
-            sourceScene: scene,
-            characters: characterList,
-            setting,
-            storyGenre: story.genre || "Fantasy",
-            // Note: evaluationMode is not part of EvaluateToonplayOptions
-        });
+            const toonplayData = scene.comicToonplay as AiComicToonplayType;
 
-        const evaluationTime = Date.now() - evalStartTime;
+            const evaluation = await evaluateToonplay({
+                toonplay: toonplayData,
+                sourceScene: scene,
+                characters: characterList,
+                setting,
+                storyGenre: story.genre || "Fantasy",
+            });
 
-        console.log(
-            `    ✓ Evaluation complete in ${(evaluationTime / 1000).toFixed(1)}s`,
-        );
-        console.log(
-            `      Score: ${evaluation.weighted_score.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
-        );
+            const evaluationTime = Date.now() - evalStartTime;
 
-        // Convert evaluation result to test format (snake_case to camelCase)
-        const testEvaluation: ToonplayEvaluation = {
-            weightedScore: evaluation.weighted_score,
-            passes: evaluation.passes,
-            categoryScores: {
-                narrativeFidelity: (evaluation.category1_narrative_fidelity as any).score || 0,
-                visualTransformation: (evaluation.category2_visual_transformation as any).score || 0,
-                webtoonPacing: (evaluation.category3_webtoon_pacing as any).score || 0,
-                scriptFormatting: (evaluation.category4_script_formatting as any).score || 0,
-            },
-            metrics: {
-                narrationPercentage: (evaluation.metrics.panels_with_narration / evaluation.metrics.total_panels) * 100,
-                internalMonologuePercentage: 0, // Not available in current metrics
-                dialoguePresence: (evaluation.metrics.panels_with_dialogue / evaluation.metrics.total_panels) * 100,
-                shotTypeDistribution: evaluation.metrics.shot_type_distribution,
-                shotVariety: Object.keys(evaluation.metrics.shot_type_distribution).length,
-                textOverlayValidation: true, // Not available in current metrics
-                dialogueLengthCompliance: true, // Not available in current metrics
-                descriptionLengthCompliance: true, // Not available in current metrics
-                panelCount: evaluation.metrics.total_panels,
-                averageDescriptionLength: 0, // Not available in current metrics
-                averageDialoguePerPanel: evaluation.metrics.average_dialogue_length,
-                verticalFlowQuality: 0, // Not available in current metrics
-                panelPacingRhythm: 0, // Not available in current metrics
-            },
-            recommendations: [], // Not available in current evaluation result
-            finalReport: "", // Not available in current evaluation result
-        };
+            console.log(
+                `    ✓ Evaluation complete in ${(evaluationTime / 1000).toFixed(1)}s`,
+            );
+            console.log(
+                `      Score: ${evaluation.weighted_score.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
+            );
 
-        // Convert toonplay to test format
-        const testToonplay = scene.comicToonplay as any;
-        const convertedToonplay = {
-            sceneId: scene.id,
-            sceneTitle: testToonplay.scene_title || scene.title || "Untitled Scene",
-            totalPanels: testToonplay.total_panels || 0,
-            panels: (testToonplay.panels || []).map((p: any) => ({
-                panelNumber: p.panel_number || 0,
-                shotType: p.shot_type || "",
-                description: p.description || "",
-                charactersVisible: p.characters_visible || [],
-                dialogue: (p.dialogue || []).map((d: any) => ({
-                    characterId: d.character_id || "",
-                    text: d.text || "",
+            const testEvaluation: ToonplayEvaluation = {
+                weightedScore: evaluation.weighted_score,
+                passes: evaluation.passes,
+                categoryScores: {
+                    narrativeFidelity:
+                        evaluation.category1_narrative_fidelity.score,
+                    visualTransformation:
+                        evaluation.category2_visual_transformation.score,
+                    webtoonPacing: evaluation.category3_webtoon_pacing.score,
+                    scriptFormatting:
+                        evaluation.category4_script_formatting.score,
+                },
+                metrics: {
+                    narrationPercentage:
+                        (evaluation.metrics.panels_with_narration /
+                            evaluation.metrics.total_panels) *
+                        100,
+                    internalMonologuePercentage: 0,
+                    dialoguePresence:
+                        (evaluation.metrics.panels_with_dialogue /
+                            evaluation.metrics.total_panels) *
+                        100,
+                    shotTypeDistribution: evaluation.metrics.shot_type_distribution,
+                    shotVariety: Object.keys(
+                        evaluation.metrics.shot_type_distribution,
+                    ).length,
+                    textOverlayValidation: true,
+                    dialogueLengthCompliance: true,
+                    descriptionLengthCompliance: true,
+                    panelCount: evaluation.metrics.total_panels,
+                    averageDescriptionLength: 0,
+                    averageDialoguePerPanel:
+                        evaluation.metrics.average_dialogue_length,
+                    verticalFlowQuality: 0,
+                    panelPacingRhythm: 0,
+                },
+                recommendations: [],
+                finalReport: "",
+            };
+
+            const testToonplay = toonplayData;
+            const convertedToonplay = {
+                sceneId: scene.id,
+                sceneTitle:
+                    testToonplay.scene_title || scene.title || "Untitled Scene",
+                totalPanels: testToonplay.total_panels || 0,
+                panels: (testToonplay.panels ?? []).map((p) => ({
+                    panelNumber: p.panel_number || 0,
+                    shotType: p.shot_type || "",
+                    description: p.description || "",
+                    charactersVisible: p.characters_visible || [],
+                    dialogue: (p.dialogue ?? []).map((d) => ({
+                        characterId: d.character_id || "",
+                        text: d.text || "",
+                    })),
+                    narrative: p.narrative || undefined,
+                    sfx: (p.sfx ?? []).map((s) => ({
+                        text: s.text || "",
+                        emphasis: s.emphasis || "",
+                    })),
                 })),
-                narrative: p.narrative || undefined,
-                sfx: (p.sfx || []).map((s: any) => ({
-                    text: s.text || "",
-                    emphasis: s.emphasis || "",
-                })),
-            })),
-            narrativeArc: testToonplay.narrative_arc || "",
-        };
+                narrativeArc: testToonplay.narrative_arc || "",
+            };
 
-        // Create test result
-        const testResult: ToonplayTestResult = {
-            testId: `test-${Date.now()}`,
-            sceneId: scene.id,
-            sceneName: scene.title || "Untitled Scene",
-            promptVersion: PROMPT_VERSION,
-            timestamp: new Date().toISOString(),
-            toonplay: convertedToonplay,
-            evaluation: testEvaluation,
-            metadata: {
-                generationTime: 0, // Will be filled by caller
-                evaluationTime,
-                totalTime: 0, // Will be filled by caller
-                iterations: 0, // Will be filled by caller
-                model: "gemini-2.0-flash-exp",
-                provider: "google",
-            },
-        };
+            const testResult: ToonplayTestResult = {
+                testId: `test-${Date.now()}`,
+                sceneId: scene.id,
+                sceneName: scene.title || "Untitled Scene",
+                promptVersion: PROMPT_VERSION,
+                timestamp: new Date().toISOString(),
+                toonplay: convertedToonplay,
+                evaluation: testEvaluation,
+                metadata: {
+                    generationTime: 0,
+                    evaluationTime,
+                    totalTime: 0,
+                    iterations: 0,
+                    model: "gemini-2.0-flash-exp",
+                    provider: "google",
+                },
+            };
 
-        return testResult;
+            return testResult;
+        });
     } catch (error) {
         console.error(`    ✗ Evaluation failed:`, error);
         throw error;
