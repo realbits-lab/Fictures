@@ -270,9 +270,9 @@ async function generateToonplay(
             );
         }
 
-        // Call comic generation API (new endpoint with dual auth)
+        // Call toonplay API (text-only) to generate structured script
         const response = await fetch(
-            `http://localhost:3000/api/studio/scenes/${sceneId}/comic/generate`,
+            `http://localhost:3000/api/studio/toonplay`,
             {
                 method: "POST",
                 headers: {
@@ -280,8 +280,8 @@ async function generateToonplay(
                     "x-api-key": apiKey,
                 },
                 body: JSON.stringify({
-                    targetPanelCount: 10,
-                    regenerate: true,
+                    sceneId,
+                    evaluationMode: EVALUATION_MODE,
                 }),
             },
         );
