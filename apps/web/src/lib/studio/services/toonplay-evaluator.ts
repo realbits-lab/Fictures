@@ -77,6 +77,8 @@ export type ToonplayEvaluation = z.infer<typeof ToonplayEvaluationSchema>;
 export interface ToonplayEvaluationResult extends ToonplayEvaluation {
     weighted_score: number;
     passes: boolean;
+    structural_pass: boolean;
+    quality_gate_issues: string[];
     metrics: {
         total_panels: number;
         panels_with_narration: number;
@@ -84,6 +86,10 @@ export interface ToonplayEvaluationResult extends ToonplayEvaluation {
         panels_with_neither: number;
         shot_type_distribution: Record<string, number>;
         average_dialogue_length: number;
+        narration_percentage: number;
+        dialogue_percentage: number;
+        shot_variety: number;
+        special_shot_count: number;
     };
 }
 
@@ -133,11 +139,64 @@ export async function evaluateToonplay(
         },
     );
 
-    const evaluation = result as any;
+    const evaluation = result as ToonplayEvaluation;
 
     // Calculate weighted score
     const weightedScore = calculateWeightedScore(evaluation);
-    const passes = weightedScore >= 3.0;
+
+    const narrationPercentage = metrics.narration_percentage;
+    const dialoguePercentage = metrics.dialogue_percentage;
+    const shotVariety = metrics.shot_variety;
+    const establishingShots =
+        metrics.shot_type_distribution.establishing_shot || 0;
+    const specialShotCount = metrics.special_shot_count;
+
+    const qualityGateIssues: string[] = [];
+
+    if (narrationPercentage > 5) {
+        qualityGateIssues.push(
+            `Reduce narration to under 5% of panels (current: ${narrationPercentage.toFixed(1)}%).`,
+        );
+    }
+
+    if (dialoguePercentage < 60) {
+        qualityGateIssues.push(
+            `Increase dialogue coverage to at least 60% of panels (current: ${dialoguePercentage.toFixed(1)}%).`,
+        );
+    }
+
+    if (establishingShots < 1) {
+        qualityGateIssues.push("Panel 1 must be an establishing_shot that sets location and tone.");
+    }
+
+    if (shotVariety < 5) {
+        qualityGateIssues.push(
+            `Use at least 5 distinct shot types (currently ${shotVariety}). Add extreme_close_up, dutch_angle, or over_shoulder shots.`,
+        );
+    }
+
+    if (specialShotCount < 1) {
+        qualityGateIssues.push(
+            "Include at least one special shot: extreme_close_up, over_shoulder, or dutch_angle.",
+        );
+    }
+
+    if (metrics.panels_with_neither > 0) {
+        qualityGateIssues.push(
+            `Every panel must include dialogue or narration (panels without text: ${metrics.panels_with_neither}).`,
+        );
+    }
+
+    const structuralPass = qualityGateIssues.length === 0;
+    const passes = weightedScore >= 3.0 && structuralPass;
+
+    if (!Array.isArray(evaluation.improvement_suggestions)) {
+        evaluation.improvement_suggestions = [];
+    }
+
+    if (qualityGateIssues.length > 0) {
+        evaluation.improvement_suggestions.push(...qualityGateIssues);
+    }
 
     console.log(`   ✅ Evaluation complete`);
     console.log(`   Weighted Score: ${weightedScore.toFixed(2)}/5.0`);
@@ -162,6 +221,8 @@ export async function evaluateToonplay(
         ...evaluation,
         weighted_score: weightedScore,
         passes,
+        structural_pass: structuralPass,
+        quality_gate_issues: qualityGateIssues,
         metrics,
     };
 }
@@ -208,6 +269,16 @@ function calculateToonplayMetrics(toonplay: AiComicToonplayType) {
     const averageDialogueLength =
         dialogueCount > 0 ? totalDialogueLength / dialogueCount : 0;
 
+    const narrationPercentage =
+        totalPanels > 0 ? (panelsWithNarration / totalPanels) * 100 : 0;
+    const dialoguePercentage =
+        totalPanels > 0 ? (panelsWithDialogue / totalPanels) * 100 : 0;
+    const shotVariety = Object.keys(shotTypeDistribution).length;
+    const specialShotCount =
+        (shotTypeDistribution.extreme_close_up || 0) +
+        (shotTypeDistribution.over_shoulder || 0) +
+        (shotTypeDistribution.dutch_angle || 0);
+
     return {
         total_panels: totalPanels,
         panels_with_narration: panelsWithNarration,
@@ -215,6 +286,10 @@ function calculateToonplayMetrics(toonplay: AiComicToonplayType) {
         panels_with_neither: panelsWithNeither,
         shot_type_distribution: shotTypeDistribution,
         average_dialogue_length: averageDialogueLength,
+        narration_percentage: narrationPercentage,
+        dialogue_percentage: dialoguePercentage,
+        shot_variety: shotVariety,
+        special_shot_count: specialShotCount,
     };
 }
 
@@ -389,15 +464,20 @@ CATEGORY SCORES
     ${result.category4_script_formatting.reasoning}
 
 ───────────────────────────────────────────────────────────────
+QUALITY GATES
+───────────────────────────────────────────────────────────────
+${result.quality_gate_issues.length === 0 ? "✅ All structural gates satisfied." : result.quality_gate_issues.map((issue) => `❌ ${issue}`).join("\n")}
+
+───────────────────────────────────────────────────────────────
 METRICS
 ───────────────────────────────────────────────────────────────
 
 Total Panels: ${result.metrics.total_panels}
-Panels with Narration: ${result.metrics.panels_with_narration} (${result.narration_percentage.toFixed(1)}%)
+Panels with Narration: ${result.metrics.panels_with_narration} (${result.metrics.narration_percentage.toFixed(1)}%)
   Target: <5% of panels
-  Status: ${result.narration_percentage < 5 ? "✅ Within target" : "⚠️  Exceeds target"}
+  Status: ${result.metrics.narration_percentage < 5 ? "✅ Within target" : "⚠️  Exceeds target"}
 
-Panels with Dialogue: ${result.metrics.panels_with_dialogue}
+Panels with Dialogue: ${result.metrics.panels_with_dialogue} (${result.metrics.dialogue_percentage.toFixed(1)}%)
 Panels with NEITHER: ${result.metrics.panels_with_neither}
   Status: ${result.metrics.panels_with_neither === 0 ? "✅ All panels have text" : "❌ CRITICAL: Some panels lack text"}
 
@@ -411,6 +491,8 @@ Shot Type Distribution:
 ${Object.entries(result.metrics.shot_type_distribution)
     .map(([type, count]) => `  - ${type}: ${count}`)
     .join("\n")}
+Shot Variety: ${result.metrics.shot_variety}
+Special Shots (extreme_close_up / over_shoulder / dutch_angle): ${result.metrics.special_shot_count}
 
 ───────────────────────────────────────────────────────────────
 IMPROVEMENT SUGGESTIONS

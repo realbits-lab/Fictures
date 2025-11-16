@@ -1058,6 +1058,8 @@ A toonplay is a structured comic script that specifies visual grammar for each p
 - **Visual Action**: ~30% (shown in panels, not told)
 - **Narration**: <5% (time/location markers only, 0-1 panels with narration)
 - **Internal Monologue**: <10% (strategic use at pivotal moments, 1-2 panels max)
+- If you absolutely need narration, keep it under 12 words and still include at least one dialogue balloon in the same panel.
+- Panels without dialogue are forbidden unless explicitly noted as cinematic; even then, add SFX.
 
 ## 4. Text Overlay Requirement
 - Every panel MUST have either dialogue OR narrative text
@@ -1093,6 +1095,8 @@ Each panel must specify ALL of the following:
 10. **dialogue**: Array of {character_id, text (max 150 chars), tone}
 11. **sfx**: Sound effects as visual text (e.g., [{text: "BOOM", emphasis: "dramatic"}])
 12. **mood**: Overall emotional tone (tense, hopeful, melancholic, etc.)
+- Panel 1 MUST be an \`establishing_shot\` that sets location, lighting, and weather while including a short line of dialogue (e.g., greeting, observation, or narration caption).
+- At least one panel between 6-10 MUST use a special shot (\`extreme_close_up\`, \`over_shoulder\`, or \`dutch_angle\`) to highlight emotion or tension.
 
 # CHARACTER CONSISTENCY
 

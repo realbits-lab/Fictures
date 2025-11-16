@@ -11,8 +11,6 @@
  * 4. Return best version with evaluation report
  */
 
-import { gateway } from "@ai-sdk/gateway";
-import { generateObject } from "ai";
 import type { characters, scenes, settings } from "@/lib/schemas/database";
 
 // Type aliases
@@ -23,11 +21,13 @@ type StorySetting = typeof settings.$inferSelect;
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import { AiComicToonplayZodSchema } from "@/lib/schemas/ai/ai-toonplay";
 import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
+import { createTextGenerationClient } from "@/lib/studio/generators/ai-client";
 import {
     evaluateToonplay,
     formatEvaluationReport,
     type ToonplayEvaluationResult,
 } from "./toonplay-evaluator";
+import type { GeneratorToonplayParams } from "@/lib/schemas/generators/types";
 
 // ============================================
 // TYPES
@@ -112,16 +112,24 @@ export async function generateToonplayWithEvaluation(
         settingId: setting.id,
         targetPanelCount,
     });
-    const generatorResult = await convertSceneToToonplay({
-        scene: scene as any,
-        story: {
-            id: "temp",
-            genre: safeStoryGenre,
-            tone: "",
-        } as any,
-        characters: characters as any,
-        settings: [setting] as any,
-    });
+    const generatorStory = {
+        id: "temp",
+        genre: safeStoryGenre,
+        tone: "hopeful",
+        title: scene.title,
+        summary: scene.summary || "",
+        moralFramework:
+            "Courage and compassion guide the transformation of this story.",
+    } as unknown as GeneratorToonplayParams["story"];
+
+    const generatorParams: GeneratorToonplayParams = {
+        scene: scene as unknown as GeneratorToonplayParams["scene"],
+        story: generatorStory,
+        characters: characters as unknown as GeneratorToonplayParams["characters"],
+        settings: [setting] as unknown as GeneratorToonplayParams["settings"],
+    };
+
+    const generatorResult = await convertSceneToToonplay(generatorParams);
 
     currentToonplay = generatorResult.toonplay;
 
@@ -183,10 +191,16 @@ export async function generateToonplayWithEvaluation(
             `   ─────────────────────────────────────────────────────────────\n`,
         );
 
+        if (!currentToonplay || !currentEvaluation) {
+            throw new Error(
+                "Current toonplay or evaluation missing before improvement iteration",
+            );
+        }
+
         // Generate improved toonplay based on evaluation feedback
         const improvedToonplay = await improveToonplay({
-            currentToonplay: currentToonplay!,
-            evaluation: currentEvaluation!,
+            currentToonplay,
+            evaluation: currentEvaluation,
             scene,
             characters,
             setting,
@@ -268,11 +282,15 @@ export async function generateToonplayWithEvaluation(
         `   ═══════════════════════════════════════════════════════════\n`,
     );
 
-    const finalReport = formatEvaluationReport(bestEvaluation!);
+    if (!bestToonplay || !bestEvaluation) {
+        throw new Error("Toonplay generation failed - no best result available");
+    }
+
+    const finalReport = formatEvaluationReport(bestEvaluation);
 
     return {
-        toonplay: bestToonplay!,
-        evaluation: bestEvaluation!,
+        toonplay: bestToonplay,
+        evaluation: bestEvaluation,
         iterations: improvementHistory.length - 1,
         improvement_history: improvementHistory,
         final_report: finalReport,
@@ -316,7 +334,17 @@ async function improveToonplay(
         .join("\n");
 
     // Build improvement prompt based on evaluation feedback
-    const improvementPrompt = `You are an expert comic storyboard artist. IMPROVE this toonplay based on the evaluation feedback.
+    const improvementSystemPrompt = `You are an expert comic storyboard artist who specializes in repairing webtoon toonplays.
+
+REQUIREMENTS:
+- Obey all structural rules (dialogue ≥ 70%, narration < 5%, internal monologue < 10%, no silent panels)
+- Panel 1 must be an establishing shot with a short dialogue/narration line
+- Include at least one special shot (extreme_close_up, over_shoulder, or dutch_angle) in panels 6-10
+- Preserve character voices and story canon
+- Never invent new characters or settings beyond the provided context
+- Return only JSON matching AiComicToonplay schema (no commentary)`;
+
+    const improvementPrompt = `IMPROVE the toonplay below based on the evaluation feedback.
 
 SCENE INFORMATION:
 Title: ${sceneTitle}
@@ -358,9 +386,12 @@ SPECIFIC IMPROVEMENT SUGGESTIONS:
 ${evaluation.improvement_suggestions.map((s, i) => `${i + 1}. ${s}`).join("\n")}
 
 METRICS TO IMPROVE:
-- Narration percentage: ${evaluation.narration_percentage.toFixed(1)}% (TARGET: <5%)
+- Narration percentage: ${evaluation.metrics.narration_percentage.toFixed(1)}% (TARGET: <5%)
 - Dialogue/Visual balance: ${evaluation.dialogue_to_visual_ratio}
 - Panels without text: ${evaluation.metrics.panels_with_neither} (MUST BE 0)
+
+QUALITY GATE ISSUES:
+${evaluation.quality_gate_issues && evaluation.quality_gate_issues.length > 0 ? evaluation.quality_gate_issues.map((issue, index) => `${index + 1}. ${issue}`).join("\n") : "None detected. Maintain compliance with all structural rules."}
 
 IMPROVEMENT INSTRUCTIONS:
 1. Address ALL weaknesses identified in the evaluation
@@ -391,12 +422,16 @@ Return the IMPROVED toonplay as a valid JSON object matching the ComicToonplay s
 
     console.log(`   Sending improvement request to AI...`);
 
-    const result = await generateObject({
-        model: gateway("google/gemini-2.5-flash-lite"),
-        schema: AiComicToonplayZodSchema,
-        prompt: improvementPrompt,
-        temperature: 0.7,
-    });
+    const textClient = createTextGenerationClient();
+    const improvedToonplay = (await textClient.generateStructured(
+        improvementPrompt,
+        AiComicToonplayZodSchema,
+        {
+            systemPrompt: improvementSystemPrompt,
+            temperature: 0.6,
+            maxTokens: 16384,
+        },
+    )) as AiComicToonplayType;
 
-    return result.object;
+    return improvedToonplay;
 }
