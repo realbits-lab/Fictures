@@ -154,25 +154,45 @@ async function generateComicPanels(
 
         const result = await response.json();
 
-        if (!result.success || !result.panels) {
-            throw new Error("Comic generation returned invalid result");
+        const apiPanels = result?.result?.panels || [];
+        if (!result.success || apiPanels.length === 0) {
+            throw new Error(
+                `Comic generation returned invalid result: ${JSON.stringify(result)}`,
+            );
         }
 
-        const totalTime = Date.now() - startTime;
-        const panelGenerationTime = totalTime / (result.panels?.length || 1);
+        const metadata = result.result?.metadata || {};
+        const totalTime = metadata.generationTime ?? Date.now() - startTime;
+        const panelGenerationTime =
+            metadata.panelGenerationTime ??
+            totalTime / (apiPanels.length || 1);
 
-        // Extract panel data
-        const panels = (result.panels || []).map((panel: any) => ({
-            panelNumber: panel.panelNumber || 0,
-            imageUrl: panel.imageUrl || "",
+        const panels = apiPanels.map((panel: any) => ({
+            panelNumber: panel.panelNumber || panel.panel_number || 0,
+            imageUrl: panel.imageUrl || panel.image_url || "",
             imageVariants: {
-                avif1x: panel.imageVariants?.avif1x?.url || "",
-                avif2x: panel.imageVariants?.avif2x?.url || "",
+                avif1x:
+                    panel.imageVariants?.avif1x?.url ||
+                    panel.imageVariants?.avif1x ||
+                    "",
+                avif2x:
+                    panel.imageVariants?.avif2x?.url ||
+                    panel.imageVariants?.avif2x ||
+                    "",
             },
             metadata: {
-                width: panel.metadata?.width || 1344,
-                height: panel.metadata?.height || 768,
-                aspectRatio: panel.metadata?.aspectRatio || "7:4",
+                width:
+                    panel.metadata?.width ||
+                    panel.metadata?.dimensions?.width ||
+                    928,
+                height:
+                    panel.metadata?.height ||
+                    panel.metadata?.dimensions?.height ||
+                    1664,
+                aspectRatio:
+                    panel.metadata?.aspectRatio ||
+                    panel.metadata?.aspect_ratio ||
+                    "9:16",
             },
         }));
 
@@ -185,8 +205,8 @@ async function generateComicPanels(
             generationTime: totalTime / 1000,
             panelGenerationTime: panelGenerationTime / 1000,
             totalTime: totalTime / 1000,
-            provider: result.metadata?.provider || "unknown",
-            model: result.metadata?.model || "unknown",
+            provider: metadata.provider || "unknown",
+            model: metadata.model || "unknown",
         };
     } catch (error) {
         console.error(`    ✗ Generation failed:`, error);

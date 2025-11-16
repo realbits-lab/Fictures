@@ -25,10 +25,6 @@ import {
     stories,
     users,
 } from "@/lib/schemas/database";
-import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
-import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
-import { withAuth } from "@/lib/auth/server-context";
-import type { AuthContext } from "@/lib/auth/context";
 
 // ============================================================================
 // Test Configuration
@@ -36,10 +32,85 @@ import type { AuthContext } from "@/lib/auth/context";
 
 const AUTH_FILE_PATH: string = path.resolve(__dirname, "../../.auth/user.json");
 const COMICS_TEST_PREFIX = "[comics.test.ts]";
+const API_BASE_URL = "http://localhost:3000";
+const TARGET_PANEL_COUNT = 3;
+
+const getComicGenerationEndpoint = (sceneId: string): string =>
+    `${API_BASE_URL}/api/studio/scenes/${sceneId}/comic/generate`;
 
 function logComicsTest(testCase: string, message: string): void {
     console.log(`${COMICS_TEST_PREFIX}[${testCase}] ${message}`);
 }
+
+const preview = (value: string | undefined | null, max = 120): string => {
+    if (!value) {
+        return "";
+    }
+    if (value.length <= max) {
+        return value;
+    }
+    return `${value.slice(0, max)}…(+${value.length - max} chars)`;
+};
+
+interface ComicPanelMetadata {
+    width?: number;
+    height?: number;
+    aspectRatio?: string | number;
+    model?: string;
+    provider?: string;
+}
+
+interface ComicPanelPayload {
+    id: string;
+    panelNumber: number;
+    shotType: string;
+    imageUrl: string;
+    imageVariants?: Record<string, unknown> | null;
+    description?: string | null;
+    narrative?: string | null;
+    dialogue?: unknown;
+    sfx?: unknown;
+    metadata?: ComicPanelMetadata | null;
+}
+
+interface ComicGenerationApiResponse {
+    success: boolean;
+    message?: string;
+    scene: {
+        id: string;
+        title?: string | null;
+        comicStatus?: string | null;
+        comicPanelCount?: number | null;
+    };
+    result: {
+        toonplay: {
+            total_panels: number;
+            panels: Array<{
+                panel_number: number;
+                shot_type: string;
+                description: string;
+            }>;
+        };
+        panels: ComicPanelPayload[];
+        evaluation: unknown;
+        metadata: {
+            generationTime: number;
+            toonplayTime: number;
+            panelGenerationTime: number;
+            totalPanels: number;
+            model?: string;
+            provider?: string;
+            aspectRatio?: string;
+        };
+    };
+}
+
+type ComicPanelTestContext = {
+    apiResponse: ComicGenerationApiResponse;
+    panels: ComicPanelPayload[];
+};
+
+let cachedComicGeneration: ComicPanelTestContext | null = null;
 
 interface AuthData {
     develop: {
@@ -68,10 +139,15 @@ let testSceneId: string;
 // ============================================================================
 
 beforeAll(async () => {
+    logComicsTest("setup", `Loading auth file from ${AUTH_FILE_PATH}`);
     // Load authentication from .auth/user.json
     const authFileContent: string = fs.readFileSync(AUTH_FILE_PATH, "utf-8");
     authData = JSON.parse(authFileContent) as AuthData;
     writerApiKey = authData.develop.profiles.writer.apiKey;
+    logComicsTest(
+        "setup",
+        `Loaded writer profile for ${authData.develop.profiles.writer.email}`,
+    );
 
     // Get writer user ID from database
     const writerEmail: string = authData.develop.profiles.writer.email;
@@ -84,6 +160,7 @@ beforeAll(async () => {
     }
 
     writerUserId = writerUser.id;
+    logComicsTest("setup", `Resolved writer userId=${writerUserId}`);
 
     // Generate unique IDs for test data
     testStoryId = `story_test_comics_${Date.now()}`;
@@ -92,6 +169,10 @@ beforeAll(async () => {
     testCharacterId = `char_test_comics_${Date.now()}`;
     testSettingId = `setting_test_comics_${Date.now()}`;
     testSceneId = `scene_test_comics_${Date.now()}`;
+    logComicsTest(
+        "setup",
+        `Generated IDs story=${testStoryId} scene=${testSceneId} character=${testCharacterId}`,
+    );
 
     // Create test story with moral framework
     await db
@@ -119,6 +200,7 @@ beforeAll(async () => {
             },
         })
         .onConflictDoNothing();
+    logComicsTest("setup", "Inserted test story");
 
     // Create test character with all required fields
     await db
@@ -154,6 +236,7 @@ beforeAll(async () => {
             },
         })
         .onConflictDoNothing();
+    logComicsTest("setup", "Inserted test character");
 
     // Create test setting
     await db
@@ -196,6 +279,7 @@ beforeAll(async () => {
             colorPalette: ["stone gray", "golden light"],
         })
         .onConflictDoNothing();
+    logComicsTest("setup", "Inserted test setting");
 
     // Create test part
     await db
@@ -209,6 +293,7 @@ beforeAll(async () => {
             orderIndex: 0,
         })
         .onConflictDoNothing();
+    logComicsTest("setup", "Inserted test part");
 
     // Create test chapter
     await db
@@ -230,6 +315,7 @@ beforeAll(async () => {
             orderIndex: 0,
         })
         .onConflictDoNothing();
+    logComicsTest("setup", "Inserted test chapter");
 
     // Create test scene
     await db
@@ -262,6 +348,7 @@ beforeAll(async () => {
 // ============================================================================
 
 afterAll(async () => {
+    logComicsTest("cleanup", "Starting teardown of comic panel fixtures");
     // Clean up test data in reverse order of dependencies
     await db.delete(comicPanels).where(eq(comicPanels.sceneId, testSceneId));
     await db.delete(scenes).where(eq(scenes.id, testSceneId));
@@ -278,159 +365,106 @@ afterAll(async () => {
 // Helper Functions
 // ============================================================================
 
-/**
- * Create a mock toonplay for testing image generation
- */
-function createMockToonplay(): AiComicToonplayType {
-    return {
-        scene_id: testSceneId,
-        scene_title: "The Discovery",
-        total_panels: 3,
-        narrative_arc: "Hero discovers ancient power and makes a pivotal choice",
-        panels: [
-            {
-                panel_number: 1,
-                shot_type: "establishing_shot",
-                description:
-                    "Wide shot of an ancient temple interior. Stone pillars rise to a vaulted ceiling. Dim torchlight casts long shadows across weathered carvings. The Hero stands center frame, torch held high, silhouetted against the ancient architecture.",
-                characters_visible: [testCharacterId],
-                character_poses: {
-                    [testCharacterId]: "Standing confidently, torch raised",
-                },
-                setting_focus: "Ancient temple architecture with intricate carvings",
-                lighting: "Dim torchlight creating dramatic shadows",
-                camera_angle: "Eye level, slightly low angle for grandeur",
-                narrative: undefined,
-                dialogue: [
-                    {
-                        character_id: testCharacterId,
-                        text: "This place... it's older than I thought.",
-                    },
-                ],
-                sfx: [],
-                mood: "mysterious",
-            },
-            {
-                panel_number: 2,
-                shot_type: "medium_shot",
-                description:
-                    "Medium shot of the Hero approaching an altar. Golden light filters through a crack in the ceiling, illuminating an ancient inscription. The Hero's hand reaches toward the glowing surface, fingers trembling slightly.",
-                characters_visible: [testCharacterId],
-                character_poses: {
-                    [testCharacterId]: "Reaching forward with reverence",
-                },
-                setting_focus: "Altar with glowing inscription",
-                lighting: "Golden ethereal light from above",
-                camera_angle: "Eye level, following the Hero's perspective",
-                narrative: undefined,
-                dialogue: [
-                    {
-                        character_id: testCharacterId,
-                        text: "The prophecy...",
-                    },
-                ],
-                sfx: [],
-                mood: "reverent",
-            },
-            {
-                panel_number: 3,
-                shot_type: "close_up",
-                description:
-                    "Close-up of the Hero's hand pressing against the warm stone. Light explodes outward from the point of contact, engulfing everything in brilliant radiance. The temple awakens with magical energy.",
-                characters_visible: [testCharacterId],
-                character_poses: {
-                    [testCharacterId]: "Hand pressed against stone, body tensed",
-                },
-                setting_focus: "Explosion of light and magical energy",
-                lighting: "Brilliant white radiance",
-                camera_angle: "Extreme close-up on hand and light",
-                narrative: undefined,
-                dialogue: [
-                    {
-                        character_id: testCharacterId,
-                        text: "For my kingdom!",
-                    },
-                ],
-                sfx: [
-                    {
-                        text: "SHIMMER",
-                        emphasis: "dramatic",
-                    },
-                ],
-                mood: "triumphant",
-            },
-        ],
-    };
+function getPanelMetadata(panel: ComicPanelPayload): ComicPanelMetadata {
+    return (panel.metadata || {}) as ComicPanelMetadata;
 }
 
-/**
- * Generate comic panel images from toonplay
- */
-async function generatePanelImages(
-    toonplay: AiComicToonplayType,
-): Promise<Awaited<ReturnType<typeof generateComicPanels>>> {
-    // Fetch scene data
-    const scene = await db.query.scenes.findFirst({
-        where: eq(scenes.id, toonplay.scene_id),
-        with: {
-            chapter: {
-                with: {
-                    story: true,
-                },
-            },
-        },
-    });
+async function generateComicPanelsViaApi(
+    options: { forceRegenerate?: boolean } = {},
+): Promise<ComicPanelTestContext> {
+    const { forceRegenerate = false } = options;
 
-    if (!scene || !scene.chapter) {
-        throw new Error(`Scene not found: ${toonplay.scene_id}`);
-    }
-
-    // Fetch characters and settings
-    const storyCharacters = await db.query.characters.findMany({
-        where: eq(characters.storyId, scene.chapter.story.id),
-    });
-
-    const storySettings = await db.query.settings.findMany({
-        where: eq(settings.storyId, scene.chapter.story.id),
-    });
-
-    // Create authentication context for the service call
-    const authContext: AuthContext = {
-        type: "api-key",
-        userId: writerUserId,
-        email: authData.develop.profiles.writer.email,
-        apiKey: writerApiKey,
-        scopes: ["stories:write", "images:write"],
-        metadata: {
-            requestId: `test_${Date.now()}`,
-            timestamp: Date.now(),
-        },
-    };
-
-    // Generate panel images within auth context
-    logComicsTest(
-        "generate-panels",
-        `Invoking generateComicPanels for scene=${scene.id} toonplayPanels=${toonplay.total_panels}`,
-    );
-
-    return await withAuth(authContext, async () => {
-        const result = await generateComicPanels({
-            toonplay,
-            storyId: scene.chapter.story.id,
-            chapterId: scene.chapter.id,
-            sceneId: scene.id,
-            characters: storyCharacters as any,
-            settings: storySettings as any,
-            storyGenre: scene.chapter.story.genre || "drama",
-        });
-
+    if (cachedComicGeneration && !forceRegenerate) {
         logComicsTest(
             "generate-panels",
-            `Generation complete in ${result.metadata.generationTime}ms with model=${result.metadata.model}`,
+            "Using cached comic generation result from previous test",
         );
+        return cachedComicGeneration;
+    }
 
-        return result;
+    const url = getComicGenerationEndpoint(testSceneId);
+    logComicsTest(
+        "generate-panels",
+        `Calling API ${url} (targetPanels=${TARGET_PANEL_COUNT}, regenerate=true)`,
+    );
+
+    const requestPayload = {
+        targetPanelCount: TARGET_PANEL_COUNT,
+        regenerate: true,
+    };
+    logComicsTest(
+        "generate-panels",
+        `Request headers: ${JSON.stringify({
+            "Content-Type": "application/json",
+            "x-api-key": preview(writerApiKey, 8),
+        })}`,
+    );
+    logComicsTest(
+        "generate-panels",
+        `Request body: ${JSON.stringify(requestPayload)}`,
+    );
+
+    const startTime = Date.now();
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": writerApiKey,
+        },
+        body: JSON.stringify(requestPayload),
     });
+    const duration = Date.now() - startTime;
+    logComicsTest(
+        "generate-panels",
+        `API response received status=${response.status} ok=${response.ok} in ${duration}ms`,
+    );
+    const responseText = await response.text();
+    let payload: ComicGenerationApiResponse;
+
+    try {
+        payload = JSON.parse(responseText) as ComicGenerationApiResponse;
+    } catch (error) {
+        throw new Error(
+            `Failed to parse comic generation response: ${(error as Error).message}\n${responseText}`,
+        );
+    }
+
+    if (!response.ok || !payload.success) {
+        logComicsTest(
+            "generate-panels",
+            `API error payload: ${preview(responseText, 400)}`,
+        );
+        throw new Error(
+            `Comic generation API failed (${response.status}): ${responseText}`,
+        );
+    }
+
+    if (!payload.result?.panels?.length) {
+        throw new Error("Comic generation API returned no panels");
+    }
+
+    cachedComicGeneration = {
+        apiResponse: payload,
+        panels: payload.result.panels,
+    };
+
+    logComicsTest(
+        "generate-panels",
+        `Generation complete: panels=${payload.result.panels.length} time=${payload.result.metadata.generationTime}ms model=${payload.result.metadata.model}`,
+    );
+    logComicsTest(
+        "generate-panels",
+        `Scene comicStatus=${payload.scene.comicStatus} totalPanels=${payload.result.metadata.totalPanels}`,
+    );
+    payload.result.panels.forEach((panel) => {
+        const meta = getPanelMetadata(panel);
+        logComicsTest(
+            "generate-panels",
+            `Panel ${panel.panelNumber} shot=${panel.shotType} aspect=${meta.aspectRatio} url=${preview(panel.imageUrl, 80)}`,
+        );
+    });
+
+    return cachedComicGeneration;
 }
 
 // ============================================================================
@@ -439,121 +473,133 @@ async function generatePanelImages(
 
 describe("Comic Panel Image Generation Integration", () => {
     it("should generate images for all panels in toonplay", async () => {
-        logComicsTest("panel-count", "Generating comic panels for toonplay spec");
-        // Arrange
-        const toonplay = createMockToonplay();
+        logComicsTest("panel-count", "Generating comic panels via API");
 
-        // Act
-        const result = await generatePanelImages(toonplay);
+        const { apiResponse, panels } = await generateComicPanelsViaApi({
+            forceRegenerate: true,
+        });
 
-        result.panels.forEach((panel) =>
+        panels.forEach((panel) => {
+            const meta = getPanelMetadata(panel);
             logComicsTest(
                 "panel-count",
-                `Panel ${panel.panel_number} imageUrl=${panel.imageUrl}`,
-            ),
-        );
+                `Panel ${panel.panelNumber} imageUrl=${preview(panel.imageUrl, 80)} model=${meta.model} provider=${meta.provider} size=${meta.width}x${meta.height}`,
+            );
+        });
 
-        // Assert - Basic properties
-        expect(result.panels).toBeDefined();
-        expect(Array.isArray(result.panels)).toBe(true);
-        expect(result.panels.length).toBe(toonplay.total_panels);
+        expect(Array.isArray(panels)).toBe(true);
+        expect(panels.length).toBe(TARGET_PANEL_COUNT);
+        expect(apiResponse.scene.comicPanelCount).toBe(panels.length);
 
-        // Assert - Each panel has an image
-        for (const panel of result.panels) {
-            expect(panel.imageUrl).toBeDefined();
-            expect(panel.imageUrl).toMatch(/^https?:\/\//); // Valid URL
-            expect(panel.width).toBeGreaterThan(0);
-            expect(panel.height).toBeGreaterThan(0);
-            expect(panel.model).toBeDefined();
-            expect(panel.provider).toBeDefined();
+        for (const panel of panels) {
+            const meta = getPanelMetadata(panel);
+            expect(panel.imageUrl).toMatch(/^https?:\/\//);
+            expect(meta.width ?? 0).toBeGreaterThan(0);
+            expect(meta.height ?? 0).toBeGreaterThan(0);
+            expect(meta.model).toBeDefined();
+            expect(meta.provider).toBeDefined();
         }
     }, 600000); // 10 minute timeout
 
     it("should generate images with correct aspect ratio (9:16)", async () => {
         logComicsTest("aspect-ratio", "Validating comic panel aspect ratios");
-        // Arrange
-        const toonplay = createMockToonplay();
+        const { panels } = await generateComicPanelsViaApi();
 
-        // Act
-        const result = await generatePanelImages(toonplay);
+        for (const panel of panels) {
+            const meta = getPanelMetadata(panel);
+            const width = meta.width ?? 0;
+            const height = meta.height ?? 0;
+            logComicsTest(
+                "aspect-ratio",
+                `Panel ${panel.panelNumber} raw ratio=${width}/${height} metaRatio=${meta.aspectRatio}`,
+            );
+            expect(width).toBeGreaterThan(0);
+            expect(height).toBeGreaterThan(0);
 
-        // Assert - Aspect ratio should be approximately 9:16 (0.5625)
-        for (const panel of result.panels) {
-            const aspectRatio = panel.width / panel.height;
-            const expectedRatio = 9 / 16; // 0.5625
-            const tolerance = 0.1; // Allow 10% tolerance
+            const aspectRatio = width / height;
+            const expectedRatio = 9 / 16;
+            const tolerance = 0.05;
 
-            expect(Math.abs(aspectRatio - expectedRatio)).toBeLessThan(
-                tolerance,
+            expect(Math.abs(aspectRatio - expectedRatio)).toBeLessThan(tolerance);
+            logComicsTest(
+                "aspect-ratio",
+                `Panel ${panel.panelNumber} computedRatio=${aspectRatio.toFixed(4)} within tolerance`,
             );
         }
     }, 600000);
 
     it("should preserve toonplay specifications in results", async () => {
         logComicsTest("spec-sync", "Ensuring toonplay specs preserved");
-        // Arrange
-        const toonplay = createMockToonplay();
+        const { apiResponse, panels } = await generateComicPanelsViaApi();
+        const toonplayPanels = apiResponse.result.toonplay.panels;
+        logComicsTest(
+            "spec-sync",
+            `Toonplay panels=${toonplayPanels.length} generated panels=${panels.length}`,
+        );
 
-        // Act
-        const result = await generatePanelImages(toonplay);
+        expect(toonplayPanels.length).toBe(panels.length);
+        expect(panels.map((p) => p.panelNumber)).toEqual(
+            toonplayPanels.map((p) => p.panel_number),
+        );
 
-        // Assert - Panel numbers match
-        const panelNumbers = result.panels.map((p) => p.panel_number);
-        expect(panelNumbers).toEqual([1, 2, 3]);
-
-        // Assert - Each panel has toonplay spec
-        for (const panel of result.panels) {
-            expect(panel.toonplaySpec).toBeDefined();
-            expect(panel.toonplaySpec.panel_number).toBe(panel.panel_number);
-            expect(panel.toonplaySpec.shot_type).toBeDefined();
-            expect(panel.toonplaySpec.description).toBeDefined();
+        for (const panel of panels) {
+            const matchingToonplay = toonplayPanels.find(
+                (tp) => tp.panel_number === panel.panelNumber,
+            );
+            expect(matchingToonplay).toBeDefined();
+            expect(matchingToonplay?.shot_type).toBeDefined();
+            expect(matchingToonplay?.description).toBeDefined();
+            logComicsTest(
+                "spec-sync",
+                `Panel ${panel.panelNumber} shot=${matchingToonplay?.shot_type} desc=${preview(
+                    matchingToonplay?.description ?? "",
+                    80,
+                )}`,
+            );
         }
     }, 600000);
 
     it("should track generation metadata", async () => {
         logComicsTest("metadata", "Validating metadata block");
-        // Arrange
-        const toonplay = createMockToonplay();
-
-        // Act
-        const result = await generatePanelImages(toonplay);
+        const { apiResponse, panels } = await generateComicPanelsViaApi();
+        const metadata = apiResponse.result.metadata;
 
         logComicsTest(
             "metadata",
-            `Metadata: panels=${result.metadata.totalPanels} time=${result.metadata.generationTime}ms model=${result.metadata.model}`,
+            `Metadata: panels=${metadata.totalPanels} time=${metadata.generationTime}ms model=${metadata.model}`,
+        );
+        logComicsTest(
+            "metadata",
+            `panelGenerationTime=${metadata.panelGenerationTime}ms toonplayTime=${metadata.toonplayTime}ms aspectRatio=${metadata.aspectRatio}`,
         );
 
-        // Assert - Metadata completeness
-        expect(result.metadata).toBeDefined();
-        expect(result.metadata.totalPanels).toBe(toonplay.total_panels);
-        expect(result.metadata.generationTime).toBeGreaterThan(0);
-        expect(result.metadata.model).toBeDefined();
-        expect(result.metadata.provider).toBeDefined();
+        expect(metadata.totalPanels).toBe(panels.length);
+        expect(metadata.generationTime).toBeGreaterThan(0);
+        expect(metadata.panelGenerationTime).toBeGreaterThan(0);
+        expect(metadata.model).toBeDefined();
+        expect(metadata.provider).toBeDefined();
     }, 600000);
 
     it("should generate images with consistent model/provider", async () => {
         logComicsTest("consistency", "Checking panel model/provider consistency");
-        // Arrange
-        const toonplay = createMockToonplay();
+        const { apiResponse, panels } = await generateComicPanelsViaApi();
+        const firstMeta = getPanelMetadata(panels[0]);
 
-        // Act
-        const result = await generatePanelImages(toonplay);
-
-        // Assert - All panels use the same model/provider
-        const firstModel = result.panels[0]?.model;
-        const firstProvider = result.panels[0]?.provider;
-
-        for (const panel of result.panels) {
+        for (const panel of panels) {
+            const meta = getPanelMetadata(panel);
             logComicsTest(
                 "consistency",
-                `Panel ${panel.panel_number} model=${panel.model} provider=${panel.provider}`,
+                `Panel ${panel.panelNumber} model=${meta.model} provider=${meta.provider}`,
             );
-            expect(panel.model).toBe(firstModel);
-            expect(panel.provider).toBe(firstProvider);
+            expect(meta.model).toBe(firstMeta.model);
+            expect(meta.provider).toBe(firstMeta.provider);
         }
 
-        // Metadata should match
-        expect(result.metadata.model).toBe(firstModel);
-        expect(result.metadata.provider).toBe(firstProvider);
+        expect(apiResponse.result.metadata.model).toBe(firstMeta.model);
+        expect(apiResponse.result.metadata.provider).toBe(firstMeta.provider);
+        logComicsTest(
+            "consistency",
+            `Metadata model/provider ${apiResponse.result.metadata.model}/${apiResponse.result.metadata.provider}`,
+        );
     }, 600000);
 });

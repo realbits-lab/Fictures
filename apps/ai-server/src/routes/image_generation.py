@@ -1,6 +1,8 @@
 """Image generation API routes."""
 
 import logging
+import time
+import uuid
 from fastapi import APIRouter, HTTPException, Depends
 from src.schemas.image import ImageGenerationRequest, ImageGenerationResponse
 from src.services.image_service_comfyui_api import qwen_comfyui_api_service as image_service
@@ -23,6 +25,8 @@ async def generate_image(
 
     **Authentication**: Requires valid API key with `stories:write` scope.
     """
+    request_id = f"img-{uuid.uuid4()}"
+    start_time = time.perf_counter()
     try:
         # Check if user has required scope
         if not auth.has_scope("stories:write"):
@@ -31,13 +35,29 @@ async def generate_image(
                 detail="Insufficient permissions. Required scope: stories:write"
             )
 
-        logger.info(f"Received image generation request from user {auth.email}. Prompt: {request.prompt[:100]}...")
+        logger.info(
+            "[%s] Image generation request from user=%s promptPreview=%s negativePreview=%s",
+            request_id,
+            auth.email,
+            request.prompt[:120],
+            (request.negative_prompt or "")[:120],
+        )
 
         # Validate dimensions
         if request.width and request.width > 2048:
             raise HTTPException(status_code=400, detail="Width too large (max 2048 pixels)")
         if request.height and request.height > 2048:
             raise HTTPException(status_code=400, detail="Height too large (max 2048 pixels)")
+
+        logger.info(
+            "[%s] Dispatching to image service width=%s height=%s steps=%s guidance=%s seed=%s",
+            request_id,
+            request.width,
+            request.height,
+            request.num_inference_steps,
+            request.guidance_scale,
+            request.seed,
+        )
 
         # Generate image using Lightning service
         # Note: Pydantic defaults are width=1664, height=928 (16:9), steps=4, cfg=1.0
@@ -49,6 +69,19 @@ async def generate_image(
             num_inference_steps=request.num_inference_steps,  # Uses Pydantic default: 4
             guidance_scale=request.guidance_scale,  # Uses Pydantic default: 1.0
             seed=request.seed,
+            trace_id=request_id,
+        )
+
+        elapsed_ms = int((time.perf_counter() - start_time) * 1000)
+        logger.info(
+            "[%s] Image generation complete width=%s height=%s seed=%s steps=%s guidance=%s elapsedMs=%s",
+            request_id,
+            result.get("width"),
+            result.get("height"),
+            result.get("seed"),
+            result.get("num_inference_steps"),
+            request.guidance_scale,
+            elapsed_ms,
         )
 
         return ImageGenerationResponse(**result)
@@ -56,7 +89,7 @@ async def generate_image(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Image generation failed: {e}")
+        logger.error("[%s] Image generation failed: %s", request_id, e)
         raise HTTPException(status_code=500, detail=f"Image generation failed: {str(e)}")
 
 

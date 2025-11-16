@@ -60,6 +60,9 @@ export interface ServiceComicGenerationResult {
         panelGenerationTime: number;
         savedToDatabase: boolean;
         totalPanels: number;
+        model?: string;
+        provider?: string;
+        aspectRatio?: string;
     };
 }
 
@@ -184,6 +187,10 @@ export async function generateAndSaveComic(
     const comicPanelRecords: (typeof comicPanels.$inferInsert)[] =
         panelImagesResult.panels.map((panelResult, _index) => {
             const panelSpec = panelResult.toonplaySpec;
+            const aspectRatio =
+                panelResult.width && panelResult.height
+                    ? `${panelResult.width}:${panelResult.height}`
+                    : "9:16";
 
             return {
                 id: `panel_${nanoid(16)}`,
@@ -204,6 +211,9 @@ export async function generateAndSaveComic(
                     generated_at: new Date().toISOString(),
                     model: panelResult.model,
                     provider: panelResult.provider,
+                    width: panelResult.width,
+                    height: panelResult.height,
+                    aspectRatio,
                 },
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -255,6 +265,9 @@ export async function generateAndSaveComic(
             panelGenerationTime,
             savedToDatabase: true,
             totalPanels: savedPanels.length,
+            model: panelImagesResult.metadata.model,
+            provider: panelImagesResult.metadata.provider,
+            aspectRatio: "9:16",
         },
     };
 }
