@@ -272,8 +272,8 @@ Example: 'Sarah stands at rain-streaked window (wide shot, eye level). Her shoul
 
 ### Implementation Files
 - `src/lib/studio/generators/prompt-manager.ts` - Current toonplay prompt (v1.0)
-- `src/lib/services/toonplay-evaluator.ts` - Evaluation logic
-- `src/lib/services/toonplay-improvement-loop.ts` - Iterative refinement
+- `src/lib/studio/services/toonplay-evaluator.ts` - Evaluation logic
+- `src/lib/studio/services/toonplay-improvement-loop.ts` - Iterative refinement
 
 ---
 

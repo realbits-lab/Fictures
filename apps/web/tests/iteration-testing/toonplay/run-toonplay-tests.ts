@@ -365,7 +365,7 @@ async function evaluateToonplay(sceneId: string): Promise<ToonplayTestResult> {
 
         // Import evaluator
         const { evaluateToonplay } = await import(
-            "@/lib/services/toonplay-evaluator"
+            "@/lib/studio/services/toonplay-evaluator"
         );
 
         // Evaluate toonplay

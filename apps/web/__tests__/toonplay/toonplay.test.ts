@@ -361,20 +361,32 @@ async function generateToonplayViaAPI(
         clearTimeout(timeout);
 
         if (!response.ok) {
-            const errorData = await response.json().catch(() => ({
-                error: { message: `HTTP ${response.status}` },
-            }));
+            const errorText = await response.text();
+            let errorData: any;
+            try {
+                errorData = JSON.parse(errorText);
+            } catch {
+                errorData = { message: errorText || `HTTP ${response.status}` };
+            }
+            
+            console.error(`[TEST] API Error (${response.status}):`, errorData);
+            
             return {
                 success: false,
                 error: {
                     code: "API_ERROR",
-                    message: errorData.error?.message || `HTTP ${response.status}`,
+                    message: errorData.error?.message || errorData.message || `HTTP ${response.status}`,
                     details: errorData,
                 },
             };
         }
 
         const data = await response.json();
+        
+        if (!data.success) {
+            console.error("[TEST] API returned success=false:", data);
+        }
+        
         return data as ApiToonplayResponse;
     } catch (error) {
         clearTimeout(timeout);
@@ -401,6 +413,12 @@ describe("Toonplay Generation Integration (API)", () => {
         const result = await generateToonplayViaAPI(requestBody);
 
         // Assert - API response structure
+        if (!result.success) {
+            console.error("[TEST] API call failed:", result.error);
+            throw new Error(
+                `API call failed: ${result.error?.code || "UNKNOWN"} - ${result.error?.message || "Unknown error"}`,
+            );
+        }
         expect(result.success).toBe(true);
         expect(result.result).toBeDefined();
         expect(result.result?.toonplay).toBeDefined();
@@ -437,6 +455,12 @@ describe("Toonplay Generation Integration (API)", () => {
         const result = await generateToonplayViaAPI(requestBody);
 
         // Assert - API response success
+        if (!result.success) {
+            console.error("[TEST] API call failed:", result.error);
+            throw new Error(
+                `API call failed: ${result.error?.code || "UNKNOWN"} - ${result.error?.message || "Unknown error"}`,
+            );
+        }
         expect(result.success).toBe(true);
         expect(result.result?.evaluation).toBeDefined();
 
@@ -466,6 +490,12 @@ describe("Toonplay Generation Integration (API)", () => {
         const result = await generateToonplayViaAPI(requestBody);
 
         // Assert - API response
+        if (!result.success) {
+            console.error("[TEST] API call failed:", result.error);
+            throw new Error(
+                `API call failed: ${result.error?.code || "UNKNOWN"} - ${result.error?.message || "Unknown error"}`,
+            );
+        }
         expect(result.success).toBe(true);
         const toonplay = result.result!.toonplay;
 

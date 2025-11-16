@@ -88,7 +88,7 @@ Every panel in a toonplay must specify:
 
 For the complete TypeScript schema definitions (`ComicPanelSpecSchema` and `ComicToonplaySchema`), see:
 - **Development Guide**: `toonplay-development.md` § 1.3 TypeScript Schema Definitions
-- **Code Location**: `src/lib/ai/toonplay-converter.ts`
+- **Code Location**: `src/lib/studio/generators/toonplay-converter.ts`
 
 The schemas implement all components listed above with Zod validation for type safety and runtime checking.
 

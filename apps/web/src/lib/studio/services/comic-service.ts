@@ -31,7 +31,7 @@ type Setting = typeof settings.$inferSelect;
 type Story = typeof stories.$inferSelect;
 type ComicPanel = typeof comicPanels.$inferSelect;
 
-import { generateToonplayWithEvaluation } from "@/lib/services/toonplay-improvement-loop";
+import { generateToonplayWithEvaluation } from "@/lib/studio/services/toonplay-improvement-loop";
 import { generateComicPanels } from "../generators/comic-panel-generator";
 
 /**

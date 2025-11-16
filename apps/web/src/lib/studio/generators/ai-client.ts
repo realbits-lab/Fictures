@@ -54,7 +54,7 @@ const getConfig = () => {
         aiServer: {
             url: process.env.AI_SERVER_TEXT_URL || "http://localhost:8000",
             timeout: parseInt(
-                process.env.AI_SERVER_TEXT_TIMEOUT || "120000",
+                process.env.AI_SERVER_TEXT_TIMEOUT || "600000", // 10 minutes default
                 10,
             ),
         },

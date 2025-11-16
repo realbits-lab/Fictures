@@ -327,7 +327,7 @@ dotenv --file .env.local run node test-scripts/verify-image-urls.mjs
    - **TC-COMICS-FUNC-005**: Save reading progress
 
 3a. **Toonplay - Novel-to-Webtoon Generation** (30 min)
-   - **TC-TOONPLAY-FUNC-001**: Generate toonplay from scene (POST /studio/api/toonplay)
+   - **TC-TOONPLAY-FUNC-001**: Generate toonplay from scene (POST /api/studio/toonplay)
    - **TC-TOONPLAY-FUNC-002**: Evaluate toonplay quality (weighted score >= 3.0/5.0)
    - **TC-TOONPLAY-FUNC-003**: Iterative improvement loop (max 2 iterations)
    - **TC-TOONPLAY-FUNC-004**: Generate 9:16 panel images (928×1664px)

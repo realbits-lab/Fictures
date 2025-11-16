@@ -19,10 +19,11 @@ This document provides comprehensive implementation specifications for the toonp
 - **`src/app/comics/`**: Comic reading/viewing functionality (read operations)
 
 **Primary Files**:
-- `src/lib/ai/toonplay-converter.ts` - Core toonplay generation logic
-- `src/lib/ai/comic-panel-generator.ts` - Image generation pipeline
-- `src/lib/services/toonplay-evaluator.ts` - Quality evaluation rubric
-- `src/lib/services/toonplay-improvement-loop.ts` - Iterative improvement system
+- `src/lib/studio/generators/toonplay-converter.ts` - Core toonplay generation logic
+- `src/lib/studio/generators/comic-panel-generator.ts` - Image generation pipeline
+- `src/lib/studio/services/toonplay-evaluator.ts` - Quality evaluation rubric
+- `src/lib/studio/services/toonplay-improvement-loop.ts` - Iterative improvement system
+- `src/lib/studio/services/toonplay-service.ts` - Orchestrates full generation pipeline
 
 **Database Integration**:
 - `src/lib/schemas/database/index.ts` - Database schema (Drizzle ORM)
@@ -53,7 +54,7 @@ All types follow a consistent layer-prefix pattern for searchability and clarity
 
 ### 1.3 TypeScript Schema Definitions
 
-**Core Schemas** (`src/lib/ai/toonplay-converter.ts`):
+**Core Schemas** (`src/lib/studio/generators/toonplay-converter.ts`):
 
 ```typescript
 // SSOT: Zod Schema for Comic Panel
@@ -187,7 +188,7 @@ interface ApiToonplayErrorResponse {
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  2. generateToonplayWithEvaluation() [Entry Point]              │
-│  Location: src/lib/services/toonplay-improvement-loop.ts        │
+│  Location: src/lib/studio/services/toonplay-improvement-loop.ts │
 └────────────────────────────┬────────────────────────────────────┘
                              │
                              ├─ Iteration 0: Initial Generation
@@ -218,7 +219,7 @@ interface ApiToonplayErrorResponse {
                              ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │  3. generateComicPanels()                                       │
-│  Location: src/lib/ai/comic-panel-generator.ts                  │
+│  Location: src/lib/studio/generators/comic-panel-generator.ts   │
 │                                                                 │
 │  Character Consistency (Database-Driven):                       │
 │  ├─ Fetch character data from database (characters table)      │
@@ -264,7 +265,7 @@ interface ApiToonplayErrorResponse {
 ### 3.1 Toonplay Converter
 
 **Function**: `convertSceneToToonplay()`
-**Location**: `src/lib/ai/toonplay-converter.ts`
+**Location**: `src/lib/studio/generators/toonplay-converter.ts`
 **Purpose**: Convert narrative prose to structured toonplay specification
 
 **Input**:
@@ -364,7 +365,7 @@ OUTPUT FORMAT: JSON matching ComicToonplaySchema
 ### 3.2 Comic Panel Generator
 
 **Function**: `generateComicPanels()`
-**Location**: `src/lib/ai/comic-panel-generator.ts`
+**Location**: `src/lib/studio/generators/comic-panel-generator.ts`
 **Purpose**: Generate images for all panels in toonplay
 
 **Character Consistency Implementation**:
@@ -961,7 +962,7 @@ In addition to long-term prompt optimization, the system includes a runtime impr
 **Key Difference**: This is a *per-generation* improvement loop (max 2 iterations) vs. the *long-term* prompt optimization loop (continuous refinement)
 
 **Quick Reference**:
-- **Location**: `src/lib/services/toonplay-improvement-loop.ts`
+- **Location**: `src/lib/studio/services/toonplay-improvement-loop.ts`
 - **Passing Score**: 3.0/5.0 (weighted average across 4 categories)
 - **First-Pass Rate**: 70-80% pass on first generation
 - **Max Iterations**: 2 improvement cycles
@@ -977,10 +978,10 @@ In addition to long-term prompt optimization, the system includes a runtime impr
 - `toonplay-evaluation.md` - Quality metrics, testing strategies, validation methods
 
 **Code References**:
-- `src/lib/ai/toonplay-converter.ts` - Core toonplay generation
-- `src/lib/ai/comic-panel-generator.ts` - Image generation pipeline
-- `src/lib/services/toonplay-evaluator.ts` - Quality evaluation
-- `src/lib/services/toonplay-improvement-loop.ts` - Iterative improvement
+- `src/lib/studio/generators/toonplay-converter.ts` - Core toonplay generation
+- `src/lib/studio/generators/comic-panel-generator.ts` - Image generation pipeline
+- `src/lib/studio/services/toonplay-evaluator.ts` - Quality evaluation
+- `src/lib/studio/services/toonplay-improvement-loop.ts` - Iterative improvement
 - `src/lib/schemas/database/index.ts` - Database schema
 
 **Other Documentation**:

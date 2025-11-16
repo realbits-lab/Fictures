@@ -244,7 +244,7 @@ Return JSON with scores and specific issues.
 
 ### 3.1 Evaluation Function
 
-**Location**: `src/lib/services/toonplay-evaluator.ts`
+**Location**: `src/lib/studio/services/toonplay-evaluator.ts`
 **Function**: `evaluateToonplay()`
 
 **Input**:
@@ -283,7 +283,7 @@ interface EvaluationResult {
 
 ### 3.3 Automatic Metrics Calculation
 
-**Implementation** (`src/lib/services/toonplay-evaluator.ts`):
+**Implementation** (`src/lib/studio/services/toonplay-evaluator.ts`):
 
 ```typescript
 function calculateAutomaticMetrics(toonplay: ComicToonplay) {
@@ -406,7 +406,7 @@ The toonplay system uses two levels of improvement:
    - Up to 2 improvement iterations if score < 3.0
    - Targets specific weaknesses (visual transformation, pacing, etc.)
    - Returns best version with evaluation report
-   - **Implementation**: `src/lib/services/toonplay-improvement-loop.ts`
+   - **Implementation**: `src/lib/studio/services/toonplay-improvement-loop.ts`
 
 ---
 
@@ -550,9 +550,9 @@ Based on analysis of successful webtoons (from `toonplay-specification.md` case 
 - `toonplay-development.md` - Process flows, API specifications, prompt templates
 
 **Code References**:
-- `src/lib/services/toonplay-evaluator.ts` - Evaluation implementation
-- `src/lib/services/toonplay-improvement-loop.ts` - Iterative improvement logic
-- `src/lib/ai/toonplay-converter.ts` - Core toonplay generation
+- `src/lib/studio/services/toonplay-evaluator.ts` - Evaluation implementation
+- `src/lib/studio/services/toonplay-improvement-loop.ts` - Iterative improvement logic
+- `src/lib/studio/generators/toonplay-converter.ts` - Core toonplay generation
 
 **Other Documentation**:
 - `docs/novels/novels-evaluation.md` - Novel generation evaluation (source narrative quality)

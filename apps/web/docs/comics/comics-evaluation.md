@@ -449,7 +449,7 @@ Evaluate this toonplay against the 4 categories and provide detailed feedback.
 
 ### 4.3 Evaluation Code
 
-**File**: `src/lib/studio/evaluators/toonplay-evaluator.ts`
+**File**: `src/lib/studio/services/toonplay-evaluator.ts`
 
 ```typescript
 export async function evaluateToonplay(
