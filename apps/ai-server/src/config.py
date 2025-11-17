@@ -35,8 +35,8 @@ class Settings(BaseSettings):
     vllm_quantization: str = "awq"  # AWQ quantization method
     vllm_tensor_parallel_size: int = 1  # Number of GPUs for tensor parallelism
     text_max_model_len: int = 16384  # Maximum sequence length (16K - optimized for scene generation)
-    text_gpu_memory_utilization: float = 0.9  # GPU memory utilization (0.0-1.0) - increased for better performance
-    vllm_max_num_seqs: int = 128  # Maximum number of sequences in a batch - reduced for faster single requests
+    text_gpu_memory_utilization: float = 0.75  # GPU memory utilization (0.0-1.0) - reduced to 0.75 to accommodate other processes and warmup
+    vllm_max_num_seqs: int = 64  # Maximum number of sequences in a batch - reduced to 64 to lower memory usage during warmup
 
 
 # Global settings instance

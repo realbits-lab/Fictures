@@ -320,8 +320,15 @@ async function generateToonplay(
         );
 
         if (!response.ok) {
+            const errorText = await response.text();
+            let errorData: any;
+            try {
+                errorData = JSON.parse(errorText);
+            } catch {
+                errorData = { message: errorText };
+            }
             throw new Error(
-                `Toonplay generation failed: ${response.statusText}`,
+                `Toonplay generation failed: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`,
             );
         }
 
