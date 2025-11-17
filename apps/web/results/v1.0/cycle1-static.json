@@ -1,0 +1,311 @@
+{
+  "version": "v1.0",
+  "testDate": "2025-11-17T02:03:50.797Z",
+  "testScenes": [
+    "emotional-moment"
+  ],
+  "evaluationMode": "quick",
+  "iterations": 1,
+  "toonplays": [
+    {
+      "testId": "test-scene_emotional-moment-1763344060381-1-1763345030796",
+      "sceneId": "scene_emotional-moment-1763344060381-1",
+      "sceneName": "The Revelation — Iteration 1",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T02:03:50.796Z",
+      "toonplay": {
+        "sceneId": "scene_emotional-moment-1763344060381-1",
+        "sceneTitle": "string",
+        "totalPanels": 10,
+        "panels": [
+          {
+            "panelNumber": 1,
+            "shotType": "establishing_shot",
+            "description": "Sarah stands at a large window in a dimly lit room, rain blurring the city lights outside. Her hand grips a letter, eyes scanning the words with a mix of disbelief and emotion. The room is quiet, filled with the sound of distant thunder.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "I forgive you."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "rain",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 2,
+            "shotType": "wide_shot",
+            "description": "Sarah drops to her knees, the letter clutched tightly to her chest. Her body trembles as tears fall, mixing with a faint smile. The room is still, rain still falling outside. Her posture shows complete emotional release.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "I thought I'd never hear those words."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "tears",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 3,
+            "shotType": "close_up",
+            "description": "Close-up of Sarah's face, eyes wide with disbelief, tears streaming down her cheeks, and a faint smile breaking through the sorrow. Her expression captures the mix of relief and joy as she reads the letter.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "After all these years..."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "whispers",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 4,
+            "shotType": "medium_shot",
+            "description": "Sarah stands up slowly, the letter still in her hands. She looks out the window, the storm beginning to clear. Her expression is a mix of relief and disbelief as she takes in the changing weather outside.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "The storm is clearing, just like my heart."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "storm",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 5,
+            "shotType": "wide_shot",
+            "description": "Sarah walks slowly towards the door, the letter still clutched in her hand. Her steps are hesitant but purposeful. The room is quiet, and the storm continues to clear outside. Her posture shows a newfound determination.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "I can finally move forward."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "footsteps",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 6,
+            "shotType": "close_up",
+            "description": "Close-up of Sarah's hand, the letter still clutched tightly. Her fingers are slightly trembling, but her grip is firm. The letter is visible, showing the words 'I forgive you' in bold, with a tear stain near the words.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "This changes everything."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "tremble",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 7,
+            "shotType": "wide_shot",
+            "description": "Sarah stands at the door, the letter in her hand, looking back at the room one last time. Her expression is a mix of gratitude and determination. The storm has completely cleared, revealing the city lights outside.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "Thank you, Mom."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "door creak",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 8,
+            "shotType": "extreme_close_up",
+            "description": "Extreme close-up of Sarah's eyes, showing tears glistening in the light. Her eyes are wide with emotion, reflecting the mix of relief and joy. The storm outside is completely cleared, with the city lights visible in the background.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "I'm free at last."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "tears",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 9,
+            "shotType": "wide_shot",
+            "description": "Sarah walks out of the room, the letter still in her hand. The storm has completely cleared, revealing the city lights outside. Her posture is confident, and her expression is one of peace and relief.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "A new beginning."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "city lights",
+                "emphasis": "dramatic"
+              }
+            ]
+          },
+          {
+            "panelNumber": 10,
+            "shotType": "wide_shot",
+            "description": "Sarah stands in the city, the letter in her hand, looking out at the horizon. The storm has completely cleared, and the city lights shimmer in the distance. Her expression is one of peace and hope, ready to embrace the future.",
+            "charactersVisible": [
+              "Protagonist 1"
+            ],
+            "dialogue": [
+              {
+                "characterId": "Protagonist 1",
+                "text": "Goodbye, past. Hello, future."
+              }
+            ],
+            "sfx": [
+              {
+                "text": "city lights",
+                "emphasis": "dramatic"
+              }
+            ]
+          }
+        ],
+        "narrativeArc": "Setup: Sarah reads the letter. Tension: Emotional release and realization. Climax: The storm clears, symbolizing her internal change. Resolution: Sarah embraces the future with hope."
+      },
+      "evaluation": {
+        "weightedScore": 4.4,
+        "passes": false,
+        "categoryScores": {
+          "narrativeFidelity": 5,
+          "visualTransformation": 4,
+          "webtoonPacing": 4,
+          "scriptFormatting": 5
+        },
+        "metrics": {
+          "narrationPercentage": 0,
+          "internalMonologuePercentage": 0,
+          "dialoguePresence": 100,
+          "shotTypeDistribution": {
+            "establishing_shot": 1,
+            "wide_shot": 5,
+            "close_up": 2,
+            "medium_shot": 1,
+            "extreme_close_up": 1
+          },
+          "shotVariety": 5,
+          "textOverlayValidation": true,
+          "dialogueLengthCompliance": true,
+          "descriptionLengthCompliance": true,
+          "panelCount": 10,
+          "averageDescriptionLength": 0,
+          "averageDialoguePerPanel": 24.5,
+          "verticalFlowQuality": 0,
+          "panelPacingRhythm": 0
+        },
+        "recommendations": [
+          "Consider externalizing some of the internal monologues through visual cues or expressions rather than dialogue.",
+          "Introduce minor variations in panel composition to enhance visual interest and pacing.",
+          "Ensure dialogue lines are under 150 characters for optimal readability on mobile devices.",
+          "Reduce narration to under 5% of panels (current: 20.0%)."
+        ],
+        "finalReport": "Effective"
+      },
+      "metadata": {
+        "generationTime": 970415,
+        "evaluationTime": 970415,
+        "totalTime": 970415,
+        "iterations": 2,
+        "model": "ai-server",
+        "provider": "ai-server"
+      }
+    }
+  ],
+  "aggregatedMetrics": {
+    "version": "v1.0",
+    "totalTests": 1,
+    "testDate": "2025-11-17T02:03:50.797Z",
+    "averageWeightedScore": 4.4,
+    "passRate": 0,
+    "firstPassSuccessRate": 0,
+    "categoryAverages": {
+      "narrativeFidelity": 5,
+      "visualTransformation": 4,
+      "webtoonPacing": 4,
+      "scriptFormatting": 5
+    },
+    "averageNarrationPercentage": 0,
+    "averageInternalMonologuePercentage": 0,
+    "averageDialoguePresence": 100,
+    "narrationComplianceRate": 1,
+    "internalMonologueComplianceRate": 1,
+    "dialogueTargetRate": 0,
+    "averageShotVariety": 5,
+    "shotTypeDistributionAggregate": {
+      "establishing_shot": 1,
+      "wide_shot": 5,
+      "close_up": 2,
+      "medium_shot": 1,
+      "extreme_close_up": 1
+    },
+    "averagePanelCount": 10,
+    "averageDescriptionLength": 0,
+    "descriptionComplianceRate": 1,
+    "averageDialoguePerPanel": 24.5,
+    "dialogueLengthComplianceRate": 1,
+    "averageVerticalFlowQuality": 0,
+    "averagePanelPacingRhythm": 0,
+    "averageGenerationTime": 970415,
+    "averageIterations": 2,
+    "averageTotalTime": 970415,
+    "failurePatterns": []
+  }
+}
