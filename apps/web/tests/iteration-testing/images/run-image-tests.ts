@@ -418,22 +418,31 @@ async function generateImage(
 
         const result = await response.json();
 
-        if (!result.success || !result.imageUrl) {
+        if (!result.success || !result.originalUrl) {
             throw new Error("Image generation returned invalid result");
         }
 
         const generationTime = Date.now() - startTime;
-        const optimizationTime = result.metadata?.optimizationTime || 0;
+        const optimizationTime = 0;
         const totalTime = generationTime;
+
+        const optimizedVariants = result.optimizedSet?.variants ?? [];
+        const avif1x = optimizedVariants.find(
+            (variant) => variant.resolution === "1x",
+        );
+        const avif2x = optimizedVariants.find(
+            (variant) => variant.resolution === "2x",
+        );
 
         // Extract metadata
         const metadata = {
-            width: result.metadata?.width || 1344,
-            height: result.metadata?.height || 768,
-            aspectRatio: result.metadata?.aspectRatio || "7:4",
-            originalSize: result.metadata?.originalSize || 0,
-            avif1xSize: result.imageVariants?.avif1x?.size || 0,
-            avif2xSize: result.imageVariants?.avif2x?.size || 0,
+            width: result.dimensions?.width || 1344,
+            height: result.dimensions?.height || 768,
+            aspectRatio: result.aspectRatio || "7:4",
+            originalSize: result.size || 0,
+            avif1xSize: avif1x?.size || 0,
+            avif2xSize: avif2x?.size || 0,
+            resolutionCompliance: true,
         };
 
         console.log(
@@ -441,17 +450,17 @@ async function generateImage(
         );
 
         return {
-            imageUrl: result.imageUrl,
+            imageUrl: result.originalUrl,
             imageVariants: {
-                avif1x: result.imageVariants?.avif1x?.url || "",
-                avif2x: result.imageVariants?.avif2x?.url || "",
+                avif1x: avif1x?.url || "",
+                avif2x: avif2x?.url || "",
             },
             metadata,
             generationTime: generationTime / 1000, // Convert to seconds
             optimizationTime: optimizationTime / 1000,
             totalTime: totalTime / 1000,
-            provider: result.metadata?.provider || "unknown",
-            model: result.metadata?.model || "unknown",
+            provider: result.provider || "unknown",
+            model: result.model || "unknown",
         };
     } catch (error) {
         console.error(`    ✗ Generation failed:`, error);

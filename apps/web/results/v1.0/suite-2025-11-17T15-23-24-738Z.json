@@ -1,0 +1,1002 @@
+{
+  "version": "v1.0",
+  "testDate": "2025-11-17T15:30:52.066Z",
+  "testScenarios": [
+    "story-cover",
+    "character-portrait",
+    "setting-landscape",
+    "scene-action",
+    "emotional-moment"
+  ],
+  "evaluationMode": "standard",
+  "iterations": 3,
+  "results": [
+    {
+      "testId": "story-cover-1",
+      "scenarioId": "story-cover",
+      "scenarioName": "Story Cover Image",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:24:02.446Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/original/1763393023716.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/avif/672x384/img_1763393027183_HDzkL_BQ-lG6Cf1G7I3yfWIIkosMcjEMCmJuLZV.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/avif/1344x768/img_1763393027183_HDzkL_BQ-6r6MRNnREaQY7ZuKcdFKFbImCgsJiA.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1694838,
+          "avif1xSize": 25184,
+          "avif2xSize": 87925,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1655.115234375,
+          "avifCompressionRatio": 93.3262648111501,
+          "avif1xSize": 24.59375,
+          "avif2xSize": 85.8642578125,
+          "totalVariantSize": 110.4580078125,
+          "storageRatio": 6.673735188849908,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 36.78,
+          "optimizationTime": 0,
+          "totalTime": 36.78,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 93.3%"
+      },
+      "metadata": {
+        "generationTime": 36.78,
+        "optimizationTime": 0,
+        "totalTime": 36.78,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "story-cover-2",
+      "scenarioId": "story-cover",
+      "scenarioName": "Story Cover Image",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:24:32.743Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/original/1763393056112.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/avif/672x384/img_1763393059605_GU2W0AM6-ofnvFTqquJWomKbMkyf4HHNEHATKKr.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/avif/1344x768/img_1763393059605_GU2W0AM6-uWF87O1yeISA7rCydggfEu0pxgSzVr.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1654477,
+          "avif1xSize": 23237,
+          "avif2xSize": 80987,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1615.7001953125,
+          "avifCompressionRatio": 93.7004866190343,
+          "avif1xSize": 22.6923828125,
+          "avif2xSize": 79.0888671875,
+          "totalVariantSize": 101.78125,
+          "storageRatio": 6.299513380965707,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 30.297,
+          "optimizationTime": 0,
+          "totalTime": 30.297,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 93.7%"
+      },
+      "metadata": {
+        "generationTime": 30.297,
+        "optimizationTime": 0,
+        "totalTime": 30.297,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "story-cover-3",
+      "scenarioId": "story-cover",
+      "scenarioName": "Story Cover Image",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:25:05.219Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/original/1763393086375.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/avif/672x384/img_1763393090148_KS3PGZiJ-bjDLST9j1bYbLolW3UJG1RVabbhGv8.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/story_iteration_1763393005124/story/avif/1344x768/img_1763393090148_KS3PGZiJ-cEtiOFc5g8ZLyzpaBI5hEQmtq3ZmGA.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1704309,
+          "avif1xSize": 25974,
+          "avif2xSize": 90001,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1664.3642578125,
+          "avifCompressionRatio": 93.19518937000274,
+          "avif1xSize": 25.365234375,
+          "avif2xSize": 87.8916015625,
+          "totalVariantSize": 113.2568359375,
+          "storageRatio": 6.8048106299972595,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 32.476,
+          "optimizationTime": 0,
+          "totalTime": 32.476,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 93.2%"
+      },
+      "metadata": {
+        "generationTime": 32.476,
+        "optimizationTime": 0,
+        "totalTime": 32.476,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "character-portrait-1",
+      "scenarioId": "character-portrait",
+      "scenarioName": "Character Portrait",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:25:37.010Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/original/1763393119759.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/avif/672x384/img_1763393123617_DoOoG1v1-LleNgNbNxw6qCdjTi3SQMKCVGF6erp.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/avif/1344x768/img_1763393123617_DoOoG1v1-rAbOVjjqMz0Z9QecxBzTadLzgqb7LA.avif"
+        },
+        "metadata": {
+          "width": 1024,
+          "height": 1024,
+          "aspectRatio": "1:1",
+          "originalSize": 1190582,
+          "avif1xSize": 25691,
+          "avif2xSize": 63899,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.825,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 5,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 0,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1162.677734375,
+          "avifCompressionRatio": 92.47510881232877,
+          "avif1xSize": 25.0888671875,
+          "avif2xSize": 62.4013671875,
+          "totalVariantSize": 87.490234375,
+          "storageRatio": 7.52489118767124,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 31.791,
+          "optimizationTime": 0,
+          "totalTime": 31.791,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.00, Compression: 92.5%"
+      },
+      "metadata": {
+        "generationTime": 31.791,
+        "optimizationTime": 0,
+        "totalTime": 31.791,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "character-portrait-2",
+      "scenarioId": "character-portrait",
+      "scenarioName": "Character Portrait",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:26:03.898Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/original/1763393146496.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/avif/672x384/img_1763393150591_XNT1peEG-5X2VbNjZXkTCzce2kXWSCPUyCfGyVB.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/avif/1344x768/img_1763393150591_XNT1peEG-m98goR5fEHtVqDIuEBiAnnCZlg2ABh.avif"
+        },
+        "metadata": {
+          "width": 1024,
+          "height": 1024,
+          "aspectRatio": "1:1",
+          "originalSize": 1213583,
+          "avif1xSize": 26696,
+          "avif2xSize": 67726,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.825,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 5,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 0,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1185.1396484375,
+          "avifCompressionRatio": 92.2195680064734,
+          "avif1xSize": 26.0703125,
+          "avif2xSize": 66.138671875,
+          "totalVariantSize": 92.208984375,
+          "storageRatio": 7.780431993526607,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 26.888,
+          "optimizationTime": 0,
+          "totalTime": 26.888,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.00, Compression: 92.2%"
+      },
+      "metadata": {
+        "generationTime": 26.888,
+        "optimizationTime": 0,
+        "totalTime": 26.888,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "character-portrait-3",
+      "scenarioId": "character-portrait",
+      "scenarioName": "Character Portrait",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:26:28.497Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/original/1763393173317.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/avif/672x384/img_1763393176704__6dUnZDB-PTBlPRzO8z3CZo77H5088BRNDq5Q6J.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/character_iteration_1763393005124/character/avif/1344x768/img_1763393176704__6dUnZDB-KGRKbYZZmkstPMOQPkcip5Bd4vPs4N.avif"
+        },
+        "metadata": {
+          "width": 1024,
+          "height": 1024,
+          "aspectRatio": "1:1",
+          "originalSize": 1247294,
+          "avif1xSize": 21239,
+          "avif2xSize": 67803,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.825,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 5,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 0,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1218.060546875,
+          "avifCompressionRatio": 92.86118589522599,
+          "avif1xSize": 20.7412109375,
+          "avif2xSize": 66.2138671875,
+          "totalVariantSize": 86.955078125,
+          "storageRatio": 7.138814104774014,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 24.599,
+          "optimizationTime": 0,
+          "totalTime": 24.599,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.00, Compression: 92.9%"
+      },
+      "metadata": {
+        "generationTime": 24.599,
+        "optimizationTime": 0,
+        "totalTime": 24.599,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "setting-landscape-1",
+      "scenarioId": "setting-landscape",
+      "scenarioName": "Setting Landscape",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:26:56.576Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/original/1763393202226.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/avif/672x384/img_1763393205447_Kh6mHxA9-oo1pKS9y1s14F5w1xeXcziNKdBoiOn.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/avif/1344x768/img_1763393205447_Kh6mHxA9-BEC2MHi5d2v5ItPLdyJeazCuomiAyC.avif"
+        },
+        "metadata": {
+          "width": 1024,
+          "height": 1024,
+          "aspectRatio": "1:1",
+          "originalSize": 1129859,
+          "avif1xSize": 24046,
+          "avif2xSize": 67251,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 2.625,
+        "passes": false,
+        "categoryScores": {
+          "generationQuality": 1,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 42.85714285714286,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1103.3779296875,
+          "avifCompressionRatio": 91.9196112081242,
+          "avif1xSize": 23.482421875,
+          "avif2xSize": 65.6748046875,
+          "totalVariantSize": 89.1572265625,
+          "storageRatio": 8.0803887918758,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 28.078,
+          "optimizationTime": 0,
+          "totalTime": 28.078,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.00, Compression: 91.9%"
+      },
+      "metadata": {
+        "generationTime": 28.078,
+        "optimizationTime": 0,
+        "totalTime": 28.078,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "setting-landscape-2",
+      "scenarioId": "setting-landscape",
+      "scenarioName": "Setting Landscape",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:27:20.725Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/original/1763393226218.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/avif/672x384/img_1763393229203_ekfymiGH-4nZml2iUUuMhZSmtfwDiyDInkCfqar.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/avif/1344x768/img_1763393229203_ekfymiGH-EbqZ2rOsxvhQEdqgNqUFj1GC79HXDP.avif"
+        },
+        "metadata": {
+          "width": 1024,
+          "height": 1024,
+          "aspectRatio": "1:1",
+          "originalSize": 1130385,
+          "avif1xSize": 23563,
+          "avif2xSize": 67251,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 2.625,
+        "passes": false,
+        "categoryScores": {
+          "generationQuality": 1,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 42.85714285714286,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1103.8916015625,
+          "avifCompressionRatio": 91.9661000455597,
+          "avif1xSize": 23.0107421875,
+          "avif2xSize": 65.6748046875,
+          "totalVariantSize": 88.685546875,
+          "storageRatio": 8.033899954440301,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 24.148,
+          "optimizationTime": 0,
+          "totalTime": 24.148,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.00, Compression: 92.0%"
+      },
+      "metadata": {
+        "generationTime": 24.148,
+        "optimizationTime": 0,
+        "totalTime": 24.148,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "setting-landscape-3",
+      "scenarioId": "setting-landscape",
+      "scenarioName": "Setting Landscape",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:27:45.169Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/original/1763393250344.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/avif/672x384/img_1763393253466_sf3waeWE-32Dq7xPaNiMGvl51ZOwF4ilHgFTAB0.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/setting_iteration_1763393005124/setting/avif/1344x768/img_1763393253466_sf3waeWE-FAiO7tF9qmVZPG1N0E3v7uGh15MspE.avif"
+        },
+        "metadata": {
+          "width": 1024,
+          "height": 1024,
+          "aspectRatio": "1:1",
+          "originalSize": 1144953,
+          "avif1xSize": 25972,
+          "avif2xSize": 72087,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 2.625,
+        "passes": false,
+        "categoryScores": {
+          "generationQuality": 1,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 42.85714285714286,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1118.1181640625,
+          "avifCompressionRatio": 91.43554364240278,
+          "avif1xSize": 25.36328125,
+          "avif2xSize": 70.3974609375,
+          "totalVariantSize": 95.7607421875,
+          "storageRatio": 8.56445635759721,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 24.444,
+          "optimizationTime": 0,
+          "totalTime": 24.444,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.00, Compression: 91.4%"
+      },
+      "metadata": {
+        "generationTime": 24.444,
+        "optimizationTime": 0,
+        "totalTime": 24.444,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "scene-action-1",
+      "scenarioId": "scene-action",
+      "scenarioName": "Action Scene",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:28:19.423Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/original/1763393281932.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/avif/672x384/img_1763393285494_xsMie1h6-F3irkwCP569ygIfHNCBe8KmhWFu9eL.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/avif/1344x768/img_1763393285494_xsMie1h6-9bS21yS3U21CzdVwuOWz1cdhgjzXth.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1795423,
+          "avif1xSize": 45350,
+          "avif2xSize": 101634,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1753.3427734375,
+          "avifCompressionRatio": 91.81340553173263,
+          "avif1xSize": 44.287109375,
+          "avif2xSize": 99.251953125,
+          "totalVariantSize": 143.5390625,
+          "storageRatio": 8.186594468267366,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 34.254,
+          "optimizationTime": 0,
+          "totalTime": 34.254,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 91.8%"
+      },
+      "metadata": {
+        "generationTime": 34.254,
+        "optimizationTime": 0,
+        "totalTime": 34.254,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "scene-action-2",
+      "scenarioId": "scene-action",
+      "scenarioName": "Action Scene",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:28:55.275Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/original/1763393313182.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/avif/672x384/img_1763393317022_5M7tUZUP-wG3xu3imbNXobNynEuO6PikrxrfWgo.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/avif/1344x768/img_1763393317022_5M7tUZUP-IjI2dHri2yIkAwgvcc8btHOcO0Qaya.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1816456,
+          "avif1xSize": 46612,
+          "avif2xSize": 103821,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1773.8828125,
+          "avifCompressionRatio": 91.71832403317228,
+          "avif1xSize": 45.51953125,
+          "avif2xSize": 101.3876953125,
+          "totalVariantSize": 146.9072265625,
+          "storageRatio": 8.281675966827713,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 35.852,
+          "optimizationTime": 0,
+          "totalTime": 35.852,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 91.7%"
+      },
+      "metadata": {
+        "generationTime": 35.852,
+        "optimizationTime": 0,
+        "totalTime": 35.852,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "scene-action-3",
+      "scenarioId": "scene-action",
+      "scenarioName": "Action Scene",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:29:26.624Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/original/1763393349075.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/avif/672x384/img_1763393352513_rWjZzipU-6oHsZZkye3R3HUA1xGABRP1hjBmmaw.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_action/scene/avif/1344x768/img_1763393352513_rWjZzipU-eTjLSQVK0tWBNJep2dr9y2p0rB2hXB.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1771538,
+          "avif1xSize": 43523,
+          "avif2xSize": 96461,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1730.017578125,
+          "avifCompressionRatio": 92.09816554880561,
+          "avif1xSize": 42.5029296875,
+          "avif2xSize": 94.2001953125,
+          "totalVariantSize": 136.703125,
+          "storageRatio": 7.901834451194385,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 31.349,
+          "optimizationTime": 0,
+          "totalTime": 31.349,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 92.1%"
+      },
+      "metadata": {
+        "generationTime": 31.349,
+        "optimizationTime": 0,
+        "totalTime": 31.349,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "emotional-moment-1",
+      "scenarioId": "emotional-moment",
+      "scenarioName": "Emotional Moment",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:29:57.283Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/original/1763393384231.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/avif/672x384/img_1763393387039_rPBkqfzA-Rs3DEgjvH0kXgvOdXzqLPKTGBNfi0a.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/avif/1344x768/img_1763393387039_rPBkqfzA-F05D2NlZkShHnLXKY20Vttv1Tbawh3.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1430513,
+          "avif1xSize": 8408,
+          "avif2xSize": 28639,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1396.9853515625,
+          "avifCompressionRatio": 97.41022975673762,
+          "avif1xSize": 8.2109375,
+          "avif2xSize": 27.9677734375,
+          "totalVariantSize": 36.1787109375,
+          "storageRatio": 2.589770243262382,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 30.659,
+          "optimizationTime": 0,
+          "totalTime": 30.659,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 97.4%"
+      },
+      "metadata": {
+        "generationTime": 30.659,
+        "optimizationTime": 0,
+        "totalTime": 30.659,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "emotional-moment-2",
+      "scenarioId": "emotional-moment",
+      "scenarioName": "Emotional Moment",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:30:24.721Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/original/1763393410828.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/avif/672x384/img_1763393413999_ObZmcGJK-i4S5lw0zRQINkZCqeDt6QkXZ8NgfRF.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/avif/1344x768/img_1763393413999_ObZmcGJK-uRWsg3dgV7HuiIG4ENMwwvi95jLOdR.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1443701,
+          "avif1xSize": 8797,
+          "avif2xSize": 29616,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1409.8642578125,
+          "avifCompressionRatio": 97.33926900376187,
+          "avif1xSize": 8.5908203125,
+          "avif2xSize": 28.921875,
+          "totalVariantSize": 37.5126953125,
+          "storageRatio": 2.6607309962381405,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 27.438,
+          "optimizationTime": 0,
+          "totalTime": 27.438,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 97.3%"
+      },
+      "metadata": {
+        "generationTime": 27.438,
+        "optimizationTime": 0,
+        "totalTime": 27.438,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    },
+    {
+      "testId": "emotional-moment-3",
+      "scenarioId": "emotional-moment",
+      "scenarioName": "Emotional Moment",
+      "promptVersion": "v1.0",
+      "timestamp": "2025-11-17T15:30:52.065Z",
+      "image": {
+        "imageUrl": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/original/1763393438552.png",
+        "imageVariants": {
+          "avif1x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/avif/672x384/img_1763393441233_W0KIPcZV-vokoFBzwbvCvQoaaKE6yHuV0CC8js0.avif",
+          "avif2x": "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/develop/stories/scene_iteration_1763393005124_emotion/scene/avif/1344x768/img_1763393441233_W0KIPcZV-FBPWW3OtNcMkzp5LRkAEtTIKUOEXsc.avif"
+        },
+        "metadata": {
+          "width": 1664,
+          "height": 936,
+          "aspectRatio": "16:9",
+          "originalSize": 1429078,
+          "avif1xSize": 8359,
+          "avif2xSize": 28508,
+          "resolutionCompliance": true
+        }
+      },
+      "evaluation": {
+        "weightedScore": 3.736904761904763,
+        "passes": true,
+        "categoryScores": {
+          "generationQuality": 4.706349206349209,
+          "optimizationQuality": 5,
+          "visualQuality": 3.5,
+          "performance": 1
+        },
+        "metrics": {
+          "aspectRatioAccuracy": 1.5873015873015817,
+          "resolutionCompliance": true,
+          "promptAdherence": 85,
+          "formatValidation": true,
+          "fileSize": 1395.583984375,
+          "avifCompressionRatio": 97.42022478829007,
+          "avif1xSize": 8.1630859375,
+          "avif2xSize": 27.83984375,
+          "totalVariantSize": 36.0029296875,
+          "storageRatio": 2.5797752117099275,
+          "visualQualityScore": 3.5,
+          "artifactCount": 0,
+          "aspectRatioPreservation": 0.1,
+          "variantCount": 2,
+          "imageAccessibility": true,
+          "generationTime": 27.344,
+          "optimizationTime": 0,
+          "totalTime": 27.344,
+          "success": true
+        },
+        "recommendations": [],
+        "finalReport": "Image generated successfully. Aspect ratio: 1.78, Compression: 97.4%"
+      },
+      "metadata": {
+        "generationTime": 27.344,
+        "optimizationTime": 0,
+        "totalTime": 27.344,
+        "provider": "ai-server",
+        "model": "Qwen-Image FP8 + Lightning v2.0 4-step (ComfyUI API)"
+      }
+    }
+  ],
+  "aggregatedMetrics": {
+    "version": "v1.0",
+    "totalTests": 15,
+    "testDate": "2025-11-17T15:30:52.066Z",
+    "averageWeightedScore": 3.532142857142857,
+    "passRate": 0.8,
+    "firstPassSuccessRate": 0,
+    "categoryAverages": {
+      "generationQuality": 4.0238095238095255,
+      "optimizationQuality": 5,
+      "visualQuality": 3.5,
+      "performance": 1
+    },
+    "averageAspectRatioAccuracy": 9.523809523809515,
+    "resolutionComplianceRate": 1,
+    "averagePromptAdherence": 85,
+    "formatComplianceRate": 1,
+    "averageFileSize": 1419.0748046875,
+    "averageAvifCompressionRatio": 93.3932451381868,
+    "averageAvif1xSize": 24.912174479166666,
+    "averageAvif2xSize": 68.5943359375,
+    "averageTotalVariantSize": 93.50651041666667,
+    "averageStorageRatio": 6.606754861813199,
+    "averageVisualQualityScore": 3.5,
+    "averageArtifactCount": 0,
+    "aspectRatioPreservationRate": 1,
+    "variantCountComplianceRate": 1,
+    "averageGenerationTime": 29.759799999999995,
+    "averageOptimizationTime": 0,
+    "averageTotalTime": 29.759799999999995,
+    "successRate": 1,
+    "failurePatterns": [
+      {
+        "category": "performance",
+        "description": "Slow generation time (>15s)",
+        "frequency": 15,
+        "averageScore": 1,
+        "priority": "high",
+        "suggestedFix": "Optimize API calls, consider provider switching, review timeout settings"
+      }
+    ]
+  }
+}

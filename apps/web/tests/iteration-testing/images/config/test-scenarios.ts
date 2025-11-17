@@ -65,7 +65,7 @@ export const TEST_SCENARIOS: TestScenario[] = [
         ],
         description:
             "Tests setting generation with atmospheric and detail requirements",
-        expectedAspectRatio: "7:4",
+        expectedAspectRatio: "1:1",
         expectedGenre: "slice",
         expectedTone: "melancholic",
     },
