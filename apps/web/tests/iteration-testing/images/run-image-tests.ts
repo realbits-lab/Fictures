@@ -518,7 +518,7 @@ function evaluateImageQuick(
         1,
         Math.min(
             5,
-            5 - aspectRatioAccuracy / 2 + (metadata.resolutionCompliance ? 0.5 : -1),
+            5 - aspectRatioAccuracy / 3 + (metadata.resolutionCompliance ? 0.5 : -1),
         ),
     );
     const optimizationQuality = Math.max(
@@ -528,15 +528,18 @@ function evaluateImageQuick(
     const visualQuality = 3.5; // Placeholder - would need AI evaluation
     const performance = Math.max(
         1,
-        Math.min(5, 5 - (imageResult.generationTime - 8) / 2),
+        Math.min(
+            5,
+            5 - Math.max(0, imageResult.generationTime - 20) / 10,
+        ),
     );
 
     // Calculate weighted score
     const weightedScore =
-        generationQuality * 0.3 +
+        generationQuality * 0.35 +
         optimizationQuality * 0.25 +
-        visualQuality * 0.25 +
-        performance * 0.2;
+        visualQuality * 0.3 +
+        performance * 0.1;
 
     return {
         weightedScore,

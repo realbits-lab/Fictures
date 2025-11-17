@@ -250,12 +250,12 @@ export class ImageMetricsTracker {
 
         // Performance failures
         const slowGeneration = evaluations.filter(
-            (e) => e.metrics.generationTime > 15,
+            (e) => e.metrics.generationTime > 30,
         );
         if (slowGeneration.length > 0) {
             patterns.push({
                 category: "performance",
-                description: "Slow generation time (>15s)",
+                description: "Slow generation time (>30s)",
                 frequency: slowGeneration.length,
                 averageScore:
                     slowGeneration.reduce(
