@@ -26,6 +26,8 @@ import {
     stories,
     users,
 } from "@/lib/schemas/database";
+import { GENRE } from "@/lib/constants/genres";
+import { CORE_TRAIT } from "@/lib/constants/core-traits";
 import { getTestScenario, TEST_SCENARIOS } from "./config/test-scenarios";
 import { ImageMetricsTracker } from "./src/metrics-tracker";
 import type { ImageTestResult, ImageEvaluation } from "./src/types";
@@ -166,7 +168,7 @@ async function prepareTestData(): Promise<void> {
             authorId: writerUserId,
             title: "Iteration Testing Story",
             summary: "Baseline story used for iteration testing flows",
-            genre: "fantasy",
+            genre: GENRE.FANTASY,
             tone: "hopeful",
             language: "en",
             targetAudience: "general",
@@ -190,7 +192,7 @@ async function prepareTestData(): Promise<void> {
             name: "Iteration Test Character",
             role: "protagonist",
             summary: "Character used for image iteration testing",
-            coreTrait: "determination",
+            coreTrait: CORE_TRAIT.COURAGE,
             internalFlaw: "impatience",
             externalGoal: "refine generation prompts",
             backstory: "Born for testing",
@@ -278,7 +280,7 @@ async function prepareTestData(): Promise<void> {
             arcPosition: "middle",
             contributesToMacroArc: "Refining generation approach",
             adversityType: "external",
-            virtueType: "resourcefulness",
+            virtueType: CORE_TRAIT.COURAGE,
             connectsToPreviousChapter: "Establishes iteration goal",
             createsNextAdversity: "Identifies next improvement area",
             orderIndex: 0,
@@ -296,7 +298,7 @@ async function prepareTestData(): Promise<void> {
                 title: "Iteration Action Scene",
                 summary: "Dynamic testing scenario",
                 cyclePhase: "adversity",
-                emotionalBeat: "urgency",
+                emotionalBeat: "tension",
                 dialogueVsDescription: "40% dialogue, 60% description",
                 suggestedLength: "medium",
                 orderIndex: 0,
@@ -309,7 +311,7 @@ async function prepareTestData(): Promise<void> {
                 title: "Iteration Emotional Scene",
                 summary: "Introspective evaluation moment",
                 cyclePhase: "virtue",
-                emotionalBeat: "reflection",
+                emotionalBeat: "hope",
                 dialogueVsDescription: "50% dialogue, 50% description",
                 suggestedLength: "medium",
                 orderIndex: 1,
