@@ -15,6 +15,17 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import {
+    chapters,
+    characters,
+    parts,
+    scenes,
+    settings,
+    stories,
+    users,
+} from "@/lib/schemas/database";
 import { getTestScenario, TEST_SCENARIOS } from "./config/test-scenarios";
 import { ImageMetricsTracker } from "./src/metrics-tracker";
 import type { ImageTestResult, ImageEvaluation } from "./src/types";
@@ -31,6 +42,25 @@ const { values } = parseArgs({
         help: { type: "boolean", default: false },
     },
 });
+
+const AUTH_FILE_PATH = path.resolve(process.cwd(), ".auth/user.json");
+
+type ScenarioContentIds = Record<string, string>;
+
+interface TestDataRefs {
+    storyId: string;
+    partId: string;
+    chapterId: string;
+    characterId: string;
+    settingId: string;
+    actionSceneId: string;
+    emotionalSceneId: string;
+}
+
+let writerApiKey: string | null = null;
+let writerUserId: string | null = null;
+let testDataRefs: TestDataRefs | null = null;
+let scenarioContentIds: ScenarioContentIds = {};
 
 if (values.help) {
     console.log(`
@@ -74,6 +104,248 @@ const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
 const OUTPUT_FILE =
     values.output || `results/${PROMPT_VERSION}/suite-${timestamp}.json`;
 
+async function ensureAuthLoaded(): Promise<void> {
+    if (writerApiKey && writerUserId) {
+        return;
+    }
+
+    const authContent = await fs.readFile(AUTH_FILE_PATH, "utf-8");
+    const authData = JSON.parse(authContent) as {
+        develop?: { profiles?: { writer?: { apiKey?: string; email?: string } } };
+    };
+
+    const apiKey = authData.develop?.profiles?.writer?.apiKey;
+    const writerEmail = authData.develop?.profiles?.writer?.email;
+
+    if (!apiKey || !writerEmail) {
+        throw new Error(
+            "Writer credentials missing from .auth/user.json. Run setup-auth-users.mjs first.",
+        );
+    }
+
+    const writerRecord = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, writerEmail))
+        .limit(1);
+
+    if (writerRecord.length === 0) {
+        throw new Error(`Writer user not found for email ${writerEmail}`);
+    }
+
+    writerApiKey = apiKey;
+    writerUserId = writerRecord[0].id;
+}
+
+async function prepareTestData(): Promise<void> {
+    await ensureAuthLoaded();
+
+    if (testDataRefs) {
+        return;
+    }
+
+    if (!writerUserId) {
+        throw new Error("Writer user ID not loaded");
+    }
+
+    const ts = Date.now();
+    testDataRefs = {
+        storyId: `story_iteration_${ts}`,
+        partId: `part_iteration_${ts}`,
+        chapterId: `chapter_iteration_${ts}`,
+        characterId: `character_iteration_${ts}`,
+        settingId: `setting_iteration_${ts}`,
+        actionSceneId: `scene_iteration_${ts}_action`,
+        emotionalSceneId: `scene_iteration_${ts}_emotion`,
+    };
+
+    await db
+        .insert(stories as any)
+        .values({
+            id: testDataRefs.storyId,
+            authorId: writerUserId,
+            title: "Iteration Testing Story",
+            summary: "Baseline story used for iteration testing flows",
+            genre: "fantasy",
+            tone: "hopeful",
+            language: "en",
+            targetAudience: "general",
+            userPrompt: "Iteration testing baseline story",
+            moralFramework: {
+                adversity: { type: "external-conflict", description: "Testing adversity" },
+                virtue: { virtue: "courage", description: "Testing virtue" },
+                consequence: {
+                    type: "character-growth",
+                    description: "Testing consequence",
+                },
+            },
+        })
+        .onConflictDoNothing();
+
+    await db
+        .insert(characters as any)
+        .values({
+            id: testDataRefs.characterId,
+            storyId: testDataRefs.storyId,
+            name: "Iteration Test Character",
+            role: "protagonist",
+            summary: "Character used for image iteration testing",
+            coreTrait: "determination",
+            internalFlaw: "impatience",
+            externalGoal: "refine generation prompts",
+            backstory: "Born for testing",
+            personality: {
+                traits: ["analytical", "calm"],
+                mannerisms: ["studies surroundings carefully"],
+                quirks: ["collects reference artifacts"],
+            },
+            physicalDescription: {
+                age: "mid 20s",
+                build: "athletic",
+                height: "average",
+                features: ["short hair", "bright eyes"],
+            },
+            voiceStyle: {
+                tone: "measured",
+                vocabulary: "technical",
+                speechPatterns: ["precise"],
+            },
+        })
+        .onConflictDoNothing();
+
+    await db
+        .insert(settings)
+        .values({
+            id: testDataRefs.settingId,
+            storyId: testDataRefs.storyId,
+            name: "Iteration Setting",
+            summary: "Floating archive used for prompt tuning",
+            adversityElements: {
+                physicalObstacles: ["unstable bridges"],
+                scarcityFactors: ["limited time"],
+                dangerSources: ["arcane storms"],
+                socialDynamics: ["rival archivists"],
+            },
+            virtueElements: {
+                witnessElements: ["glowing runes"],
+                contrastElements: ["shadowed halls"],
+                opportunityElements: ["hidden alcoves"],
+                sacredSpaces: ["central atrium"],
+            },
+            consequenceElements: {
+                transformativeElements: ["shifting layouts"],
+                rewardSources: ["ancient knowledge"],
+                revelationTriggers: ["resonant glyphs"],
+                communityResponses: ["gathering for discoveries"],
+            },
+            symbolicMeaning: "Transformation through iteration",
+            mood: "mysterious",
+            emotionalResonance: "wonder",
+            sensory: {
+                sight: ["luminous shelves"],
+                sound: ["echoed whispers"],
+                smell: ["old parchment"],
+                touch: ["cool stone railings"],
+                taste: [],
+            },
+            architecturalStyle: "Floating terraces",
+            visualReferences: ["fantasy archives"],
+            colorPalette: ["teal", "gold", "slate"],
+        })
+        .onConflictDoNothing();
+
+    await db
+        .insert(parts as any)
+        .values({
+            id: testDataRefs.partId,
+            storyId: testDataRefs.storyId,
+            title: "Iteration Part",
+            summary: "Holds iteration chapters",
+            characterArcs: [],
+            orderIndex: 0,
+        })
+        .onConflictDoNothing();
+
+    await db
+        .insert(chapters as any)
+        .values({
+            id: testDataRefs.chapterId,
+            storyId: testDataRefs.storyId,
+            partId: testDataRefs.partId,
+            characterId: testDataRefs.characterId,
+            title: "Iteration Chapter",
+            summary: "Focuses on improving prompts",
+            arcPosition: "middle",
+            contributesToMacroArc: "Refining generation approach",
+            adversityType: "external",
+            virtueType: "resourcefulness",
+            connectsToPreviousChapter: "Establishes iteration goal",
+            createsNextAdversity: "Identifies next improvement area",
+            orderIndex: 0,
+        })
+        .onConflictDoNothing();
+
+    await db
+        .insert(scenes as any)
+        .values([
+            {
+                id: testDataRefs.actionSceneId,
+                storyId: testDataRefs.storyId,
+                chapterId: testDataRefs.chapterId,
+                settingId: testDataRefs.settingId,
+                title: "Iteration Action Scene",
+                summary: "Dynamic testing scenario",
+                cyclePhase: "adversity",
+                emotionalBeat: "urgency",
+                dialogueVsDescription: "40% dialogue, 60% description",
+                suggestedLength: "medium",
+                orderIndex: 0,
+            },
+            {
+                id: testDataRefs.emotionalSceneId,
+                storyId: testDataRefs.storyId,
+                chapterId: testDataRefs.chapterId,
+                settingId: testDataRefs.settingId,
+                title: "Iteration Emotional Scene",
+                summary: "Introspective evaluation moment",
+                cyclePhase: "virtue",
+                emotionalBeat: "reflection",
+                dialogueVsDescription: "50% dialogue, 50% description",
+                suggestedLength: "medium",
+                orderIndex: 1,
+            },
+        ])
+        .onConflictDoNothing();
+
+    scenarioContentIds = {
+        "story-cover": testDataRefs.storyId,
+        "character-portrait": testDataRefs.characterId,
+        "setting-landscape": testDataRefs.settingId,
+        "scene-action": testDataRefs.actionSceneId,
+        "emotional-moment": testDataRefs.emotionalSceneId,
+    };
+}
+
+async function cleanupTestData(): Promise<void> {
+    if (!testDataRefs) {
+        return;
+    }
+
+    await db.delete(scenes).where(eq(scenes.chapterId, testDataRefs.chapterId));
+    await db.delete(chapters).where(eq(chapters.id, testDataRefs.chapterId));
+    await db.delete(parts).where(eq(parts.id, testDataRefs.partId));
+    await db.delete(characters).where(eq(characters.id, testDataRefs.characterId));
+    await db.delete(settings).where(eq(settings.id, testDataRefs.settingId));
+    await db.delete(stories).where(eq(stories.id, testDataRefs.storyId));
+
+    testDataRefs = null;
+    scenarioContentIds = {};
+}
+
+function getContentIdForScenario(scenarioId: string): string | undefined {
+    return scenarioContentIds[scenarioId];
+}
+
 console.log(`
 ═══════════════════════════════════════════════════════════════
          IMAGE EVALUATION SUITE - ITERATION TESTING
@@ -94,6 +366,7 @@ async function generateImage(
     scenarioId: string,
     prompt: string,
     imageType: string,
+    contentId: string,
 ): Promise<{
     imageUrl: string;
     imageVariants: { avif1x: string; avif2x: string };
@@ -115,20 +388,8 @@ async function generateImage(
 
     const startTime = Date.now();
 
-    // Get API key from auth file
-    const fsSync = require("node:fs");
-    let apiKey: string | undefined;
-    if (fsSync.existsSync(".auth/user.json")) {
-        const authData = JSON.parse(
-            fsSync.readFileSync(".auth/user.json", "utf8"),
-        );
-        apiKey = authData.develop?.profiles?.writer?.apiKey;
-    }
-
-    if (!apiKey) {
-        throw new Error(
-            "API key not found in .auth/user.json. Please ensure writer profile exists in develop environment.",
-        );
+    if (!writerApiKey) {
+        throw new Error("Writer API key not loaded");
     }
 
     try {
@@ -137,11 +398,11 @@ async function generateImage(
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "x-api-key": apiKey,
+                "x-api-key": writerApiKey,
             },
             body: JSON.stringify({
                 prompt,
-                contentId: `test-${scenarioId}-${Date.now()}`,
+                contentId,
                 imageType,
             }),
         });
@@ -306,6 +567,8 @@ function evaluateImageQuick(
  * Main test execution
  */
 async function main() {
+    await prepareTestData();
+
     const results: ImageTestResult[] = [];
     const tracker = new ImageMetricsTracker();
 
@@ -316,97 +579,107 @@ async function main() {
     let totalTests = 0;
     const totalExpected = TEST_SCENARIO_IDS.length * ITERATIONS;
 
-    for (const scenarioId of TEST_SCENARIO_IDS) {
-        const scenario = getTestScenario(scenarioId);
-        if (!scenario) {
-            console.error(`  ✗ Scenario not found: ${scenarioId}`);
-            continue;
-        }
+    try {
+        for (const scenarioId of TEST_SCENARIO_IDS) {
+            const scenario = getTestScenario(scenarioId);
+            if (!scenario) {
+                console.error(`  ✗ Scenario not found: ${scenarioId}`);
+                continue;
+            }
 
-        console.log(`\n📸 Testing Scenario: ${scenario.name} (${scenarioId})`);
+            console.log(`\n📸 Testing Scenario: ${scenario.name} (${scenarioId})`);
 
-        for (let i = 0; i < ITERATIONS; i++) {
-            totalTests++;
-            const testId = `${scenarioId}-${i + 1}`;
+            for (let i = 0; i < ITERATIONS; i++) {
+                totalTests++;
+                const testId = `${scenarioId}-${i + 1}`;
+                const contentId = getContentIdForScenario(scenarioId);
 
-            console.log(
-                `\n[${totalTests}/${totalExpected}] Test ${i + 1}/${ITERATIONS}: ${scenario.name}`,
-            );
-
-            try {
-                // Generate image
-                const imageResult = await generateImage(
-                    scenarioId,
-                    scenario.prompt,
-                    scenario.imageType,
-                );
-
-                // Evaluate image
-                const evaluation = await evaluateImage(
-                    imageResult,
-                    scenario,
-                    EVALUATION_MODE,
-                );
-
-                // Create test result
-                const testResult: ImageTestResult = {
-                    testId,
-                    scenarioId,
-                    scenarioName: scenario.name,
-                    promptVersion: PROMPT_VERSION,
-                    timestamp: new Date().toISOString(),
-                    image: {
-                        imageUrl: imageResult.imageUrl,
-                        imageVariants: imageResult.imageVariants,
-                        metadata: imageResult.metadata,
-                    },
-                    evaluation,
-                    metadata: {
-                        generationTime: imageResult.generationTime,
-                        optimizationTime: imageResult.optimizationTime,
-                        totalTime: imageResult.totalTime,
-                        provider: imageResult.provider,
-                        model: imageResult.model,
-                    },
-                };
-
-                results.push(testResult);
-                tracker.addResult(testResult);
+                if (!contentId) {
+                    console.error(
+                        `  ✗ No content mapping available for scenario ${scenarioId}. Skipping.`,
+                    );
+                    continue;
+                }
 
                 console.log(
-                    `  ✓ Score: ${evaluation.weightedScore.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
+                    `\n[${totalTests}/${totalExpected}] Test ${i + 1}/${ITERATIONS}: ${scenario.name}`,
                 );
-            } catch (error) {
-                console.error(`  ✗ Test failed:`, error);
-                // Continue with next test
+
+                try {
+                    // Generate image
+                    const imageResult = await generateImage(
+                        scenarioId,
+                        scenario.prompt,
+                        scenario.imageType,
+                        contentId,
+                    );
+
+                    // Evaluate image
+                    const evaluation = await evaluateImage(
+                        imageResult,
+                        scenario,
+                        EVALUATION_MODE,
+                    );
+
+                    // Create test result
+                    const testResult: ImageTestResult = {
+                        testId,
+                        scenarioId,
+                        scenarioName: scenario.name,
+                        promptVersion: PROMPT_VERSION,
+                        timestamp: new Date().toISOString(),
+                        image: {
+                            imageUrl: imageResult.imageUrl,
+                            imageVariants: imageResult.imageVariants,
+                            metadata: imageResult.metadata,
+                        },
+                        evaluation,
+                        metadata: {
+                            generationTime: imageResult.generationTime,
+                            optimizationTime: imageResult.optimizationTime,
+                            totalTime: imageResult.totalTime,
+                            provider: imageResult.provider,
+                            model: imageResult.model,
+                        },
+                    };
+
+                    results.push(testResult);
+                    tracker.addResult(testResult);
+
+                    console.log(
+                        `  ✓ Score: ${evaluation.weightedScore.toFixed(2)}/5.0 ${evaluation.passes ? "✓ PASS" : "✗ FAIL"}`,
+                    );
+                } catch (error) {
+                    console.error(`  ✗ Test failed:`, error);
+                    // Continue with next test
+                }
             }
         }
-    }
 
-    // Aggregate metrics
-    console.log(`\n\n📊 Aggregating metrics...`);
-    const aggregatedMetrics = tracker.getAggregatedMetrics(PROMPT_VERSION);
+        // Aggregate metrics
+        console.log(`\n\n📊 Aggregating metrics...`);
+        const aggregatedMetrics = tracker.getAggregatedMetrics(PROMPT_VERSION);
 
-    // Create final result
-    const finalResult = {
-        version: PROMPT_VERSION,
-        testDate: new Date().toISOString(),
-        testScenarios: TEST_SCENARIO_IDS,
-        evaluationMode: EVALUATION_MODE,
-        iterations: ITERATIONS,
-        results,
-        aggregatedMetrics,
-    };
+        // Create final result
+        const finalResult = {
+            version: PROMPT_VERSION,
+            testDate: new Date().toISOString(),
+            testScenarios: TEST_SCENARIO_IDS,
+            evaluationMode: EVALUATION_MODE,
+            iterations: ITERATIONS,
+            results,
+            aggregatedMetrics,
+        };
 
-    // Save results
-    await fs.writeFile(
-        OUTPUT_FILE,
-        JSON.stringify(finalResult, null, 2),
-        "utf-8",
-    );
+        // Save results
+        await fs.writeFile(
+            OUTPUT_FILE,
+            JSON.stringify(finalResult, null, 2),
+            "utf-8",
+        );
 
-    // Print summary
-    console.log(`
+        // Print summary
+        console.log(`
 ═══════════════════════════════════════════════════════════════
                     TEST EXECUTION COMPLETE
 ═══════════════════════════════════════════════════════════════
@@ -432,8 +705,11 @@ ${aggregatedMetrics.failurePatterns
   Results saved to: ${OUTPUT_FILE}
 ═══════════════════════════════════════════════════════════════
 `);
-
-    process.exit(0);
+    } finally {
+        await cleanupTestData().catch((cleanupError) => {
+            console.error("Failed to cleanup iteration test data:", cleanupError);
+        });
+    }
 }
 
 // Run main function
