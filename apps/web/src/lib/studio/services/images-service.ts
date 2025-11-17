@@ -62,6 +62,16 @@ const IMAGE_TYPE_ASPECT_RATIOS: Record<GeneratorImageType, AspectRatio> = {
     "comic-panel": "9:16",
 };
 
+const ITERATION_DIMENSIONS: Record<
+    AspectRatio,
+    { width: number; height: number }
+> = {
+    "16:9": { width: 1344, height: 756 },
+    "1:1": { width: 896, height: 896 },
+    "9:16": { width: 768, height: 1365 },
+    "2:3": { width: 768, height: 1152 },
+};
+
 /**
  * Get aspect ratio for a given image type
  */
@@ -69,6 +79,12 @@ export function getAspectRatioForImageType(
     imageType: GeneratorImageType,
 ): AspectRatio {
     return IMAGE_TYPE_ASPECT_RATIOS[imageType];
+}
+
+function getIterationDimensions(
+    aspectRatio: AspectRatio,
+): { width: number; height: number } | undefined {
+    return ITERATION_DIMENSIONS[aspectRatio];
 }
 
 /**
@@ -81,6 +97,7 @@ export interface ServiceImagesParams {
     contentId: string; // Entity ID (storyId, characterId, settingId, or sceneId)
     imageType: GeneratorImageType;
     userId: string; // For authorization checks
+    generationProfile?: "full" | "iteration";
 }
 
 /**
@@ -132,7 +149,15 @@ export class ImagesService {
         params: ServiceImagesParams,
     ): Promise<ServiceImagesResult> {
         const serviceStartTime = Date.now();
-        const { prompt, contentId, imageType, userId } = params;
+        const {
+            prompt,
+            contentId,
+            imageType,
+            userId,
+            generationProfile = "full",
+        } = params;
+
+        const isIterationProfile = generationProfile === "iteration";
 
         console.log(
             `[images-service] 🎨 Generating and saving ${imageType} image for content ${contentId}`,
@@ -147,10 +172,16 @@ export class ImagesService {
         await this.verifyOwnership(contentId, imageType, userId);
 
         // 3. Generate image via generator (pure generation, no upload)
+        const iterationDimensions = isIterationProfile
+            ? getIterationDimensions(aspectRatio)
+            : undefined;
+
         const generatorParams: GeneratorImageParams = {
             prompt,
             aspectRatio,
             imageType,
+            ...(iterationDimensions ? { customDimensions: iterationDimensions } : {}),
+            ...(isIterationProfile ? { inferenceSteps: 3 } : {}),
         };
 
         const generateResult: GeneratorImageResult =
@@ -202,6 +233,7 @@ export class ImagesService {
             imageType === "scene" || imageType === "comic-panel"
                 ? contentId
                 : undefined,
+            isIterationProfile ? { resolutions: ["1x"] } : undefined,
         );
 
         const optimizationTime = Date.now() - optimizationStartTime;

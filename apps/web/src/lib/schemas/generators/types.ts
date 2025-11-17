@@ -512,6 +512,8 @@ export interface GeneratorImageParams {
     aspectRatio: import("@/lib/schemas/domain/image").AspectRatio;
     seed?: number;
     imageType: GeneratorImageType;
+    customDimensions?: { width: number; height: number };
+    inferenceSteps?: number;
 }
 
 /**

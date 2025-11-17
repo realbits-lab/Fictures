@@ -60,6 +60,10 @@ export interface OptimizedImageSet {
     generatedAt: string;
 }
 
+export interface OptimizeImageOptions {
+    resolutions?: DeviceResolution[];
+}
+
 /**
  * Download image from URL as buffer with retry logic for CDN propagation
  */
@@ -185,6 +189,7 @@ export async function optimizeImage(
     storyId: string,
     imageType: "story" | "scene" | "character" | "setting" | "panel" = "story",
     sceneId?: string,
+    options?: OptimizeImageOptions,
 ): Promise<OptimizedImageSet> {
     console.log(
         `[Image Optimization] Starting optimization for ${imageType} image ${imageId}`,
@@ -212,14 +217,24 @@ export async function optimizeImage(
 
     const variants: ImageVariant[] = [];
     let processedCount = 0;
-    const totalVariants =
-        Object.keys(IMAGE_SIZES).length *
-        Object.keys(IMAGE_SIZES.mobile).length *
-        IMAGE_FORMATS.length;
+    let totalVariants = 0;
+    const allowedResolutions = options?.resolutions;
 
     // Generate all variants (device × resolution × format)
     for (const [device, resolutions] of Object.entries(IMAGE_SIZES)) {
-        for (const [resolution, dimensions] of Object.entries(resolutions)) {
+        const resolutionEntries = Object.entries(resolutions).filter(
+            ([resolution]) =>
+                !allowedResolutions ||
+                allowedResolutions.includes(resolution as DeviceResolution),
+        );
+
+        if (resolutionEntries.length === 0) {
+            continue;
+        }
+
+        totalVariants += resolutionEntries.length * IMAGE_FORMATS.length;
+
+        for (const [resolution, dimensions] of resolutionEntries) {
             const { width, height, noResize } = dimensions as {
                 width: number;
                 height: number;
@@ -278,6 +293,12 @@ export async function optimizeImage(
         }
     }
 
+    if (totalVariants === 0) {
+        console.log(
+            "[Image Optimization] No variants requested; returning original only",
+        );
+    }
+
     const result: OptimizedImageSet = {
         imageId,
         originalUrl: originalBlob.url,
@@ -286,7 +307,7 @@ export async function optimizeImage(
     };
 
     console.log(
-        `[Image Optimization] Complete! Generated ${variants.length}/${totalVariants} variants`,
+        `[Image Optimization] Complete! Generated ${variants.length}/${totalVariants || variants.length} variants`,
     );
     console.log(
         `[Image Optimization] Total size: ${Math.round(variants.reduce((sum, v) => sum + v.size, 0) / 1024)}KB across all variants`,

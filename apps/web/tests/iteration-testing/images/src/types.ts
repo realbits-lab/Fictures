@@ -30,6 +30,8 @@ export interface ImageTestResult {
         totalTime: number;
         provider: string;
         model: string;
+        uploadTime?: number;
+        dbUpdateTime?: number;
     };
 }
 

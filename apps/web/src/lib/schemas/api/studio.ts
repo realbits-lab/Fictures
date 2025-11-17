@@ -419,6 +419,7 @@ export interface ApiImagesRequest {
     prompt: string;
     contentId: string; // Entity ID (storyId, characterId, settingId, or sceneId)
     imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
+    generationProfile?: "full" | "iteration";
 }
 
 export interface ApiImagesResponse {
@@ -450,6 +451,13 @@ export interface ApiImagesResponse {
         generatedAt: string;
     };
     isPlaceholder: boolean;
+    metadata: {
+        generationTime: number;
+        uploadTime: number;
+        optimizationTime: number;
+        dbUpdateTime: number;
+        totalTime: number;
+    };
 }
 
 export interface ApiImagesErrorResponse {
@@ -470,4 +478,5 @@ export const generateImagesSchema = z.object({
         "scene",
         "comic-panel",
     ]),
+    generationProfile: z.enum(["full", "iteration"]).optional().default("full"),
 });

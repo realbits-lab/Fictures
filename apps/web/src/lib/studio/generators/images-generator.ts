@@ -57,8 +57,14 @@ export async function generateImage(
     params: GeneratorImageParams,
 ): Promise<GeneratorImageResult> {
     const startTime: number = Date.now();
-    const { prompt, aspectRatio, seed, imageType }: GeneratorImageParams =
-        params;
+    const {
+        prompt,
+        aspectRatio,
+        seed,
+        imageType,
+        customDimensions,
+        inferenceSteps,
+    }: GeneratorImageParams = params;
 
     console.log(`[images-generator] 🎨 Generating ${imageType} image`);
     console.log(`[images-generator] Aspect ratio: ${aspectRatio}`);
@@ -81,8 +87,8 @@ export async function generateImage(
         `${apiKey.substring(0, 10)}...`,
     );
 
-    // 2. Get dimensions for aspect ratio
-    const dimensions = getImageDimensions(aspectRatio);
+    // 2. Get dimensions for aspect ratio (allow overrides for iteration profile)
+    const dimensions = customDimensions ?? getImageDimensions(aspectRatio);
     console.log(
         `[images-generator] Dimensions: ${dimensions.width}×${dimensions.height}`,
     );
@@ -107,7 +113,7 @@ export async function generateImage(
             prompt,
             width: dimensions.width,
             height: dimensions.height,
-            num_inference_steps: 4,
+            num_inference_steps: inferenceSteps ?? 4,
             guidance_scale: 1.0,
             seed,
         }),
@@ -149,8 +155,8 @@ export async function generateImage(
     return {
         imageUrl: result.image_url,
         imageBuffer,
-        width: result.width,
-        height: result.height,
+        width: result.width ?? dimensions.width,
+        height: result.height ?? dimensions.height,
         size: imageSize,
         aspectRatio,
         model: result.model,

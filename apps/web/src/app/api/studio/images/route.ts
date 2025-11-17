@@ -88,7 +88,8 @@ export const POST = requireScopes("images:write")(
                 return NextResponse.json(errorResponse, { status: 400 });
             }
 
-            const { prompt, contentId, imageType } = validationResult.data;
+            const { prompt, contentId, imageType, generationProfile } =
+                validationResult.data;
 
             console.log("✅ [IMAGES API] Validation passed");
 
@@ -100,6 +101,7 @@ export const POST = requireScopes("images:write")(
                 contentId,
                 imageType,
                 userId: auth.userId!,
+                generationProfile,
             });
 
             console.log(
@@ -131,6 +133,7 @@ export const POST = requireScopes("images:write")(
                 provider: serviceResult.provider,
                 optimizedSet: serviceResult.optimizedSet,
                 isPlaceholder: serviceResult.isPlaceholder,
+                metadata: serviceResult.metadata,
             };
 
             return NextResponse.json(response, { status: 201 });

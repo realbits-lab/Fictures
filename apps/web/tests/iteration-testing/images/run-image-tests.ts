@@ -40,6 +40,7 @@ const { values } = parseArgs({
         scenarios: { type: "string" },
         iterations: { type: "string", default: "5" },
         mode: { type: "string", default: "standard" },
+        generationProfile: { type: "string", default: "iteration" },
         output: { type: "string" },
         help: { type: "boolean", default: false },
     },
@@ -97,6 +98,8 @@ const PROMPT_VERSION = values.version || "v1.0";
 const EVALUATION_MODE =
     (values.mode as "quick" | "standard" | "thorough") || "standard";
 const ITERATIONS = parseInt(values.iterations || "5", 10);
+const GENERATION_PROFILE =
+    values.generationProfile === "full" ? "full" : "iteration";
 const TEST_SCENARIO_IDS = values.scenarios
     ? values.scenarios.split(",").map((s) => s.trim())
     : TEST_SCENARIOS.map((s) => s.id);
@@ -354,6 +357,7 @@ console.log(`
 ═══════════════════════════════════════════════════════════════
   Prompt Version:  ${PROMPT_VERSION}
   Evaluation Mode: ${EVALUATION_MODE}
+  Generation Profile: ${GENERATION_PROFILE}
   Test Scenarios:   ${TEST_SCENARIO_IDS.length} scenarios
   Iterations:      ${ITERATIONS} per scenario
   Total Images:     ${TEST_SCENARIO_IDS.length * ITERATIONS}
@@ -406,6 +410,7 @@ async function generateImage(
                 prompt,
                 contentId,
                 imageType,
+                generationProfile: GENERATION_PROFILE,
             }),
         });
 
@@ -422,9 +427,19 @@ async function generateImage(
             throw new Error("Image generation returned invalid result");
         }
 
-        const generationTime = Date.now() - startTime;
-        const optimizationTime = 0;
-        const totalTime = generationTime;
+        const requestTime = Date.now() - startTime;
+        const responseMetadata = result.metadata;
+
+        const generationTimeSeconds =
+            (responseMetadata?.generationTime ?? requestTime) / 1000;
+        const optimizationTimeSeconds =
+            (responseMetadata?.optimizationTime ?? 0) / 1000;
+        const uploadTimeSeconds =
+            (responseMetadata?.uploadTime ?? 0) / 1000;
+        const dbUpdateTimeSeconds =
+            (responseMetadata?.dbUpdateTime ?? 0) / 1000;
+        const totalTimeSeconds =
+            (responseMetadata?.totalTime ?? requestTime) / 1000;
 
         const optimizedVariants = result.optimizedSet?.variants ?? [];
         const avif1x = optimizedVariants.find(
@@ -446,7 +461,7 @@ async function generateImage(
         };
 
         console.log(
-            `    ✓ Image generated in ${(generationTime / 1000).toFixed(1)}s`,
+            `    ✓ Image generated in ${generationTimeSeconds.toFixed(1)}s`,
         );
 
         return {
@@ -456,11 +471,13 @@ async function generateImage(
                 avif2x: avif2x?.url || "",
             },
             metadata,
-            generationTime: generationTime / 1000, // Convert to seconds
-            optimizationTime: optimizationTime / 1000,
-            totalTime: totalTime / 1000,
+            generationTime: generationTimeSeconds,
+            optimizationTime: optimizationTimeSeconds,
+            totalTime: totalTimeSeconds,
             provider: result.provider || "unknown",
             model: result.model || "unknown",
+            uploadTime: uploadTimeSeconds,
+            dbUpdateTime: dbUpdateTimeSeconds,
         };
     } catch (error) {
         console.error(`    ✗ Generation failed:`, error);
