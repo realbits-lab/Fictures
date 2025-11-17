@@ -108,15 +108,16 @@ beforeAll(async () => {
         throw new Error("BLOB_READ_WRITE_TOKEN not set in environment");
     }
 
-    // 4. Create test database records
-    testStoryId = "story_test_001";
-    testPartId = "part_test_001";
-    testChapterId = "chapter_test_001";
-    testCharacterId = "char_test_001";
-    testSettingId = "setting_test_001";
-    testScene1Id = "scene_test_001";
-    testScene2Id = "scene_test_002";
-    testScene3Id = "scene_test_003";
+    // 4. Create test database records with unique IDs
+    const timestamp = Date.now();
+    testStoryId = `story_test_images_${timestamp}`;
+    testPartId = `part_test_images_${timestamp}`;
+    testChapterId = `chapter_test_images_${timestamp}`;
+    testCharacterId = `char_test_images_${timestamp}`;
+    testSettingId = `setting_test_images_${timestamp}`;
+    testScene1Id = `scene_test_images_${timestamp}_1`;
+    testScene2Id = `scene_test_images_${timestamp}_2`;
+    testScene3Id = `scene_test_images_${timestamp}_3`;
 
     // Create test story
     await db
@@ -384,7 +385,7 @@ describe("Images System Integration", () => {
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A mysterious ancient library filled with glowing books",
-            contentId: "story_test_001",
+            contentId: testStoryId,
             imageType: "story",
         };
 
@@ -455,7 +456,7 @@ describe("Images System Integration", () => {
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A wise elderly wizard with a long white beard and piercing blue eyes",
-            contentId: "char_test_001",
+            contentId: testCharacterId,
             imageType: "character",
         };
 
@@ -488,7 +489,7 @@ describe("Images System Integration", () => {
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A bustling medieval marketplace with colorful tents and merchants",
-            contentId: "setting_test_001",
+            contentId: testSettingId,
             imageType: "setting",
         };
 
@@ -515,7 +516,7 @@ describe("Images System Integration", () => {
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A dramatic sunset over a vast desert with ancient ruins",
-            contentId: "scene_test_001",
+            contentId: testScene1Id,
             imageType: "scene",
         };
 
@@ -542,7 +543,7 @@ describe("Images System Integration", () => {
         // Arrange
         const requestBody: ApiImagesRequest = {
             prompt: "A serene Japanese garden with cherry blossoms and a koi pond",
-            contentId: "scene_test_003",
+            contentId: testScene3Id,
             imageType: "scene",
         };
 

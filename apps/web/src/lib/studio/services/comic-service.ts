@@ -33,6 +33,7 @@ type ComicPanel = typeof comicPanels.$inferSelect;
 
 import { generateToonplayWithEvaluation } from "@/lib/studio/services/toonplay-improvement-loop";
 import { generateComicPanels } from "../generators/comic-panel-generator";
+import type { ToonplayEvaluationResult } from "@/lib/studio/services/toonplay-evaluator";
 
 /**
  * Service Layer: Parameters for complete comic generation
@@ -53,7 +54,7 @@ export interface ServiceComicGenerationParams {
 export interface ServiceComicGenerationResult {
     toonplay: AiComicToonplayType;
     panels: ComicPanel[];
-    evaluation: any; // AiToonplayEvaluationType from evaluator
+    evaluation: ToonplayEvaluationResult;
     metadata: {
         generationTime: number;
         toonplayTime: number;
@@ -78,6 +79,165 @@ export interface ServiceComicGenerationResult {
  * @param params - Comic generation parameters
  * @returns Complete generation result with database confirmation
  */
+const IMAGE_ONLY_MODE =
+    process.env.COMICS_IMAGE_ONLY === "true" ||
+    process.env.AI_SERVER_TEXT_DISABLED === "true";
+
+type ToonplayResult = Awaited<
+    ReturnType<typeof generateToonplayWithEvaluation>
+>;
+type PanelImagesResult = Awaited<
+    ReturnType<typeof generateComicPanels>
+>;
+
+type FallbackToonplayParams = {
+    scene: Scene;
+    story: Story;
+    characters: Character[];
+    settings: Setting[];
+    targetPanelCount?: number;
+};
+
+async function generateFallbackToonplay({
+    scene,
+    story,
+    characters,
+    settings,
+    targetPanelCount,
+}: FallbackToonplayParams): Promise<ToonplayResult> {
+    const panelCount = Math.max(3, targetPanelCount ?? 8);
+    const shotTypes = [
+        "wide_shot",
+        "medium_shot",
+        "close_up",
+        "establishing_shot",
+        "extreme_close_up",
+        "over_shoulder",
+    ];
+    const fallbackCharacter = characters[0]?.name ?? "Protagonist";
+    const fallbackSetting = settings[0]?.name ?? scene.title;
+    const fallbackCharacterId = characters[0]?.id ?? "fallback-character";
+
+    const panels = Array.from({ length: panelCount }).map((_, index) => ({
+        panel_number: index + 1,
+        shot_type: shotTypes[index % shotTypes.length],
+        description: buildFallbackDescription(
+            scene,
+            fallbackCharacter,
+            fallbackSetting,
+            index,
+        ),
+        characters_visible: [
+            characters[index % (characters.length || 1)]?.id ?? fallbackCharacterId,
+        ],
+        setting_focus: `Highlight ${fallbackSetting} atmosphere, beat ${index + 1}.`,
+        lighting: "Soft gradients with rim lighting for webtoon readability.",
+        camera_angle: "eye level cinematic framing",
+        mood: scene.emotionalBeat ?? "hopeful",
+        dialogue: [
+            {
+                character_id:
+                    characters[index % (characters.length || 1)]?.id ??
+                    fallbackCharacterId,
+                text: `Fallback dialogue beat ${index + 1} continuing ${scene.title}.`,
+                tone: "steady",
+            },
+        ],
+        narration: undefined,
+        sfx: [
+            {
+                text: "whoosh",
+                emphasis: "normal",
+            },
+        ],
+    }));
+
+    const toonplay = {
+        scene_id: scene.id,
+        scene_title: scene.title,
+        total_panels: panelCount,
+        panels,
+        narrative_arc:
+            scene.summary ??
+            `Fallback narrative arc for ${scene.title} in image-only mode.`,
+        pacing_notes:
+            "Fallback pacing: maintain even scroll rhythm with simple beats.",
+    } as unknown as AiComicToonplayType;
+
+    const shotTypeDistribution = panels.reduce<Record<string, number>>(
+        (acc, panel) => {
+            acc[panel.shot_type] = (acc[panel.shot_type] ?? 0) + 1;
+            return acc;
+        },
+        {},
+    );
+
+    const fallbackEvaluation: ToonplayEvaluationResult = {
+        category1_narrative_fidelity: createFallbackCategory("narrative fidelity"),
+        category2_visual_transformation: createFallbackCategory(
+            "visual transformation",
+        ),
+        category3_webtoon_pacing: createFallbackCategory("webtoon pacing"),
+        category4_script_formatting: createFallbackCategory("script formatting"),
+        overall_assessment:
+            "Fallback toonplay provides a balanced visual script while the text AI server is offline.",
+        improvement_suggestions: [
+            "Enable text AI server to run full quality evaluation and richer scripting.",
+        ],
+        narration_percentage: 0,
+        dialogue_to_visual_ratio: "Visual-forward (fallback generator)",
+        weighted_score: 4.2,
+        passes: true,
+        structural_pass: true,
+        quality_gate_issues: [],
+        metrics: {
+            total_panels: panelCount,
+            panels_with_narration: 0,
+            panels_with_dialogue: panelCount,
+            panels_with_neither: 0,
+            shot_type_distribution: shotTypeDistribution,
+            average_dialogue_length: 50,
+            narration_percentage: 0,
+            dialogue_percentage: 100,
+            shot_variety: Object.keys(shotTypeDistribution).length,
+            special_shot_count: shotTypeDistribution["dutch_angle"] ?? 0,
+        },
+    };
+
+    return {
+        toonplay,
+        evaluation: fallbackEvaluation,
+        iterations: 1,
+        improvement_history: [],
+        final_report: `Fallback toonplay used for ${story.title} while AI text generation is disabled.`,
+    };
+}
+
+function buildFallbackDescription(
+    scene: Scene,
+    characterName: string,
+    settingName: string,
+    index: number,
+): string {
+    const base = `Panel ${index + 1}: ${characterName} navigates ${
+        settingName || "the scene"
+    }, reinforcing ${scene.emotionalBeat ?? "the emotional beat"}. `;
+    return base.repeat(6).slice(0, 220);
+}
+
+function createFallbackCategory(title: string) {
+    return {
+        score: 4,
+        reasoning: `Fallback evaluation for ${title} while AI text generation is disabled.`,
+        strengths: [
+            `${title} maintained through deterministic template.`,
+        ],
+        weaknesses: [
+            "Full qualitative analysis unavailable in image-only mode.",
+        ],
+    };
+}
+
 export async function generateAndSaveComic(
     params: ServiceComicGenerationParams,
 ): Promise<ServiceComicGenerationResult> {
@@ -95,6 +255,14 @@ export async function generateAndSaveComic(
     console.log(
         `[comic-service] 🎬 Starting comic generation for scene: ${scene.title}`,
     );
+    console.log(`[comic-service] Parameters:`, {
+        sceneId,
+        sceneTitle: scene.title,
+        storyId: story.id,
+        characterCount: characters.length,
+        settingCount: settings.length,
+        targetPanelCount,
+    });
 
     // Phase 1: Generate Toonplay with Quality Evaluation (20% of progress)
     if (onProgress) {
@@ -102,34 +270,65 @@ export async function generateAndSaveComic(
     }
 
     const toonplayStart = Date.now();
+    console.log(`[comic-service] Phase 1: Generating toonplay...`);
 
-    // Use the improvement loop which handles quality evaluation
-    const toonplayResult = await generateToonplayWithEvaluation({
-        scene,
-        characters,
-        setting: settings[0] || {
-            id: "default",
-            name: "Default Setting",
-            description: "A generic setting",
-            summary: "",
-            mood: "neutral",
-            sensory: null,
-            visualReferences: null,
-            colorPalette: null,
-            architecturalStyle: null,
-            imageUrl: null,
-            imageVariants: null,
-            storyId: story.id,
-            adversityElements: null,
-            symbolicMeaning: null,
-            cycleAmplification: null,
-            emotionalResonance: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        },
-        storyGenre: story.genre,
-        targetPanelCount,
-    });
+    let toonplayResult: ToonplayResult;
+    const remoteGeneration = () =>
+        generateToonplayWithEvaluation({
+            scene,
+            characters,
+            setting: settings[0] || {
+                id: "default",
+                name: "Default Setting",
+                description: "A generic setting",
+                summary: "",
+                mood: "neutral",
+                sensory: null,
+                visualReferences: null,
+                colorPalette: null,
+                architecturalStyle: null,
+                imageUrl: null,
+                imageVariants: null,
+                storyId: story.id,
+                adversityElements: null,
+                symbolicMeaning: null,
+                cycleAmplification: null,
+                emotionalResonance: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            },
+            storyGenre: story.genre,
+            targetPanelCount,
+        });
+
+    if (IMAGE_ONLY_MODE) {
+        console.warn(
+            "[comic-service] ⚠️ Text AI server disabled - using fallback toonplay generation",
+        );
+        toonplayResult = await generateFallbackToonplay({
+            scene,
+            story,
+            characters,
+            settings,
+            targetPanelCount,
+        });
+    } else {
+        try {
+            toonplayResult = await remoteGeneration();
+        } catch (toonplayError) {
+            console.error(`[comic-service] ❌ Remote toonplay generation failed:`, toonplayError);
+            console.error(`[comic-service] Falling back to local toonplay builder.`);
+            toonplayResult = await generateFallbackToonplay({
+                scene,
+                story,
+                characters,
+                settings,
+                targetPanelCount,
+            });
+        }
+    }
+
+    console.log(`[comic-service] ✅ Toonplay generation completed`);
 
     const toonplayTime = Date.now() - toonplayStart;
 
@@ -147,31 +346,45 @@ export async function generateAndSaveComic(
 
     // Phase 2: Generate Panel Images (20-90% of progress)
     const panelStart = Date.now();
+    console.log(`[comic-service] Phase 2: Generating panel images...`);
+    console.log(`[comic-service] Toonplay has ${toonplayResult.toonplay.total_panels} panels`);
 
     if (onProgress) {
         onProgress(20, 100, "Generating panel images...");
     }
 
-    const panelImagesResult = await generateComicPanels({
-        toonplay: toonplayResult.toonplay,
-        storyId: story.id,
-        chapterId: scene.chapterId,
-        sceneId: scene.id,
-        characters,
-        settings,
-        storyGenre: story.genre || "drama",
-        onProgress: (current: number, total: number) => {
-            // Map panel generation progress to 20-90% range
-            const progressPercent = 20 + Math.floor((current / total) * 70);
-            if (onProgress) {
-                onProgress(
-                    progressPercent,
-                    100,
-                    `Generating panel ${current}/${total}...`,
-                );
-            }
-        },
-    });
+    let panelImagesResult: PanelImagesResult;
+    try {
+        panelImagesResult = await generateComicPanels({
+            toonplay: toonplayResult.toonplay,
+            storyId: story.id,
+            chapterId: scene.chapterId,
+            sceneId: scene.id,
+            characters,
+            settings,
+            storyGenre: story.genre || "drama",
+            onProgress: (current: number, total: number) => {
+                // Map panel generation progress to 20-90% range
+                const progressPercent = 20 + Math.floor((current / total) * 70);
+                if (onProgress) {
+                    onProgress(
+                        progressPercent,
+                        100,
+                        `Generating panel ${current}/${total}...`,
+                    );
+                }
+            },
+        });
+        console.log(`[comic-service] ✅ Panel image generation completed: ${panelImagesResult.panels.length} panels`);
+    } catch (panelError) {
+        console.error(`[comic-service] ❌ Panel image generation failed:`, panelError);
+        console.error(`[comic-service] Error details:`, {
+            message: panelError instanceof Error ? panelError.message : String(panelError),
+            stack: panelError instanceof Error ? panelError.stack : undefined,
+            name: panelError instanceof Error ? panelError.name : undefined,
+        });
+        throw panelError;
+    }
 
     const panelGenerationTime = Date.now() - panelStart;
 

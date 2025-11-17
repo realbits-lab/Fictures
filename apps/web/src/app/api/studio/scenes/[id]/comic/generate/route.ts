@@ -30,28 +30,58 @@ async function handlePOST(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> },
 ) {
+    // Log immediately to verify handler is called
+    console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    console.error("🎨 [COMIC GENERATE API] POST request received");
+    console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    
     try {
         const { id } = await params;
+        console.log(`[COMIC GENERATE API] Scene ID: ${id}`);
 
         // Get authentication from context (set by withAuthentication wrapper)
         const auth = getAuth();
+        console.log(`[COMIC GENERATE API] Auth check:`, {
+            hasAuth: !!auth,
+            userId: auth?.userId,
+            type: auth?.type,
+            email: auth?.email,
+        });
 
         if (!auth?.userId) {
+            console.error("[COMIC GENERATE API] ❌ Unauthorized - no userId");
             return NextResponse.json(
                 { error: "Unauthorized" },
                 { status: 401 },
             );
         }
 
+        console.log("[COMIC GENERATE API] ✅ Authentication successful");
+
         // Parse optional parameters
-        const body = await request.json().catch(() => ({}));
+        let body: any = {};
+        try {
+            body = await request.json();
+            console.log(`[COMIC GENERATE API] Request body parsed:`, {
+                targetPanelCount: body.targetPanelCount,
+                regenerate: body.regenerate,
+            });
+        } catch {
+            console.log("[COMIC GENERATE API] No request body or parse error, using defaults");
+        }
+        
         const { targetPanelCount, regenerate = false } = body;
+        console.log(`[COMIC GENERATE API] Parameters:`, {
+            targetPanelCount,
+            regenerate,
+        });
 
         // Validate targetPanelCount (8-12 panels recommended per scene)
         if (
             targetPanelCount !== undefined &&
             (targetPanelCount < 1 || targetPanelCount > 12)
         ) {
+            console.error(`[COMIC GENERATE API] ❌ Invalid targetPanelCount: ${targetPanelCount}`);
             return NextResponse.json(
                 {
                     error: "targetPanelCount must be between 1 and 12 (recommended: 8-12 for optimal pacing)",
@@ -60,6 +90,7 @@ async function handlePOST(
             );
         }
 
+        console.log(`[COMIC GENERATE API] 🔍 Fetching scene with ID: ${id}`);
         // Fetch scene with chapter and story
         const scene = await db.query.scenes.findFirst({
             where: eq(scenes.id, id),
@@ -72,7 +103,17 @@ async function handlePOST(
             },
         });
 
+        console.log(`[COMIC GENERATE API] Scene query result:`, {
+            found: !!scene,
+            hasChapter: !!scene?.chapter,
+            hasStory: !!scene?.chapter?.story,
+            sceneTitle: scene?.title,
+            chapterId: scene?.chapter?.id,
+            storyId: scene?.chapter?.story?.id,
+        });
+
         if (!scene || !scene.chapter) {
+            console.error(`[COMIC GENERATE API] ❌ Scene not found: ${id}`);
             return NextResponse.json(
                 { error: "Scene not found" },
                 { status: 404 },
@@ -97,26 +138,49 @@ async function handlePOST(
 
         // Extract story for type safety
         const story = sceneWithStory.chapter.story;
+        console.log(`[COMIC GENERATE API] Story extracted:`, {
+            storyId: story.id,
+            storyTitle: story.title,
+            authorId: story.authorId,
+        });
 
         // Verify ownership
         // For API key auth, stories:write scope is already verified by requireScopes wrapper
         const isOwner = story.authorId === auth.userId;
         const hasApiKeyAccess = auth.type === "api-key"; // stories:write already verified
 
+        console.log(`[COMIC GENERATE API] Ownership check:`, {
+            isOwner,
+            hasApiKeyAccess,
+            storyAuthorId: story.authorId,
+            authUserId: auth.userId,
+            authType: auth.type,
+        });
+
         if (!isOwner && !hasApiKeyAccess) {
+            console.error(`[COMIC GENERATE API] ❌ Access denied - not owner and no API key`);
             return NextResponse.json(
                 { error: "Access denied" },
                 { status: 403 },
             );
         }
 
+        console.log(`[COMIC GENERATE API] ✅ Ownership verified`);
+
         // Check if panels already exist
+        console.log(`[COMIC GENERATE API] Checking for existing panels (regenerate=${regenerate})`);
         if (!regenerate) {
             const existingPanels = await db.query.comicPanels.findFirst({
                 where: eq(comicPanels.sceneId, id),
             });
 
+            console.log(`[COMIC GENERATE API] Existing panels check:`, {
+                found: !!existingPanels,
+                panelId: existingPanels?.id,
+            });
+
             if (existingPanels) {
+                console.error(`[COMIC GENERATE API] ❌ Panels already exist`);
                 return NextResponse.json(
                     {
                         error: "Panels already exist for this scene. Set regenerate=true to overwrite.",
@@ -126,21 +190,26 @@ async function handlePOST(
             }
         } else {
             // Delete existing panels if regenerating
+            console.log(`[COMIC GENERATE API] Deleting existing panels for regeneration`);
             await db.delete(comicPanels).where(eq(comicPanels.sceneId, id));
             console.log(
-                `🔄 Regenerating comic panels for scene: ${scene.title}`,
+                `[COMIC GENERATE API] 🔄 Regenerating comic panels for scene: ${scene.title}`,
             );
         }
 
         // Fetch characters for this story
+        console.log(`[COMIC GENERATE API] Fetching characters for story: ${story.id}`);
         const storyCharacters = await db.query.characters.findMany({
             where: eq(characters.storyId, story.id),
         });
+        console.log(`[COMIC GENERATE API] Found ${storyCharacters.length} characters`);
 
         // Fetch settings for this story
+        console.log(`[COMIC GENERATE API] Fetching settings for story: ${story.id}`);
         const storySettings = await db.query.settings.findMany({
             where: eq(settings.storyId, story.id),
         });
+        console.log(`[COMIC GENERATE API] Found ${storySettings.length} settings`);
 
         // Use the first setting or create a default one
         const _primarySetting = storySettings[0] || {
@@ -166,8 +235,13 @@ async function handlePOST(
         // Check if client wants SSE
         const acceptHeader = request.headers.get("accept") || "";
         const wantsSSE = acceptHeader.includes("text/event-stream");
+        console.log(`[COMIC GENERATE API] SSE check:`, {
+            acceptHeader,
+            wantsSSE,
+        });
 
         if (wantsSSE) {
+            console.log(`[COMIC GENERATE API] Using SSE stream mode`);
             // Return SSE stream
             const encoder = new TextEncoder();
             const stream = new ReadableStream({
@@ -270,17 +344,42 @@ async function handlePOST(
             });
         } else {
             // Return regular JSON response
-            console.log(`🎨 Generating comic panels for scene: ${scene.title}`);
-
-            // Use service layer for generation
-            const result = await generateAndSaveComic({
+            console.log(`[COMIC GENERATE API] 🎨 Generating comic panels for scene: ${scene.title}`);
+            console.log(`[COMIC GENERATE API] Service parameters:`, {
                 sceneId: id,
-                scene: scene as any,
-                story: story as any,
-                characters: storyCharacters as any,
-                settings: storySettings as any,
+                sceneTitle: scene.title,
+                storyId: story.id,
+                characterCount: storyCharacters.length,
+                settingCount: storySettings.length,
                 targetPanelCount,
             });
+
+            // Use service layer for generation
+            console.log(`[COMIC GENERATE API] Calling generateAndSaveComic service...`);
+            let result: Awaited<ReturnType<typeof generateAndSaveComic>>;
+            try {
+                result = await generateAndSaveComic({
+                    sceneId: id,
+                    scene: scene as any,
+                    story: story as any,
+                    characters: storyCharacters as any,
+                    settings: storySettings as any,
+                    targetPanelCount,
+                });
+                console.log(`[COMIC GENERATE API] ✅ Service call completed:`, {
+                    panelCount: result.panels.length,
+                    hasToonplay: !!result.toonplay,
+                    hasEvaluation: !!result.evaluation,
+                    hasMetadata: !!result.metadata,
+                });
+            } catch (serviceError) {
+                console.error(`[COMIC GENERATE API] ❌ Service call failed:`, serviceError);
+                console.error(`[COMIC GENERATE API] Error details:`, {
+                    message: serviceError instanceof Error ? serviceError.message : "Unknown error",
+                    stack: serviceError instanceof Error ? serviceError.stack : undefined,
+                });
+                throw serviceError;
+            }
 
             // Fetch updated scene after generation
             const updatedScene = await db.query.scenes.findFirst({
@@ -329,7 +428,22 @@ async function handlePOST(
             });
         }
     } catch (error) {
-        console.error("Error generating comic:", error);
+        console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.error("[COMIC GENERATE API] ❌ ERROR in handlePOST:");
+        console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        console.error("Error type:", error instanceof Error ? error.constructor.name : typeof error);
+        console.error("Error message:", error instanceof Error ? error.message : String(error));
+        console.error("Error stack:", error instanceof Error ? error.stack : "No stack trace");
+        
+        if (error instanceof Error) {
+            console.error("Error name:", error.name);
+            if ("cause" in error) {
+                console.error("Error cause:", (error as { cause?: unknown }).cause);
+            }
+        }
+        
+        console.error("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        
         return NextResponse.json(
             {
                 error: "Internal server error",

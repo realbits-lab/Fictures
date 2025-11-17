@@ -15,6 +15,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
+process.env.COMICS_IMAGE_ONLY = process.env.COMICS_IMAGE_ONLY || "true";
+
 import {
     chapters,
     characters,

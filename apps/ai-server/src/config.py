@@ -17,11 +17,10 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env.local", env_file_encoding="utf-8", extra="ignore")
 
     # Generation Mode Configuration
-    # Options: "text", "image", "both"
+    # Options:
     # - "text": Only text generation (vLLM, uses ~10GB VRAM)
     # - "image": Only image generation (ComfyUI, uses ~8GB VRAM)
-    # - "both": Both services (requires 24GB+ VRAM or CPU offload)
-    ai_server_generation_mode: Literal["text", "image", "both"] = "image"
+    ai_server_generation_mode: Literal["text", "image"] = "image"
 
     # ComfyUI Configuration (External Image Generation Server)
     # ComfyUI runs as separate process and manages its own models
