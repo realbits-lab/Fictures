@@ -88,7 +88,7 @@ export const POST = requireScopes("images:write")(
                 return NextResponse.json(errorResponse, { status: 400 });
             }
 
-            const { prompt, contentId, imageType, generationProfile } =
+            const { prompt, contentId, imageType, generationProfile, genre } =
                 validationResult.data;
 
             console.log("✅ [IMAGES API] Validation passed");
@@ -102,6 +102,7 @@ export const POST = requireScopes("images:write")(
                 imageType,
                 userId: auth.userId!,
                 generationProfile,
+                genre, // Pass genre for Cycle 4 prompt enhancement
             });
 
             console.log(

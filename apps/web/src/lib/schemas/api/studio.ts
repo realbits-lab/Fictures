@@ -38,13 +38,13 @@
  * - POST /api/studio/scene-improvement - Improve scene quality
  */
 
+import type { InferSelectModel } from "drizzle-orm";
 import { z } from "zod";
 import type { StoryGenre } from "@/lib/constants/genres";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import { STORY_TONES } from "@/lib/constants/tones";
-import { type InferSelectModel } from "drizzle-orm";
-import {
+import type {
     chapters,
     characters,
     parts,
@@ -420,6 +420,7 @@ export interface ApiImagesRequest {
     contentId: string; // Entity ID (storyId, characterId, settingId, or sceneId)
     imageType: "story" | "character" | "setting" | "scene" | "comic-panel";
     generationProfile?: "full" | "iteration";
+    genre?: string; // Story genre for prompt enhancement (Cycle 4 optimization)
 }
 
 export interface ApiImagesResponse {
@@ -479,4 +480,5 @@ export const generateImagesSchema = z.object({
         "comic-panel",
     ]),
     generationProfile: z.enum(["full", "iteration"]).optional().default("full"),
+    genre: z.string().optional(), // Story genre for prompt enhancement (Cycle 4 optimization)
 });

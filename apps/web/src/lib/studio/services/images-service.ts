@@ -45,6 +45,7 @@ import {
     optimizeImage,
 } from "@/lib/studio/services/image-optimization-service";
 import { getBlobPath } from "@/lib/utils/blob-path";
+import { enhanceImagePrompt } from "@/lib/utils/image-prompt-enhancer";
 import { generateImage } from "../generators/images-generator";
 
 // ============================================================================
@@ -98,6 +99,7 @@ export interface ServiceImagesParams {
     imageType: GeneratorImageType;
     userId: string; // For authorization checks
     generationProfile?: "full" | "iteration";
+    genre?: string; // Story genre for prompt enhancement
 }
 
 /**
@@ -155,6 +157,7 @@ export class ImagesService {
             imageType,
             userId,
             generationProfile = "full",
+            genre,
         } = params;
 
         const isIterationProfile = generationProfile === "iteration";
@@ -162,6 +165,15 @@ export class ImagesService {
         console.log(
             `[images-service] 🎨 Generating and saving ${imageType} image for content ${contentId}`,
         );
+
+        // Enhance prompt with genre-specific style patterns (Cycle 4 optimization)
+        const enhancedPrompt = enhanceImagePrompt(prompt, genre, imageType);
+
+        if (enhancedPrompt !== prompt) {
+            console.log(
+                `[images-service] 📝 Prompt enhanced with genre patterns (genre: ${genre || "none"})`,
+            );
+        }
 
         // 1. Determine aspect ratio (automatic by image type)
         const aspectRatio = getAspectRatioForImageType(imageType);
@@ -177,10 +189,12 @@ export class ImagesService {
             : undefined;
 
         const generatorParams: GeneratorImageParams = {
-            prompt,
+            prompt: enhancedPrompt, // Use enhanced prompt with genre patterns
             aspectRatio,
             imageType,
-            ...(iterationDimensions ? { customDimensions: iterationDimensions } : {}),
+            ...(iterationDimensions
+                ? { customDimensions: iterationDimensions }
+                : {}),
             ...(isIterationProfile ? { inferenceSteps: 3 } : {}),
         };
 
