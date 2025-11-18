@@ -1,11 +1,5 @@
 # Caching Strategy - Complete Guide
 
-**Date:** October 25, 2025
-**Status:** ✅ APPLIED - All optimizations implemented
-**Goal:** Multi-layer caching for optimal performance across client and server
-
----
-
 ## Overview
 
 Fictures implements a **3-layer caching strategy** for maximum performance:
@@ -41,14 +35,6 @@ useChapterScenes: {
   keepPreviousData: true
 }
 ```
-
-### Performance Impact
-
-| Data Type | Before | After | Improvement |
-|-----------|--------|-------|-------------|
-| Story List | 5 min | 30 min | **6x longer** |
-| Story Structure | 10 min | 30 min | **3x longer** |
-| Scene Content | 10 sec | 30 min | **180x longer** |
 
 ### Rationale
 
@@ -187,25 +173,6 @@ CACHE_TTL = {
 }
 ```
 
-### Memory Efficiency
-
-**Before Optimization:**
-- 100 stories × 1,000 users × 50KB = **5GB**
-
-**After Optimization:**
-- 100 stories × 1 shared entry × 50KB = **5MB**
-- **99.9% memory reduction**
-
-### Scalability
-
-| User Count | Old Approach | New Approach | Savings |
-|-----------|-------------|--------------|---------|
-| 100 users | 2.45GB | 24.5MB | 99.0% |
-| 1,000 users | 24.5GB | 24.5MB | 99.9% |
-| 10,000 users | 245GB | 24.5MB | 99.99% |
-
-**Key Insight:** Memory usage remains constant regardless of user count.
-
 ---
 
 ## Advanced Redis Optimizations
@@ -296,37 +263,6 @@ export async function invalidateSceneCache(sceneId: string, visibility: string) 
 
 ---
 
-## Performance Metrics
-
-### Cold vs Warm Cache
-
-| Endpoint | Cold Cache | Warm Cache | Improvement |
-|----------|-----------|------------|-------------|
-| Published Stories | 3,092ms | 70ms | **97.73%** |
-| Story Structure | 3,769ms | 72ms | **98.09%** |
-| Chapter Content | 2,005ms | 49ms | **97.56%** |
-| Scene Content | 2,433ms | 41ms | **98.34%** |
-
-### Multi-User Test Results
-
-```
-User 1 (authenticated): 3015ms (CACHE MISS)
-User 2 (authenticated): 67ms (CACHE HIT - shared cache)
-User 3 (authenticated): 55ms (CACHE HIT - shared cache)
-Guest (non-authenticated): 54ms (CACHE HIT - shared cache)
-```
-
-**Key Observation:** First user warms cache for ALL subsequent users.
-
-### Cache Hit Rate
-
-**Target Metrics:**
-- SWR memory cache: **95%+ hit rate** in 30min sessions
-- Redis public cache: **90%+ hit rate**
-- Redis private cache: **70%+ hit rate**
-
----
-
 ## Cache Flow Decision Tree
 
 ```
@@ -361,35 +297,6 @@ Return to Client
 
 ---
 
-## Testing
-
-### Manual Test - 30-Minute Session
-
-```bash
-# 1. Visit /novels (story list) → instant from memory
-# 2. Open a story → instant from memory
-# 3. Read for 15 minutes → all scenes instant
-# 4. Navigate back to story list → instant (still within 30min)
-# 5. Open different story → instant (still within 30min)
-# 6. Read for 10 minutes → still instant (25min total)
-# 7. Take 5-minute break → everything still instant (30min total)
-# 8. Wait 31 minutes → uses localStorage (~5ms, still fast)
-```
-
-### Performance Verification
-
-```javascript
-// Check cache hit time
-performance.mark('navigation-start');
-// Navigate to cached page
-performance.mark('navigation-end');
-performance.measure('navigation', 'navigation-start', 'navigation-end');
-console.log(performance.getEntriesByName('navigation'));
-// Expected: `< 1ms` from SWR memory, 5-10ms from localStorage
-```
-
----
-
 ## Monitoring
 
 ### Key Metrics to Track
@@ -410,28 +317,6 @@ console.log(performance.getEntriesByName('navigation'));
    ```typescript
    console.log('[Cache] Response time:', duration, 'ms');
    ```
-
----
-
-## Benefits Summary
-
-### For Users
-- Instant navigation throughout 30-minute sessions
-- No loading delays when switching between stories
-- Native app-like experience
-- Reduced data usage (fewer API calls)
-
-### For System
-- 99.9% memory reduction for public content
-- 60-80% reduction in database queries
-- Lower bandwidth consumption
-- Better scalability for user growth
-
-### For Performance
-- `< 1ms` loads for cached content (SWR)
-- `< 50ms` loads for server cache (Redis)
-- > 95% cache hit rate in typical sessions
-- 3-10x faster overall performance
 
 ---
 
@@ -461,8 +346,3 @@ STORY_LIST: 300
 ```
 
 ---
-
-**Status:** ✅ APPLIED
-**Memory Impact:** 99.9% reduction for public content
-**Performance:** ``<1ms`` client, ``<50ms`` server, 95%+ hit rate
-**User Experience:** Professional native app feel
