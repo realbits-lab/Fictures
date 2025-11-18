@@ -1,0 +1,208 @@
+{
+  "cycle": 2,
+  "name": "Enhanced Panel Prompts",
+  "results": [
+    {
+      "testId": "action-sequence-1",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 25797,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 30770,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 56582,
+      "successRate": 1,
+      "averageGenerationTime": 28283.5
+    },
+    {
+      "testId": "action-sequence-2",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 30826,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 30337,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 61174,
+      "successRate": 1,
+      "averageGenerationTime": 30581.5
+    },
+    {
+      "testId": "action-sequence-3",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 16461,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 16352,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32823,
+      "successRate": 1,
+      "averageGenerationTime": 16406.5
+    },
+    {
+      "testId": "emotional-beat-1",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 16360,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16364,
+      "successRate": 1,
+      "averageGenerationTime": 16360
+    },
+    {
+      "testId": "emotional-beat-2",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 12321,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12325,
+      "successRate": 1,
+      "averageGenerationTime": 12321
+    },
+    {
+      "testId": "emotional-beat-3",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 12290,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12294,
+      "successRate": 1,
+      "averageGenerationTime": 12290
+    },
+    {
+      "testId": "establishing-shot-1",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 16434,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16438,
+      "successRate": 1,
+      "averageGenerationTime": 16434
+    },
+    {
+      "testId": "establishing-shot-2",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 12400,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12404,
+      "successRate": 1,
+      "averageGenerationTime": 12400
+    },
+    {
+      "testId": "establishing-shot-3",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, dramatic lighting, detailed linework, professional manga style",
+          "generationTime": 12364,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12368,
+      "successRate": 1,
+      "averageGenerationTime": 12364
+    }
+  ],
+  "metrics": {
+    "totalTests": 9,
+    "totalPanels": 12,
+    "successfulPanels": 12,
+    "successRate": 1,
+    "averageGenerationTime": 19.392666666666667,
+    "minGenerationTime": 12.29,
+    "maxGenerationTime": 30.826
+  },
+  "improvements": [
+    "Add lighting and atmosphere descriptors",
+    "Include professional quality markers",
+    "Add detail level indicators"
+  ],
+  "duration": 232.774,
+  "timestamp": "2025-11-18T09:04:52.227Z"
+}

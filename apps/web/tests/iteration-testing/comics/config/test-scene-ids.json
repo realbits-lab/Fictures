@@ -1,12 +1,12 @@
 {
-  "storyId": "story_comic_test_1763452661035",
-  "chapterId": "chapter_comic_test_1763452661739",
+  "storyId": "story_comic_test_1763453864317",
+  "chapterId": "chapter_comic_test_1763453865054",
   "sceneIds": {
-    "action-sequence": "scene_action-sequence_1763452662210_0",
-    "dialogue-heavy": "scene_dialogue-heavy_1763452662288_1",
-    "emotional-beat": "scene_emotional-beat_1763452662366_2",
-    "establishing-shot": "scene_establishing-shot_1763452662444_3",
-    "climactic-moment": "scene_climactic-moment_1763452662523_4"
+    "action-sequence": "scene_action-sequence_1763453865502_0",
+    "dialogue-heavy": "scene_dialogue-heavy_1763453865577_1",
+    "emotional-beat": "scene_emotional-beat_1763453865651_2",
+    "establishing-shot": "scene_establishing-shot_1763453865729_3",
+    "climactic-moment": "scene_climactic-moment_1763453865802_4"
   },
-  "createdAt": "2025-11-18T07:57:41.035Z"
+  "createdAt": "2025-11-18T08:17:44.317Z"
 }

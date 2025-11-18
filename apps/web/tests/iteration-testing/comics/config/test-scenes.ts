@@ -8,6 +8,18 @@
  * 4. Performance (20%) - Generation time, success rate
  */
 
+import * as fs from "node:fs";
+import * as path from "node:path";
+
+// Load scene IDs from config file
+const configPath = path.join(__dirname, "test-scene-ids.json");
+let SCENE_ID_MAP: Record<string, string> = {};
+
+if (fs.existsSync(configPath)) {
+    const configData = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    SCENE_ID_MAP = configData.sceneIds || {};
+}
+
 export interface TestScene {
     id: string;
     name: string;
@@ -37,7 +49,7 @@ export const TEST_SCENES: TestScene[] = [
         name: "Action Sequence",
         sceneContent: `Marcus burst through the market crowd, vaulting over obstacles. The guards' shouts grew louder behind him.`,
         toonplay: {
-            sceneId: "test-action",
+            sceneId: SCENE_ID_MAP["action-sequence"] || "test-action",
             sceneTitle: "The Chase",
             totalPanels: 10,
             panels: [
@@ -73,7 +85,7 @@ export const TEST_SCENES: TestScene[] = [
         name: "Dialogue Scene",
         sceneContent: `"I can't do this anymore," Elena said. David looked up from his coffee. "What are you talking about?"`,
         toonplay: {
-            sceneId: "test-dialogue",
+            sceneId: SCENE_ID_MAP["dialogue-heavy"] || "test-dialogue",
             sceneTitle: "The Confession",
             totalPanels: 9,
             panels: [
@@ -108,7 +120,7 @@ export const TEST_SCENES: TestScene[] = [
         name: "Emotional Beat",
         sceneContent: `Sarah stood at the window, the letter in her hand trembling. After fifteen years, her mother had finally written back.`,
         toonplay: {
-            sceneId: "test-emotional",
+            sceneId: SCENE_ID_MAP["emotional-beat"] || "test-emotional",
             sceneTitle: "The Revelation",
             totalPanels: 8,
             panels: [
@@ -141,7 +153,7 @@ export const TEST_SCENES: TestScene[] = [
         name: "Establishing Shot",
         sceneContent: `The library had been forgotten for decades. Dust motes danced in shafts of sunlight. Books lay scattered across marble floors.`,
         toonplay: {
-            sceneId: "test-establishing",
+            sceneId: SCENE_ID_MAP["establishing-shot"] || "test-establishing",
             sceneTitle: "The Abandoned Library",
             totalPanels: 8,
             panels: [
@@ -174,7 +186,7 @@ export const TEST_SCENES: TestScene[] = [
         name: "Climactic Moment",
         sceneContent: `The courtroom was silent. Judge Harrison adjusted his glasses. "Thomas Wright, you've been found guilty. However..."`,
         toonplay: {
-            sceneId: "test-climactic",
+            sceneId: SCENE_ID_MAP["climactic-moment"] || "test-climactic",
             sceneTitle: "The Verdict",
             totalPanels: 10,
             panels: [
