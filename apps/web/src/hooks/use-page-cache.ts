@@ -51,7 +51,7 @@ export function usePublishedStories() {
         const fetchStories = async () => {
             try {
                 setLoading(true);
-                const response = await fetch("/api/comics/published");
+                const response = await fetch("/api/novels/published");
 
                 if (!response.ok) {
                     throw new Error("Failed to fetch published stories");
@@ -344,7 +344,9 @@ export function useCacheManagement() {
                     localStorage.clear();
                 }
                 // Refresh stats
-                const refreshResponse = await fetch("/studio/api/cache/metrics");
+                const refreshResponse = await fetch(
+                    "/studio/api/cache/metrics",
+                );
                 if (refreshResponse.ok) {
                     const result = await refreshResponse.json();
                     setStats(result);
@@ -357,12 +359,17 @@ export function useCacheManagement() {
 
     const clearPageCache = async (pageType: string) => {
         try {
-            const response = await fetch(`/studio/api/cache/clear/${pageType}`, {
-                method: "POST",
-            });
+            const response = await fetch(
+                `/studio/api/cache/clear/${pageType}`,
+                {
+                    method: "POST",
+                },
+            );
             if (response.ok) {
                 // Refresh stats
-                const refreshResponse = await fetch("/studio/api/cache/metrics");
+                const refreshResponse = await fetch(
+                    "/studio/api/cache/metrics",
+                );
                 if (refreshResponse.ok) {
                     const result = await refreshResponse.json();
                     setStats(result);
@@ -375,12 +382,17 @@ export function useCacheManagement() {
 
     const invalidatePageCache = async (pageType: string) => {
         try {
-            const response = await fetch(`/studio/api/cache/invalidate/${pageType}`, {
-                method: "POST",
-            });
+            const response = await fetch(
+                `/studio/api/cache/invalidate/${pageType}`,
+                {
+                    method: "POST",
+                },
+            );
             if (response.ok) {
                 // Refresh stats
-                const refreshResponse = await fetch("/studio/api/cache/metrics");
+                const refreshResponse = await fetch(
+                    "/studio/api/cache/metrics",
+                );
                 if (refreshResponse.ok) {
                     const result = await refreshResponse.json();
                     setStats(result);
