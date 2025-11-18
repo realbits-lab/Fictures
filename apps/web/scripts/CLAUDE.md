@@ -27,8 +27,8 @@ When making ANY changes to scripts in this directory:
 | `setup-auth-users.ts` | Create test users | `pnpm exec tsx scripts/setup-auth-users.ts` |
 | `verify-auth-setup.ts` | Verify authentication | `pnpm exec tsx scripts/verify-auth-setup.ts` |
 | `generate-minimal-story.ts` | Generate minimal novel | `pnpm exec tsx scripts/generate-minimal-story.ts` |
-| `generate-comic-panels.ts` | Generate comic panels | `pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID [options]` |
-| `remove-story.ts` | ⚠️ Remove single story | `pnpm exec tsx scripts/remove-story.ts STORY_ID --confirm` |
+| `generate-comic-panels.ts` | Generate comic panels | `pnpm exec tsx scripts/generate-comic-panels.ts --story <id> [options]` |
+| `remove-story.ts` | ⚠️ Remove all stories | `pnpm exec tsx scripts/remove-story.ts --confirm` |
 | `reset-all-stories.ts` | ⚠️ Reset all story data | `pnpm exec tsx scripts/reset-all-stories.ts --confirm` |
 
 ---
@@ -137,31 +137,43 @@ Edit the script to modify `userPrompt`, genre, tone, or counts.
 
 ### generate-comic-panels.ts
 
-**Purpose**: Generate 7-12 comic panels for a scene using Toonplay 9-step pipeline with quality evaluation.
+**Purpose**: Generate 7-12 comic panels for scenes using Toonplay 9-step pipeline with quality evaluation. Supports generating panels for a single scene or all scenes in a story/part/chapter.
 
 **Quick Start**:
 ```bash
-# Preview
-dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --dry-run
+# Generate for entire story
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --story STORY_ID
 
-# Generate
-dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID
+# Generate for a specific part
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --part PART_ID
 
-# Force regenerate
-dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --force
+# Generate for a specific chapter
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --chapter CHAPTER_ID
 
-# Verbose logging
-dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --verbose
+# Generate for a single scene
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --scene SCENE_ID
 
-# Background
-dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID > logs/comic-panels.log 2>&1 &
+# Preview what would be generated
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --story STORY_ID --dry-run
+
+# Force regenerate existing panels
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --story STORY_ID --force
+
+# Background execution
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --story STORY_ID > logs/comic-panels.log 2>&1 &
 ```
 
-**Options**:
-- `<scene-id>` - **Required** scene ID
+**ID Options** (one required):
+- `--story <id>` - Generate panels for all scenes in a story
+- `--part <id>` - Generate panels for all scenes in a part
+- `--chapter <id>` - Generate panels for all scenes in a chapter
+- `--scene <id>` - Generate panels for a specific scene
+
+**Other Options**:
 - `--dry-run` - Preview without generating
 - `--force` - Regenerate existing panels
 - `--verbose` - Show detailed logs
+- `--help` - Show help message
 
 **Pipeline** (9 steps):
 1. Analyze scene structure
@@ -192,12 +204,12 @@ dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCEN
 
 **Prerequisites**:
 - Dev server running: `dotenv --file .env.local run pnpm dev`
-- Valid scene ID from database
+- Valid ID from database (story, part, chapter, or scene)
 - `.auth/user.json` with writer API key
 - `.env.local` with: `GOOGLE_GENERATIVE_AI_API_KEY`, `BLOB_READ_WRITE_TOKEN`
 
 **Troubleshooting**:
-- **"Scene not found"**: Verify scene ID exists in database
+- **"Story/Part/Chapter/Scene not found"**: Verify ID exists in database
 - **"Panels exist"**: Use `--force` to regenerate
 - **Auth errors**: Check `.auth/user.json` has valid writer API key
 - **Image errors**: Verify `GOOGLE_GENERATIVE_AI_API_KEY` in `.env.local`
@@ -207,7 +219,7 @@ dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCEN
 **Debug**:
 ```bash
 # Verbose mode
-dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts SCENE_ID --verbose
+dotenv --file .env.local run pnpm exec tsx scripts/generate-comic-panels.ts --story STORY_ID --verbose
 
 # Check API logs
 tail -f logs/dev-server.log | grep "generation/toonplay"
@@ -226,128 +238,104 @@ tail -f logs/dev-server.log | grep "generation/toonplay"
 
 **⚠️ DESTRUCTIVE OPERATION - Use with caution!**
 
-**Purpose**: Permanently delete a single story and all related data from database and Vercel Blob storage.
+**Purpose**: Permanently delete ALL story data directly from the database. This script does database-only deletion (Vercel Blob files are NOT deleted).
 
 **Quick Start**:
 ```bash
 # Preview mode (shows what will be deleted WITHOUT deleting)
-dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts STORY_ID
+dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts
 
 # Execute destructive removal (requires --confirm flag)
-dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts STORY_ID --confirm
+dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts --confirm
 
 # Background execution with logging
-dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts STORY_ID --confirm > logs/remove-story.log 2>&1 &
+dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts --confirm > logs/remove-story.log 2>&1 &
 ```
 
 **Options**:
-- `<STORY_ID>` - **Required** story ID to remove
 - `--confirm` - **Required** to execute actual deletion (safety flag)
+- `--help` - Show help message
 
 **What Gets Deleted**:
 
-**Database Records**:
-- **story**: Story record and metadata
+**Database Records** (27 tables):
+- **stories**: All story records and metadata
 - **parts**: All story parts
 - **chapters**: All chapter summaries and metadata
 - **scenes**: All scene content and metadata
-- **characters**: All character profiles and relationships
+- **characters**: All character profiles
 - **settings**: All setting descriptions
-
-**Vercel Blob Files**:
-- **Prefix**: `stories/{storyId}/` (all files under this prefix)
-- **Includes**:
-  - Story cover image (1344×768, 7:4)
-  - Scene images (1344×768, 7:4)
-  - Character portraits (1024×1024)
-  - Setting visuals (1344×768, 7:4)
-  - All optimized variants (AVIF + JPEG × mobile 1x/2x)
-- **Deletion Method**: Batch deletion with pagination (100 files per batch)
+- **communityPosts**: All community posts and replies
+- **comments**: All comments and likes/dislikes
+- **storyLikes, chapterLikes, sceneLikes**: All engagement data
+- **readingHistory, readingSessions**: All reading analytics
+- **storyInsights, dailyStoryMetrics**: All metrics data
+- **publishingSchedules, scheduledPublications**: All scheduling data
+- **sceneViews, sceneEvaluations**: All evaluation data
+- **comicPanels**: All comic panel data
+- **studioAgentChats**: All AI chat history
+- **postViews, postLikes**: All post engagement
 
 **Safety Features**:
 - ✅ **Preview Mode**: Default behavior shows what will be deleted without deleting
 - ✅ **Confirmation Flag**: Requires explicit `--confirm` to proceed
 - ✅ **5-Second Delay**: Countdown before execution starts (press Ctrl+C to cancel)
-- ✅ **Writer Access**: Requires `stories:write` or `admin:all` scope
 - ✅ **Detailed Report**: Shows exact deletion counts for transparency
-- ✅ **Audit Log**: Saves deletion report to `logs/remove-story-{storyId}-{timestamp}.json`
+- ✅ **Audit Log**: Saves deletion report to `logs/remove-story-{timestamp}.json`
 
 **Performance**:
-- **Database Deletion**: ~1-2 seconds (cascading deletes)
-- **Blob Deletion**: Varies by file count (100 files per batch)
-- **Total Time**: Typically 5-15 seconds depending on story size
-- **Max Duration**: 60 seconds (API timeout)
+- **Database Deletion**: ~2-5 seconds (direct database deletion)
+- **Total Time**: Typically 5-10 seconds
 
 **Output Example**:
 ```
-✅ REMOVAL COMPLETE
+✅ DATABASE DELETION COMPLETE
 
 ============================================================
 
 📊 Deletion Report:
 
-Story Information:
-  • ID:              story_abc123
-  • Title:           My Amazing Story
+Stories:                15
+Parts:                  22
+Chapters:               45
+Scenes:                 135
+Characters:             30
+Settings:               25
+Community Posts:        10
+Comic Panels:           280
+Studio Agent Chats:     50
 
-Database Records Deleted:
-  • Parts:           3
-  • Chapters:        8
-  • Scenes:          24
-  • Characters:      5
-  • Settings:        4
-
-Blob Files Deleted:
-  • Total Files:     96
-  • Batches:         1
-
-Timestamp: 2025-11-08T10:30:45.123Z
+Total items deleted:    612
 
 ============================================================
 
-📄 Report saved to: logs/remove-story-story_abc123-2025-11-08T10-30-45.json
+⚠️  Note: Vercel Blob files were NOT deleted.
+
+📄 Report saved to: logs/remove-story-2025-11-08T10-30-45.json
 ```
 
 **Prerequisites**:
-- Dev server running: `dotenv --file .env.local run pnpm dev`
-- Writer or Manager account API key in `.auth/user.json`
-- `.env.local` with: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`, `BLOB_READ_WRITE_TOKEN`
+- `.env.local` with: `DATABASE_URL`
 
 **Troubleshooting**:
-- **No story ID provided**: Must provide story ID as first argument
-- **401 Unauthorized**: API key missing or invalid in `.auth/user.json`
-  - Solution: Run `scripts/setup-auth-users.ts` to create accounts
-- **403 Forbidden**: Account lacks `stories:write` or `admin:all` scope
-  - Solution: Use writer or manager account (not reader)
-- **404 Not Found**: Story ID does not exist in database
-  - Solution: Verify story ID is correct
-- **ECONNREFUSED**: Dev server not running
-  - Solution: Start server with `dotenv --file .env.local run pnpm dev`
+- **Database connection error**: Check `DATABASE_URL` in `.env.local`
+- **No stories found**: Database is already empty
 
 **Debug**:
 ```bash
 # Preview without deleting
-dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts story_abc123
-
-# Check writer API key
-cat .auth/user.json | jq '.profiles.writer.apiKey'
-
-# Monitor API logs
-tail -f logs/dev-server.log | grep "remove-story"
+dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts
 ```
 
 **Technical Details**:
-- **API**: `POST /studio/api/remove-story` (writer/admin endpoint)
-- **Authentication**: Writer or Manager API key from `.auth/user.json` profiles
-- **Database**: Cascading deletes in proper order to respect foreign key constraints
-- **Blob Deletion**: Pagination with cursor-based iteration (100 files per batch)
-- **Max Duration**: 60 seconds (defined in API route)
+- **Method**: Direct database deletion using Drizzle ORM
+- **Database**: Deletes in reverse dependency order to respect foreign key constraints
+- **No API**: Does not require dev server (direct DB access)
 
 **Use Cases**:
-- **Development Testing**: Remove specific test stories
-- **Content Cleanup**: Delete unwanted or test stories
-- **User Request**: Remove stories upon user request
-- **Quality Control**: Remove low-quality or problematic content
+- **Development Testing**: Clear all test data between development cycles
+- **Database Cleanup**: Remove accumulated test stories
+- **Fresh Start**: Complete reset before new testing
 
 **⚠️ WARNING**: This operation is **IRREVERSIBLE**. All deleted data cannot be recovered. Always use preview mode first to verify what will be deleted.
 

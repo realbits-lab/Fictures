@@ -14,12 +14,19 @@
  * - Supports all image types: story, character, setting, scene
  * - Reports validation results (pass/fail) for each image
  *
- * Validation Checks:
- * - Story cover: 16:9 aspect ratio, 1792×1024 pixels
- * - Character portrait: 1:1 aspect ratio, 1024×1024 pixels
- * - Setting visual: 1:1 aspect ratio, 1024×1024 pixels
- * - Scene image: 16:9 aspect ratio, 1792×1024 pixels
- * - Validation specs from: apps/web/docs/image/image-generation.md
+ * Validation Checks (from apps/web/docs/image/image-specification.md):
+ * - Story cover: 16:9 aspect ratio
+ *   - Gemini: 1024×576 pixels
+ *   - Qwen: 1664×928 pixels
+ * - Character portrait: 1:1 aspect ratio
+ *   - Gemini: 1024×1024 pixels
+ *   - Qwen: 1328×1328 pixels
+ * - Setting visual: 1:1 aspect ratio
+ *   - Gemini: 1024×1024 pixels
+ *   - Qwen: 1328×1328 pixels
+ * - Scene image: 16:9 aspect ratio
+ *   - Gemini: 1024×576 pixels
+ *   - Qwen: 1664×928 pixels
  *
  * Usage:
  *   dotenv --file .env.local run pnpm exec tsx scripts/generate-images.ts [options]
@@ -63,46 +70,74 @@ const BASE_URL = "http://localhost:3000";
 const OUTPUT_DIR = "test-output";
 
 /**
- * Image specifications from docs/image/ documentation
- * Reference: apps/web/docs/image/image-generation.md
+ * Image specifications from docs/image/image-specification.md
+ * Supports dual providers: Gemini 2.5 Flash and AI Server (Qwen-Image-Lightning)
  */
 interface ImageSpec {
     aspectRatio: string;
     width: number;
     height: number;
-    alternativeSpecs?: ImageSpec[]; // For types with multiple valid specs
+    alternativeSpecs?: ImageSpec[]; // For types with multiple valid specs (different providers)
 }
 
 const IMAGE_SPECIFICATIONS: Record<string, ImageSpec> = {
     story: {
         aspectRatio: "16:9",
-        width: 1792,
-        height: 1024,
+        width: 1664, // Qwen primary
+        height: 928,
+        alternativeSpecs: [
+            {
+                aspectRatio: "16:9",
+                width: 1024, // Gemini
+                height: 576,
+            },
+        ],
     },
     character: {
         aspectRatio: "1:1",
-        width: 1024,
-        height: 1024,
+        width: 1328, // Qwen primary
+        height: 1328,
+        alternativeSpecs: [
+            {
+                aspectRatio: "1:1",
+                width: 1024, // Gemini
+                height: 1024,
+            },
+        ],
     },
     setting: {
         aspectRatio: "1:1",
-        width: 1024,
-        height: 1024,
+        width: 1328, // Qwen primary
+        height: 1328,
+        alternativeSpecs: [
+            {
+                aspectRatio: "1:1",
+                width: 1024, // Gemini
+                height: 1024,
+            },
+        ],
     },
     scene: {
         aspectRatio: "16:9",
-        width: 1792,
-        height: 1024,
+        width: 1664, // Qwen primary
+        height: 928,
+        alternativeSpecs: [
+            {
+                aspectRatio: "16:9",
+                width: 1024, // Gemini
+                height: 576,
+            },
+        ],
     },
     "comic-panel": {
         aspectRatio: "9:16",
-        width: 1024,
-        height: 1792,
+        width: 928, // Qwen primary
+        height: 1664,
         alternativeSpecs: [
             {
-                aspectRatio: "2:3",
-                width: 1024,
-                height: 1536,
+                aspectRatio: "9:16",
+                width: 576, // Gemini
+                height: 1024,
             },
         ],
     },
@@ -271,24 +306,67 @@ async function downloadImage(url: string, filepath: string): Promise<Buffer> {
 }
 
 /**
+ * Build prompt for image generation based on image type and target data
+ */
+function buildImagePrompt(
+    imageType: "story" | "character" | "setting" | "scene",
+    targetData: Record<string, unknown>,
+): string {
+    switch (imageType) {
+        case "story":
+            return `Story cover for "${targetData.title}": ${targetData.summary || targetData.genre || "An engaging story"}`;
+        case "character":
+            return `Character portrait of ${targetData.name}: ${
+                typeof targetData.physicalDescription === "object"
+                    ? (
+                          targetData.physicalDescription as Record<
+                              string,
+                              unknown
+                          >
+                      ).appearance || ""
+                    : targetData.physicalDescription || targetData.summary || ""
+            }`;
+        case "setting":
+            return `Setting visualization of ${targetData.name}: ${targetData.description || ""}. Mood: ${targetData.mood || "atmospheric"}`;
+        case "scene":
+            return `Scene illustration for "${targetData.title}": ${targetData.summary || targetData.content?.toString().substring(0, 200) || ""}`;
+        default:
+            return `Image for ${imageType}`;
+    }
+}
+
+/**
  * Generate image via API
+ *
+ * API: POST /api/studio/images
+ * Request: { prompt, contentId, imageType, generationProfile?, genre? }
+ * Response: { success, imageType, imageId, originalUrl, blobUrl, dimensions, ... }
  */
 async function generateImage(params: {
     storyId: string;
     imageType: "story" | "character" | "setting" | "scene";
-    targetData: unknown;
-    chapterId?: string;
-    sceneId?: string;
+    targetData: Record<string, unknown>;
+    contentId: string;
+    genre?: string;
 }): Promise<string> {
     console.log(`   🎨 Generating ${params.imageType} image...`);
 
-    const response = await fetch(`${BASE_URL}/studio/api/images`, {
+    // Build prompt from target data
+    const prompt = buildImagePrompt(params.imageType, params.targetData);
+
+    const response = await fetch(`${BASE_URL}/api/studio/images`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${writerApiKey}`,
         },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+            prompt,
+            contentId: params.contentId,
+            imageType: params.imageType,
+            generationProfile: "full",
+            genre: params.genre,
+        }),
     });
 
     if (!response.ok) {
@@ -339,6 +417,8 @@ async function main() {
                 const imageUrl = await generateImage({
                     storyId: story.id,
                     imageType: "story",
+                    contentId: story.id,
+                    genre: story.genre || undefined,
                     targetData: {
                         title: story.title,
                         genre: story.genre,
@@ -403,6 +483,8 @@ async function main() {
                     const imageUrl = await generateImage({
                         storyId: story.id,
                         imageType: "character",
+                        contentId: char.id,
+                        genre: story.genre || undefined,
                         targetData: {
                             name: char.name,
                             physicalDescription: char.physicalDescription || {
@@ -472,6 +554,8 @@ async function main() {
                     const imageUrl = await generateImage({
                         storyId: story.id,
                         imageType: "setting",
+                        contentId: setting.id,
+                        genre: story.genre || undefined,
                         targetData: {
                             name: setting.name,
                             description: setting.description,
@@ -556,8 +640,8 @@ async function main() {
                         const imageUrl = await generateImage({
                             storyId: story.id,
                             imageType: "scene",
-                            chapterId: chapter.id,
-                            sceneId: scene.id,
+                            contentId: scene.id,
+                            genre: story.genre || undefined,
                             targetData: {
                                 title: scene.title,
                                 summary: scene.summary,

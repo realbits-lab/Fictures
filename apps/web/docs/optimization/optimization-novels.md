@@ -549,7 +549,7 @@ Response with Headers
   X-Cache-Invalidate: "studio,novels"
   X-Cache-Invalidate-Keys: ["scene:123", ...]
          ↓
-Client Receives Response
+Client Receives Responschapters-per-parte
   handleCacheInvalidation(response.headers)
   ├─ Clear localStorage → LOCALSTORAGE CLEARED
   └─ Invalidate SWR cache → SWR CLEARED
