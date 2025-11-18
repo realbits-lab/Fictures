@@ -488,8 +488,8 @@ jobs:
 
 ### Related Docs
 
-- **Caching Strategy:** `docs/performance/performance-caching.md`
-- **Database Optimization:** `docs/performance/performance-database.md`
+- **Caching Strategy:** `docs/performance/optimization-caching.md`
+- **Database Optimization:** `docs/performance/optimization-database.md`
 - **Implementation Summary:** `docs/performance/implementation-summary.md`
 
 ### API Documentation

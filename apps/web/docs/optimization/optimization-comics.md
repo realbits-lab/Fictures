@@ -321,7 +321,7 @@ const CACHE_TTL = {
 ### Created
 - `src/lib/db/comic-queries.ts` - Optimized comic queries with batching and smart field selection
 - `src/components/comic/progressive-comic-panel.tsx` - Progressive loading component with IntersectionObserver
-- `docs/performance/performance-comics.md` - This documentation
+- `docs/performance/optimization-comics.md` - This documentation
 
 ### Modified
 - `src/lib/db/cached-queries.ts` - Updated to use optimized comic-queries.ts

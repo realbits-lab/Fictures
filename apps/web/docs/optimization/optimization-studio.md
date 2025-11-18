@@ -234,7 +234,7 @@ const storyDetailColumns = {
    - Optimized queries with Redis caching
    - Smart column selection for list vs detail
 
-2. **`docs/performance/performance-studio.md`** (this file)
+2. **`docs/performance/optimization-studio.md`** (this file)
    - Complete specification and implementation guide
 
 3. **`scripts/test-studio-loading.mjs`**

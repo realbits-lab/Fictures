@@ -1160,8 +1160,8 @@ return NextResponse.json(data, {
 - ~~ROLLOUT-EXECUTION-REPORT.md~~ → Sections: Historical Context
 
 **Related Documentation** (Still Active):
-- `docs/performance/performance-caching.md` - General caching strategy (SWR, localStorage, Redis)
-- `docs/performance/performance-database.md` - Database optimization
+- `docs/performance/optimization-caching.md` - General caching strategy (SWR, localStorage, Redis)
+- `docs/performance/optimization-database.md` - Database optimization
 - `docs/CLAUDE.md` - Documentation index
 - `CLAUDE.md` - Main project guide
 

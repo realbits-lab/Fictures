@@ -1076,7 +1076,7 @@ Every scene generated is automatically:
 - **Generate novels** → `docs/novels/novels-specification.md`
 - **Optimize images** → `docs/image/image-optimization.md`
 - **Add UI components** → `docs/ui/ui-specification.md`
-- **Improve performance** → `docs/performance/performance-caching.md`
+- **Improve performance** → `docs/performance/optimization-caching.md`
 - **Set up testing** → `docs/test/test-specification.md`
 
 ---

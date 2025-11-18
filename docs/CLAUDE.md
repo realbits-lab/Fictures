@@ -550,14 +550,14 @@ The following sections provide detailed information about features implemented i
 **Purpose**: Performance optimization guides and implementation reports.
 
 **Files**:
-- `performance-caching.md` - Caching strategy (SWR, localStorage, Redis)
-- `performance-database.md` - Database optimization (indexes, N+1 fixes)
-- `performance-blob-deletion.md` - Blob deletion optimization (10-25x faster)
-- `performance-novels.md` - Novel generation performance
-- `performance-comics.md` - Comics performance optimization
-- `performance-studio.md` - Studio workspace performance
-- `performance-community.md` - Community features performance
-- `performance-comments.md` - Comments system performance
+- `optimization-caching.md` - Caching strategy (SWR, localStorage, Redis)
+- `optimization-database.md` - Database optimization (indexes, N+1 fixes)
+- `optimization-blob-deletion.md` - Blob deletion optimization (10-25x faster)
+- `optimization-novels.md` - Novel generation performance
+- `optimization-comics.md` - Comics performance optimization
+- `optimization-studio.md` - Studio workspace performance
+- `optimization-community.md` - Community features performance
+- `optimization-comments.md` - Comments system performance
 - `cache-testing-guide.md` - Cache testing procedures
 - `IMPLEMENTATION-SUMMARY.md` - Performance implementation summary
 
@@ -749,7 +749,7 @@ See [apps/web/docs/CLAUDE.md](../apps/web/docs/CLAUDE.md) for complete index.
 3. **Comics Reader**: `apps/web/docs/comics/comics-specification.md`
 4. **Image System**: `apps/web/docs/image/image-specification.md`
 5. **Studio**: `apps/web/docs/studio/studio-api-quick-reference.md`
-6. **Optimization**: `apps/web/docs/optimization/performance-caching.md`
+6. **Optimization**: `apps/web/docs/optimization/optimization-caching.md`
 7. **UI Development**: `apps/web/docs/ui/ui-development.md`
 8. **API Documentation**: `apps/web/docs/api/README.md`
 

@@ -144,15 +144,15 @@ This section provides a complete index of all feature documentation. Each direct
 #### Performance & Optimization
 - **[performance/](performance/)** - Performance optimization
   - `IMPLEMENTATION-SUMMARY.md` - Performance implementation summary
-  - `performance-caching.md` - Caching strategies (SWR, localStorage, Redis)
-  - `performance-database.md` - Database optimization
-  - `performance-blob-deletion.md` - Blob deletion optimization
-  - `performance-cache-invalidation.md` - Cache invalidation
-  - `performance-novels.md` - Novel generation performance
-  - `performance-comics.md` - Comics performance
-  - `performance-studio.md` - Studio performance
-  - `performance-community.md` - Community features performance
-  - `performance-comments.md` - Comments system performance
+  - `optimization-caching.md` - Caching strategies (SWR, localStorage, Redis)
+  - `optimization-database.md` - Database optimization
+  - `optimization-blob-deletion.md` - Blob deletion optimization
+  - `optimization-cache-invalidation.md` - Cache invalidation
+  - `optimization-novels.md` - Novel generation performance
+  - `optimization-comics.md` - Comics performance
+  - `optimization-studio.md` - Studio performance
+  - `optimization-community.md` - Community features performance
+  - `optimization-comments.md` - Comments system performance
   - `cache-testing-guide.md` - Cache testing procedures
   - `novels-optimization.md` - Novel optimization strategies
 
@@ -173,7 +173,7 @@ This section provides a complete index of all feature documentation. Each direct
 - **Generate images** → `image/image-specification.md`
 - **Optimize images** → `image/image-development.md`
 - **Add UI components** → `ui/ui-specification.md` + `ui/shadcn-component-guide.md`
-- **Improve performance** → `performance/performance-caching.md` + `performance/IMPLEMENTATION-SUMMARY.md`
+- **Improve performance** → `performance/optimization-caching.md` + `performance/IMPLEMENTATION-SUMMARY.md`
 - **Set up testing** → `test/test-specification.md`
 - **Understand story system** → `novels/novels-specification.md` (SSOT for data model)
 - **Work with community features** → `community/community-specification.md`

@@ -472,7 +472,7 @@ getCommunityPosts: {
 1. **`src/lib/db/community-queries.ts`** - Optimized database queries
 2. **`drizzle/migrations/add_community_indexes.sql`** - Database indexes
 3. **`src/components/community/CommunityLoadingSkeleton.tsx`** - Loading UI
-4. **`docs/performance/performance-community.md`** - This documentation
+4. **`docs/performance/optimization-community.md`** - This documentation
 
 ### Modify Existing Files
 

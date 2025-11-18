@@ -476,6 +476,6 @@ await invalidate();
 
 ## Related Documentation
 
-- [Performance Caching Strategy](./performance-caching.md) - Overall caching approach
-- [Performance Database](./performance-database.md) - Database optimization
-- [Performance Novels](./performance-novels.md) - Novels page optimization
+- [Performance Caching Strategy](./optimization-caching.md) - Overall caching approach
+- [Performance Database](./optimization-database.md) - Database optimization
+- [Performance Novels](./optimization-novels.md) - Novels page optimization
