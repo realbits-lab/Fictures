@@ -46,7 +46,6 @@ export const sfxEmphasisEnum = z.enum([
 export const AiComicPanelSpecZodSchema = z.object({
     panel_number: z
         .number()
-        .min(1)
         .describe("Sequential panel number (1-indexed)"),
 
     shot_type: shotTypeEnum.describe(
@@ -55,8 +54,6 @@ export const AiComicPanelSpecZodSchema = z.object({
 
     description: z
         .string()
-        .min(200)
-        .max(400)
         .describe(
             "Detailed visual description for AI image generation (200-400 characters)",
         ),
@@ -66,7 +63,12 @@ export const AiComicPanelSpecZodSchema = z.object({
         .describe("Character IDs appearing in this panel (from database)"),
 
     character_poses: z
-        .record(z.string(), z.string())
+        .array(
+            z.object({
+                character_id: z.string().describe("Character ID from database"),
+                pose: z.string().describe("Pose/body language description"),
+            }),
+        )
         .optional()
         .describe(
             "Specific body language for each character (characterId → pose description)",
@@ -74,27 +76,20 @@ export const AiComicPanelSpecZodSchema = z.object({
 
     setting_focus: z
         .string()
-        .min(10)
-        .max(200)
         .describe("Which part of the setting is emphasized in this panel"),
 
     lighting: z
         .string()
-        .min(10)
-        .max(200)
         .describe("Lighting description for mood and atmosphere"),
 
     camera_angle: z
         .string()
-        .min(5)
-        .max(100)
         .describe(
             "Camera perspective (low angle, high angle, eye level, bird's eye, etc.)",
         ),
 
     narrative: z
         .string()
-        .max(200)
         .optional()
         .describe(
             "Caption text for narration (time/location markers, strategic internal monologue). Use sparingly (<5% of panels for narration, <10% for internal monologue)",
@@ -106,7 +101,6 @@ export const AiComicPanelSpecZodSchema = z.object({
                 character_id: z.string().describe("Character ID from database"),
                 text: z
                     .string()
-                    .max(150)
                     .describe(
                         "Dialogue text (max 150 characters per speech bubble)",
                     ),
@@ -127,7 +121,6 @@ export const AiComicPanelSpecZodSchema = z.object({
             z.object({
                 text: z
                     .string()
-                    .max(50)
                     .describe("Sound effect text (BOOM, CRASH, whisper, etc.)"),
                 emphasis: sfxEmphasisEnum.describe(
                     "Visual emphasis level (normal, large, dramatic)",
@@ -138,8 +131,6 @@ export const AiComicPanelSpecZodSchema = z.object({
 
     mood: z
         .string()
-        .min(5)
-        .max(100)
         .describe(
             "Overall emotional tone of the panel (tense, hopeful, melancholic, etc.)",
         ),
@@ -165,25 +156,18 @@ export const AiComicToonplayZodSchema = z.object({
 
     scene_title: z
         .string()
-        .min(5)
-        .max(200)
         .describe("Title of this scene/toonplay"),
 
     total_panels: z
         .number()
-        .min(8)
-        .max(12)
-        .describe("Total number of panels (target: 10)"),
+        .describe("Total number of panels (target: 8-12)"),
 
     panels: z
         .array(AiComicPanelSpecZodSchema)
-        .min(8)
-        .max(12)
         .describe("Array of panel specifications (8-12 panels)"),
 
     pacing_notes: z
         .string()
-        .max(500)
         .optional()
         .describe(
             "Notes on panel spacing and pacing rhythm for webtoon scroll",
@@ -191,8 +175,6 @@ export const AiComicToonplayZodSchema = z.object({
 
     narrative_arc: z
         .string()
-        .min(20)
-        .max(300)
         .describe(
             "Narrative structure of this scene (Setup → Tension → Climax → Resolution)",
         ),

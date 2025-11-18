@@ -358,7 +358,7 @@ async function generateImage(params: {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${writerApiKey}`,
+            "x-api-key": writerApiKey,
         },
         body: JSON.stringify({
             prompt,

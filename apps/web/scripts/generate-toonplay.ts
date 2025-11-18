@@ -173,7 +173,7 @@ async function getScenesToProcess(): Promise<SceneInfo[]> {
 
         const chapterScenes = await db.query.scenes.findMany({
             where: eq(scenes.chapterId, chapterId),
-            orderBy: (scenes, { asc }) => [asc(scenes.sceneNumber)],
+            orderBy: (scenes, { asc }) => [asc(scenes.orderIndex)],
             limit: limit,
         });
 
@@ -201,7 +201,7 @@ async function getScenesToProcess(): Promise<SceneInfo[]> {
 
         const partChapters = await db.query.chapters.findMany({
             where: eq(chapters.partId, partId),
-            orderBy: (chapters, { asc }) => [asc(chapters.chapterNumber)],
+            orderBy: (chapters, { asc }) => [asc(chapters.orderIndex)],
         });
 
         console.log(`📑 Part: "${part.title}"`);
@@ -211,7 +211,7 @@ async function getScenesToProcess(): Promise<SceneInfo[]> {
         for (const chapter of partChapters) {
             const chapterScenes = await db.query.scenes.findMany({
                 where: eq(scenes.chapterId, chapter.id),
-                orderBy: (scenes, { asc }) => [asc(scenes.sceneNumber)],
+                orderBy: (scenes, { asc }) => [asc(scenes.orderIndex)],
             });
 
             for (const scene of chapterScenes) {
@@ -242,7 +242,7 @@ async function getScenesToProcess(): Promise<SceneInfo[]> {
 
         const storyParts = await db.query.parts.findMany({
             where: eq(parts.storyId, storyId),
-            orderBy: (parts, { asc }) => [asc(parts.partNumber)],
+            orderBy: (parts, { asc }) => [asc(parts.orderIndex)],
         });
 
         console.log(`📖 Story: "${story.title}"`);
@@ -252,13 +252,13 @@ async function getScenesToProcess(): Promise<SceneInfo[]> {
         for (const part of storyParts) {
             const partChapters = await db.query.chapters.findMany({
                 where: eq(chapters.partId, part.id),
-                orderBy: (chapters, { asc }) => [asc(chapters.chapterNumber)],
+                orderBy: (chapters, { asc }) => [asc(chapters.orderIndex)],
             });
 
             for (const chapter of partChapters) {
                 const chapterScenes = await db.query.scenes.findMany({
                     where: eq(scenes.chapterId, chapter.id),
-                    orderBy: (scenes, { asc }) => [asc(scenes.sceneNumber)],
+                    orderBy: (scenes, { asc }) => [asc(scenes.orderIndex)],
                 });
 
                 for (const scene of chapterScenes) {
@@ -319,10 +319,10 @@ async function generateToonplayForScene(
 
     try {
         // Call the Toonplay generation API (Server-Sent Events)
-        const response = await fetch(`${API_BASE}/studio/api/novels/toonplay`, {
+        const response = await fetch(`${API_BASE}/api/studio/toonplay`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${writerApiKey}`,
+                "x-api-key": writerApiKey,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
@@ -332,12 +332,22 @@ async function generateToonplayForScene(
         });
 
         if (!response.ok) {
-            const error = await response
-                .json()
-                .catch(() => ({ message: "Unknown error" }));
-            throw new Error(
-                `API error: ${response.status} - ${error.message || error.error}`,
-            );
+            const errorText = await response.text();
+            let errorMessage = errorText;
+            try {
+                const errorJson = JSON.parse(errorText);
+                // Handle structured error response: {success: false, error: {code, message}}
+                if (errorJson.error?.message) {
+                    errorMessage = errorJson.error.message;
+                } else if (errorJson.message) {
+                    errorMessage = errorJson.message;
+                } else {
+                    errorMessage = JSON.stringify(errorJson);
+                }
+            } catch {
+                // Keep as text
+            }
+            throw new Error(`API error: ${response.status} - ${errorMessage}`);
         }
 
         // Process SSE stream

@@ -3,7 +3,7 @@
 /**
  * Remove Story Script
  *
- * DESTRUCTIVE OPERATION: Permanently deletes story data from database.
+ * DESTRUCTIVE OPERATION: Permanently deletes story data from database and Vercel Blob storage.
  *
  * Safety Features:
  * - Requires --confirm flag to proceed
@@ -19,13 +19,14 @@
  *
  * Prerequisites:
  *   - DATABASE_URL environment variable
+ *   - BLOB_READ_WRITE_TOKEN environment variable
  */
 
 import fs from "node:fs";
 import path from "node:path";
+import { del, list } from "@vercel/blob";
 import { db } from "../src/lib/db/index.js";
 import {
-    analysisEvents,
     chapterLikes,
     chapters,
     characters,
@@ -66,7 +67,7 @@ if (helpFlag) {
     console.log(`
 Remove Story Script
 
-DESTRUCTIVE OPERATION: Permanently deletes all story data from database.
+DESTRUCTIVE OPERATION: Permanently deletes all story data from database and Vercel Blob storage.
 
 Usage:
   dotenv --file .env.local run pnpm exec tsx scripts/remove-story.ts [OPTIONS]
@@ -89,7 +90,7 @@ console.log("🗑️  Remove Story Script");
 console.log("=".repeat(60));
 console.log();
 console.log(`🌍 Environment: ${getEnvDisplayName()}`);
-console.log(`📊 Mode: Direct database deletion`);
+console.log(`📊 Mode: Database + Vercel Blob deletion`);
 console.log();
 
 // Preview mode
@@ -97,7 +98,7 @@ if (!confirmFlag) {
     console.log("⚠️  PREVIEW MODE - No data will be deleted");
     console.log();
     console.log(
-        "This will permanently delete ALL stories directly from database:",
+        "This will permanently delete ALL stories from database and Vercel Blob:",
     );
     console.log("  📊 Database (27 tables):");
     console.log("     • Stories, parts, chapters, scenes");
@@ -107,7 +108,12 @@ if (!confirmFlag) {
     console.log("     • Studio agent chats");
     console.log("     • Publishing schedules");
     console.log();
-    console.log("  ⚠️  Note: Vercel Blob files will NOT be deleted");
+    console.log("  🗂️  Vercel Blob (stories/ prefix):");
+    console.log("     • Story cover images");
+    console.log("     • Scene images");
+    console.log("     • Character portraits");
+    console.log("     • Setting visuals");
+    console.log("     • All optimized variants (AVIF + JPEG)");
     console.log();
     console.log("⚠️  WARNING: This operation is IRREVERSIBLE!");
     console.log();
@@ -150,7 +156,6 @@ async function executeDeletion() {
             chapterLikes: number;
             sceneLikes: number;
             sceneDislikes: number;
-            analysisEvents: number;
             readingSessions: number;
             readingHistory: number;
             storyInsights: number;
@@ -184,7 +189,6 @@ async function executeDeletion() {
             chapterLikesCount,
             sceneLikesCount,
             sceneDislikesCount,
-            analysisEventsCount,
             readingSessionsCount,
             readingHistoryCount,
             storyInsightsCount,
@@ -213,7 +217,6 @@ async function executeDeletion() {
             db.select().from(chapterLikes),
             db.select().from(sceneLikes),
             db.select().from(sceneDislikes),
-            db.select().from(analysisEvents),
             db.select().from(readingSessions),
             db.select().from(readingHistory),
             db.select().from(storyInsights),
@@ -244,7 +247,6 @@ async function executeDeletion() {
             chapterLikes: chapterLikesCount.length,
             sceneLikes: sceneLikesCount.length,
             sceneDislikes: sceneDislikesCount.length,
-            analysisEvents: analysisEventsCount.length,
             readingSessions: readingSessionsCount.length,
             readingHistory: readingHistoryCount.length,
             storyInsights: storyInsightsCount.length,
@@ -283,7 +285,6 @@ async function executeDeletion() {
         await db.delete(sceneViews);
 
         console.log("Deleting analysis and metrics...");
-        await db.delete(analysisEvents);
         await db.delete(readingSessions);
         await db.delete(readingHistory);
         await db.delete(storyInsights);
@@ -319,59 +320,119 @@ async function executeDeletion() {
 
         console.log();
         console.log("✅ DATABASE DELETION COMPLETE\n");
-        console.log("=".repeat(60));
-        console.log();
-        console.log("📊 Deletion Report:");
-        console.log();
-        console.log(`Stories:                ${beforeStats.stories}`);
-        console.log(`Parts:                  ${beforeStats.parts}`);
-        console.log(`Chapters:               ${beforeStats.chapters}`);
-        console.log(`Scenes:                 ${beforeStats.scenes}`);
-        console.log(`Characters:             ${beforeStats.characters}`);
-        console.log(`Settings:               ${beforeStats.settings}`);
-        console.log(`Community Posts:        ${beforeStats.communityPosts}`);
-        console.log(`Comic Panels:           ${beforeStats.comicPanels}`);
-        console.log(`Studio Agent Chats:     ${beforeStats.studioAgentChats}`);
-        console.log();
 
-        const total = Object.values(beforeStats).reduce(
-            (sum, count) => sum + count,
-            0,
-        );
-        console.log(`Total items deleted:    ${total}`);
-        console.log();
-        console.log("=".repeat(60));
-        console.log();
-        console.log("⚠️  Note: Vercel Blob files were NOT deleted.");
-        console.log();
-
-        // Save report
-        const logDir = "logs";
-        if (!fs.existsSync(logDir)) {
-            fs.mkdirSync(logDir, { recursive: true });
-        }
-        const logFile = path.join(
-            logDir,
-            `remove-story-${new Date().toISOString().replace(/:/g, "-").split(".")[0]}.json`,
-        );
-        fs.writeFileSync(
-            logFile,
-            JSON.stringify(
-                {
-                    mode: "database-only",
-                    stats: beforeStats,
-                    timestamp: new Date().toISOString(),
-                },
-                null,
-                2,
-            ),
-        );
-        console.log(`📄 Report saved to: ${logFile}`);
-        console.log();
+        return beforeStats;
     }
 
-    // Execute deletion
-    await deleteAllFromDatabase();
+    // Vercel Blob deletion function
+    async function deleteAllFromBlob(): Promise<{
+        totalFiles: number;
+        batches: number;
+    }> {
+        console.log("🗂️  Deleting Vercel Blob files...\n");
+
+        let totalDeleted = 0;
+        let batches = 0;
+        let cursor: string | undefined;
+
+        // Delete all files under "stories/" prefix (both main/ and develop/ environments)
+        const prefixes = ["main/stories/", "develop/stories/"];
+
+        for (const prefix of prefixes) {
+            console.log(`Scanning prefix: ${prefix}`);
+            cursor = undefined;
+
+            do {
+                const listResult: Awaited<ReturnType<typeof list>> =
+                    await list({
+                        prefix,
+                        cursor,
+                        limit: 100,
+                    });
+
+                if (listResult.blobs.length > 0) {
+                    const urls = listResult.blobs.map(
+                        (blob: { url: string }) => blob.url,
+                    );
+                    await del(urls);
+                    totalDeleted += urls.length;
+                    batches++;
+                    console.log(
+                        `  Deleted batch ${batches}: ${urls.length} files`,
+                    );
+                }
+
+                cursor = listResult.cursor;
+            } while (cursor);
+        }
+
+        console.log();
+        console.log(`✅ BLOB DELETION COMPLETE\n`);
+        console.log(`   Total files deleted: ${totalDeleted}`);
+        console.log(`   Total batches: ${batches}`);
+        console.log();
+
+        return { totalFiles: totalDeleted, batches };
+    }
+
+    // Execute deletions
+    const dbStats = await deleteAllFromDatabase();
+    const blobStats = await deleteAllFromBlob();
+
+    // Final report
+    console.log("=".repeat(60));
+    console.log();
+    console.log("📊 Final Deletion Report:");
+    console.log();
+    console.log("Database Records Deleted:");
+    console.log(`  Stories:              ${dbStats.stories}`);
+    console.log(`  Parts:                ${dbStats.parts}`);
+    console.log(`  Chapters:             ${dbStats.chapters}`);
+    console.log(`  Scenes:               ${dbStats.scenes}`);
+    console.log(`  Characters:           ${dbStats.characters}`);
+    console.log(`  Settings:             ${dbStats.settings}`);
+    console.log(`  Community Posts:      ${dbStats.communityPosts}`);
+    console.log(`  Comic Panels:         ${dbStats.comicPanels}`);
+    console.log(`  Studio Agent Chats:   ${dbStats.studioAgentChats}`);
+    console.log();
+
+    const totalDb = Object.values(dbStats).reduce(
+        (sum, count) => sum + count,
+        0,
+    );
+    console.log(`  Total DB items:       ${totalDb}`);
+    console.log();
+    console.log("Blob Files Deleted:");
+    console.log(`  Total files:          ${blobStats.totalFiles}`);
+    console.log(`  Batches:              ${blobStats.batches}`);
+    console.log();
+    console.log("=".repeat(60));
+    console.log();
+
+    // Save report
+    const logDir = "logs";
+    if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+    }
+    const logFile = path.join(
+        logDir,
+        `remove-story-${new Date().toISOString().replace(/:/g, "-").split(".")[0]}.json`,
+    );
+    fs.writeFileSync(
+        logFile,
+        JSON.stringify(
+            {
+                mode: "database-and-blob",
+                database: dbStats,
+                blob: blobStats,
+                timestamp: new Date().toISOString(),
+            },
+            null,
+            2,
+        ),
+    );
+    console.log(`📄 Report saved to: ${logFile}`);
+    console.log();
 }
 
 // Run the deletion

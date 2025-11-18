@@ -377,10 +377,10 @@ async function fetchScene(sceneId: string): Promise<SceneData> {
 
     try {
         const response = await fetch(
-            `${API_BASE}/studio/api/scenes/${sceneId}`,
+            `${API_BASE}/api/studio/scenes/${sceneId}`,
             {
                 headers: {
-                    Authorization: `Bearer ${API_KEY}`,
+                    "x-api-key": API_KEY,
                     "Content-Type": "application/json",
                 },
             },
@@ -420,10 +420,10 @@ async function checkExistingPanels(sceneId: string): Promise<PanelData[]> {
 
     try {
         const response = await fetch(
-            `${API_BASE}/studio/api/scenes/${sceneId}/panels`,
+            `${API_BASE}/api/studio/scenes/${sceneId}/panels`,
             {
                 headers: {
-                    Authorization: `Bearer ${API_KEY}`,
+                    "x-api-key": API_KEY,
                     "Content-Type": "application/json",
                 },
             },
@@ -470,10 +470,10 @@ async function generatePanels(
 
     try {
         // Call the Toonplay generation API (Server-Sent Events)
-        const response = await fetch(`${API_BASE}/studio/api/novels/toonplay`, {
+        const response = await fetch(`${API_BASE}/api/studio/toonplay`, {
             method: "POST",
             headers: {
-                Authorization: `Bearer ${API_KEY}`,
+                "x-api-key": API_KEY,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
