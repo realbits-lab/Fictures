@@ -59,11 +59,16 @@ export async function authenticateRequest(
     // Fall back to session authentication
     const session = await auth();
     if (session?.user) {
+        const email = session.user.email;
+        if (!email) {
+            return null;
+        }
+
         // Get full user data including role
         const userResult = await db
             .select()
             .from(users)
-            .where(eq(users.email, session.user.email!))
+            .where(eq(users.email, email))
             .limit(1);
 
         if (userResult.length === 0) {

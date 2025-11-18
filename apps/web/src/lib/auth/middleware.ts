@@ -134,7 +134,7 @@ async function resolveAuthentication(
  * );
  * ```
  */
-export function withAuthentication<P = any>(
+export function withAuthentication<P = Record<string, unknown>>(
     handler: (
         request: NextRequest,
         context: P,
@@ -177,9 +177,11 @@ export function withAuthentication<P = any>(
             }
 
             // Run the handler with authentication context
-            return await withAuth(authContext!, () =>
-                handler(request, context),
-            );
+            if (!authContext) {
+                return handler(request, context);
+            }
+
+            return withAuth(authContext, () => handler(request, context));
         } catch (error) {
             // ALWAYS log errors in development to help debugging
             const isDev = process.env.NODE_ENV === "development";
@@ -246,7 +248,7 @@ export function withAuthentication<P = any>(
  * ```
  */
 export function requireScopes(...scopes: string[]) {
-    return <P = any>(
+    return <P = Record<string, unknown>>(
         handler: (
             request: NextRequest,
             context: P,
@@ -278,7 +280,7 @@ export function requireScopes(...scopes: string[]) {
  * });
  * ```
  */
-export function optionalAuth<P = any>(
+export function optionalAuth<P = Record<string, unknown>>(
     handler: (
         request: NextRequest,
         context: P,
@@ -301,7 +303,7 @@ export function optionalAuth<P = any>(
  * });
  * ```
  */
-export function adminOnly<P = any>(
+export function adminOnly<P = Record<string, unknown>>(
     handler: (
         request: NextRequest,
         context?: P,

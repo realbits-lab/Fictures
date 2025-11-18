@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { type NextRequest, NextResponse } from "next/server";
-import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
+import { requireScopes } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 import {
     getCachedUserStories,
@@ -17,7 +17,7 @@ export const runtime = "nodejs";
 
 // GET /api/story - Get user's stories with detailed data for dashboard
 export const GET = requireScopes("stories:read")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         try {
             // 1. Get authentication from context
             const auth = getAuth();
@@ -116,12 +116,12 @@ export const GET = requireScopes("stories:read")(
                 { status: 500 },
             );
         }
-    }),
+    },
 );
 
 // POST /api/story - Generate and create a new story using AI
 export const POST = requireScopes("stories:write")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         try {
             console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             console.log("📚 [STORY API] POST request received");
@@ -215,5 +215,5 @@ export const POST = requireScopes("stories:write")(
 
             return NextResponse.json(errorResponse, { status: 500 });
         }
-    }),
+    },
 );

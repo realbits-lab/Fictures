@@ -18,7 +18,7 @@
  */
 
 import { type NextRequest, NextResponse } from "next/server";
-import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
+import { requireScopes } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 import type {
     ApiImagesErrorResponse,
@@ -46,7 +46,7 @@ export const runtime = "nodejs";
  * Optimization: 2 AVIF variants (mobile 1x + 2x)
  */
 export const POST = requireScopes("images:write")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         try {
             console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             console.log("🎨 [IMAGES API] POST request received");
@@ -151,5 +151,5 @@ export const POST = requireScopes("images:write")(
 
             return NextResponse.json(errorResponse, { status: 500 });
         }
-    }),
+    },
 );

@@ -10,7 +10,7 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
+import { requireScopes } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 import { db } from "@/lib/db";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
@@ -31,7 +31,7 @@ export const runtime = "nodejs";
  * Get all characters for a story
  */
 export const GET = requireScopes("stories:read")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         console.log("📚 [CHARACTERS API] GET request received");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -99,7 +99,7 @@ export const GET = requireScopes("stories:read")(
                 { status: 500 },
             );
         }
-    }),
+    },
 );
 
 /**
@@ -110,7 +110,7 @@ export const GET = requireScopes("stories:read")(
  * Required scope: stories:write
  */
 export const POST = requireScopes("stories:write")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         console.log("📚 [CHARACTERS API] POST request received");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -194,5 +194,5 @@ export const POST = requireScopes("stories:write")(
 
             return NextResponse.json(errorResponse, { status: 500 });
         }
-    }),
+    },
 );

@@ -9,7 +9,7 @@
 
 import { eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
-import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
+import { requireScopes } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 import { db } from "@/lib/db";
 import {
@@ -29,7 +29,7 @@ interface GeneratePanelsRequest {
 }
 
 export const POST = requireScopes("stories:write")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         try {
             const auth = getAuth();
 
@@ -263,5 +263,5 @@ export const POST = requireScopes("stories:write")(
                 },
             );
         }
-    }),
+    },
 );

@@ -4,7 +4,7 @@
  * Tests story generation API with real API calls.
  *
  * Run:
- *   dotenv --file .env.local run pnpm test __tests__/api/studio/stories.test.ts
+ *   dotenv --file .env.local run pnpm test __tests__/novels/story.test.ts
  */
 
 import type {

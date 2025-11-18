@@ -30,7 +30,7 @@ export const generateStorySummary = createTool({
             concept: userPrompt,
         };
 
-        const response = await fetch("/api/studio/stories/story", {
+        const response = await fetch("/api/studio/story", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -315,7 +315,7 @@ export const improveScene = createTool({
             sceneId,
         };
 
-        const response = await fetch("/api/studio/stories/scene-improvement", {
+        const response = await fetch("/api/studio/scene-improvement", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),

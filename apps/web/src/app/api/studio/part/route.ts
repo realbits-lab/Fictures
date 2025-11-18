@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
+import { requireScopes } from "@/lib/auth/middleware";
 import { getAuth } from "@/lib/auth/server-context";
 import { invalidateStudioCache } from "@/lib/db/studio-queries";
 import type {
@@ -23,7 +23,7 @@ const generatePartSchema = z.object({
  * This is the extreme incremental approach where parts are generated one at a time.
  */
 export const POST = requireScopes("stories:write")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         try {
             console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             console.log("🎬 [PART API] POST request received (Singular)");
@@ -104,5 +104,5 @@ export const POST = requireScopes("stories:write")(
 
             return NextResponse.json(errorResponse, { status: 500 });
         }
-    }),
+    },
 );

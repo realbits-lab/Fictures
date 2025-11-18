@@ -7,8 +7,10 @@
  */
 
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { requireScopes } from "@/lib/auth/middleware";
+import { getAuth } from "@/lib/auth/server-context";
 import { db } from "@/lib/db";
 import {
     chapters,
@@ -19,8 +21,6 @@ import {
     stories,
 } from "@/lib/schemas/database";
 import { generateToonplayWithEvaluation } from "@/lib/studio/services/toonplay-improvement-loop";
-import { requireScopes, withAuthentication } from "@/lib/auth/middleware";
-import { getAuth } from "@/lib/auth/server-context";
 
 export const runtime = "nodejs";
 export const maxDuration = 600; // 10 minutes for toonplay + image generation
@@ -45,11 +45,11 @@ const ToonplayRequestSchema = z.object({
  * - Session: NextAuth.js session (story owner or admin)
  */
 export const POST = requireScopes("stories:write")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         console.log("[toonplay-api] 🚀 Route handler called");
         try {
             console.log("[toonplay-api] 🔐 Checking authentication...");
-            
+
             // Get authentication from context (set by withAuthentication wrapper)
             const auth = getAuth();
             console.log("[toonplay-api] Auth context:", {
@@ -61,7 +61,7 @@ export const POST = requireScopes("stories:write")(
             if (!auth?.userId) {
                 console.error("[toonplay-api] ❌ No authentication found");
                 return NextResponse.json(
-                    { 
+                    {
                         success: false,
                         error: {
                             code: "UNAUTHORIZED",
@@ -207,8 +207,14 @@ export const POST = requireScopes("stories:write")(
             console.log(
                 `[toonplay-api] Context: ${storyCharacters.length} characters, ${storySettings.length} settings`,
             );
-            console.log("[toonplay-api] Character IDs:", storyCharacters.map((c) => c.id));
-            console.log("[toonplay-api] Setting IDs:", storySettings.map((s) => s.id));
+            console.log(
+                "[toonplay-api] Character IDs:",
+                storyCharacters.map((c) => c.id),
+            );
+            console.log(
+                "[toonplay-api] Setting IDs:",
+                storySettings.map((s) => s.id),
+            );
 
             // Validate required data
             if (storySettings.length === 0) {
@@ -217,7 +223,8 @@ export const POST = requireScopes("stories:write")(
                         success: false,
                         error: {
                             code: "SETTING_REQUIRED",
-                            message: "At least one setting is required for toonplay generation",
+                            message:
+                                "At least one setting is required for toonplay generation",
                         },
                     },
                     { status: 400 },
@@ -293,9 +300,18 @@ export const POST = requireScopes("stories:write")(
         } catch (error) {
             console.error("[toonplay-api] ❌ Error:", error);
             console.error("[toonplay-api] ❌ Error type:", typeof error);
-            console.error("[toonplay-api] ❌ Error name:", error instanceof Error ? error.name : "N/A");
-            console.error("[toonplay-api] ❌ Error stack:", error instanceof Error ? error.stack : "No stack");
-            console.error("[toonplay-api] ❌ Full error object:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+            console.error(
+                "[toonplay-api] ❌ Error name:",
+                error instanceof Error ? error.name : "N/A",
+            );
+            console.error(
+                "[toonplay-api] ❌ Error stack:",
+                error instanceof Error ? error.stack : "No stack",
+            );
+            console.error(
+                "[toonplay-api] ❌ Full error object:",
+                JSON.stringify(error, Object.getOwnPropertyNames(error)),
+            );
 
             if (error instanceof z.ZodError) {
                 return NextResponse.json(
@@ -311,7 +327,10 @@ export const POST = requireScopes("stories:write")(
                 );
             }
 
-            const errorMessage = error instanceof Error ? error.message : "Toonplay generation failed";
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Toonplay generation failed";
             const errorStack = error instanceof Error ? error.stack : undefined;
 
             return NextResponse.json(
@@ -320,11 +339,14 @@ export const POST = requireScopes("stories:write")(
                     error: {
                         code: "GENERATION_FAILED",
                         message: errorMessage,
-                        details: process.env.NODE_ENV === "development" ? { stack: errorStack } : undefined,
+                        details:
+                            process.env.NODE_ENV === "development"
+                                ? { stack: errorStack }
+                                : undefined,
                     },
                 },
                 { status: 500 },
             );
         }
-    }),
+    },
 );

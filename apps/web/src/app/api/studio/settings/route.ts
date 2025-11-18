@@ -106,7 +106,7 @@ export const GET = withAuthentication(async (request: NextRequest) => {
 import { requireScopes } from "@/lib/auth/middleware";
 
 export const POST = requireScopes("stories:write")(
-    withAuthentication(async (request: NextRequest) => {
+    async (request: NextRequest) => {
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         console.log("📚 [SETTINGS API] POST request received");
         console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -187,5 +187,5 @@ export const POST = requireScopes("stories:write")(
 
             return NextResponse.json(errorResponse, { status: 500 });
         }
-    }),
+    },
 );
