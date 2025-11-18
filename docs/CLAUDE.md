@@ -749,7 +749,7 @@ See [apps/web/docs/CLAUDE.md](../apps/web/docs/CLAUDE.md) for complete index.
 3. **Comics Reader**: `apps/web/docs/comics/comics-specification.md`
 4. **Image System**: `apps/web/docs/image/image-specification.md`
 5. **Studio**: `apps/web/docs/studio/studio-api-quick-reference.md`
-6. **Performance**: `apps/web/docs/performance/performance-caching.md`
+6. **Optimization**: `apps/web/docs/optimization/performance-caching.md`
 7. **UI Development**: `apps/web/docs/ui/ui-development.md`
 8. **API Documentation**: `apps/web/docs/api/README.md`
 

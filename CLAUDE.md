@@ -50,7 +50,7 @@ When working on this project, these are the **TOP PRIORITY** documents to refere
 4. **[Web Development Guide](apps/web/CLAUDE.md)** - Essential Next.js development instructions
 5. **[AI Server Development Guide](apps/ai-server/CLAUDE.md)** - Essential Python service instructions
 6. **[Authentication API](apps/web/docs/api/authentication.md)** - Auth system documentation
-7. **[Performance Implementation](apps/web/docs/performance/IMPLEMENTATION-SUMMARY.md)** - Performance optimization guidelines
+7. **[Performance Implementation](apps/web/docs/optimization/IMPLEMENTATION-SUMMARY.md)** - Performance optimization guidelines
 8. **[UI Development Guide](apps/web/docs/ui/ui-development.md)** - Frontend development patterns
 
 ⚠️ **REMEMBER**: Always check and update related documentation when making code changes (see Documentation Synchronization Policy below)
@@ -384,10 +384,10 @@ This approach is **mandatory** for:
 
 ### 🚀 Performance & Optimization
 
-- **[⚡ Performance Implementation Summary](apps/web/docs/performance/IMPLEMENTATION-SUMMARY.md)** - Performance overview
-- **[💾 Database Performance](apps/web/docs/performance/performance-database.md)** - DB optimization
-- **[🔄 Caching Strategies](apps/web/docs/performance/performance-caching.md)** - Cache implementation
-- **[📚 Novel Performance](apps/web/docs/performance/performance-novels.md)** - Novel optimization
+- **[⚡ Performance Implementation Summary](apps/web/docs/optimization/IMPLEMENTATION-SUMMARY.md)** - Performance overview
+- **[💾 Database Performance](apps/web/docs/optimization/performance-database.md)** - DB optimization
+- **[🔄 Caching Strategies](apps/web/docs/optimization/performance-caching.md)** - Cache implementation
+- **[📚 Novel Performance](apps/web/docs/optimization/performance-novels.md)** - Novel optimization
 
 ### 🎨 UI & Frontend
 
@@ -416,7 +416,7 @@ This approach is **mandatory** for:
 
 - **[🧪 Test Specification](apps/web/docs/test/test-specification.md)** - Testing strategy
 - **[✅ Test Development](apps/web/docs/test/test-development.md)** - Test implementation
-- **[📊 Cache Testing Guide](apps/web/docs/performance/cache-testing-guide.md)** - Cache validation
+- **[📊 Cache Testing Guide](apps/web/docs/optimization/cache-testing-guide.md)** - Cache validation
 
 ### 🚀 Setup & Getting Started
 
