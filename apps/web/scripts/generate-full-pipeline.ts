@@ -179,7 +179,7 @@ function runScript(
 
             // Try to extract story ID from output
             let storyId: string | undefined;
-            const storyIdMatch = output.match(/story_[A-Za-z0-9]+/);
+            const storyIdMatch = output.match(/story_[A-Za-z0-9-]+/);
             if (storyIdMatch) {
                 storyId = storyIdMatch[0];
             }

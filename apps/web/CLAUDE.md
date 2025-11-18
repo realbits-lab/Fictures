@@ -66,7 +66,9 @@ const path = getBlobPath('stories/123/image.png');
 - Run long-running processes (pnpm dev, npx commands) as background processes
 - Always redirect output streams to logs directory using shell pipes for monitoring
 - **CRITICAL**: ALWAYS kill existing processes on port 3000 before starting development server
-  - Use: `lsof -ti :3000 | xargs -r kill -9`
+  - Use: `pkill -f "next dev"` to stop the Next.js dev server
+  - Alternative: `pkill -f "uvicorn"` to stop the AI server
+  - **ALWAYS use `pkill -f [process_name]`** instead of port-based killing to avoid killing unrelated processes (like VS Code SSH remote sessions)
   - Never let Next.js automatically choose a different port (3001, 3002, etc.)
   - The application MUST run on port 3000 for proper API endpoint configuration
 - **IMPORTANT**: Always remove Next.js cache (`.next/`) before restarting `pnpm dev`
