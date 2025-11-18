@@ -144,7 +144,7 @@ This section provides a complete index of all feature documentation. Each direct
 #### Performance & Optimization
 - **[performance/](performance/)** - Performance optimization
   - `IMPLEMENTATION-SUMMARY.md` - Performance implementation summary
-  - `optimization-caching.md` - Caching strategies (SWR, localStorage, Redis)
+  - `optimization-novels.md` - Caching strategies (SWR, localStorage, Redis)
   - `optimization-database.md` - Database optimization
   - `optimization-blob-deletion.md` - Blob deletion optimization
   - `optimization-cache-invalidation.md` - Cache invalidation
@@ -173,7 +173,7 @@ This section provides a complete index of all feature documentation. Each direct
 - **Generate images** → `image/image-specification.md`
 - **Optimize images** → `image/image-development.md`
 - **Add UI components** → `ui/ui-specification.md` + `ui/shadcn-component-guide.md`
-- **Improve performance** → `performance/optimization-caching.md` + `performance/IMPLEMENTATION-SUMMARY.md`
+- **Improve performance** → `performance/optimization-novels.md` + `performance/IMPLEMENTATION-SUMMARY.md`
 - **Set up testing** → `test/test-specification.md`
 - **Understand story system** → `novels/novels-specification.md` (SSOT for data model)
 - **Work with community features** → `community/community-specification.md`

@@ -550,7 +550,7 @@ The following sections provide detailed information about features implemented i
 **Purpose**: Performance optimization guides and implementation reports.
 
 **Files**:
-- `optimization-caching.md` - Caching strategy (SWR, localStorage, Redis)
+- `optimization-novels.md` - Caching strategy (SWR, localStorage, Redis)
 - `optimization-database.md` - Database optimization (indexes, N+1 fixes)
 - `optimization-blob-deletion.md` - Blob deletion optimization (10-25x faster)
 - `optimization-novels.md` - Novel generation performance
@@ -749,7 +749,7 @@ See [apps/web/docs/CLAUDE.md](../apps/web/docs/CLAUDE.md) for complete index.
 3. **Comics Reader**: `apps/web/docs/comics/comics-specification.md`
 4. **Image System**: `apps/web/docs/image/image-specification.md`
 5. **Studio**: `apps/web/docs/studio/studio-api-quick-reference.md`
-6. **Optimization**: `apps/web/docs/optimization/optimization-caching.md`
+6. **Optimization**: `apps/web/docs/optimization/optimization-novels.md`
 7. **UI Development**: `apps/web/docs/ui/ui-development.md`
 8. **API Documentation**: `apps/web/docs/api/README.md`
 

@@ -386,7 +386,7 @@ This approach is **mandatory** for:
 
 - **[⚡ Performance Implementation Summary](apps/web/docs/optimization/IMPLEMENTATION-SUMMARY.md)** - Performance overview
 - **[💾 Database Performance](apps/web/docs/optimization/optimization-database.md)** - DB optimization
-- **[🔄 Caching Strategies](apps/web/docs/optimization/optimization-caching.md)** - Cache implementation
+- **[🔄 Caching Strategies](apps/web/docs/optimization/optimization-novels.md)** - Cache implementation
 - **[📚 Novel Performance](apps/web/docs/optimization/optimization-novels.md)** - Novel optimization
 
 ### 🎨 UI & Frontend
