@@ -193,6 +193,10 @@ dedupingInterval: 30 * 60 * 1000, // 30 minutes in SWR memory
 keepPreviousData: true             // Keep during navigation
 ```
 
+**Configuration Explained:**
+- **`dedupingInterval`**: Time window (in ms) where duplicate requests are suppressed. During this interval, SWR returns cached data without making new network requests. Set to 30 minutes to support extended reading sessions.
+- **`keepPreviousData`**: When `true`, SWR keeps the previous data in memory while fetching new data. Prevents UI flashing during navigation and provides instant display of stale content while revalidating in background.
+
 ### 4.2 localStorage Persistence
 
 **Synchronous Cache Loading (INSTANT):**
@@ -243,6 +247,18 @@ export const CACHE_CONFIGS = {
 };
 ```
 
+**Configuration Properties Explained:**
+
+- **`revalidateOnFocus`**: When `true`, SWR automatically refetches data when browser tab regains focus. Useful for community features where content changes frequently. Disabled for reading/writing to prevent interrupting user experience.
+
+- **`revalidateOnReconnect`**: When `true`, SWR refetches data when network connection is restored. Enabled for reading to ensure latest content after offline periods. Disabled for writing to preserve local edits.
+
+- **`dedupingInterval`**: Time window (in ms) to suppress duplicate requests. Short intervals (5-10s) for frequently changing data like community posts. Long intervals (30min) for stable reading content.
+
+- **`ttl`**: Time-to-live for localStorage cache (in ms). Determines how long cached data persists in browser storage before expiring. Shorter TTL (5min) for reading ensures fresh content, longer TTL (30min) for writing preserves work-in-progress.
+
+- **`version`**: Cache version string for invalidation. When version changes, all cached data for that config is invalidated. Increment when data schema changes to prevent stale data issues.
+
 | Hook | localStorage | SWR Memory | Purpose |
 |------|-------------|------------|---------|
 | `useChapterScenes` | 5 min | 30 min | Scene content |
@@ -252,12 +268,6 @@ export const CACHE_CONFIGS = {
 - In-memory retention: 1 hour
 - Story cache limit: 20 entries
 - Scene cache limit: 50 entries
-
-### 4.5 Client Cache Hierarchy
-
-```
-SWR Memory (0ms, 30min) → localStorage (4-16ms, 5min) → ETag (304 if unchanged) → Network (500-2000ms)
-```
 
 ---
 

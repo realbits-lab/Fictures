@@ -514,6 +514,112 @@ See **Troubleshooting** section above for solutions to common issues.
 
 ---
 
-**Last Updated:** November 2, 2025
+## Novel Reading Performance Testing
+
+### Manual Test Flow
+
+```bash
+# 1. First visit - populate cache
+Open /novels/STORY_ID → 1-2s load
+
+# 2. Return within 30min - SWR memory hit
+Navigate away, return → Instant (<16ms)
+
+# 3. Return after 30min - localStorage hit
+Wait 30min, reload → Fast (4-16ms)
+
+# 4. Return after 1hr - cache expired
+Wait 1hr, reload → 1-2s load (refetched)
+```
+
+### Console Verification
+
+```
+[Cache] ⚡ INSTANT load from cache for: /studio/api/chapters/abc/scenes
+[fetchId] ✅ 304 Not Modified - Using ETag cache (Total: 12ms)
+```
+
+### Automated Performance Testing
+
+```bash
+dotenv --file .env.local run node scripts/test-loading-performance.mjs STORY_ID
+```
+
+### Redis Cache Testing
+
+**Test cache behavior with Studio write API:**
+```bash
+# 1. Update test script with story ID
+# Edit test-scripts/test-studio-only.mjs: const storyId = 'YOUR_STORY_ID';
+
+# 2. First test run - Cache MISS
+dotenv --file .env.local run node test-scripts/test-studio-only.mjs
+
+# 3. Second test run - Cache HIT (within 30 minutes)
+dotenv --file .env.local run node test-scripts/test-studio-only.mjs
+
+# 4. Check server logs for cache behavior
+tail -100 logs/dev-server.log | grep -E "(StoryCache|Write API)"
+```
+
+**Expected console output:**
+```
+[StoryCache] ❌ MISS: Full structure for {storyId} - fetching from DB
+[StoryCache] 💾 SET: Full structure for {storyId} (TTL: 1800s, 1 parts, 1 chapters, 3 scenes)
+[Write API] Fetched story {storyId} in 1273ms (from cache)
+
+# Second request:
+[StoryCache] ✅ HIT: Full structure for {storyId} (age: 22555ms)
+[Write API] Fetched story {storyId} in 20ms (from cache)
+```
+
+**Performance verification:**
+- Cache MISS: ~1,273ms (initial DB query)
+- Cache HIT: ~20ms (from Redis)
+- Improvement: 98% faster (63x speedup)
+
+---
+
+## Monitoring
+
+### Key Metrics
+
+**Cache Performance:**
+- Redis cache hit rate (target: >90%)
+- Cache response time (target: <20ms)
+- Cache memory usage
+- Redis connection pool usage
+
+**Database Performance:**
+- Query execution time (target: <200ms cold, <5ms cached)
+- Connection pool usage (target: <50% utilization)
+- Slow query log (queries >500ms)
+
+**API Performance:**
+- Time to First Byte (target: <100ms)
+- Total API response time (target: <50ms cached, <1s cold)
+- Request throughput (requests/second)
+
+**User Experience:**
+- First Contentful Paint (target: <1s)
+- Time to Interactive (target: <3.5s)
+- Page load time (target: <5s)
+
+### Logging Examples
+
+```typescript
+// Already implemented in code
+[RedisCache] HIT: story:read:{id} (5ms)
+[RedisCache] MISS: story:read:{id} (174ms)
+[RedisCache] SET: story:read:{id} (TTL: 300s)
+[StoryCache] ✅ HIT: Full structure for {storyId} (age: 22555ms)
+[StoryCache] 💾 SET: Full structure for {storyId} (TTL: 1800s, 1 parts, 1 chapters, 3 scenes)
+[Write API] Fetched story {storyId} in 20ms (from cache)
+[PERF-QUERY] Batched query (3 queries in parallel): 174ms
+```
+
+---
+
+**Last Updated:** November 18, 2025
 **Test Suite Version:** 1.0.0
 **Status:** ✅ Production Ready
