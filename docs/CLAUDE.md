@@ -733,7 +733,7 @@ The following sections provide detailed information about features implemented i
 ## 🔍 Quick Navigation by Topic
 
 ### Getting Started
-1. **Quick Start**: `docs/GETTING_STARTED.md` - Project quick start guide
+1. **Quick Start**: `docs/github/GETTING_STARTED.md` - Project quick start guide
 2. **Project Setup**: Root `/CLAUDE.md` - Main monorepo guide
 3. **Web App Setup**: `apps/web/CLAUDE.md` - Next.js development guide
 4. **AI Server Setup**: `apps/ai-server/CLAUDE.md` - Python development guide

@@ -420,7 +420,7 @@ This approach is **mandatory** for:
 
 ### 🚀 Setup & Getting Started
 
-- **[🏁 Getting Started](docs/GETTING_STARTED.md)** - Project quickstart
+- **[🏁 Getting Started](docs/github/GETTING_STARTED.md)** - Project quickstart
 - **[📋 Setup Checklist](docs/monorepo/setup-checklist.md)** - Setup verification
 - **[🐍 Python Version Guide](apps/ai-server/docs/general/python-version-guide.md)** - Python setup
 - **[⚡ AI Server Quick Start](apps/ai-server/docs/general/quick-start.md)** - AI server setup
