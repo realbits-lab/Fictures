@@ -56,7 +56,7 @@ export function useStoryData(storyId: string | null) {
         shouldFetch ? `/api/studio/story/${storyId}/write` : null,
         fetcher,
         {
-            ...CACHE_CONFIGS.writing, // 30min TTL with localStorage persistence
+            ...CACHE_CONFIGS.studio, // Story creation/editing config
             revalidateOnFocus: true,
             revalidateOnReconnect: true,
             refreshInterval: 0, // No automatic polling during writing
@@ -102,7 +102,7 @@ export function useStoriesData(storyIds: string[]) {
             return results.filter(Boolean);
         },
         {
-            ...CACHE_CONFIGS.writing,
+            ...CACHE_CONFIGS.studio,
             ttl: 10 * 60 * 1000, // 10min TTL for story lists (shorter than individual stories)
             revalidateOnFocus: false, // Don't revalidate all stories on focus
             revalidateOnReconnect: true,

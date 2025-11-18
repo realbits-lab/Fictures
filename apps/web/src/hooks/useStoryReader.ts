@@ -193,7 +193,7 @@ export function useStoryReader(
             shouldFetch ? `/api/studio/story/${storyId}/read` : null,
             fetcher,
             {
-                ...CACHE_CONFIGS.reading, // 1hr TTL + compression
+                ...CACHE_CONFIGS.novels, // Text-based reading config
                 ttl: 10 * 60 * 1000, // 10min localStorage cache
                 fallbackData, // ⚡ SSR data hydration - instant display
                 revalidateOnFocus: false,

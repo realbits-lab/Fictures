@@ -75,18 +75,14 @@ export function CacheManagerWidget() {
 
     const getPageTypeIcon = (pageType: string) => {
         switch (pageType) {
-            case "writing":
-                return "✍️";
-            case "reading":
+            case "studio":
+                return "🎬";
+            case "novels":
                 return "📖";
+            case "comics":
+                return "🎨";
             case "community":
                 return "💬";
-            case "publish":
-                return "📤";
-            case "analysis":
-                return "📊";
-            case "settings":
-                return "⚙️";
             default:
                 return "📄";
         }
@@ -263,28 +259,20 @@ export function CacheManagerWidget() {
                     </h4>
                     <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                         <p>
-                            • <strong>Writing:</strong> 30min TTL (personal
-                            stories change infrequently)
+                            • <strong>Studio:</strong> 30min TTL (story
+                            creation and editing)
                         </p>
                         <p>
-                            • <strong>Reading:</strong> 10min TTL (public
-                            content updates regularly)
+                            • <strong>Novels:</strong> 5min TTL (text-based
+                            reading content)
                         </p>
                         <p>
-                            • <strong>Community:</strong> 5min TTL (active
-                            discussions change frequently)
+                            • <strong>Comics:</strong> 30min TTL (image-based
+                            content, immutable images)
                         </p>
                         <p>
-                            • <strong>Analytics:</strong> 2min TTL (metrics
-                            update frequently)
-                        </p>
-                        <p>
-                            • <strong>Publish:</strong> 1hr TTL (publishing
-                            schedules change moderately)
-                        </p>
-                        <p>
-                            • <strong>Settings:</strong> 24hr TTL (preferences
-                            rarely change)
+                            • <strong>Community:</strong> 30min TTL (comments
+                            and discussions)
                         </p>
                     </div>
                 </div>

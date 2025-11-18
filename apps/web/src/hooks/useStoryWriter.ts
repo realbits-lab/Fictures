@@ -102,7 +102,7 @@ export function useStoryWriter(storyId: string | null): UseStoryWriterReturn {
             shouldFetch ? `/api/studio/story/${storyId}/write` : null,
             fetcher,
             {
-                ...CACHE_CONFIGS.writing, // 30min TTL + compression for frequent updates
+                ...CACHE_CONFIGS.studio, // Story creation/editing config
                 // Override TTL based on story editing frequency
                 ttl: 30 * 60 * 1000, // 30min TTL for active writing sessions
                 revalidateOnFocus: true, // Revalidate when user returns to tab

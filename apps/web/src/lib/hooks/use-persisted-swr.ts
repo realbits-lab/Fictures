@@ -12,26 +12,37 @@ export interface CacheConfig extends SWRConfiguration {
 }
 
 export const CACHE_CONFIGS = {
-    writing: {
+    studio: {
+        // Story creation/editing (GNB: Studio)
         revalidateOnFocus: false,
         revalidateOnReconnect: false,
         dedupingInterval: 10 * 1000, // 10 seconds
         ttl: 30 * 60 * 1000, // 30 minutes
         version: "1.0.0",
     } as CacheConfig,
-    community: {
-        revalidateOnFocus: true,
-        revalidateOnReconnect: true,
-        dedupingInterval: 5 * 1000, // 5 seconds
-        ttl: 30 * 60 * 1000, // 30 minutes
-        version: "1.1.0",
-    } as CacheConfig,
-    reading: {
+    novels: {
+        // Text-based reading (GNB: Novels)
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
         dedupingInterval: 30 * 60 * 1000, // 30 minutes
         ttl: 5 * 60 * 1000, // 5 minutes
         version: "1.0.0",
+    } as CacheConfig,
+    comics: {
+        // Image-based reading (GNB: Comics)
+        revalidateOnFocus: false,
+        revalidateOnReconnect: true,
+        dedupingInterval: 60 * 60 * 1000, // 1 hour - images are immutable
+        ttl: 30 * 60 * 1000, // 30 minutes - longer for image data
+        version: "1.0.0",
+    } as CacheConfig,
+    community: {
+        // Comments and discussions (GNB: Community)
+        revalidateOnFocus: true,
+        revalidateOnReconnect: true,
+        dedupingInterval: 5 * 1000, // 5 seconds
+        ttl: 30 * 60 * 1000, // 30 minutes
+        version: "1.1.0",
     } as CacheConfig,
 };
 

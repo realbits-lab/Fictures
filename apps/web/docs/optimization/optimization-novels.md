@@ -221,48 +221,75 @@ if (res.status === 304 && cachedData?.data) {
 
 **File:** `src/lib/hooks/use-persisted-swr.ts`
 
+**Recommended Configuration (aligned with GNB menus):**
+
 ```typescript
 export const CACHE_CONFIGS = {
-  writing: {
+  studio: {
+    // Story creation/editing (previously "writing")
     revalidateOnFocus: false,
     revalidateOnReconnect: false,
-    dedupingInterval: 10 * 1000,      // 10 seconds
+    dedupingInterval: 10 * 1000,       // 10 seconds
     ttl: 30 * 60 * 1000,               // 30 minutes
     version: "1.0.0",
   },
-  community: {
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
-    dedupingInterval: 5 * 1000,        // 5 seconds
-    ttl: 30 * 60 * 1000,               // 30 minutes
-    version: "1.1.0",
-  },
-  reading: {
+  novels: {
+    // Text-based reading (split from "reading")
     revalidateOnFocus: false,
     revalidateOnReconnect: true,
     dedupingInterval: 30 * 60 * 1000,  // 30 minutes
     ttl: 5 * 60 * 1000,                // 5 minutes
     version: "1.0.0",
   },
+  comics: {
+    // Image-based reading (optimized for heavy image data)
+    revalidateOnFocus: false,
+    revalidateOnReconnect: true,
+    dedupingInterval: 60 * 60 * 1000,  // 1 hour - images are immutable
+    ttl: 30 * 60 * 1000,               // 30 minutes - longer for image data
+    version: "1.0.0",
+  },
+  community: {
+    // Comments and discussions
+    revalidateOnFocus: true,
+    revalidateOnReconnect: true,
+    dedupingInterval: 5 * 1000,        // 5 seconds
+    ttl: 30 * 60 * 1000,               // 30 minutes
+    version: "1.1.0",
+  },
 };
 ```
 
+**GNB Menu Alignment:**
+
+| Config | GNB Menu | Route | Purpose |
+|--------|----------|-------|---------|
+| `studio` | Studio (🎬) | `/studio` | Story creation and editing |
+| `novels` | Novels (📖) | `/novels` | Text-based story reading |
+| `comics` | Comics (🎨) | `/comics` | Visual/panel-based reading |
+| `community` | Community (💬) | `/community` | Comments and discussions |
+
 **Configuration Properties Explained:**
 
-- **`revalidateOnFocus`**: When `true`, SWR automatically refetches data when browser tab regains focus. Useful for community features where content changes frequently. Disabled for reading/writing to prevent interrupting user experience.
+- **`revalidateOnFocus`**: When `true`, SWR automatically refetches data when browser tab regains focus. Enabled for community (content changes frequently). Disabled for studio/novels/comics to prevent interrupting user experience.
 
-- **`revalidateOnReconnect`**: When `true`, SWR refetches data when network connection is restored. Enabled for reading to ensure latest content after offline periods. Disabled for writing to preserve local edits.
+- **`revalidateOnReconnect`**: When `true`, SWR refetches data when network connection is restored. Enabled for novels/comics to ensure latest content after offline periods. Disabled for studio to preserve local edits.
 
-- **`dedupingInterval`**: Time window (in ms) to suppress duplicate requests. Short intervals (5-10s) for frequently changing data like community posts. Long intervals (30min) for stable reading content.
+- **`dedupingInterval`**: Time window (in ms) to suppress duplicate requests. Short intervals (5s) for frequently changing data like community posts. Long intervals (30min-1hr) for stable reading content. Comics use 1hr because generated images are immutable.
 
-- **`ttl`**: Time-to-live for localStorage cache (in ms). Determines how long cached data persists in browser storage before expiring. Shorter TTL (5min) for reading ensures fresh content, longer TTL (30min) for writing preserves work-in-progress.
+- **`ttl`**: Time-to-live for localStorage cache (in ms). Determines how long cached data persists in browser storage before expiring. Shorter TTL (5min) for novels ensures fresh content, longer TTL (30min) for studio/comics preserves work-in-progress and heavy image data.
 
 - **`version`**: Cache version string for invalidation. When version changes, all cached data for that config is invalidated. Increment when data schema changes to prevent stale data issues.
 
-| Hook | localStorage | SWR Memory | Purpose |
-|------|-------------|------------|---------|
-| `useChapterScenes` | 5 min | 30 min | Scene content |
-| `useStoryReader` | 10 min | 30 min | Story structure |
+**Hook Usage Mapping:**
+
+| Hook | Config | localStorage | SWR Memory | Purpose |
+|------|--------|-------------|------------|---------|
+| `useStoryData` | `studio` | 30 min | 30 min | Sidebar story list |
+| `useStoryWriter` | `studio` | 30 min | 30 min | Active editing session |
+| `useStoryReader` | `novels` | 5 min | 30 min | Novel story structure |
+| `useChapterScenes` | `novels`/`comics` | 5 min | 30 min | Scene content |
+| `use-comments` | `community` | 30 min | 30 min | Comments with ETag |
 
 **ETag Cache:**
 - In-memory retention: 1 hour

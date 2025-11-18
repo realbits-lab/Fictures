@@ -162,7 +162,7 @@ export function useChapterScenes(chapterId: string | null) {
             shouldFetch ? `/api/studio/chapters/${chapterId}/scenes` : null,
             fetcher,
             {
-                ...CACHE_CONFIGS.reading,
+                ...CACHE_CONFIGS.novels,
                 ttl: 5 * 60 * 1000, // 5min localStorage cache for scenes
                 revalidateOnFocus: false,
                 revalidateOnReconnect: true,
