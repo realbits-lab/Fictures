@@ -15,7 +15,7 @@ import {
     usePublishAnalysis,
     usePublishHistory,
     usePublishStatus,
-} from "@/lib/hooks/use-page-cache";
+} from "@/hooks/use-page-cache";
 
 // Skeleton components for loading states
 function PublishingScheduleSkeleton() {

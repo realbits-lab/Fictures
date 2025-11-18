@@ -11,8 +11,8 @@ import {
 } from "@/components/common";
 import { MainLayout } from "@/components/layout";
 import { SkeletonLoader } from "@/components/ui";
-import { useCommunityEvents } from "@/lib/hooks/use-community-events";
-import { useCommunityStories } from "@/lib/hooks/use-page-cache";
+import { useCommunityEvents } from "@/hooks/use-community-events";
+import { useCommunityStories } from "@/hooks/use-page-cache";
 import type {
     PostCreatedEvent,
     StoryPublishedEvent,

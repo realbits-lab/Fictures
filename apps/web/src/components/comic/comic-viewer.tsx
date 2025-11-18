@@ -11,7 +11,7 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useSceneView } from "@/hooks/useSceneView";
+import { useSceneView } from "@/hooks/use-scene-view";
 import {
     getRecommendedInitialLoadCount,
     ProgressiveComicPanel,

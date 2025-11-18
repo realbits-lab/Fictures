@@ -21,11 +21,11 @@ export const CACHE_CONFIGS = {
         version: "1.0.0",
     } as CacheConfig,
     novels: {
-        // Text-based reading (GNB: Novels)
+        // Text-based reading (GNB: Novels) - read-only published content
         revalidateOnFocus: false,
         revalidateOnReconnect: true,
         dedupingInterval: 30 * 60 * 1000, // 30 minutes
-        ttl: 5 * 60 * 1000, // 5 minutes
+        ttl: 30 * 60 * 1000, // 30 minutes - same as comics (read-only content)
         version: "1.0.0",
     } as CacheConfig,
     comics: {

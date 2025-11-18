@@ -38,12 +38,12 @@ export function useCacheInvalidation() {
 
     const handleCacheInvalidation = useCallback((headers: Headers | Record<string, string> | undefined) => {
         if (!headers) return;
-        
+
         // Extract cache keys from headers (e.g., x-cache-keys header)
-        const cacheKeysHeader = headers instanceof Headers 
+        const cacheKeysHeader = headers instanceof Headers
             ? headers.get("x-cache-keys")
             : headers["x-cache-keys"];
-        
+
         if (cacheKeysHeader) {
             try {
                 const keys = JSON.parse(cacheKeysHeader) as string[];

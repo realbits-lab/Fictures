@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
-import { CACHE_CONFIGS, usePersistedSWR } from "@/lib/hooks/use-persisted-swr";
+import { CACHE_CONFIGS, usePersistedSWR } from "@/hooks/use-persisted-swr";
 
 export interface Scene {
     id: string;
@@ -120,7 +120,7 @@ const fetcher = async (url: string): Promise<StoryReaderResponse> => {
 
     // Handle 304 Not Modified - return cached data
     if (res.status === 304 && cachedData?.data) {
-        console.log("🎯 Story data unchanged, using cached version");
+        console.log("Story data unchanged, using cached version");
         return cachedData.data;
     }
 
@@ -195,12 +195,12 @@ export function useStoryReader(
             {
                 ...CACHE_CONFIGS.novels, // Text-based reading config
                 ttl: 10 * 60 * 1000, // 10min localStorage cache
-                fallbackData, // ⚡ SSR data hydration - instant display
+                fallbackData, // SSR data hydration - instant display
                 revalidateOnFocus: false,
                 revalidateOnReconnect: true,
                 refreshInterval: 0, // No automatic polling
-                dedupingInterval: 30 * 60 * 1000, // ⚡ OPTIMIZED: 30 minutes - keeps story structure in SWR memory cache for extended reading sessions
-                keepPreviousData: true, // ⚡ OPTIMIZED: Keep story data in memory when navigating
+                dedupingInterval: 30 * 60 * 1000, // OPTIMIZED: 30 minutes - keeps story structure in SWR memory cache for extended reading sessions
+                keepPreviousData: true, // OPTIMIZED: Keep story data in memory when navigating
                 errorRetryCount: 3,
                 errorRetryInterval: 1000,
                 onError: (error: any) => {

@@ -10,7 +10,7 @@ import {
     CardTitle,
     Skeleton,
 } from "@/components/ui";
-import { useUserSettings } from "@/lib/hooks/use-page-cache";
+import { useUserSettings } from "@/hooks/use-page-cache";
 
 export default function AccountSettingsPage() {
     const { data: session } = useSession();

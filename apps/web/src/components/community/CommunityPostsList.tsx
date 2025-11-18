@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge, Button, Card, CardContent } from "@/components/ui";
-import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 interface Post {
     id: string;

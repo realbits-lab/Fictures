@@ -15,9 +15,9 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui";
-import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
-import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";
-import { useStoryData } from "@/lib/hooks/useStoryData";
+import { useWritingProgress, useWritingSession } from "@/hooks/use-story-writer";
+import { useCacheInvalidation } from "@/hooks/use-cache-invalidation";
+import { useStoryData } from "@/hooks/use-story-data";
 import type {
     chapters,
     characters,

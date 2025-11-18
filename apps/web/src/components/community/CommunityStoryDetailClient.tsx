@@ -16,12 +16,12 @@ import { CommunityStorySidebar } from "@/components/community/CommunityStorySide
 import { CreatePostForm } from "@/components/community/CreatePostForm";
 // import { useSession } from "next/auth/react";
 import { Badge, Button, Card, CardContent } from "@/components/ui";
-import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 import {
     useCommunityPosts,
     useCommunityStory,
     useRevalidateCommunityPosts,
-} from "@/lib/hooks/use-community-cache";
+} from "@/hooks/use-community-cache";
 
 interface Character {
     id: string;

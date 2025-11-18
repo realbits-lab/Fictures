@@ -15,7 +15,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { cacheMetrics } from "@/lib/cache/cache-metrics";
-import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";
+import { useCacheInvalidation } from "@/hooks/use-cache-invalidation";
 
 export function CacheDebugPanel() {
     const [stats, setStats] = useState(() => cacheMetrics.getStats());

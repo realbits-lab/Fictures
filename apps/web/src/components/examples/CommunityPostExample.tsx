@@ -6,7 +6,7 @@ import { Button } from "@/components/ui";
 import {
     useProtectedAction,
     useRoleProtectedAction,
-} from "@/hooks/useProtectedAction";
+} from "@/hooks/use-protected-action";
 
 interface CommunityPostExampleProps {
     postId: string;

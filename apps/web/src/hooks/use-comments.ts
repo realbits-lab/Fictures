@@ -5,7 +5,7 @@ import {
     CACHE_CONFIGS,
     cacheManager,
     usePersistedSWR,
-} from "./use-persisted-swr";
+} from "@/hooks/use-persisted-swr";
 
 export interface Comment {
     id: string;
@@ -87,7 +87,7 @@ export function useComments({
     // Fetcher function with ETag support
     const fetcher = useCallback(
         async (url: string): Promise<CommentsResponse | undefined> => {
-            console.log(`[useComments] 🔄 Fetching comments from: ${url}`);
+            console.log(`[useComments] Fetching comments from: ${url}`);
 
             const headers: HeadersInit = {
                 "Cache-Control": "public, max-age=600", // 10min cache for CDN
@@ -96,7 +96,7 @@ export function useComments({
             // Add If-None-Match header if we have an ETag from previous response
             if (etag) {
                 headers["If-None-Match"] = etag;
-                console.log(`[useComments] 📋 Sending ETag: ${etag}`);
+                console.log(`[useComments] Sending ETag: ${etag}`);
             }
 
             const response = await fetch(url, { headers });
@@ -104,7 +104,7 @@ export function useComments({
             // Handle 304 Not Modified - return undefined to keep using cached data
             if (response.status === 304) {
                 console.log(
-                    `[useComments] ✅ 304 Not Modified - using cached data`,
+                    `[useComments] 304 Not Modified - using cached data`,
                 );
                 // Return undefined to tell SWR to keep current data
                 return undefined;
@@ -120,12 +120,12 @@ export function useComments({
             const newETag = response.headers.get("ETag");
             if (newETag) {
                 setETag(newETag);
-                console.log(`[useComments] 📝 Stored new ETag: ${newETag}`);
+                console.log(`[useComments] Stored new ETag: ${newETag}`);
             }
 
             const data = await response.json();
             console.log(
-                `[useComments] ✅ Fetched ${data.comments?.length || 0} comments`,
+                `[useComments] Fetched ${data.comments?.length || 0} comments`,
             );
 
             return data;
@@ -154,7 +154,7 @@ export function useComments({
 
     // Cache invalidation for mutations
     const invalidate = useCallback(async () => {
-        console.log(`[useComments] 🔄 Invalidating cache for: ${cacheKey}`);
+        console.log(`[useComments] Invalidating cache for: ${cacheKey}`);
 
         // Clear both SWR memory cache and localStorage cache
         if (cacheKey) {

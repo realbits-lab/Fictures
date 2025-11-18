@@ -957,6 +957,42 @@ dotenv --file .env.local run node scripts/generate-minimal-story.mjs
   - Set explicit type annotations for variables and function signatures
   - Use typed variables for API request bodies (don't inline objects in fetch calls)
 
+## File Naming Conventions
+
+**Use kebab-case for all file names** (lowercase with dashes):
+
+| File Type | Convention | Example |
+|-----------|------------|---------|
+| React Hooks | `use-<feature-name>.ts` | `use-story-reader.ts` |
+| Components | `<component-name>.tsx` | `chapter-reader-client.tsx` |
+| Utilities | `<utility-name>.ts` | `cache-invalidation.ts` |
+| API Routes | `route.ts` (Next.js convention) | `route.ts` |
+
+**Hooks Directory Structure:**
+All custom React hooks are located in `src/hooks/`:
+
+```
+src/hooks/
+├── use-story-reader.ts      # Novel story reading
+├── use-story-writer.ts      # Story editing
+├── use-chapter-scenes.ts    # Scene loading
+├── use-persisted-swr.ts     # SWR with localStorage
+├── use-comments.ts          # Comment system
+├── use-page-cache.ts        # Page-level caching
+└── ...
+```
+
+**Why kebab-case:**
+- Modern convention used by Next.js, shadcn/ui, Vercel
+- Avoids case-sensitivity issues across different file systems
+- More readable than camelCase for file names
+- Consistent with component file naming in the project
+
+**Avoid:**
+- ❌ `useStoryReader.ts` (camelCase)
+- ❌ `use_story_reader.ts` (snake_case)
+- ❌ `UseStoryReader.ts` (PascalCase for non-component files)
+
 ## Image Generation & Optimization
 
 **Complete Image System Documentation:**

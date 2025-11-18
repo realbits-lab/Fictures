@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { CACHE_CONFIGS, usePersistedSWR, type CacheConfig } from "@/lib/hooks/use-persisted-swr";
+import { CACHE_CONFIGS, usePersistedSWR, type CacheConfig } from "@/hooks/use-persisted-swr";
 
 export interface Scene {
     id: string;
@@ -35,7 +35,7 @@ const fetcher = async (url: string): Promise<ChapterScenesResponse> => {
     const chapterId = url.split("/").slice(-2)[0]; // Extract chapter ID from URL
     const fetchId = Math.random().toString(36).substring(7);
 
-    console.log(`[${fetchId}] 🔄 SWR Fetcher START for chapter: ${chapterId}`);
+    console.log(`[${fetchId}] SWR Fetcher START for chapter: ${chapterId}`);
 
     // Get cached ETag from previous request
     const cachedData = getCachedSceneData(url);
@@ -46,7 +46,7 @@ const fetcher = async (url: string): Promise<ChapterScenesResponse> => {
     if (cachedData?.etag) {
         headers["If-None-Match"] = cachedData.etag;
         console.log(
-            `[${fetchId}] 🏷️  Using ETag: ${cachedData.etag.substring(0, 8)}...`,
+            `[${fetchId}] Using ETag: ${cachedData.etag.substring(0, 8)}...`,
         );
     }
 
@@ -57,14 +57,14 @@ const fetcher = async (url: string): Promise<ChapterScenesResponse> => {
     });
     const networkDuration = performance.now() - networkStartTime;
     console.log(
-        `[${fetchId}] 🌐 Network request completed: ${networkDuration.toFixed(2)}ms (Status: ${res.status})`,
+        `[${fetchId}] Network request completed: ${networkDuration.toFixed(2)}ms (Status: ${res.status})`,
     );
 
     // Handle 304 Not Modified - return cached data
     if (res.status === 304 && cachedData?.data) {
         const totalDuration = performance.now() - fetchStartTime;
         console.log(
-            `[${fetchId}] ✅ 304 Not Modified - Using ETag cache (Total: ${totalDuration.toFixed(2)}ms)`,
+            `[${fetchId}] 304 Not Modified - Using ETag cache (Total: ${totalDuration.toFixed(2)}ms)`,
         );
         return cachedData.data;
     }
@@ -78,7 +78,7 @@ const fetcher = async (url: string): Promise<ChapterScenesResponse> => {
         (error as any).info = errorData;
         const totalDuration = performance.now() - fetchStartTime;
         console.error(
-            `[${fetchId}] ❌ Fetch failed after ${totalDuration.toFixed(2)}ms:`,
+            `[${fetchId}] Fetch failed after ${totalDuration.toFixed(2)}ms:`,
             error.message,
         );
         throw error;
@@ -87,23 +87,23 @@ const fetcher = async (url: string): Promise<ChapterScenesResponse> => {
     const parseStartTime = performance.now();
     const data = await res.json();
     const parseDuration = performance.now() - parseStartTime;
-    console.log(`[${fetchId}] 📦 JSON parsing: ${parseDuration.toFixed(2)}ms`);
+    console.log(`[${fetchId}] JSON parsing: ${parseDuration.toFixed(2)}ms`);
 
     // Cache the data with ETag for next request
     const etag = res.headers.get("ETag");
     if (etag) {
         cacheSceneData(url, data, etag);
         console.log(
-            `[${fetchId}] 💾 Cached with ETag: ${etag.substring(0, 8)}...`,
+            `[${fetchId}] Cached with ETag: ${etag.substring(0, 8)}...`,
         );
     }
 
     const totalDuration = performance.now() - fetchStartTime;
     console.log(
-        `[${fetchId}] ✅ Fetch completed: ${totalDuration.toFixed(2)}ms (${data.scenes?.length || 0} scenes)`,
+        `[${fetchId}] Fetch completed: ${totalDuration.toFixed(2)}ms (${data.scenes?.length || 0} scenes)`,
     );
     console.log(
-        `[${fetchId}] 📊 Breakdown: Network=${networkDuration.toFixed(0)}ms, Parse=${parseDuration.toFixed(0)}ms`,
+        `[${fetchId}] Breakdown: Network=${networkDuration.toFixed(0)}ms, Parse=${parseDuration.toFixed(0)}ms`,
     );
 
     return data;
@@ -167,8 +167,8 @@ export function useChapterScenes(chapterId: string | null) {
                 revalidateOnFocus: false,
                 revalidateOnReconnect: true,
                 refreshInterval: 0,
-                dedupingInterval: 30 * 60 * 1000, // ⚡ OPTIMIZED: 30 minutes - keeps scene data in SWR memory cache for extended reading sessions
-                keepPreviousData: true, // ⚡ OPTIMIZED: Keep previous scene data in memory when navigating between scenes
+                dedupingInterval: 30 * 60 * 1000, // OPTIMIZED: 30 minutes - keeps scene data in SWR memory cache for extended reading sessions
+                keepPreviousData: true, // OPTIMIZED: Keep previous scene data in memory when navigating between scenes
                 errorRetryCount: 3,
                 errorRetryInterval: 1000,
                 onError: (error: any) => {

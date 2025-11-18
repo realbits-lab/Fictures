@@ -9,7 +9,7 @@ import {
     StoryLoadingError,
 } from "@/components/common";
 import { SkeletonLoader } from "@/components/ui";
-import { usePublishedStories } from "@/lib/hooks/use-page-cache";
+import { usePublishedStories } from "@/hooks/use-page-cache";
 import { StoryGrid } from "./StoryGrid";
 
 export function BrowseClient() {

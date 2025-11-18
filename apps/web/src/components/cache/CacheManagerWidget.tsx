@@ -9,8 +9,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui";
-import { useCacheManagement } from "@/lib/hooks/use-page-cache";
-import { CACHE_CONFIGS } from "@/lib/hooks/use-persisted-swr";
+import { useCacheManagement } from "@/hooks/use-page-cache";
+import { CACHE_CONFIGS } from "@/hooks/use-persisted-swr";
 
 interface CacheStats {
     totalSize: number;

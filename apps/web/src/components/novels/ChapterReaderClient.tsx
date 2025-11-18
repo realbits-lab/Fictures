@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
 import { SceneImage } from "@/components/optimized-image";
-import { useChapterScenes } from "@/hooks/useChapterScenes";
-import { useScenePrefetch } from "@/hooks/useScenePrefetch";
-import { useSceneView } from "@/hooks/useSceneView";
-import { useReadingProgress, useStoryReader } from "@/hooks/useStoryReader";
+import { useChapterScenes } from "@/hooks/use-chapter-scenes";
+import { useScenePrefetch } from "@/hooks/use-scene-prefetch";
+import { useSceneView } from "@/hooks/use-scene-view";
+import { useReadingProgress, useStoryReader } from "@/hooks/use-story-reader";
 import { trackReading } from "@/lib/analysis/google-analytics";
 import { CommentSection } from "./CommentSection";
 

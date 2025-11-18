@@ -10,8 +10,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ComicViewer } from "@/components/comic/comic-viewer";
-import { useChapterScenes } from "@/hooks/useChapterScenes";
-import { useStoryReader } from "@/hooks/useStoryReader";
+import { useChapterScenes } from "@/hooks/use-chapter-scenes";
+import { useStoryReader } from "@/hooks/use-story-reader";
 
 interface ComicReaderClientProps {
     storyId: string;

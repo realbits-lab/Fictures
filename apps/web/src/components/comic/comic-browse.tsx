@@ -15,7 +15,7 @@ import {
     StoryLoadingError,
 } from "@/components/common";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
-import { usePublishedStories } from "@/lib/hooks/use-page-cache";
+import { usePublishedStories } from "@/hooks/use-page-cache";
 
 export function ComicBrowse() {
     const { data: session } = useSession();

@@ -43,7 +43,7 @@ export function useSceneView(
         // Skip if already tracked in this session
         if (viewedScenes.current.has(trackingKey)) {
             console.log(
-                `👁️ Scene ${sceneId} (${readingFormat}) already tracked in this session`,
+                `Scene ${sceneId} (${readingFormat}) already tracked in this session`,
             );
             return;
         }
@@ -57,7 +57,7 @@ export function useSceneView(
         trackingTimeout.current = setTimeout(async () => {
             try {
                 console.log(
-                    `📊 Tracking ${readingFormat} view for scene: ${sceneId}`,
+                    `Tracking ${readingFormat} view for scene: ${sceneId}`,
                 );
 
                 const response = await fetch(
@@ -87,7 +87,7 @@ export function useSceneView(
                     viewedScenes.current.add(trackingKey);
 
                     console.log(
-                        `✅ Scene view tracked: ${sceneId} (${readingFormat})`,
+                        `Scene view tracked: ${sceneId} (${readingFormat})`,
                         `\n   Total Views: ${data.viewCount} (Novel: ${data.novelViewCount}, Comic: ${data.comicViewCount})`,
                         `\n   Unique Views: ${data.uniqueViewCount} (Novel: ${data.novelUniqueViewCount}, Comic: ${data.comicUniqueViewCount})`,
                         `\n   New View: ${data.isNewView ? "Yes" : "No"}`,

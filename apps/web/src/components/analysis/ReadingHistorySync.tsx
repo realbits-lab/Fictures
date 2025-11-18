@@ -1,6 +1,6 @@
 "use client";
 
-import { useReadingHistorySync } from "@/lib/hooks/use-reading-history-sync";
+import { useReadingHistorySync } from "@/hooks/use-reading-history-sync";
 
 /**
  * Component to handle automatic syncing of localStorage reading history

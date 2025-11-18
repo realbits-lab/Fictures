@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { CACHE_CONFIGS, usePersistedSWR } from "@/lib/hooks/use-persisted-swr";
+import { CACHE_CONFIGS, usePersistedSWR } from "@/hooks/use-persisted-swr";
 
 interface Story {
     id: string;

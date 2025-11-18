@@ -7,7 +7,7 @@ import {
     CardTitle,
     Skeleton,
 } from "@/components/ui";
-import { usePublishStatus } from "@/lib/hooks/use-page-cache";
+import { usePublishStatus } from "@/hooks/use-page-cache";
 
 interface ScheduleItem {
     id: string;

@@ -144,11 +144,8 @@ This section provides a complete index of all feature documentation. Each direct
 #### Performance & Optimization
 - **[performance/](performance/)** - Performance optimization
   - `IMPLEMENTATION-SUMMARY.md` - Performance implementation summary
-  - `optimization-novels.md` - Caching strategies (SWR, localStorage, Redis)
+  - `optimization-novels.md` - Caching, cache invalidation, blob deletion (comprehensive)
   - `optimization-database.md` - Database optimization
-  - `optimization-blob-deletion.md` - Blob deletion optimization
-  - `optimization-cache-invalidation.md` - Cache invalidation
-  - `optimization-novels.md` - Novel generation performance
   - `optimization-comics.md` - Comics performance
   - `optimization-studio.md` - Studio performance
   - `optimization-community.md` - Community features performance

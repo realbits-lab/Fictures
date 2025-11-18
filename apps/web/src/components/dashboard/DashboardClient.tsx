@@ -9,7 +9,7 @@ import {
     StoryLoadingError,
 } from "@/components/common";
 import { SkeletonLoader } from "@/components/ui";
-import { useUserStories } from "@/lib/hooks/use-page-cache";
+import { useUserStories } from "@/hooks/use-page-cache";
 
 export function DashboardClient() {
     const [_view, _setView] = useState<"card" | "table">("card");

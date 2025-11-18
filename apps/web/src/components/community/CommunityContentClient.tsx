@@ -18,8 +18,8 @@ import { toast } from "sonner";
 import { CommunityStoryCard } from "@/components/community/CommunityStoryCard";
 import { MetricCard } from "@/components/community/metric-card";
 import { Button, Card, CardContent } from "@/components/ui";
-import { useCommunityEvents } from "@/lib/hooks/use-community-events";
-import { useCommunityStories } from "@/lib/hooks/use-page-cache";
+import { useCommunityEvents } from "@/hooks/use-community-events";
+import { useCommunityStories } from "@/hooks/use-page-cache";
 import type {
     PostCreatedEvent,
     StoryPublishedEvent,

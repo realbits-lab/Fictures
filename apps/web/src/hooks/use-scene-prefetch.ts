@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { mutate } from "swr";
-import { CACHE_CONFIGS, cacheManager } from "@/lib/hooks/use-persisted-swr";
+import { CACHE_CONFIGS, cacheManager } from "@/hooks/use-persisted-swr";
 
 /**
  * Hook for prefetching adjacent scenes to improve navigation performance
@@ -17,7 +17,7 @@ export function useScenePrefetch() {
         const url = `/api/studio/chapters/${chapterId}/scenes`;
 
         console.log(
-            `[${prefetchId}] 🔮 PREFETCH START for chapter: ${chapterId}`,
+            `[${prefetchId}] PREFETCH START for chapter: ${chapterId}`,
         );
 
         try {
@@ -39,14 +39,14 @@ export function useScenePrefetch() {
                     ? "localStorage"
                     : "SWR in-memory";
                 console.log(
-                    `[${prefetchId}] ✅ Cache HIT - Already in ${cacheSource} (${cacheCheckDuration.toFixed(2)}ms, Total: ${totalDuration.toFixed(2)}ms)`,
+                    `[${prefetchId}] Cache HIT - Already in ${cacheSource} (${cacheCheckDuration.toFixed(2)}ms, Total: ${totalDuration.toFixed(2)}ms)`,
                 );
 
                 // If only in localStorage, populate SWR cache for instant access
                 if (localStorageData && !swrData) {
                     await mutate(url, localStorageData, { revalidate: false });
                     console.log(
-                        `[${prefetchId}] 🔄 Populated SWR cache from localStorage`,
+                        `[${prefetchId}] Populated SWR cache from localStorage`,
                     );
                 }
 
@@ -54,7 +54,7 @@ export function useScenePrefetch() {
             }
 
             console.log(
-                `[${prefetchId}] 🔮 Prefetching uncached scene - Not yet cached (Cache check: ${cacheCheckDuration.toFixed(2)}ms)`,
+                `[${prefetchId}] Prefetching uncached scene - Not yet cached (Cache check: ${cacheCheckDuration.toFixed(2)}ms)`,
             );
 
             // Prefetch with low priority
@@ -65,7 +65,7 @@ export function useScenePrefetch() {
             });
             const fetchDuration = performance.now() - fetchStartTime;
             console.log(
-                `[${prefetchId}] 🌐 Prefetch fetch completed: ${fetchDuration.toFixed(2)}ms (Status: ${response.status})`,
+                `[${prefetchId}] Prefetch fetch completed: ${fetchDuration.toFixed(2)}ms (Status: ${response.status})`,
             );
 
             if (response.ok) {
@@ -73,7 +73,7 @@ export function useScenePrefetch() {
                 const data = await response.json();
                 const parseDuration = performance.now() - parseStartTime;
                 console.log(
-                    `[${prefetchId}] 📦 Parse completed: ${parseDuration.toFixed(2)}ms`,
+                    `[${prefetchId}] Parse completed: ${parseDuration.toFixed(2)}ms`,
                 );
 
                 // Populate SWR cache
@@ -81,26 +81,26 @@ export function useScenePrefetch() {
                 await mutate(url, data, { revalidate: false });
                 const mutateDuration = performance.now() - mutateStartTime;
                 console.log(
-                    `[${prefetchId}] 💾 SWR cache update: ${mutateDuration.toFixed(2)}ms`,
+                    `[${prefetchId}] SWR cache update: ${mutateDuration.toFixed(2)}ms`,
                 );
 
                 const totalDuration = performance.now() - prefetchStartTime;
                 console.log(
-                    `[${prefetchId}] ✅ Prefetch completed: ${totalDuration.toFixed(2)}ms (${data.scenes?.length || 0} scenes)`,
+                    `[${prefetchId}] Prefetch completed: ${totalDuration.toFixed(2)}ms (${data.scenes?.length || 0} scenes)`,
                 );
                 console.log(
-                    `[${prefetchId}] 📊 Breakdown: CacheCheck=${cacheCheckDuration.toFixed(0)}ms, Fetch=${fetchDuration.toFixed(0)}ms, Parse=${parseDuration.toFixed(0)}ms, Mutate=${mutateDuration.toFixed(0)}ms`,
+                    `[${prefetchId}] Breakdown: CacheCheck=${cacheCheckDuration.toFixed(0)}ms, Fetch=${fetchDuration.toFixed(0)}ms, Parse=${parseDuration.toFixed(0)}ms, Mutate=${mutateDuration.toFixed(0)}ms`,
                 );
             } else {
                 const totalDuration = performance.now() - prefetchStartTime;
                 console.warn(
-                    `[${prefetchId}] ⚠️  Prefetch failed with status ${response.status} after ${totalDuration.toFixed(2)}ms`,
+                    `[${prefetchId}] Prefetch failed with status ${response.status} after ${totalDuration.toFixed(2)}ms`,
                 );
             }
         } catch (error) {
             const totalDuration = performance.now() - prefetchStartTime;
             console.debug(
-                `[${prefetchId}] ⚠️  Prefetch error after ${totalDuration.toFixed(2)}ms:`,
+                `[${prefetchId}] Prefetch error after ${totalDuration.toFixed(2)}ms:`,
                 error,
             );
             // Silently fail - prefetch is optional
@@ -117,7 +117,7 @@ export function useScenePrefetch() {
             const batchId = Math.random().toString(36).substring(7);
 
             console.log(
-                `[${batchId}] 🔮 PREFETCH BATCH START - Current: ${currentChapterId}, Prev: ${prevChapterId || "none"}, Next: ${nextChapterId || "none"}`,
+                `[${batchId}] PREFETCH BATCH START - Current: ${currentChapterId}, Prev: ${prevChapterId || "none"}, Next: ${nextChapterId || "none"}`,
             );
 
             // Prefetch current chapter scenes first (if not already loaded)
@@ -125,7 +125,7 @@ export function useScenePrefetch() {
             await prefetchScene(currentChapterId);
             const currentDuration = performance.now() - currentStartTime;
             console.log(
-                `[${batchId}] ✓ Current chapter prefetch: ${currentDuration.toFixed(2)}ms`,
+                `[${batchId}] Current chapter prefetch: ${currentDuration.toFixed(2)}ms`,
             );
 
             // Then prefetch adjacent chapters in background
@@ -142,27 +142,27 @@ export function useScenePrefetch() {
             // Fire and forget - don't await
             if (prefetchPromises.length > 0) {
                 console.log(
-                    `[${batchId}] 🚀 Firing ${prefetchPromises.length} adjacent prefetch(es) in background`,
+                    `[${batchId}] Firing ${prefetchPromises.length} adjacent prefetch(es) in background`,
                 );
                 Promise.all(prefetchPromises)
                     .then(() => {
                         const totalDuration =
                             performance.now() - batchStartTime;
                         console.log(
-                            `[${batchId}] ✅ All prefetches completed: ${totalDuration.toFixed(2)}ms`,
+                            `[${batchId}] All prefetches completed: ${totalDuration.toFixed(2)}ms`,
                         );
                     })
                     .catch(() => {
                         const totalDuration =
                             performance.now() - batchStartTime;
                         console.log(
-                            `[${batchId}] ⚠️  Some prefetches failed: ${totalDuration.toFixed(2)}ms`,
+                            `[${batchId}] Some prefetches failed: ${totalDuration.toFixed(2)}ms`,
                         );
                     });
             } else {
                 const totalDuration = performance.now() - batchStartTime;
                 console.log(
-                    `[${batchId}] ✅ Prefetch batch completed: ${totalDuration.toFixed(2)}ms (no adjacent chapters)`,
+                    `[${batchId}] Prefetch batch completed: ${totalDuration.toFixed(2)}ms (no adjacent chapters)`,
                 );
             }
         },
