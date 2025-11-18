@@ -15,9 +15,9 @@ import * as path from "node:path";
 import { TEST_SCENES, type TestScene } from "./comics/config/test-scenes";
 
 // Configuration
-const OUTPUT_DIR = "results/5-cycle-comics";
+const OUTPUT_DIR = "results/5-cycle-comics-evaluation";
 const TIMESTAMP = new Date().toISOString().replace(/[:.]/g, "-");
-const REPORT_FILE = `${OUTPUT_DIR}/comics-report-${TIMESTAMP}.md`;
+const REPORT_FILE = `${OUTPUT_DIR}/comics-eval-report-${TIMESTAMP}.md`;
 
 // AI Server configuration
 const AI_SERVER_URL = process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
@@ -45,6 +45,8 @@ interface CycleConfig {
     improvements: string[];
 }
 
+// Evaluation-based cycle configurations aligned with comics-evaluation.md
+// Categories: Narrative Fidelity (20%), Visual Transformation (30%), Webtoon Pacing (30%), Script Formatting (20%)
 const CYCLE_CONFIGS: CycleConfig[] = [
     {
         cycle: 1,
@@ -57,60 +59,65 @@ const CYCLE_CONFIGS: CycleConfig[] = [
     },
     {
         cycle: 2,
-        name: "Enhanced Panel Prompts",
-        hypothesis: "Improve panel quality with more specific visual descriptors",
+        name: "Visual Transformation Focus",
+        hypothesis: "Improve visual storytelling - show emotions through visual cues instead of narration",
         scenes: ["action-sequence", "emotional-beat", "establishing-shot"],
         iterations: 3,
         promptEnhancements: [
-            "dramatic lighting",
-            "detailed linework",
-            "professional manga style",
+            "expressive body language",
+            "character emotion through pose",
+            "environmental mood lighting",
+            "visual storytelling emphasis",
         ],
         improvements: [
-            "Add lighting and atmosphere descriptors",
-            "Include professional quality markers",
-            "Add detail level indicators",
+            "Show emotions through body language and poses",
+            "Use environmental storytelling (lighting, atmosphere)",
+            "Replace narration with visual cues",
+            "Target: emotions visible without text",
         ],
     },
     {
         cycle: 3,
-        name: "Shot-Specific Optimization",
-        hypothesis: "Optimize prompts based on shot type (wide, medium, close-up)",
+        name: "Webtoon Pacing Optimization",
+        hypothesis: "Optimize for mobile vertical-scroll thumb reading with shot variety",
         scenes: ["action-sequence", "dialogue-heavy", "climactic-moment"],
         iterations: 3,
         promptEnhancements: [
-            "camera angle specifics",
-            "depth composition",
-            "focal point emphasis",
+            "clear visual hierarchy",
+            "single focal point per panel",
+            "thumb-scroll optimized composition",
+            "distinct shot type characteristics",
         ],
         improvements: [
-            "Add camera angle guidelines per shot type",
-            "Include depth cues (foreground, midground, background)",
-            "Emphasize focal points",
+            "One key action per panel",
+            "Clear visual hierarchy for mobile",
+            "Shot type variety for visual rhythm",
+            "Optimize for thumb scrolling",
         ],
     },
     {
         cycle: 4,
-        name: "Webtoon Style Consistency",
-        hypothesis: "Improve consistency with webtoon-specific style markers",
+        name: "Narrative Fidelity Enhancement",
+        hypothesis: "Preserve emotional beats and character expressions accurately",
         scenes: ["action-sequence", "emotional-beat", "establishing-shot", "climactic-moment"],
         iterations: 3,
         promptEnhancements: [
-            "webtoon style",
-            "clean linework",
-            "vibrant colors",
-            "vertical composition",
+            "detailed facial expressions",
+            "emotional nuance in character stance",
+            "dramatic tension in composition",
+            "story beat emphasis",
         ],
         improvements: [
-            "Apply webtoon-specific style markers",
-            "Ensure vertical composition optimization",
-            "Add color vibrancy descriptors",
+            "Capture character emotions accurately",
+            "Preserve story climactic moments",
+            "Show character relationships through positioning",
+            "Maintain emotional arc visually",
         ],
     },
     {
         cycle: 5,
-        name: "Final Optimizations",
-        hypothesis: "Combine all improvements for optimal comic panel quality",
+        name: "Production-Ready Quality",
+        hypothesis: "Combine all evaluation criteria for professional webtoon quality",
         scenes: [
             "action-sequence",
             "dialogue-heavy",
@@ -121,15 +128,17 @@ const CYCLE_CONFIGS: CycleConfig[] = [
         iterations: 5,
         promptEnhancements: [
             "professional webtoon comic panel",
-            "dramatic cinematic lighting",
-            "detailed clean linework",
-            "vibrant colors",
-            "perfect composition",
+            "expressive character poses and facial details",
+            "cinematic mood lighting",
+            "clear visual hierarchy",
+            "emotional storytelling composition",
+            "mobile-optimized vertical format",
         ],
         improvements: [
-            "Combine all successful prompt enhancements",
-            "Use optimized shot-specific patterns",
-            "Full integration test",
+            "Visual Transformation: Show don't tell (target <5% narration)",
+            "Webtoon Pacing: 8-12 panels with shot variety",
+            "Narrative Fidelity: Preserve emotional beats",
+            "Script Formatting: Production-ready detail level",
         ],
     },
 ];
@@ -393,10 +402,15 @@ async function runCycle(config: CycleConfig): Promise<CycleResult> {
  * Generate final report
  */
 function generateReport(): string {
-    let report = `# 5-Cycle Comics Iteration Testing Report\n\n`;
+    let report = `# 5-Cycle Comics Evaluation-Based Iteration Testing Report\n\n`;
     report += `**Generated**: ${new Date().toISOString()}\n`;
     report += `**AI Server**: ${AI_SERVER_URL}\n`;
     report += `**Total Duration**: ${cycleResults.reduce((sum, r) => sum + r.duration, 0).toFixed(0)}s\n\n`;
+    report += `**Evaluation Framework**: Based on comics-evaluation.md\n`;
+    report += `- Visual Transformation (30%): Show emotions through visual cues\n`;
+    report += `- Webtoon Pacing (30%): Mobile vertical-scroll optimization\n`;
+    report += `- Narrative Fidelity (20%): Preserve story beats and emotions\n`;
+    report += `- Script Formatting (20%): Production-ready specifications\n\n`;
 
     // Executive Summary
     report += `## Executive Summary\n\n`;
