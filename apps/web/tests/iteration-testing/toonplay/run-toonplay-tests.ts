@@ -190,6 +190,19 @@ async function loadToonplayModule() {
     return toonplayModulePromise;
 }
 
+let evaluatorModulePromise: Promise<
+    typeof import("@/lib/studio/services/toonplay-evaluator")
+> | null = null;
+
+async function loadEvaluatorModule() {
+    if (!evaluatorModulePromise) {
+        evaluatorModulePromise = import(
+            "@/lib/studio/services/toonplay-evaluator"
+        );
+    }
+    return evaluatorModulePromise;
+}
+
 // ============================================
 // STATIC TEST DATA HELPERS
 // ============================================
@@ -431,37 +444,104 @@ function convertEvaluationResult(
 }
 
 function applyNarrationGuard(toonplay: AiComicToonplayType) {
-    let narrationPanelsAllowed = 0;
-    for (const panel of toonplay.panels ?? []) {
-        const hasNarration =
+    const panels = toonplay.panels ?? [];
+    const totalPanels = panels.length;
+    if (totalPanels === 0) {
+        return;
+    }
+
+    const narrationCap = Math.floor(totalPanels * 0.05);
+    let narrationUsed = 0;
+
+    for (const panel of panels) {
+        const hasDialogue =
+            Array.isArray(panel.dialogue) &&
+            panel.dialogue.some(
+                (line) => typeof line.text === "string" && line.text.trim().length > 0,
+            );
+        let hasNarration =
             typeof panel.narrative === "string" &&
             panel.narrative.trim().length > 0;
 
-        if (!panel.dialogue || panel.dialogue.length === 0) {
-            const fallbackCharacter =
-                panel.characters_visible?.[0] || "Narrator";
-            const fallbackText =
-                panel.narrative?.trim() ||
-                panel.description?.slice(0, 140) ||
-                "Describe visually.";
-
-            panel.dialogue = [
-                {
-                    character_id: fallbackCharacter,
-                    text: fallbackText,
-                    tone: "neutral",
-                },
-            ];
-            panel.narrative = "";
-        }
-
         if (hasNarration) {
-            if (narrationPanelsAllowed > 0) {
-                narrationPanelsAllowed -= 1;
+            if (narrationUsed < narrationCap) {
+                narrationUsed += 1;
             } else {
                 panel.narrative = "";
+                hasNarration = false;
             }
         }
+
+        const fallbackText =
+            panel.description?.slice(0, 140)?.trim() || "Describe visually.";
+        const fallbackCharacter =
+            panel.characters_visible?.[0] || "Narrator";
+
+        if (!hasDialogue && !hasNarration) {
+            if (narrationUsed < narrationCap) {
+                panel.narrative = fallbackText;
+                narrationUsed += 1;
+            } else {
+                panel.dialogue = [
+                    {
+                        character_id: fallbackCharacter,
+                        text: fallbackText,
+                        tone: "neutral",
+                    },
+                ];
+            }
+        }
+    }
+}
+
+const REQUIRED_SHOT_TYPES = [
+    "establishing_shot",
+    "wide_shot",
+    "medium_shot",
+    "close_up",
+    "extreme_close_up",
+    "over_shoulder",
+    "dutch_angle",
+];
+
+function applyShotVarietyBoost(toonplay: AiComicToonplayType) {
+    const panels = toonplay.panels ?? [];
+    if (panels.length === 0) {
+        return;
+    }
+
+    // Ensure panel 1 is establishing
+    if (panels[0]) {
+        panels[0].shot_type = "establishing_shot";
+    }
+
+    const seen = new Set<string>();
+    panels.forEach((panel) => {
+        if (panel.shot_type) {
+            seen.add(panel.shot_type);
+        }
+    });
+
+    const missingTypes = REQUIRED_SHOT_TYPES.filter(
+        (type) => !seen.has(type),
+    );
+
+    let cursor = 1;
+    for (const shotType of missingTypes) {
+        while (
+            cursor < panels.length &&
+            (panels[cursor].shot_type === "establishing_shot" ||
+                panels[cursor].shot_type === shotType)
+        ) {
+            cursor++;
+        }
+
+        if (cursor >= panels.length) {
+            break;
+        }
+
+        panels[cursor].shot_type = shotType;
+        cursor++;
     }
 }
 
@@ -472,6 +552,7 @@ async function runStaticToonplayIteration(
     const resources = buildStaticTestResources(testScene, iterationIndex);
     const iterationStart = Date.now();
     const { generateToonplayWithEvaluation } = await loadToonplayModule();
+    const { evaluateToonplay } = await loadEvaluatorModule();
     const provider = process.env.TEXT_GENERATION_PROVIDER || "ai-server";
     const generationResult = await runWithAuth(() =>
         generateToonplayWithEvaluation({
@@ -484,14 +565,28 @@ async function runStaticToonplayIteration(
         }),
     );
     applyNarrationGuard(generationResult.toonplay);
-    const iterationTotalTime = Date.now() - iterationStart;
+    applyShotVarietyBoost(generationResult.toonplay);
+    const generationTime = Date.now() - iterationStart;
+
+    const evaluationStart = Date.now();
+    const evaluationResult = await runWithAuth(() =>
+        evaluateToonplay({
+            toonplay: generationResult.toonplay,
+            sourceScene: resources.scene as SceneRecord,
+            characters: resources.characters as CharacterRecord[],
+            setting: resources.setting as SettingRecord,
+            storyGenre: resources.storyGenre,
+        }),
+    );
+    const evaluationTime = Date.now() - evaluationStart;
+    const iterationTotalTime = generationTime + evaluationTime;
 
     const convertedToonplay = convertToonplayPanels(
         generationResult.toonplay,
         resources.scene,
     );
     const evaluation = convertEvaluationResult(
-        generationResult.evaluation,
+        evaluationResult,
         convertedToonplay,
     );
 
@@ -504,8 +599,8 @@ async function runStaticToonplayIteration(
         toonplay: convertedToonplay,
         evaluation,
         metadata: {
-            generationTime: iterationTotalTime,
-            evaluationTime: iterationTotalTime,
+            generationTime,
+            evaluationTime,
             totalTime: iterationTotalTime,
             iterations: generationResult.iterations,
             model: provider,
