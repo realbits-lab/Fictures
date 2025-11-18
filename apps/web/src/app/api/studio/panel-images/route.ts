@@ -1,10 +1,11 @@
 /**
- * Comic Panel Generation API Endpoint
+ * Panel Image Generation API Endpoint
  *
- * POST /api/comics/generate-panels
+ * POST /api/studio/panel-images
  *
- * Generates comic panels for a scene using AI-powered toonplay conversion
- * and image generation. Streams progress updates via Server-Sent Events (SSE).
+ * Generates comic panel images for a scene from existing toonplay data.
+ * Requires toonplay to be pre-generated via /api/studio/toonplay endpoint.
+ * Streams progress updates via Server-Sent Events (SSE).
  */
 
 import { eq } from "drizzle-orm";
