@@ -1,9 +1,11 @@
-## 🎯 Performance Targets vs Actual
+# Novel Reading Performance Optimization
 
-### Overall Achievement: 99.6% Performance Improvement
-From initial cold start (3,000ms) to cached warm requests (33ms).
+## 1. Performance Overview
 
-### Frontend (Reading Experience)
+### 1.1 Overall Achievement
+**99.6% Performance Improvement** - From initial cold start (3,000ms) to cached warm requests (33ms).
+
+### 1.2 Frontend Metrics (Reading Experience)
 
 | Metric | Target | Cold Cache | Warm Cache | Status |
 |--------|--------|------------|------------|--------|
@@ -13,7 +15,7 @@ From initial cold start (3,000ms) to cached warm requests (33ms).
 | **Full Load** | < 5s | 2380ms | 792ms | ✅ |
 | **Data Transfer** | < 200 KB | 13.57 KB | 13.54 KB | ✅ |
 
-### Backend (Studio Write API)
+### 1.3 Backend Metrics (Studio Write API)
 
 | Metric | Target | Cold (No Cache) | Warm (Redis) | Status |
 |--------|--------|-----------------|--------------|--------|
@@ -22,7 +24,7 @@ From initial cold start (3,000ms) to cached warm requests (33ms).
 | **Time to First Byte** | < 1s | 2,500ms → 75ms | 15ms | ✅ |
 | **Total API Response** | < 2s | 3,000ms → 838ms | 33ms | ✅ |
 
-### Performance Improvements Summary
+### 1.4 Performance Improvements Summary
 
 **Client-Side (Reading):**
 - **First Paint:** 80.7% faster (560ms → 108ms)
@@ -39,14 +41,12 @@ From initial cold start (3,000ms) to cached warm requests (33ms).
 
 ---
 
-## ✅ Implemented Optimizations
+## 2. Database Infrastructure
 
-### 0. Database Infrastructure (Foundation)
-
-#### PgBouncer Connection Pooling
+### 2.1 Connection Pooling
 **Status:** ✅ Active via Neon's `-pooler` endpoint
 
-**Configuration:** `src/lib/db/index.ts`
+**File:** `src/lib/db/index.ts`
 ```typescript
 const connectionString =
   process.env.DATABASE_URL ||           // Neon pooled (has -pooler suffix)
@@ -66,7 +66,7 @@ const client = postgres(connectionString, {
 - Reduces connection overhead
 - 10-20% baseline performance improvement
 
-#### Database Indexes
+### 2.2 Database Indexes
 **Status:** ⏳ Recommended but not yet implemented
 
 **Recommended Indexes:**
@@ -93,7 +93,7 @@ CREATE INDEX idx_stories_status ON stories(status);
 
 **Expected Impact:** Prevents full table scans, database execution <0.1ms
 
-#### Query Batching with Promise.all
+### 2.3 Query Batching
 **File:** `src/lib/db/reading-queries.ts`
 
 ```typescript
@@ -116,14 +116,16 @@ const [storyResult, storyParts, allChapters] = await Promise.all([
 
 ---
 
-### 1. Streaming SSR with Suspense Boundaries
-**Files:** `src/app/novels/[id]/page.tsx`, `src/components/novels/ReadingSkeletons.tsx`
+## 3. Rendering Optimizations
+
+### 3.1 Streaming SSR with Suspense
+**Files:** `src/app/novels/[id]/page.tsx`
 
 ```tsx
 export default async function ReadPage({ params }: ReadPageProps) {
   return (
     <MainLayout>
-      <Suspense fallback={<StoryHeaderSkeleton />}>
+      <Suspense fallback={<SkeletonLoader />}>
         <StoryHeader storyId={id} />
       </Suspense>
     </MainLayout>
@@ -133,9 +135,7 @@ export default async function ReadPage({ params }: ReadPageProps) {
 
 **Impact:** Progressive content streaming, shows skeleton UI immediately
 
----
-
-### 2. Partial Prerendering (PPR)
+### 3.2 Partial Prerendering (PPR)
 **Files:** `src/app/novels/[id]/page.tsx`
 
 ```tsx
@@ -144,9 +144,7 @@ export const experimental_ppr = true; // Pre-render static shell
 
 **Impact:** < 100ms first paint potential, static shell loads before data
 
----
-
-### 3. Smart Data Reduction
+### 3.3 Smart Data Reduction
 **Files:** `src/lib/db/reading-queries.ts`, API routes
 
 ```typescript
@@ -163,29 +161,7 @@ export async function getStoryForReading(storyId: string) {
 
 **Impact:** ~25% reduction, 20 KB saved per story, keeps imageVariants (40x ROI: 3 KB → 125 KB savings)
 
----
-
-### 4. Vercel Edge Caching
-**Files:** `src/app/api/studio/story/[id]/read/route.ts`
-
-```typescript
-const headers = new Headers({
-  'Cache-Control': storyWithStructure.status === "published" && !isOwner
-    ? "public, max-age=600, stale-while-revalidate=1200"
-    : "no-cache, no-store, must-revalidate",
-  'ETag': etag,
-});
-```
-
-**Cache Durations:**
-- Published stories: 10 minutes (max-age=600), stale-while-revalidate 20 minutes
-- Draft stories: no-cache
-
-**Impact:** 119 global edge locations, ~200-500ms from nearest PoP
-
----
-
-### 5. Progressive Scene Loading
+### 3.4 Progressive Scene Loading
 **Status:** ⏳ Planned but not yet implemented
 
 **Proposed Implementation:** `src/components/novels/ProgressiveSceneLoader.tsx`
@@ -200,14 +176,26 @@ const observer = new IntersectionObserver(
 
 **Expected Impact:** Reduced initial DOM, ~50ms saved per deferred scene
 
+### 3.5 bfcache Optimization
+**Verification:** No beforeunload/unload listeners, no WebSockets, no IndexedDB transactions
+
+**Impact:** Instant back/forward navigation (0ms), scroll position preserved
+
 ---
 
-### 6. Multi-Layer Caching (SWR + localStorage + ETag + Redis)
-**Files:** `src/lib/hooks/use-persisted-swr.ts`, `src/hooks/useChapterScenes.ts`, `src/lib/cache/story-structure-cache.ts`
+## 4. Client-Side Caching
 
-#### Client-Side Caching (Reading Experience)
+### 4.1 SWR Memory Cache
 
-**Synchronous Cache Loading (INSTANT)**
+**Extended Memory Retention:**
+```typescript
+dedupingInterval: 30 * 60 * 1000, // 30 minutes in SWR memory
+keepPreviousData: true             // Keep during navigation
+```
+
+### 4.2 localStorage Persistence
+
+**Synchronous Cache Loading (INSTANT):**
 ```typescript
 // ⚡ Read cache synchronously on first render
 const [fallbackData] = useState(() => {
@@ -216,13 +204,8 @@ const [fallbackData] = useState(() => {
 });
 ```
 
-**Extended Memory Retention**
-```typescript
-dedupingInterval: 30 * 60 * 1000, // 30 minutes in SWR memory
-keepPreviousData: true             // Keep during navigation
-```
+### 4.3 ETag Conditional Requests
 
-**ETag Conditional Requests**
 ```typescript
 // In-memory ETag cache (1hr retention, 50 scene limit)
 if (res.status === 304 && cachedData?.data) {
@@ -230,229 +213,9 @@ if (res.status === 304 && cachedData?.data) {
 }
 ```
 
-**Client Cache Hierarchy:**
-```
-SWR Memory (0ms, 30min) → localStorage (4-16ms, 1hr) → ETag (304 if unchanged) → Network (500-2000ms)
-```
+### 4.4 Cache Configuration
 
-#### Server-Side Caching (Studio Write API)
-
-**Redis Caching Strategy** - NEW ✨
-```typescript
-// Cache-first story structure fetching
-export async function getCachedStoryStructure(
-  storyId: string,
-  userId?: string
-): Promise<CachedStoryStructure | null> {
-  const cache = getCache();
-  const cacheKey = CACHE_KEYS.fullStructure(storyId, userId);
-
-  // Try cache first
-  const cached = await cache.get<CachedStoryStructure>(cacheKey);
-  if (cached) {
-    console.log(`[StoryCache] ✅ HIT: ${storyId}`);
-    return cached;
-  }
-
-  // Cache miss - build from database
-  const structure = await buildStoryStructure(storyId, userId);
-
-  // Cache with TTL based on story status
-  const ttl = structure.story.status === 'published'
-    ? CACHE_TTL.PUBLISHED_STORY   // 30 minutes
-    : CACHE_TTL.DRAFT_STORY;        // 3 minutes
-
-  await cache.set(cacheKey, structure, ttl);
-  return structure;
-}
-```
-
-**Cache Keys:**
-```typescript
-story:{storyId}:structure:user:{userId}  // User-specific cache
-story:{storyId}:structure:public         // Public cache
-story:{storyId}:partIds                  // Part IDs array
-story:{storyId}:chapterIds               // Chapter IDs array
-story:{storyId}:sceneIds                 // Scene IDs array
-story:{storyId}:characterIds             // Character IDs array
-story:{storyId}:settingIds               // Setting IDs array
-```
-
-**Reading Query Cache Keys:**
-
-Cache keys for reading queries use simple prefixes:
-
-```
-# Reading API Cache Keys
-story:read:{storyId}                         # Story for reading
-chapter:scenes:{chapterId}                   # Chapter scenes for reading
-```
-
-**Story Structure Cache Keys (Studio):**
-
-```
-# Published Content (Shared)
-story:{storyId}:structure:public             # Public story structure
-story:{storyId}:partIds                      # Part IDs array
-story:{storyId}:chapterIds                   # Chapter IDs array
-story:{storyId}:sceneIds                     # Scene IDs array
-story:{storyId}:characterIds                 # Character IDs array
-story:{storyId}:settingIds                   # Setting IDs array
-
-# Private Content (User-Specific)
-story:{storyId}:structure:user:{userId}      # User-specific story structure
-```
-
-**TTL Configuration:**
-```typescript
-const CACHE_TTL = {
-  PUBLISHED_STORY: 1800,  // 30 minutes for published stories
-  DRAFT_STORY: 180,       // 3 minutes for draft stories
-  STRUCTURE: 1800,        // 30 minutes for structure metadata
-  LIST: 600,              // 10 minutes for story lists
-};
-```
-
-**Cache Invalidation Hooks:**
-```typescript
-// Automatic cache invalidation on data mutations
-onStoryMutation(storyId)
-onPartMutation(partId, storyId)
-onChapterMutation(chapterId, storyId)
-onSceneMutation(sceneId, storyId)
-onCharacterMutation(characterId, storyId)
-onSettingMutation(settingId, storyId)
-```
-
-**Cache Warming:**
-**Status:** ⏳ Planned but not yet implemented
-
-```typescript
-// Proposed pre-load functions for frequently accessed stories
-warmPublishedStories()              // Top 100 published
-warmRecentlyUpdatedStories(12)      // Last 12 hours
-warmUserStories(userId)             // User's top 20 stories
-warmSpecificStories([...ids])       // Specific story IDs
-scheduledCacheWarming()             // Cron job function
-```
-
-**Performance Impact:**
-- **Cache MISS:** 1,273 ms (initial DB query)
-- **Cache HIT:** 20 ms (from Redis)
-- **Improvement:** 98% faster (63x speedup)
-
-**Server Cache Hierarchy:**
-```
-Redis (20ms, 30min) → Database (1000-2000ms)
-```
-
-**Impact:** Content appears in first render frame, 100% cache hit on repeat visits
-
-#### Advanced Redis Optimizations
-
-**1. Pipeline Operations for Batch Queries**
-
-```typescript
-// Before: Sequential operations (3 × network latency)
-const story = await redis.get(`fictures:story:${storyId}`);
-const chapters = await redis.get(`fictures:story:${storyId}:chapters`);
-const scenes = await redis.get(`fictures:chapter:${chapterId}:scenes`);
-
-// After: Pipeline operations (1 × network latency)
-const pipeline = redis.pipeline();
-pipeline.get(`fictures:story:${storyId}`);
-pipeline.get(`fictures:story:${storyId}:chapters`);
-pipeline.get(`fictures:chapter:${chapterId}:scenes`);
-const results = await pipeline.exec();
-```
-
-**Impact:** 70-90% latency reduction, 3-5x faster batch operations
-
-**2. Sorted Sets for Ordered Data**
-
-```typescript
-// Use sorted sets for ordered collections
-await redis.zadd(
-  `fictures:chapter:${chapterId}:scenes`,
-  { score: scene.orderIndex, member: scene.id }
-);
-
-// Store individual scenes as hashes (more efficient than JSON)
-await redis.hset(`fictures:scene:${sceneId}`, {
-  title: scene.title,
-  content: scene.content,
-  status: scene.status,
-  wordCount: scene.wordCount.toString(),
-  orderIndex: scene.orderIndex.toString(),
-});
-
-// Retrieve ordered scenes for a chapter
-const sceneIds = await redis.zrange(`fictures:chapter:${chapterId}:scenes`, 0, -1);
-const scenes = await Promise.all(
-  sceneIds.map(id => redis.hgetall(`fictures:scene:${id}`))
-);
-```
-
-**Impact:** 20-40% memory reduction, O(log N) ordered retrieval, partial field updates
-
-#### Cache Flow Decision Tree
-
-```
-Request for Story Data
-  ↓
-SWR Memory Cache?
-  ├─ YES → Return (0ms)
-  └─ NO ↓
-localStorage Cache?
-  ├─ YES → Return (5ms)
-  └─ NO ↓
-API Call to Server
-  ↓
-Redis Public Cache?
-  ├─ YES → Return (40-70ms)
-  └─ NO ↓
-User Authenticated?
-  ├─ YES → Check User-Specific Cache
-  │         ├─ YES → Return (40-70ms)
-  │         └─ NO ↓
-  └─ NO ↓
-Database Query (2-4 seconds)
-  ↓
-Cache Result Based on Status
-  ├─ Published → Redis Public Cache (10min TTL)
-  └─ Private → Redis User Cache (3min TTL)
-  ↓
-Return to Client
-  ├─ Store in localStorage (1hr TTL)
-  └─ Store in SWR Memory (30min TTL)
-```
-
----
-
-### 7. Parallel Scene Fetching
-**Files:** Novel generation pipeline
-
-```typescript
-// Fire all chapter requests simultaneously
-const results = await Promise.all(
-  chapters.map(ch => fetch(`/studio/api/chapters/${ch.id}/scenes`))
-);
-```
-
-**Impact:** 3-10x faster (3 chapters: 2s vs 6s sequential)
-
----
-
-### 8. bfcache Optimization
-**Verification:** No beforeunload/unload listeners, no WebSockets, no IndexedDB transactions
-
-**Impact:** Instant back/forward navigation (0ms), scroll position preserved
-
----
-
-## 📊 Cache Configuration
-
-**Defined in:** `src/lib/hooks/use-persisted-swr.ts`
+**File:** `src/lib/hooks/use-persisted-swr.ts`
 
 ```typescript
 export const CACHE_CONFIGS = {
@@ -490,16 +253,81 @@ export const CACHE_CONFIGS = {
 - Story cache limit: 20 entries
 - Scene cache limit: 50 entries
 
-### Server-Side Cache (Studio Write API)
+### 4.5 Client Cache Hierarchy
 
-**Defined in:** `src/lib/cache/story-structure-cache.ts:20-26`
+```
+SWR Memory (0ms, 30min) → localStorage (4-16ms, 5min) → ETag (304 if unchanged) → Network (500-2000ms)
+```
+
+---
+
+## 5. Server-Side Caching (Redis)
+
+### 5.1 Redis Caching Strategy
+
+**File:** `src/lib/cache/story-structure-cache.ts`
+
+```typescript
+// Cache-first story structure fetching
+export async function getCachedStoryStructure(
+  storyId: string,
+  userId?: string
+): Promise<CachedStoryStructure | null> {
+  const cache = getCache();
+  const cacheKey = CACHE_KEYS.fullStructure(storyId, userId);
+
+  // Try cache first
+  const cached = await cache.get<CachedStoryStructure>(cacheKey);
+  if (cached) {
+    console.log(`[StoryCache] ✅ HIT: ${storyId}`);
+    return cached;
+  }
+
+  // Cache miss - build from database
+  const structure = await buildStoryStructure(storyId, userId);
+
+  // Cache with TTL based on story status
+  const ttl = structure.story.status === 'published'
+    ? CACHE_TTL.PUBLISHED_STORY   // 30 minutes
+    : CACHE_TTL.DRAFT_STORY;        // 3 minutes
+
+  await cache.set(cacheKey, structure, ttl);
+  return structure;
+}
+```
+
+### 5.2 Cache Key Patterns
+
+**Reading Query Cache Keys:**
+```
+story:read:{storyId}                         # Story for reading
+chapter:scenes:{chapterId}                   # Chapter scenes for reading
+```
+
+**Story Structure Cache Keys (Studio):**
+```
+# Published Content (Shared)
+story:{storyId}:structure:public             # Public story structure
+story:{storyId}:partIds                      # Part IDs array
+story:{storyId}:chapterIds                   # Chapter IDs array
+story:{storyId}:sceneIds                     # Scene IDs array
+story:{storyId}:characterIds                 # Character IDs array
+story:{storyId}:settingIds                   # Setting IDs array
+
+# Private Content (User-Specific)
+story:{storyId}:structure:user:{userId}      # User-specific story structure
+```
+
+### 5.3 TTL Configuration
+
+**File:** `src/lib/cache/story-structure-cache.ts`
 
 ```typescript
 const CACHE_TTL = {
-  PUBLISHED_STORY: 1800,  // 30 minutes
-  DRAFT_STORY: 180,       // 3 minutes
-  STRUCTURE: 1800,        // 30 minutes
-  LIST: 600,              // 10 minutes
+  PUBLISHED_STORY: 1800,  // 30 minutes for published stories
+  DRAFT_STORY: 180,       // 3 minutes for draft stories
+  STRUCTURE: 1800,        // 30 minutes for structure metadata
+  LIST: 600,              // 10 minutes for story lists
 };
 ```
 
@@ -510,49 +338,166 @@ const CACHE_TTL = {
 | Structure Metadata | 30 min | Part/chapter/scene IDs | Instant lookups |
 | Story Lists | 10 min | Browse/search results | Fast pagination |
 
+### 5.4 Cache Invalidation
+
+**File:** `src/lib/cache/invalidation-hooks.ts`
+
+```typescript
+// Automatic cache invalidation on data mutations
+onStoryMutation(storyId)
+onPartMutation(partId, storyId)
+onChapterMutation(chapterId, storyId)
+onSceneMutation(sceneId, storyId)
+onCharacterMutation(characterId, storyId)
+onSettingMutation(settingId, storyId)
+```
+
+### 5.5 Cache Warming
+**Status:** ⏳ Planned but not yet implemented
+
+```typescript
+// Proposed pre-load functions for frequently accessed stories
+warmPublishedStories()              // Top 100 published
+warmRecentlyUpdatedStories(12)      // Last 12 hours
+warmUserStories(userId)             // User's top 20 stories
+warmSpecificStories([...ids])       // Specific story IDs
+scheduledCacheWarming()             // Cron job function
+```
+
+### 5.6 Advanced Redis Optimizations
+
+#### 5.6.1 Pipeline Operations
+
+```typescript
+// Before: Sequential operations (3 × network latency)
+const story = await redis.get(`story:${storyId}`);
+const chapters = await redis.get(`story:${storyId}:chapters`);
+const scenes = await redis.get(`chapter:${chapterId}:scenes`);
+
+// After: Pipeline operations (1 × network latency)
+const pipeline = redis.pipeline();
+pipeline.get(`story:${storyId}`);
+pipeline.get(`story:${storyId}:chapters`);
+pipeline.get(`chapter:${chapterId}:scenes`);
+const results = await pipeline.exec();
+```
+
+**Impact:** 70-90% latency reduction, 3-5x faster batch operations
+
+#### 5.6.2 Sorted Sets for Ordered Data
+
+```typescript
+// Use sorted sets for ordered collections
+await redis.zadd(
+  `chapter:${chapterId}:scenes`,
+  { score: scene.orderIndex, member: scene.id }
+);
+
+// Store individual scenes as hashes (more efficient than JSON)
+await redis.hset(`scene:${sceneId}`, {
+  title: scene.title,
+  content: scene.content,
+  status: scene.status,
+  wordCount: scene.wordCount.toString(),
+  orderIndex: scene.orderIndex.toString(),
+});
+
+// Retrieve ordered scenes for a chapter
+const sceneIds = await redis.zrange(`chapter:${chapterId}:scenes`, 0, -1);
+const scenes = await Promise.all(
+  sceneIds.map(id => redis.hgetall(`scene:${id}`))
+);
+```
+
+**Impact:** 20-40% memory reduction, O(log N) ordered retrieval, partial field updates
+
+### 5.7 Server Cache Hierarchy
+
+```
+Redis (20ms, 30min) → Database (1000-2000ms)
+```
+
+**Performance Impact:**
+- **Cache MISS:** 1,273 ms (initial DB query)
+- **Cache HIT:** 20 ms (from Redis)
+- **Improvement:** 98% faster (63x speedup)
+
 ---
 
-## 🏆 Key Achievements
+## 6. HTTP Caching
 
-1. **93.4% faster** second visits (client-side caching)
-2. **95.1% faster** Time to Interactive
-3. **98% faster** Studio write API (Redis caching) ✨
-4. **25% data reduction** while keeping imageVariants
-5. **100% bfcache** compatibility
-6. **Global CDN** caching on 119 edge locations (10-min max-age)
-7. **PPR enabled** for static shell pre-rendering
-8. **Multi-layer caching** with SWR + localStorage + ETag + Redis
+### 6.1 Edge Caching Headers
 
----
+**File:** `src/app/api/studio/story/[id]/read/route.ts`
 
-## 📁 Implementation Files
+```typescript
+const headers = new Headers({
+  'Cache-Control': storyWithStructure.status === "published" && !isOwner
+    ? "public, max-age=600, stale-while-revalidate=1200"
+    : "no-cache, no-store, must-revalidate",
+  'ETag': etag,
+});
+```
 
-### Created
-- `src/lib/db/reading-queries.ts` - Optimized reading queries with Promise.all batching
-- `src/lib/cache/story-structure-cache.ts` - **Redis cache utility** ✨
-- `src/lib/cache/invalidation-hooks.ts` - **Cache invalidation hooks** ✨
-- `src/lib/cache/redis-cache.ts` - **Redis cache implementation** ✨
-- `src/lib/cache/unified-invalidation.ts` - **Unified cache invalidation** ✨
-- `scripts/publish-all-content.mjs` - Publishing utility
-- `scripts/test-loading-performance.mjs` - Performance testing
+**Cache Durations:**
+- Published stories: 10 minutes (max-age=600), stale-while-revalidate 20 minutes
+- Draft stories: no-cache
 
-### Not Yet Implemented
-- `src/components/novels/ProgressiveSceneLoader.tsx` - Progressive loader (⏳ planned)
-- `src/lib/cache/cache-warming.ts` - Cache warming utilities (⏳ planned)
+**Impact:** 119 global edge locations, ~200-500ms from nearest PoP
 
-### Modified
-- `src/app/novels/[id]/page.tsx` - PPR + Suspense + optimized queries
-- `src/app/api/studio/story/[id]/read/route.ts` - Edge caching + optimized queries
-- `src/app/studio/api/chapters/[id]/scenes/route.ts` - Optimized scene queries
-- `src/lib/hooks/use-persisted-swr.ts` - Synchronous cache loading
-- `src/hooks/useChapterScenes.ts` - Extended retention + ETag
-- `src/hooks/useStoryReader.ts` - Extended retention + ETag
+### 6.2 Parallel Scene Fetching
+
+```typescript
+// Fire all chapter requests simultaneously
+const results = await Promise.all(
+  chapters.map(ch => fetch(`/studio/api/chapters/${ch.id}/scenes`))
+);
+```
+
+**Impact:** 3-10x faster (3 chapters: 2s vs 6s sequential)
 
 ---
 
-## 🧪 Testing & Verification
+## 7. Cache Flow
 
-### Manual Test Flow
+### 7.1 Complete Cache Decision Tree
+
+```
+Request for Story Data
+  ↓
+SWR Memory Cache?
+  ├─ YES → Return (0ms)
+  └─ NO ↓
+localStorage Cache?
+  ├─ YES → Return (5ms)
+  └─ NO ↓
+API Call to Server
+  ↓
+Redis Public Cache?
+  ├─ YES → Return (40-70ms)
+  └─ NO ↓
+User Authenticated?
+  ├─ YES → Check User-Specific Cache
+  │         ├─ YES → Return (40-70ms)
+  │         └─ NO ↓
+  └─ NO ↓
+Database Query (2-4 seconds)
+  ↓
+Cache Result Based on Status
+  ├─ Published → Redis Public Cache (10min TTL)
+  └─ Private → Redis User Cache (3min TTL)
+  ↓
+Return to Client
+  ├─ Store in localStorage (5min TTL)
+  └─ Store in SWR Memory (30min TTL)
+```
+
+---
+
+## 8. Testing & Verification
+
+### 8.1 Manual Test Flow
+
 ```bash
 # 1. First visit - populate cache
 Open /novels/STORY_ID → 1-2s load
@@ -567,18 +512,20 @@ Wait 30min, reload → Fast (4-16ms)
 Wait 1hr, reload → 1-2s load (refetched)
 ```
 
-### Console Verification
+### 8.2 Console Verification
+
 ```
 [Cache] ⚡ INSTANT load from cache for: /studio/api/chapters/abc/scenes
 [fetchId] ✅ 304 Not Modified - Using ETag cache (Total: 12ms)
 ```
 
-### Automated Performance Testing
+### 8.3 Automated Performance Testing
+
 ```bash
 dotenv --file .env.local run node scripts/test-loading-performance.mjs STORY_ID
 ```
 
-### Redis Cache Testing
+### 8.4 Redis Cache Testing
 
 **Test cache behavior with Studio write API:**
 ```bash
@@ -613,43 +560,9 @@ tail -100 logs/dev-server.log | grep -E "(StoryCache|Write API)"
 
 ---
 
-## 🚀 Production Deployment
+## 9. Monitoring
 
-### Checklist
-1. ✅ All stories published (CDN caching enabled)
-2. ✅ Optimized queries (skip studio fields, keep imageVariants)
-3. ✅ PPR configured
-4. ⏳ Deploy to Vercel
-5. ⏳ Monitor Analytics (cache hits, Core Web Vitals)
-6. ⏳ Geographic testing (verify edge cache)
-
-### Monitoring Targets
-- First Contentful Paint: < 1s
-- Time to Interactive: < 3.5s
-- Cache Hit Rate: > 95%
-- Loading Flash Rate: < 20%
-
----
-
-## 📈 Scaling & Capacity
-
-### Current Capacity
-- **Concurrent Users:** 10,000 (via PgBouncer connection pooling)
-- **Requests/Second:** ~300 (with Redis caching)
-- **Database Load:** Minimal (95% cache hit rate expected)
-- **Cache Hit Rate:** >90% after warm-up period
-
-### Projected Capacity with Edge Runtime (Future)
-- **Concurrent Users:** Unlimited (CDN edge distribution)
-- **Requests/Second:** 10,000+ (edge distribution)
-- **Database Load:** Same (cache at edge)
-- **Global Latency:** 20-50ms improvement for international users
-
----
-
-## 🔍 Monitoring & Metrics
-
-### Key Metrics to Track
+### 9.1 Key Metrics
 
 **Cache Performance:**
 - Redis cache hit rate (target: >90%)
@@ -672,7 +585,8 @@ tail -100 logs/dev-server.log | grep -E "(StoryCache|Write API)"
 - Time to Interactive (target: <3.5s)
 - Page load time (target: <5s)
 
-### Logging Examples
+### 9.2 Logging Examples
+
 ```typescript
 // Already implemented in code
 [RedisCache] HIT: story:read:{id} (5ms)
@@ -686,7 +600,69 @@ tail -100 logs/dev-server.log | grep -E "(StoryCache|Write API)"
 
 ---
 
-## 💡 Lessons Learned
+## 10. Scaling & Capacity
+
+### 10.1 Current Capacity
+
+- **Concurrent Users:** 10,000 (via PgBouncer connection pooling)
+- **Requests/Second:** ~300 (with Redis caching)
+- **Database Load:** Minimal (95% cache hit rate expected)
+- **Cache Hit Rate:** >90% after warm-up period
+
+### 10.2 Projected Capacity (Edge Runtime)
+
+- **Concurrent Users:** Unlimited (CDN edge distribution)
+- **Requests/Second:** 10,000+ (edge distribution)
+- **Database Load:** Same (cache at edge)
+- **Global Latency:** 20-50ms improvement for international users
+
+---
+
+## 11. Production Deployment
+
+### 11.1 Checklist
+
+1. ✅ All stories published (CDN caching enabled)
+2. ✅ Optimized queries (skip studio fields, keep imageVariants)
+3. ✅ PPR configured
+4. ⏳ Deploy to Vercel
+5. ⏳ Monitor Analytics (cache hits, Core Web Vitals)
+6. ⏳ Geographic testing (verify edge cache)
+
+### 11.2 Monitoring Targets
+
+- First Contentful Paint: < 1s
+- Time to Interactive: < 3.5s
+- Cache Hit Rate: > 95%
+- Loading Flash Rate: < 20%
+
+---
+
+## 12. Future Enhancements
+
+### 12.1 Edge Runtime
+**Status:** ⏳ Blocked by Node.js dependency (Redis client requires 'stream' module)
+
+**Solutions:**
+1. Switch to Upstash Redis (Edge-compatible)
+2. Conditional import (use ioredis in Node.js, skip caching in Edge)
+3. Keep Node.js runtime (current choice - maintains Redis caching)
+
+**Expected Benefit:** Additional 20-50ms improvement for global users
+
+### 12.2 Additional Optimizations
+
+- [ ] Service Worker for offline reading
+- [ ] Predictive prefetching (next 3 scenes)
+- [ ] Virtual scrolling for 10k+ word scenes
+- [ ] GraphQL for precise field selection
+- [ ] Additional PPR routes (studio, community)
+- [ ] Static generation for popular stories (`generateStaticParams`)
+- [ ] CDN caching headers for published content
+
+---
+
+## 13. Lessons Learned
 
 1. **Network latency is the bottleneck**, not database performance
    - Database execution: <0.1ms
@@ -711,30 +687,65 @@ tail -100 logs/dev-server.log | grep -E "(StoryCache|Write API)"
 
 ---
 
-## ⏳ Future Enhancements
+## 14. Implementation Summary
 
-### Phase 1: Edge Runtime (Blocked) ⏳
-**Status:** Code ready but blocked by Node.js dependency (Redis client requires 'stream' module)
+### 14.1 Key Achievements
 
-**Solutions:**
-1. Switch to Upstash Redis (Edge-compatible)
-2. Conditional import (use ioredis in Node.js, skip caching in Edge)
-3. Keep Node.js runtime (current choice - maintains Redis caching)
+1. **93.4% faster** second visits (client-side caching)
+2. **95.1% faster** Time to Interactive
+3. **98% faster** Studio write API (Redis caching)
+4. **25% data reduction** while keeping imageVariants
+5. **100% bfcache** compatibility
+6. **Global CDN** caching on 119 edge locations (10-min max-age)
+7. **PPR enabled** for static shell pre-rendering
+8. **Multi-layer caching** with SWR + localStorage + ETag + Redis
 
-**Expected Benefit:** Additional 20-50ms improvement for global users
+### 14.2 Implementation Files
 
-### Phase 2: Additional Optimizations 📋
-- [ ] Service Worker for offline reading
-- [ ] Predictive prefetching (next 3 scenes)
-- [ ] Virtual scrolling for 10k+ word scenes
-- [ ] GraphQL for precise field selection
-- [ ] Additional PPR routes (studio, community)
-- [ ] Static generation for popular stories (`generateStaticParams`)
-- [ ] CDN caching headers for published content
+**Created:**
+- `src/lib/db/reading-queries.ts` - Optimized reading queries with Promise.all batching
+- `src/lib/cache/story-structure-cache.ts` - Redis cache utility
+- `src/lib/cache/invalidation-hooks.ts` - Cache invalidation hooks
+- `src/lib/cache/redis-cache.ts` - Redis cache implementation
+- `src/lib/cache/unified-invalidation.ts` - Unified cache invalidation
+- `scripts/publish-all-content.mjs` - Publishing utility
+- `scripts/test-loading-performance.mjs` - Performance testing
+
+**Not Yet Implemented:**
+- `src/components/novels/ProgressiveSceneLoader.tsx` - Progressive loader (⏳ planned)
+- `src/lib/cache/cache-warming.ts` - Cache warming utilities (⏳ planned)
+
+**Modified:**
+- `src/app/novels/[id]/page.tsx` - PPR + Suspense + optimized queries
+- `src/app/api/studio/story/[id]/read/route.ts` - Edge caching + optimized queries
+- `src/app/studio/api/chapters/[id]/scenes/route.ts` - Optimized scene queries
+- `src/lib/hooks/use-persisted-swr.ts` - Synchronous cache loading
+- `src/hooks/useChapterScenes.ts` - Extended retention + ETag
+- `src/hooks/useStoryReader.ts` - Extended retention + ETag
+
+### 14.3 Implementation Status
+
+| Strategy | Status |
+|----------|--------|
+| Database Connection Pooling | ✅ Implemented |
+| Database Indexes | ⏳ Recommended |
+| Query Batching | ✅ Implemented |
+| Streaming SSR + Suspense | ✅ Implemented |
+| Partial Prerendering | ✅ Implemented |
+| Smart Data Reduction | ✅ Implemented |
+| HTTP Cache Headers | ✅ Implemented |
+| Progressive Scene Loading | ⏳ Planned |
+| Multi-Layer Caching | ✅ Implemented |
+| Parallel Scene Fetching | ✅ Implemented |
+| bfcache Optimization | ✅ Implemented |
+
+**Strategies Completed:** 8 of 11 (73%)
+**Performance Impact:** VERY HIGH - 93-98% reduction in load time
+**Production Ready:** ✅ Yes - Deploy and monitor
 
 ---
 
-## 📊 Database Schema (Adversity-Triumph Engine)
+## 15. Database Schema Reference
 
 **Complete schema:** `src/lib/schemas/database/index.ts`
 
@@ -746,28 +757,10 @@ tail -100 logs/dev-server.log | grep -E "(StoryCache|Write API)"
 
 ---
 
-**Strategies Completed:** 6 of 8 (75%)
-**Total Implementation Time:** ~5 hours
-**Performance Impact:** VERY HIGH - 93-98% reduction in load time
-**Production Ready:** ✅ Yes - Deploy and monitor
+**Latest Update:** November 18, 2025
 
-**Implementation Status:**
-| Strategy | Status |
-|----------|--------|
-| 0. Database Connection Pooling | ✅ Implemented |
-| 0. Database Indexes | ⏳ Recommended |
-| 0. Query Batching | ✅ Implemented |
-| 1. Streaming SSR + Suspense | ✅ Implemented |
-| 2. Partial Prerendering | ✅ Implemented |
-| 3. Smart Data Reduction | ✅ Implemented |
-| 4. HTTP Cache Headers | ✅ Implemented |
-| 5. Progressive Scene Loading | ⏳ Planned |
-| 6. Multi-Layer Caching | ✅ Implemented |
-| 7. Parallel Scene Fetching | ✅ Implemented |
-| 8. bfcache Optimization | ✅ Implemented |
-
-**Latest Update (Nov 18, 2025):** Documentation synchronized with current codebase
+Documentation synchronized with current codebase:
 - Verified actual TTL values and cache configurations
 - Updated file paths to match actual implementation
 - Marked planned but unimplemented features
-- Cache warming utilities planned but not yet implemented
+- Reorganized section hierarchy for clarity
