@@ -1,790 +1,292 @@
-# Comics Evaluation Guide: Quality Metrics & Testing
+# Comics Panel Image Evaluation Guide: Quality Metrics & Performance
 
 ## Overview
 
-This document specifies the quality evaluation system for comics generation, including toonplay assessment criteria, automated metrics, testing strategies, and improvement workflows.
+This document specifies quality metrics, performance benchmarks, and testing strategies for comic panel image generation and optimization. It focuses on the visual quality of generated webtoon panel images.
 
 **Related Documents:**
-- 📖 **Specification** (`comics-specification.md`): Core concepts, data model, and architecture
-- 📋 **Development Guide** (`comics-development.md`): API specifications and implementation details
+- **Specification** (`comics-specification.md`): Core concepts, data model, architecture
+- **Development Guide** (`comics-development.md`): API specifications, implementation
+- **Toonplay Evaluation** (`../toonplay/toonplay-evaluation.md`): Script/content quality metrics
+
+**Note**: This document covers **image quality** for comic panels. For toonplay script quality (narrative fidelity, visual transformation, pacing), see `toonplay-evaluation.md`.
 
 ---
 
-## Part I: Toonplay Quality Framework
+## Part I: Comic Panel Image Quality Metrics
 
-### 1.1 Evaluation Philosophy
+### 1.1 Generation Quality
 
-**Goal**: Ensure generated toonplay scripts preserve narrative "soul" while optimizing for mobile webtoon consumption.
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Aspect Ratio Accuracy** | Validates 9:16 vertical webtoon ratio (928×1664) | ±0.5% deviation | Critical failure if > 1% | Automated dimension check |
+| **Resolution Compliance** | Validates panel dimensions match specification | Exact 928×1664 | Critical failure if incorrect | Automated dimension validation |
+| **Format Validation** | Validates image format (PNG original) | 100% PNG | Critical failure if wrong format | Automated file type check |
+| **Prompt Adherence** | Measures how well image matches panel description | > 85% match | Warning if < 80% | Automated AI evaluation |
+| **File Size** | Validates original panel image size | 200-400KB | Warning if > 500KB | Automated file size check |
 
-**4-Category Weighted Scoring System**:
+### 1.2 Comic-Specific Visual Quality
 
-| Category | Weight | Focus Area | Passing Threshold |
-|----------|--------|------------|-------------------|
-| **Narrative Fidelity** | 20% | Preserves story essence | ≥ 3.0/5.0 |
-| **Visual Transformation** | 30% | Show vs tell, strategic internal monologue | ≥ 3.0/5.0 |
-| **Webtoon Pacing** | 30% | Mobile vertical-scroll optimization | ≥ 3.0/5.0 |
-| **Script Formatting** | 20% | Production usability | ≥ 3.0/5.0 |
+**Character Rendering Quality**:
 
-**Overall Passing Score**: Weighted average ≥ 3.0/5.0
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Expression Accuracy** | Facial expression matches emotional beat | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Body Language Clarity** | Pose communicates emotion/action clearly | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Character Consistency** | Same character recognizable across panels | > 85% similarity | Warning if < 80% | AI comparison |
+| **Emotion Visibility** | Emotion readable without text | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
 
-### 1.2 Scoring Scale (1-5)
+**Style Consistency Quality**:
 
-| Score | Level | Definition |
-|-------|-------|------------|
-| **5.0** | Exceptional | Professional-grade, ready for publication |
-| **4.0** | Strong | Solid quality, minor improvements only |
-| **3.0** | Effective | Meets minimum standards, acceptable |
-| **2.0** | Weak | Significant issues, needs revision |
-| **1.0** | Failed | Major problems, fundamental rework required |
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Webtoon Style Adherence** | Matches webtoon/manhwa visual style | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Linework Quality** | Clean, professional linework | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Color Vibrancy** | Vibrant colors appropriate for webtoon | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Lighting Consistency** | Coherent lighting within scene | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
 
----
+**Shot Type Adherence Quality**:
 
-## Part II: Evaluation Categories
+| Shot Type | Key Characteristics | Quality Criteria |
+|-----------|---------------------|------------------|
+| **wide_shot** | Full environment visible, characters in context | Environment detail, spatial relationships, atmosphere |
+| **medium_shot** | Waist-up framing, character interaction focus | Character poses, interaction clarity, background context |
+| **close_up** | Face/detail focus, emotional emphasis | Expression detail, emotion clarity, dramatic impact |
+| **extreme_close_up** | Single feature emphasis (eyes, hands) | Detail sharpness, emotional impact, symbolic resonance |
+| **establishing_shot** | Scene-setting, location introduction | Environmental detail, atmosphere, mood setting |
+| **over_shoulder** | Conversation framing, POV indication | Clear speaker/listener, spatial relationship, intimacy |
 
-### 2.1 Narrative Fidelity (20% weight)
+### 1.3 Visual Quality Scoring Scale (1-5)
 
-**What It Measures**: Does the toonplay preserve the emotional beats, character arcs, and story essence from the prose source?
+| Score | Level | Definition | Example |
+|-------|-------|------------|---------|
+| **5** | Exceptional | Professional-grade, publication-ready | Clear expression, perfect composition, style-consistent |
+| **4** | High | Minor improvements only | Good expression, solid composition, slight style variance |
+| **3** | Acceptable | Meets minimum standards | Readable emotion, adequate composition, usable |
+| **2** | Poor | Significant issues | Unclear expression, weak composition, style inconsistent |
+| **1** | Unacceptable | Fundamental rework required | Wrong emotion, broken composition, unusable |
 
-**Key Criteria**:
+### 1.4 Optimization Quality
 
-1. **Story Beats Preserved**
-   - All major plot points included
-   - Emotional progression intact
-   - Climactic moments properly positioned
+**Compression Metrics**:
 
-2. **Character Consistency**
-   - Character voices maintained
-   - Relationships accurately portrayed
-   - Motivations clear
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **AVIF Compression Ratio** | Size reduction vs original PNG | 90-95% reduction | Warning if < 85% | Automated size comparison |
+| **AVIF Quality Setting** | AVIF encoder quality parameter | 75 | Fixed parameter | Configuration validation |
 
-3. **Emotional Arc**
-   - Setup → tension → climax → resolution
-   - Emotional highs and lows preserved
-   - Reader empathy maintained
+**Target File Sizes (AVIF-Only for Comic Panels)**:
 
-**Scoring Guidelines**:
-
-```
-5.0 - All story beats preserved with enhanced emotional clarity
-4.0 - Major beats intact, minor details condensed effectively
-3.0 - Core story preserved, some supporting details simplified
-2.0 - Key beats missing or emotional arc weakened
-1.0 - Story fundamentally altered or incoherent
-```
-
-**Example - Score 5.0**:
-```
-Prose: "Sarah's hands trembled as she opened the letter.
-After three years of silence, Marcus had finally written back..."
-
-Toonplay Panel 1 (close_up):
-Description: Sarah's hands holding sealed envelope, slight tremor visible
-Dialogue: [internal monologue] "Three years... Is this really from him?"
-
-Toonplay Panel 2 (extreme_close_up):
-Description: Sarah's eyes scanning first line of letter, tears forming
-[Preserves emotional beat while showing visually]
-```
-
-**Example - Score 2.0**:
-```
-Prose: "Sarah's hands trembled as she opened the letter.
-After three years of silence, Marcus had finally written back..."
-
-Toonplay Panel 1 (wide_shot):
-Description: Sarah in room opening envelope
-Dialogue: "Oh, a letter from Marcus."
-[Lost emotional weight, trembling hands not shown, no context of 3-year silence]
-```
-
-### 2.2 Visual Transformation (30% weight)
-
-**What It Measures**: Does the toonplay effectively transform prose narration into visual storytelling?
-
-**Key Criteria**:
-
-1. **Show vs Tell Ratio**
-   - Narration < 5% of panels (time/location only)
-   - Internal monologue < 10% of panels (strategic moments only)
-   - Dialogue ~70% of panels
-   - Visual action properly shown
-
-2. **Character Expressions & Body Language**
-   - Emotions shown through visual cues
-   - Body language specified in character_poses
-   - Facial expressions detailed
-
-3. **Environmental Storytelling**
-   - Settings actively contribute to mood
-   - Visual details replace prose descriptions
-   - Atmosphere created through lighting, composition
-
-**Scoring Guidelines**:
-
-```
-5.0 - Masterful visual storytelling, minimal narration, all emotions shown
-4.0 - Strong visual focus, narration used sparingly and effectively
-3.0 - Adequate show-vs-tell balance, meets <5% narration / <10% internal monologue targets
-2.0 - Over-reliance on narration, missed visual opportunities
-1.0 - Prose narrative copied verbatim, not adapted to visual medium
-```
-
-**Automated Metrics**:
-- `narration_percentage`: % of panels with narrative text (target: <5%)
-- `internal_monologue_percentage`: % of panels with internal monologue (target: <10%)
-- `dialogue_presence`: % of panels with dialogue (target: ~70%)
-
-**Example - Score 5.0**:
-```
-Prose: "Detective Morgan felt the weight of failure pressing down on him as he stared at the cold case files."
-
-Toonplay Panel (medium_shot):
-Description: Morgan slumped in chair, shoulders hunched, head in hands,
-stack of dusty case files spread across desk, harsh desk lamp creating dramatic shadows
-Lighting: Single desk lamp, otherwise dark office
-Character_poses: {morgan: "defeated posture, face hidden in hands"}
-Narrative: [NONE - emotion shown visually]
-Dialogue: []
-[Perfect - shows emotional weight through body language, lighting, composition]
-```
-
-**Example - Score 2.0**:
-```
-Prose: "Detective Morgan felt the weight of failure pressing down on him as he stared at the cold case files."
-
-Toonplay Panel (medium_shot):
-Description: Morgan sitting at desk looking at files
-Narrative: "Detective Morgan felt the weight of failure pressing down on him."
-[Copied narration verbatim, missed visual storytelling opportunity]
-```
-
-### 2.3 Webtoon Pacing (30% weight)
-
-**What It Measures**: Is the toonplay optimized for mobile vertical-scroll thumb reading?
-
-**Key Criteria**:
-
-1. **Panel Count Appropriateness**
-   - 8-12 panels per scene
-   - One key action per panel
-   - Avoid over-compression or over-expansion
-
-2. **Visual Rhythm**
-   - Shot type variety (not monotonous)
-   - Clear progression of events
-   - Cliffhanger potential at scene end
-
-3. **Thumb-Scroll Optimization**
-   - Each panel works as standalone visual
-   - Clear visual hierarchy
-   - Dialogue placement considerations
-
-**Scoring Guidelines**:
-
-```
-5.0 - Perfect pacing, varied visual rhythm, strong panel-to-panel flow
-4.0 - Good pacing, appropriate panel count, minor rhythm issues
-3.0 - Acceptable pacing, meets 8-12 panel range, readable flow
-2.0 - Rushed or dragged pacing, monotonous visuals
-1.0 - Completely wrong pacing, incoherent panel sequence
-```
-
-**Automated Metrics**:
-- `total_panels`: Count (target: 8-12)
-- `shot_type_distribution`: Variety check
-- `dialogue_length_compliance`: All under 150 characters
-
-**Example - Score 5.0**:
-```
-Panel 1: establishing_shot (scene setup)
-Panel 2: wide_shot (character entrance)
-Panel 3: medium_shot (conversation starts)
-Panel 4: close_up (emotional reaction)
-Panel 5: over_shoulder (dialogue exchange)
-Panel 6: medium_shot (action begins)
-Panel 7: wide_shot (full action)
-Panel 8: close_up (climactic moment)
-Panel 9: medium_shot (aftermath)
-Panel 10: close_up (emotional resolution)
-[Varied shot types, clear progression, perfect rhythm]
-```
-
-**Example - Score 2.0**:
-```
-Panel 1: medium_shot
-Panel 2: medium_shot
-Panel 3: medium_shot
-Panel 4: medium_shot
-Panel 5: medium_shot
-Panel 6: medium_shot
-Panel 7: medium_shot
-Panel 8: medium_shot
-[Monotonous, no visual variety, poor pacing]
-```
-
-### 2.4 Script Formatting (20% weight)
-
-**What It Measures**: Is the toonplay script production-ready and usable for image generation?
-
-**Key Criteria**:
-
-1. **Completeness**
-   - All required fields populated
-   - Character IDs match database
-   - Setting references accurate
-
-2. **Technical Specifications**
-   - Detailed visual descriptions (200-400 characters)
-   - Camera angles specified
-   - Lighting described
-   - Character poses defined
-
-3. **Production Usability**
-   - Clear instructions for AI image generation
-   - Dialogue properly attributed
-   - SFX appropriately placed
-
-**Scoring Guidelines**:
-
-```
-5.0 - Flawless formatting, all fields complete, production-ready
-4.0 - Well-formatted, minor missing details
-3.0 - Adequate formatting, meets minimum requirements
-2.0 - Incomplete fields, ambiguous descriptions
-1.0 - Critical missing information, unusable
-```
-
-**Automated Metrics**:
-- `text_overlay_validation`: All panels have dialogue OR narrative (100% required)
-- `dialogue_length_compliance`: All dialogue under 150 characters (100% required)
-- `description_length_validation`: All descriptions 200-400 characters
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **AVIF Mobile 1x** | File size for 464×832 (9:16) AVIF | ~18KB | Warning if > 25KB | Automated size check |
+| **AVIF Mobile 2x** | File size for 928×1664 (9:16) AVIF | ~35KB | Warning if > 50KB | Automated size check |
+| **Total Per Panel** | Combined size of 2 AVIF variants | ~53KB | Warning if > 75KB | Automated total calculation |
 
 ---
 
-## Part III: Automated Evaluation
+## Part II: Testing Strategies
 
-### 3.1 Evaluation Schema
+### 2.1 Automated Unit Testing
 
-**Zod Schema**: `AiToonplayEvaluationZodSchema` (see `src/lib/schemas/ai/ai-toonplay.ts`)
+**Panel Generation Service Tests**:
 
-```typescript
-export const AiToonplayEvaluationZodSchema = z.object({
-  weighted_score: z.number().min(1.0).max(5.0),
-  passes: z.boolean(), // True if weighted_score >= 3.0
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Aspect Ratio Validation** | Validates 9:16 vertical ratio (928×1664) | Exact match | Critical failure if wrong | Automated unit test |
+| **Shot Type Parameter** | Validates shot type passed to generator | 100% correct | Critical failure if missing | Automated unit test |
+| **Metadata Completeness** | Validates panel metadata fields present | 100% complete | Critical failure if missing | Automated unit test |
+| **Optimized Set Structure** | Validates optimizedSet contains 2 AVIF variants | Exactly 2 variants | Critical failure if ≠ 2 | Automated unit test |
 
-  category_scores: z.object({
-    narrative_fidelity: z.number().min(1).max(5),      // Weight: 20%
-    visual_transformation: z.number().min(1).max(5),   // Weight: 30%
-    webtoon_pacing: z.number().min(1).max(5),          // Weight: 30%
-    script_formatting: z.number().min(1).max(5),       // Weight: 20%
-  }),
+**Panel Optimization Service Tests**:
 
-  metrics: z.object({
-    narration_percentage: z.number().min(0).max(100),
-    internal_monologue_percentage: z.number().min(0).max(100),
-    dialogue_presence: z.number().min(0).max(100),
-    shot_type_distribution: z.record(z.string(), z.number()),
-    text_overlay_validation: z.boolean(),
-    dialogue_length_compliance: z.boolean(),
-  }),
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Variant Count** | Validates 2 AVIF variants generated (1x + 2x) | Exactly 2 | Critical failure if ≠ 2 | Automated unit test |
+| **Format Validation** | Validates all variants are AVIF | 100% AVIF | Critical failure if not AVIF | Automated unit test |
+| **Aspect Ratio Preservation** | Validates variants maintain 9:16 ratio | ±0.1% deviation | Critical failure if > 0.5% | Automated unit test |
+| **File Size Compliance** | Validates AVIF 1x < 25KB | Within range | Warning if out of range | Automated unit test |
 
-  recommendations: z.array(z.string()),
-  final_report: z.string().min(50).max(2000),
-});
-```
+### 2.2 Integration Testing
 
-### 3.2 Weighted Score Calculation
+**End-to-End Panel Generation Flow**:
 
-```typescript
-function calculateWeightedScore(categoryScores: CategoryScores): number {
-  return (
-    categoryScores.narrative_fidelity * 0.20 +
-    categoryScores.visual_transformation * 0.30 +
-    categoryScores.webtoon_pacing * 0.30 +
-    categoryScores.script_formatting * 0.20
-  );
-}
-```
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Panel Generation API** | Validates API generates panel image | Success | Critical failure if error | Automated E2E test |
+| **Panel Display** | Validates generated panel displays correctly | Visible | Critical failure if not visible | Automated E2E test |
+| **AVIF Source Presence** | Validates AVIF source in picture element | Present | Critical failure if missing | Automated E2E test |
+| **Responsive srcset** | Validates srcset contains 1x and 2x variants | Both present | Critical failure if missing | Automated E2E test |
+| **Generation Timeout** | Validates generation completes within limit | < 30s | Critical failure if > 30s | Automated E2E test |
 
-### 3.3 Automated Metrics Calculation
+**Character Consistency Testing**:
 
-```typescript
-function calculateMetrics(toonplay: AiComicToonplayType): Metrics {
-  const totalPanels = toonplay.panels.length;
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Same Character Recognition** | Character recognizable across panel sequence | > 85% similarity | Warning if < 80% | AI comparison |
+| **Expression Progression** | Emotional progression coherent across panels | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Outfit Consistency** | Character clothing consistent across scene | > 90% match | Warning if < 85% | AI comparison |
 
-  // Narration percentage
-  const narrationPanels = toonplay.panels.filter(
-    p => p.narrative && p.narrative.trim().length > 0
-  ).length;
-  const narration_percentage = (narrationPanels / totalPanels) * 100;
+### 2.3 Performance Testing
 
-  // Internal monologue percentage
-  const internalMonologuePanels = toonplay.panels.filter(
-    p => p.narrative && isInternalMonologue(p.narrative)
-  ).length;
-  const internal_monologue_percentage = (internalMonologuePanels / totalPanels) * 100;
+**Generation Performance Tests**:
 
-  // Dialogue presence
-  const dialoguePanels = toonplay.panels.filter(
-    p => p.dialogue && p.dialogue.length > 0
-  ).length;
-  const dialogue_presence = (dialoguePanels / totalPanels) * 100;
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Single Panel Timing** | Measures time to generate one panel | 12-16s | Warning if > 20s | Automated timing |
+| **Batch Panel Timing** | Measures time to generate scene (10 panels) | 2-3 min | Warning if > 4 min | Automated timing |
+| **Success Rate Tracking** | Tracks percentage of successful generations | > 95% | Warning if < 90% | Automated tracking |
+| **95th Percentile Calculation** | 95% of panels complete within threshold | < 20s | Critical if > 25s | Automated percentile |
 
-  // Shot type distribution
-  const shot_type_distribution: Record<string, number> = {};
-  for (const panel of toonplay.panels) {
-    shot_type_distribution[panel.shot_type] =
-      (shot_type_distribution[panel.shot_type] || 0) + 1;
-  }
+**Network Performance Tests**:
 
-  // Text overlay validation (all panels must have dialogue OR narrative)
-  const text_overlay_validation = toonplay.panels.every(
-    p => (p.dialogue && p.dialogue.length > 0) ||
-         (p.narrative && p.narrative.trim().length > 0)
-  );
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **4G Network Throttling** | Tests panel load on 4G simulation | < 0.1s | Warning if > 0.2s | Automated network simulation |
+| **3G Network Throttling** | Tests panel load on 3G simulation | < 0.8s | Warning if > 1.5s | Automated network simulation |
+| **Scene Load (Vertical Scroll)** | Tests loading 10 panels sequentially | < 1.0s total | Warning if > 2.0s | Automated scroll simulation |
 
-  // Dialogue length compliance (all under 150 characters)
-  const dialogue_length_compliance = toonplay.panels.every(
-    p => !p.dialogue || p.dialogue.every(d => d.text.length <= 150)
-  );
+### 2.4 Visual Quality Testing
 
-  return {
-    narration_percentage,
-    internal_monologue_percentage,
-    dialogue_presence,
-    shot_type_distribution,
-    text_overlay_validation,
-    dialogue_length_compliance,
-  };
-}
-```
+**Automated Visual Quality Assessment**:
+
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Style Consistency Check** | Validates webtoon style across panels | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Composition Quality Check** | Validates visual hierarchy and focal point | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Expression Accuracy Check** | Validates emotion matches description | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+| **Shot Type Adherence Check** | Validates panel matches shot type spec | Score 4-5/5 | Warning if < 3/5 | AI evaluation |
+
+**Visual Regression Testing**:
+
+| Test Case | Description | Target | Threshold | Method |
+|-----------|-------------|--------|-----------|--------|
+| **Mobile Screenshot Comparison** | Compares mobile rendering to baseline | > 95% similarity | Warning if < 90% | Automated screenshot diff |
+| **Vertical Scroll Rendering** | Validates panels render correctly in scroll | 100% correct | Critical failure if broken | Automated scroll test |
+| **Cross-Browser AVIF Support** | Validates AVIF loads in supporting browsers | 100% success | Critical failure if fails | Automated browser testing |
 
 ---
 
-## Part IV: Evaluation Process
+## Part III: Quality Assurance Checklist
 
-### 4.1 Evaluation System Prompt
+### 3.1 Pre-Deployment Checklist
 
-**Prompt Type**: `system` (AI evaluator)
+**Panel Generation**:
+- [ ] AI Server endpoint configured for image generation
+- [ ] API key authentication working
+- [ ] 9:16 aspect ratio (928×1664) correctly applied
+- [ ] Shot type parameters passed to generator
+- [ ] Placeholder panels available for failures
 
-```
-You are an expert webtoon script evaluator specializing in assessing toonplay
-quality for mobile vertical-scroll comics.
+**Panel Optimization**:
+- [ ] 2 AVIF variants generated for each panel
+- [ ] AVIF quality acceptable (quality 75)
+- [ ] File sizes within targets (~18KB 1x, ~35KB 2x)
+- [ ] Vercel Blob uploads successful
+- [ ] Vertical aspect ratio preserved in variants
 
-Your task: Evaluate the provided toonplay using the 4-category weighted scoring system.
+**Frontend**:
+- [ ] Comic reader component rendering panels correctly
+- [ ] `<picture>` element with AVIF source
+- [ ] AVIF served to modern browsers (93.8% coverage)
+- [ ] Graceful fallback to original PNG for legacy browsers
+- [ ] Lazy loading for off-screen panels
+- [ ] Priority loading for visible panels
 
-EVALUATION CATEGORIES:
+**Performance**:
+- [ ] Lighthouse score > 90
+- [ ] LCP < 2.5s for comic reader
+- [ ] Smooth vertical scrolling on mobile
+- [ ] CDN caching configured for panels
 
-1. NARRATIVE FIDELITY (20% weight)
-   - Preserves story beats from source prose
-   - Character consistency maintained
-   - Emotional arc intact
-   - Score 1-5 (5 = exceptional, 3 = effective, 1 = failed)
+### 3.2 Monitoring Dashboard
 
-2. VISUAL TRANSFORMATION (30% weight)
-   - Show vs tell effectiveness
-   - Narration < 5% of panels (time/location only)
-   - Internal monologue < 10% of panels (strategic moments)
-   - Dialogue ~70% of panels
-   - Emotions shown through visual cues
-   - Score 1-5
+**Generation Metrics**:
 
-3. WEBTOON PACING (30% weight)
-   - Panel count appropriate (8-12)
-   - One key action per panel
-   - Shot type variety
-   - Thumb-scroll optimization
-   - Score 1-5
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Panel Success Rate** | Percentage of successful panel generations | > 95% | Warning if < 90%, Critical if < 85% | Automated tracking |
+| **Average Generation Time** | Mean time to generate panel | 12-16s | Warning if > 20s | Automated timing |
+| **Failure Reasons** | Categorized failure counts | N/A - diagnostic | N/A - for analysis | Automated error logging |
+| **Queue Depth** | Pending panel generation requests | < 10 | Warning if > 20 | Automated queue monitoring |
 
-4. SCRIPT FORMATTING (20% weight)
-   - All required fields complete
-   - Detailed visual descriptions (200-400 chars)
-   - Production-ready specifications
-   - Score 1-5
+**Quality Metrics**:
 
-SCORING SCALE:
-5.0 = Exceptional (professional-grade)
-4.0 = Strong (minor improvements only)
-3.0 = Effective (meets minimum standards) ← PASSING THRESHOLD
-2.0 = Weak (significant issues)
-1.0 = Failed (fundamental rework required)
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Average Style Score** | Mean webtoon style adherence score | 4-5/5 | Warning if < 3.5/5 | AI evaluation |
+| **Average Composition Score** | Mean visual hierarchy score | 4-5/5 | Warning if < 3.5/5 | AI evaluation |
+| **Character Consistency Rate** | Percentage of consistent character renders | > 85% | Warning if < 80% | AI comparison |
+| **Expression Accuracy Rate** | Percentage of accurate emotion renders | > 85% | Warning if < 80% | AI evaluation |
 
-WEIGHTED SCORE CALCULATION:
-weighted_score = (narrative_fidelity × 0.20) +
-                 (visual_transformation × 0.30) +
-                 (webtoon_pacing × 0.30) +
-                 (script_formatting × 0.20)
+**Loading Metrics**:
 
-PASSES: weighted_score >= 3.0
-
-PROVIDE:
-1. Category scores (1-5 for each)
-2. Weighted score
-3. Pass/fail determination
-4. Specific recommendations for failed categories
-5. Detailed final report with examples
-```
-
-### 4.2 Evaluation User Prompt
-
-```typescript
-const userPrompt = `
-SOURCE PROSE SCENE:
-${sceneContent}
-
-GENERATED TOONPLAY:
-${JSON.stringify(toonplay, null, 2)}
-
-AUTOMATED METRICS:
-- Narration: ${metrics.narration_percentage}% (target: <5%)
-- Internal Monologue: ${metrics.internal_monologue_percentage}% (target: <10%)
-- Dialogue presence: ${metrics.dialogue_presence}% (target: ~70%)
-- Shot type distribution: ${JSON.stringify(metrics.shot_type_distribution)}
-- Text overlay validation: ${metrics.text_overlay_validation ? 'PASS' : 'FAIL'}
-- Dialogue length compliance: ${metrics.dialogue_length_compliance ? 'PASS' : 'FAIL'}
-
-Evaluate this toonplay against the 4 categories and provide detailed feedback.
-`;
-```
-
-### 4.3 Evaluation Code
-
-**File**: `src/lib/studio/services/toonplay-evaluator.ts`
-
-```typescript
-export async function evaluateToonplay(
-  toonplay: AiComicToonplayType,
-  sourceScene: Scene
-): Promise<AiToonplayEvaluationType> {
-  // 1. Calculate automated metrics
-  const metrics = calculateMetrics(toonplay);
-
-  // 2. Create text generation client
-  const client = createTextGenerationClient();
-
-  // 3. Build evaluation prompts
-  const { system: systemPrompt, user: userPrompt } =
-    promptManager.getPrompt(
-      client.getProviderType(),
-      "toonplay-evaluation",
-      {
-        sceneContent: sourceScene.content,
-        toonplay: JSON.stringify(toonplay, null, 2),
-        metrics,
-      }
-    );
-
-  // 4. Generate evaluation using structured output
-  const evaluation: AiToonplayEvaluationType = await client.generateStructured(
-    userPrompt,
-    AiToonplayEvaluationZodSchema,
-    {
-      systemPrompt,
-      temperature: 0.3, // Lower temperature for consistent scoring
-      maxTokens: 4096,
-    }
-  );
-
-  // 5. Add automated metrics to evaluation
-  evaluation.metrics = metrics;
-
-  return evaluation;
-}
-```
+| Metric | Description | Target | Threshold | Method |
+|--------|-------------|--------|-----------|--------|
+| **Average Panel LCP** | Mean time to render panel | < 2.5s | Warning if > 3.0s | Automated LCP tracking |
+| **Cache Hit Rate** | Percentage served from cache | > 80% | Warning if < 70% | Automated cache analytics |
+| **AVIF Distribution** | Percentage served as AVIF | 100% (all variants) | Critical if < 100% | Automated format tracking |
+| **Mobile Scroll Performance** | Frames per second during scroll | > 30 fps | Warning if < 24 fps | Automated FPS tracking |
 
 ---
 
-## Part V: Improvement Workflow
+## Part IV: Iteration Testing Framework
 
-### 5.1 Iterative Improvement Process
+### 4.1 5-Cycle Testing Methodology
 
-```
-┌────────────────────────────────────────────────────────────┐
-│               TOONPLAY IMPROVEMENT LOOP                     │
-└────────────────────────────────────────────────────────────┘
+The comics iteration testing uses progressive prompt enhancement cycles aligned with quality evaluation criteria:
 
-1. Generate Initial Toonplay
-   └─> convertSceneToToonplay()
+**Cycle Structure**:
 
-2. Evaluate Quality
-   └─> evaluateToonplay()
-   └─> Calculate weighted_score
+| Cycle | Focus Area | Weight | Prompt Enhancements |
+|-------|------------|--------|---------------------|
+| 1 | Baseline | - | None (establish baseline metrics) |
+| 2 | Visual Transformation | 30% | Expressive body language, character emotion through pose, environmental mood lighting |
+| 3 | Webtoon Pacing | 30% | Clear visual hierarchy, single focal point, thumb-scroll optimization |
+| 4 | Narrative Fidelity | 20% | Detailed facial expressions, emotional nuance, dramatic tension |
+| 5 | Production Quality | All | Combined: professional webtoon, expressive poses, cinematic lighting, clear hierarchy |
 
-3. Check Pass/Fail
-   ├─> If weighted_score >= 3.0: PASS → Generate panel images
-   └─> If weighted_score < 3.0: FAIL → Improve toonplay
+### 4.2 Expected Performance Targets
 
-4. Improve Toonplay (if failed)
-   ├─> Identify weakest categories
-   ├─> Generate improvement prompts
-   └─> improveToonplay() with targeted feedback
+Based on iteration testing results:
 
-5. Re-evaluate Improved Toonplay
-   └─> evaluateToonplay() again
+| Metric | Baseline (Cycle 1) | Target (Cycle 5) | Acceptable Range |
+|--------|-------------------|------------------|------------------|
+| **Success Rate** | 100% | 100% | > 95% |
+| **Avg Generation Time** | 15.0s | 14.2s | 12-18s |
+| **Min Generation Time** | 12.3s | 12.3s | > 10s |
+| **Max Generation Time** | 16.4s | 16.4s | < 25s |
 
-6. Max Iterations
-   ├─> If passes: Generate panel images
-   ├─> If fails after 2 iterations: Use best attempt
-   └─> Log failure for manual review
+### 4.3 Running Iteration Tests
 
-TYPICAL RESULTS:
-- 70-80% pass on first evaluation
-- 15-20% pass after one improvement
-- 5-10% require manual review
-```
+```bash
+# Run evaluation-based 5-cycle comics iteration testing
+dotenv --file .env.local run pnpm exec tsx tests/iteration-testing/run-5-cycle-comics.ts
 
-### 5.2 Improvement System Prompt
-
-```
-You are an expert webtoon script editor specializing in improving toonplay
-scripts based on evaluation feedback.
-
-Your task: Revise the provided toonplay to address specific weaknesses identified
-in the evaluation.
-
-EVALUATION FEEDBACK:
-${evaluationReport}
-
-FOCUS AREAS FOR IMPROVEMENT:
-${focusAreas.join('\n')}
-
-INSTRUCTIONS:
-1. Review the original toonplay
-2. Identify specific issues in flagged categories
-3. Make targeted improvements:
-   - If Narrative Fidelity is weak: Restore missing story beats
-   - If Visual Transformation is weak: Replace narration with visual descriptions
-   - If Webtoon Pacing is weak: Adjust panel count, vary shot types
-   - If Script Formatting is weak: Complete missing fields, enhance descriptions
-4. Maintain all successful aspects
-5. Do NOT fundamentally restructure if unnecessary
-
-OUTPUT:
-- improved_toonplay: Full revised toonplay
-- changes_made: List of specific improvements
-- addressed_categories: Categories that were targeted
-
-CONSTRAINTS:
-- Keep panel count 8-12
-- Maintain source prose "soul"
-- Follow all toonplay format requirements
-```
-
-### 5.3 Improvement Code
-
-```typescript
-export async function improveToonplay(
-  originalToonplay: AiComicToonplayType,
-  evaluation: AiToonplayEvaluationType,
-  sourceScene: Scene
-): Promise<AiToonplayImprovementType> {
-  const client = createTextGenerationClient();
-
-  // Identify focus areas (categories scoring < 3.0)
-  const focusAreas: string[] = [];
-  if (evaluation.category_scores.narrative_fidelity < 3.0) {
-    focusAreas.push("Narrative Fidelity: Preserve story beats and emotional arc");
-  }
-  if (evaluation.category_scores.visual_transformation < 3.0) {
-    focusAreas.push("Visual Transformation: Replace narration with visual descriptions");
-  }
-  if (evaluation.category_scores.webtoon_pacing < 3.0) {
-    focusAreas.push("Webtoon Pacing: Adjust panel count and shot type variety");
-  }
-  if (evaluation.category_scores.script_formatting < 3.0) {
-    focusAreas.push("Script Formatting: Complete missing fields and enhance descriptions");
-  }
-
-  const { system: systemPrompt, user: userPrompt } =
-    promptManager.getPrompt(
-      client.getProviderType(),
-      "toonplay-improvement",
-      {
-        originalToonplay: JSON.stringify(originalToonplay, null, 2),
-        evaluationReport: evaluation.final_report,
-        focusAreas,
-        recommendations: evaluation.recommendations,
-      }
-    );
-
-  const improvement: AiToonplayImprovementType = await client.generateStructured(
-    userPrompt,
-    AiToonplayImprovementZodSchema,
-    {
-      systemPrompt,
-      temperature: 0.7, // Same as initial generation
-      maxTokens: 16384,
-    }
-  );
-
-  return improvement;
-}
-```
-
----
-
-## Part VI: Testing Strategies
-
-### 6.1 Unit Tests
-
-**Test File**: `__tests__/toonplay-evaluator.test.ts`
-
-**Test Cases**:
-
-```typescript
-describe('Toonplay Evaluator', () => {
-  it('should pass high-quality toonplay', async () => {
-    const toonplay = createMockToonplay({
-      totalPanels: 10,
-      dialoguePercentage: 70,
-      narrationPercentage: 3,
-      shotTypeVariety: ['establishing_shot', 'wide_shot', 'medium_shot', 'close_up'],
-    });
-
-    const evaluation = await evaluateToonplay(toonplay, mockScene);
-
-    expect(evaluation.passes).toBe(true);
-    expect(evaluation.weighted_score).toBeGreaterThanOrEqual(3.0);
-  });
-
-  it('should fail toonplay with excessive narration', async () => {
-    const toonplay = createMockToonplay({
-      narrationPercentage: 60, // Way over 5% limit
-    });
-
-    const evaluation = await evaluateToonplay(toonplay, mockScene);
-
-    expect(evaluation.passes).toBe(false);
-    expect(evaluation.category_scores.visual_transformation).toBeLessThan(3.0);
-  });
-
-  it('should calculate metrics correctly', () => {
-    const toonplay = createMockToonplay({
-      totalPanels: 10,
-      dialoguePanels: 7,
-      narrationPanels: 2,
-    });
-
-    const metrics = calculateMetrics(toonplay);
-
-    expect(metrics.dialogue_presence).toBe(70);
-    expect(metrics.narration_percentage).toBe(20);
-  });
-});
-```
-
-### 6.2 Integration Tests
-
-**Test File**: `tests/comic-generation.spec.ts` (Playwright)
-
-**Test Scenarios**:
-
-```typescript
-test('Generate comic panels for scene', async ({ page }) => {
-  // Login as writer
-  await login(page, writer.email, writer.password);
-
-  // Navigate to scene editor
-  await page.goto(`http://localhost:3000/studio/edit/scene_${sceneId}`);
-
-  // Click generate button
-  await page.click('button:has-text("Generate Comic Panels")');
-
-  // Wait for generation to complete
-  await page.waitForSelector('text=Comic panels generated successfully', {
-    timeout: 120000, // 2 minutes
-  });
-
-  // Verify panels were created
-  const panelCount = await page.textContent('[data-testid="panel-count"]');
-  expect(Number(panelCount)).toBeGreaterThanOrEqual(8);
-  expect(Number(panelCount)).toBeLessThanOrEqual(12);
-
-  // Verify comic status is draft
-  const status = await page.textContent('[data-testid="comic-status"]');
-  expect(status).toBe('draft');
-});
-
-test('Publish comic panels', async ({ page }) => {
-  await login(page, writer.email, writer.password);
-
-  // Navigate to scene with generated panels
-  await page.goto(`http://localhost:3000/studio/edit/scene_${sceneId}`);
-
-  // Click publish button
-  await page.click('button:has-text("Publish Comic")');
-
-  // Wait for success message
-  await page.waitForSelector('text=Comic published successfully');
-
-  // Verify status updated
-  const status = await page.textContent('[data-testid="comic-status"]');
-  expect(status).toBe('published');
-
-  // Verify visible at /comics/[storyId]
-  await page.goto(`http://localhost:3000/comics/${storyId}`);
-  await expect(page.locator('[data-testid="comic-panel"]')).toHaveCount(
-    Number(panelCount)
-  );
-});
-```
-
-### 6.3 Quality Benchmarking
-
-**Benchmark Test**: Track evaluation scores over time
-
-```typescript
-// scripts/benchmark-toonplay-quality.ts
-
-const results = [];
-
-for (const scene of testScenes) {
-  const toonplay = await convertSceneToToonplay({
-    scene,
-    story,
-    characters,
-    settings,
-  });
-
-  const evaluation = await evaluateToonplay(toonplay, scene);
-
-  results.push({
-    sceneId: scene.id,
-    sceneLength: scene.content.length,
-    panelCount: toonplay.total_panels,
-    weightedScore: evaluation.weighted_score,
-    passes: evaluation.passes,
-    categoryScores: evaluation.category_scores,
-    metrics: evaluation.metrics,
-  });
-}
-
-// Calculate aggregate statistics
-const averageScore = results.reduce((sum, r) => sum + r.weightedScore, 0) / results.length;
-const passRate = results.filter(r => r.passes).length / results.length;
-
-console.log(`Average Weighted Score: ${averageScore.toFixed(2)}`);
-console.log(`Pass Rate: ${(passRate * 100).toFixed(1)}%`);
-console.log(`Average Narration %: ${averageMetric(results, 'narration_percentage')}%`);
-console.log(`Average Dialogue %: ${averageMetric(results, 'dialogue_presence')}%`);
+# Output locations
+# Results: results/5-cycle-comics-evaluation/all-cycles-*.json
+# Report: results/5-cycle-comics-evaluation/comics-eval-report-*.md
 ```
 
 ---
 
 ## Conclusion
 
-The comics evaluation system ensures quality through:
+The comics panel image evaluation system ensures quality through:
 
-1. **4-Category Weighted Scoring**: Comprehensive quality assessment
-2. **Automated Metrics**: Objective measurement of key criteria
-3. **Iterative Improvement**: Targeted refinement of weak areas
-4. **Production-Ready Output**: Only publish toonplay that meets standards
+1. **Comic-Specific Visual Metrics**: Style consistency, character rendering, shot type adherence
+2. **Performance Benchmarks**: Generation time (12-16s), loading time, storage efficiency
+3. **Automated Testing**: Unit tests, integration tests, visual quality assessment
+4. **Iteration Testing**: 5-cycle methodology with progressive prompt enhancement
 
 **Quality Targets**:
-- 70-80% pass rate on first evaluation
-- 90%+ pass rate after one improvement cycle
-- Average weighted score: 3.2-3.5/5.0
+- Success rate: > 95%
+- Average generation time: 12-16s
+- Style consistency score: 4-5/5
+- Character consistency: > 85%
+- LCP: < 2.5s
 
 **Next Steps**:
 - See `comics-specification.md` for core concepts and data model
 - See `comics-development.md` for API specifications and implementation
+- See `../toonplay/toonplay-evaluation.md` for script/content quality metrics
