@@ -32,6 +32,10 @@ export interface AuthData {
 
 /**
  * Load authentication data from .auth/user.json
+ *
+ * Handles both legacy flat structure and new environment-aware structure:
+ * - Legacy: { profiles: { manager, writer, reader } }
+ * - New: { main: { profiles: {...} }, develop: { profiles: {...} } }
  */
 export function loadAuthData(): AuthData {
     const authPath = path.resolve(process.cwd(), ".auth/user.json");
@@ -42,7 +46,24 @@ export function loadAuthData(): AuthData {
         );
     }
 
-    const authData = JSON.parse(fs.readFileSync(authPath, "utf-8"));
+    const rawData = JSON.parse(fs.readFileSync(authPath, "utf-8"));
+
+    // Handle environment-aware structure (new format)
+    // Use "develop" environment by default for tests
+    let authData: AuthData;
+    if (rawData.develop?.profiles || rawData.main?.profiles) {
+        // New environment-aware structure
+        const env = process.env.NODE_ENV === "production" ? "main" : "develop";
+        authData = rawData[env] as AuthData;
+        if (!authData) {
+            throw new Error(`Missing ${env} environment in .auth/user.json`);
+        }
+    } else if (rawData.profiles) {
+        // Legacy flat structure
+        authData = rawData as AuthData;
+    } else {
+        throw new Error("Invalid .auth/user.json structure");
+    }
 
     // Validate required profiles
     const requiredRoles = ["manager", "writer", "reader"];
@@ -52,7 +73,7 @@ export function loadAuthData(): AuthData {
         }
     }
 
-    return authData as AuthData;
+    return authData;
 }
 
 /**

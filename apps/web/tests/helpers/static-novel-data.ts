@@ -22,6 +22,9 @@ import { loadAuthData } from "./auth";
 
 export const TEST_IDS = {
     story: "test-story-novel-001",
+    // Fixed test user ID for testcontainers environment
+    // This ID is used when auth profiles don't have userId field
+    writerUserId: "test-writer-user-001",
     characters: {
         protagonist: "test-char-protagonist-001",
         antagonist: "test-char-antagonist-001",
@@ -50,11 +53,22 @@ export const TEST_IDS = {
 // =============================================================================
 
 /**
- * Get writer user ID from auth profiles
+ * Get writer user ID from auth profiles or use fixed test ID
+ *
+ * For testcontainers environment, the auth profile may not have userId
+ * (since users are created dynamically), so we fall back to a fixed test ID.
  */
 export function getWriterUserId(): string {
-    const authData = loadAuthData();
-    return authData.profiles.writer.userId;
+    try {
+        const authData = loadAuthData();
+        if (authData.profiles.writer.userId) {
+            return authData.profiles.writer.userId;
+        }
+    } catch {
+        // Auth file may not exist or be invalid in testcontainers setup
+    }
+    // Use fixed test ID for testcontainers environment
+    return TEST_IDS.writerUserId;
 }
 
 // =============================================================================
