@@ -6,6 +6,17 @@ This document provides the **implementation guidance** for executing tests defin
 
 For test requirements, test cases, and success criteria, see [test-specification.md](test-specification.md).
 
+For test directory structure and framework comparison, see [Test Directory Structure](test-specification.md#test-directory-structure) in the specification document.
+
+### Test Frameworks
+
+The web application uses two test frameworks:
+
+| Framework | Directory | Purpose | File Pattern |
+|-----------|-----------|---------|--------------|
+| **Playwright** | `tests/` | E2E, API, integration tests | `*.spec.ts` |
+| **Jest** | `__tests__/` | Unit tests, service logic | `*.test.ts` |
+
 ---
 
 ## Test Data Preparation
@@ -662,34 +673,76 @@ export default defineConfig({
 
 ### Test Organization
 
+#### Playwright Tests (`tests/`)
+
 ```
 tests/
-├── setup/
-│   ├── auth.setup.ts           # Setup authentication state
-│   └── test-data.setup.ts      # Setup test data
-├── e2e/
-│   ├── home.spec.ts            # Home page redirect tests
-│   ├── studio.spec.ts          # Studio tests
-│   ├── novels.spec.ts          # Novels tests
-│   ├── comics.spec.ts          # Comics tests
-│   ├── community.spec.ts       # Community tests
-│   ├── publish.spec.ts         # Publish tests
-│   ├── analysis.spec.ts        # Analysis tests
-│   └── settings.spec.ts        # Settings tests
-├── api/
-│   ├── auth.api.spec.ts        # Auth API tests
-│   ├── story.api.spec.ts       # Story API tests
-│   ├── generation.api.spec.ts  # Generation API tests
-│   ├── community.api.spec.ts   # Community API tests
-│   └── analysis.api.spec.ts    # Analysis API tests
-├── cross-cutting/
-│   ├── mobile.spec.ts          # Mobile responsiveness
-│   ├── theme.spec.ts           # Theme switching
-│   ├── a11y.spec.ts            # Accessibility
-│   └── performance.spec.ts     # Performance tests
-└── errors/
-    ├── network-errors.spec.ts  # Network error handling
-    └── edge-cases.spec.ts      # Edge case testing
+├── setup/                           # Authentication setup
+│   ├── auth.setup.ts
+│   └── test-data.setup.ts
+├── e2e/                             # Page-level E2E tests
+│   ├── home.spec.ts
+│   ├── studio.writer.spec.ts        # Studio tests (writer role)
+│   ├── studio.reader.spec.ts        # Studio access denied (reader role)
+│   ├── studio-agent.writer.spec.ts  # AI agent tests (writer role)
+│   ├── novels.e2e.spec.ts           # Novels reading tests
+│   ├── comics.e2e.spec.ts           # Comics reading tests
+│   ├── community.e2e.spec.ts        # Community tests
+│   ├── publish.writer.spec.ts       # Publish tests (writer role)
+│   ├── analysis.writer.spec.ts      # Analysis tests (writer role)
+│   └── settings.authenticated.spec.ts # Settings tests (authenticated)
+├── api/                             # API endpoint tests
+│   ├── auth.api.spec.ts
+│   ├── story.api.spec.ts
+│   ├── generation.api.spec.ts
+│   ├── community.api.spec.ts
+│   ├── analysis.api.spec.ts
+│   ├── publish.api.spec.ts
+│   ├── image.api.spec.ts
+│   └── user.api.spec.ts
+├── cross-cutting/                   # Non-functional tests
+│   ├── mobile.mobile.spec.ts        # Mobile responsiveness
+│   ├── theme.spec.ts                # Theme switching
+│   ├── a11y.spec.ts                 # Accessibility
+│   └── performance.spec.ts          # Performance tests
+├── errors/                          # Error handling tests
+│   ├── network-errors.spec.ts
+│   └── edge-cases.spec.ts
+├── iteration-testing/               # A/B testing for generation
+│   ├── novels/                      # Novel prompt iterations
+│   ├── comics/                      # Comic generation tests
+│   ├── toonplay/                    # Toonplay adaptation tests
+│   └── images/                      # Image generation tests
+└── helpers/                         # Shared test utilities
+    ├── auth.ts
+    └── test-data.ts
+```
+
+#### Jest Tests (`__tests__/`)
+
+```
+__tests__/
+├── novels/                          # Novel generation unit tests
+│   ├── story.test.ts
+│   ├── characters.test.ts
+│   ├── settings.test.ts
+│   ├── part.test.ts
+│   ├── chapter.test.ts
+│   ├── scene-summary.test.ts
+│   ├── scene-content.test.ts
+│   └── scene-improvement.test.ts
+├── comics/                          # Comic generation tests
+│   ├── comics.test.ts
+│   └── comic-panel-generator.single.test.ts
+├── toonplay/                        # Toonplay tests
+│   └── toonplay.test.ts
+├── images/                          # Image generation tests
+│   └── images.test.ts
+├── optimization/                    # Performance optimization tests
+│   └── novels-optimization.test.ts
+├── components/                      # React component tests
+└── helpers/                         # Shared test utilities
+    └── auth-loader.ts
 ```
 
 ### Authentication Helper
@@ -755,24 +808,57 @@ jobs:
 
 ### Running Tests
 
+#### Playwright Tests (E2E, API, Integration)
+
 ```bash
-# Run all tests
+# Run all Playwright tests
 dotenv --file .env.local run npx playwright test
 
 # Run specific test file
-dotenv --file .env.local run npx playwright test tests/e2e/studio.spec.ts
+dotenv --file .env.local run npx playwright test tests/e2e/studio.writer.spec.ts
+
+# Run by project (role-based)
+dotenv --file .env.local run npx playwright test --project=writer-tests
+dotenv --file .env.local run npx playwright test --project=reader-tests
+dotenv --file .env.local run npx playwright test --project=api
+
+# Run by pattern
+dotenv --file .env.local run npx playwright test tests/api/       # All API tests
+dotenv --file .env.local run npx playwright test tests/e2e/       # All E2E tests
+dotenv --file .env.local run npx playwright test tests/cross-cutting/  # Non-functional tests
 
 # Run tests in headed mode
 dotenv --file .env.local run npx playwright test --headed
-
-# Run tests for specific browser
-dotenv --file .env.local run npx playwright test --project=chromium
 
 # Run tests in debug mode
 dotenv --file .env.local run npx playwright test --debug
 
 # Generate test report
 npx playwright show-report
+```
+
+#### Jest Tests (Unit Tests)
+
+```bash
+# Run all Jest unit tests
+dotenv --file .env.local run pnpm test
+
+# Run specific test file
+dotenv --file .env.local run pnpm test __tests__/novels/story.test.ts
+
+# Run tests by pattern
+dotenv --file .env.local run pnpm test novels        # All novel tests
+dotenv --file .env.local run pnpm test comics        # All comic tests
+dotenv --file .env.local run pnpm test optimization  # Optimization tests
+
+# Run with coverage
+dotenv --file .env.local run pnpm test --coverage
+
+# Run in watch mode (for development)
+dotenv --file .env.local run pnpm test --watch
+
+# Run single test by name
+dotenv --file .env.local run pnpm test -t "should generate story"
 ```
 
 ### Test Data Management
@@ -1153,6 +1239,15 @@ BLOB_READ_WRITE_TOKEN=[token]
 - Name: [Approver Name]
 - Role: Engineering Manager
 - Date: [YYYY-MM-DD]
+
+---
+
+## Change Log
+
+| Version | Date | Changes | Author |
+|---------|------|---------|--------|
+| 1.0 | 2025-11-05 | Initial test development guide | Claude |
+| 2.0 | 2025-11-19 | Major updates for alignment with current codebase:<br>- Added Test Frameworks overview section<br>- Updated Test Organization to include both Playwright and Jest directories<br>- Updated all file names to match actual codebase (e.g., `studio.writer.spec.ts`)<br>- Added `iteration-testing/` directory documentation<br>- Added Jest test execution commands section<br>- Added cross-reference to test-specification.md Test Directory Structure<br>- Updated running commands with project-based and pattern-based examples | Claude |
 
 ---
 

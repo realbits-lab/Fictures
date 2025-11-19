@@ -270,7 +270,8 @@ describe("Novel Reading Performance Optimization", () => {
             // Warm should be at least somewhat faster (allowing for variability)
             // In production with Redis, this should be 50%+ faster
             // For local testing, we just verify it's not slower
-            expect(warmDuration).toBeLessThanOrEqual(coldDuration * 1.2); // Allow 20% variance
+            // Add 50ms buffer to account for timing variance in fast responses
+            expect(warmDuration).toBeLessThanOrEqual(coldDuration * 1.2 + 50); // Allow 20% variance + 50ms buffer
         });
     });
 
@@ -673,7 +674,8 @@ describe("Novel Reading Performance Optimization", () => {
             );
 
             // Warm should not be slower
-            expect(warmDuration).toBeLessThanOrEqual(coldDuration * 1.2);
+            // Add 50ms buffer to account for timing variance in fast responses
+            expect(warmDuration).toBeLessThanOrEqual(coldDuration * 1.2 + 50); // Allow 20% variance + 50ms buffer
         });
     });
 

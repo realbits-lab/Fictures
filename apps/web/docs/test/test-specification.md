@@ -6,23 +6,169 @@ This document defines the test requirements, test cases, and success criteria fo
 
 For test execution details, automation setup, and implementation guidance, see [test-development.md](test-development.md).
 
-### Recent Updates (v1.2 - 2025-11-05)
+---
+
+## Test Directory Structure
+
+The web application uses two separate test frameworks with distinct purposes:
+
+### `tests/` - Playwright E2E Tests
+
+**Framework**: Playwright
+**Purpose**: End-to-end integration tests, API tests, cross-cutting concerns
+**File Pattern**: `*.spec.ts`
+**Config**: `playwright.config.ts`
+
+```
+tests/
+├── setup/                    # Authentication setup
+│   ├── auth.setup.ts
+│   └── test-data.setup.ts
+├── e2e/                      # Page-level E2E tests
+│   ├── home.spec.ts
+│   ├── studio.writer.spec.ts
+│   ├── studio.reader.spec.ts
+│   ├── novels.e2e.spec.ts
+│   ├── comics.e2e.spec.ts
+│   ├── community.e2e.spec.ts
+│   ├── publish.writer.spec.ts
+│   ├── analysis.writer.spec.ts
+│   ├── settings.authenticated.spec.ts
+│   └── studio-agent.writer.spec.ts
+├── api/                      # API endpoint tests
+│   ├── auth.api.spec.ts
+│   ├── story.api.spec.ts
+│   ├── generation.api.spec.ts
+│   ├── community.api.spec.ts
+│   ├── analysis.api.spec.ts
+│   ├── publish.api.spec.ts
+│   ├── image.api.spec.ts
+│   └── user.api.spec.ts
+├── cross-cutting/            # Non-functional tests
+│   ├── mobile.mobile.spec.ts
+│   ├── theme.spec.ts
+│   ├── a11y.spec.ts
+│   └── performance.spec.ts
+├── errors/                   # Error handling tests
+│   ├── network-errors.spec.ts
+│   └── edge-cases.spec.ts
+├── iteration-testing/        # A/B testing for generation
+│   ├── novels/
+│   ├── comics/
+│   ├── toonplay/
+│   └── images/
+└── helpers/                  # Shared test utilities
+    ├── auth.ts
+    └── test-data.ts
+```
+
+**Running Playwright Tests:**
+```bash
+# Run all E2E tests
+dotenv --file .env.local run npx playwright test
+
+# Run specific test file
+dotenv --file .env.local run npx playwright test tests/e2e/studio.writer.spec.ts
+
+# Run API tests only
+dotenv --file .env.local run npx playwright test tests/api/
+
+# Run with headed browser
+dotenv --file .env.local run npx playwright test --headed
+```
+
+### `__tests__/` - Jest Unit Tests
+
+**Framework**: Jest
+**Purpose**: Unit tests for services, utilities, and components
+**File Pattern**: `*.test.ts` or `*.test.tsx`
+**Config**: `jest.config.js`
+
+```
+__tests__/
+├── novels/                   # Novel generation unit tests
+│   ├── story.test.ts
+│   ├── characters.test.ts
+│   ├── settings.test.ts
+│   ├── part.test.ts
+│   ├── chapter.test.ts
+│   ├── scene-summary.test.ts
+│   ├── scene-content.test.ts
+│   └── scene-improvement.test.ts
+├── comics/                   # Comic generation tests
+│   ├── comics.test.ts
+│   └── comic-panel-generator.single.test.ts
+├── toonplay/                 # Toonplay tests
+│   └── toonplay.test.ts
+├── images/                   # Image generation tests
+│   └── images.test.ts
+├── optimization/             # Performance optimization tests
+│   └── novels-optimization.test.ts
+├── components/               # React component tests
+└── helpers/                  # Shared test utilities
+    └── auth-loader.ts
+```
+
+**Running Jest Tests:**
+```bash
+# Run all unit tests
+dotenv --file .env.local run pnpm test
+
+# Run specific test file
+dotenv --file .env.local run pnpm test __tests__/novels/story.test.ts
+
+# Run with coverage
+dotenv --file .env.local run pnpm test --coverage
+
+# Run in watch mode
+dotenv --file .env.local run pnpm test --watch
+```
+
+### Key Differences
+
+| Aspect | `tests/` (Playwright) | `__tests__/` (Jest) |
+|--------|----------------------|---------------------|
+| Framework | Playwright | Jest |
+| File Pattern | `*.spec.ts` | `*.test.ts` |
+| Purpose | E2E, API, integration | Unit, service logic |
+| Browser | Real browser | Node.js environment |
+| Speed | Slower (browser) | Faster (no browser) |
+| Auth Method | Storage state files | API key from `.auth/user.json` |
+| Use When | Testing user flows, API contracts | Testing functions, services |
+
+### File Naming Conventions
+
+**Playwright Tests (`tests/`):**
+- `*.e2e.spec.ts` - General E2E tests (no auth required)
+- `*.writer.spec.ts` - Tests requiring writer role
+- `*.reader.spec.ts` - Tests requiring reader role
+- `*.manager.spec.ts` - Tests requiring manager role
+- `*.authenticated.spec.ts` - Tests requiring any authenticated user
+- `*.api.spec.ts` - API endpoint tests
+- `*.mobile.spec.ts` - Mobile viewport tests
+
+**Jest Tests (`__tests__/`):**
+- `*.test.ts` - TypeScript unit tests
+- `*.test.tsx` - React component tests
+
+---
+
+### Recent Updates (v2.1 - 2025-11-19)
 
 **Key Changes:**
 
-1. **Studio Agent Tests Added**: Comprehensive test suite for AI-powered writing assistant (6 test categories, 37 test cases)
-   - Navigation, access control, content, functionality, performance, and error handling
-   - Chat interface, message streaming, context awareness, and multi-turn conversations
-2. **Feature Removal Updates**:
-   - Removed search functionality tests from `/novels` (not implemented)
-   - Removed bookmark functionality tests from `/novels` and `/comics` (not implemented)
-   - Removed zoom/pan tests from `/comics` (not implemented)
-3. **API Path Verification**: Updated all API endpoint paths to match current codebase structure
-   - Story API: `/studio/api/story/*` (not `/api/stories/*`)
-   - Generation API: `/studio/api/novels/*` and `/studio/api/novels`
-   - Community API: `/community/api/*` (not `/api/community/*`)
-   - Analysis API: `/analysis/api/*` (not `/api/analytics/*`)
-   - Publish API: `/publish/api/*` (scene-level publishing)
+1. **Added Test Directory Structure Section**: Comprehensive documentation of the two-framework test architecture
+   - `tests/` - Playwright E2E tests (*.spec.ts)
+   - `__tests__/` - Jest unit tests (*.test.ts)
+   - Complete directory tree with all current test files
+   - Running commands for both frameworks
+   - Key differences comparison table
+   - File naming conventions
+
+2. **Clarified Test Framework Separation**:
+   - Playwright for E2E, API, and integration tests
+   - Jest for unit tests and service logic
+   - Auth method differences (storage state vs API keys)
 
 **See [Change Log](#change-log) for complete version history.**
 
@@ -857,6 +1003,7 @@ The application has 8 main navigation items:
 | 1.1 | 2025-11-05 | Updated to match actual implementation:<br>- Simplified Home page tests (redirect only)<br>- Changed Analytics → Analysis throughout<br>- Updated API endpoints to match implementation<br>- Verified schedule publish feature (implemented)<br>- Updated performance metrics for home redirect | Claude |
 | 1.2 | 2025-11-05 | Major updates for alignment with current codebase:<br>- Added Studio Agent test suite (37 test cases)<br>- Removed unimplemented features (search, bookmark, zoom/pan)<br>- Updated all API paths to match actual implementation<br>- Verified API paths against current codebase structure | Claude |
 | 2.0 | 2025-11-05 | Restructured into test-specification.md (this file):<br>- Extracted specification content (test cases, requirements, success criteria)<br>- Removed execution plans, automation details, and implementation guidance<br>- Companion document: test-development.md for execution and automation | Claude |
+| 2.1 | 2025-11-19 | Added comprehensive Test Directory Structure section:<br>- Documented `tests/` (Playwright E2E) vs `__tests__/` (Jest unit) separation<br>- Added complete directory trees matching current codebase<br>- Added running commands for both frameworks<br>- Added key differences comparison table<br>- Added file naming conventions documentation | Claude |
 
 ---
 
