@@ -8,9 +8,16 @@
  * - Test stories (draft and published)
  * - Test community posts
  * - Test analytics data
+ * - Complete novel structure (story, characters, settings, parts, chapters, scenes)
  */
 
 import { expect, test as setup } from "@playwright/test";
+import {
+    cleanupNovelTestData,
+    insertNovelTestData,
+    verifyNovelTestData,
+} from "../helpers/novel-db-operations";
+import { TEST_IDS } from "../helpers/static-novel-data";
 import {
     cleanupTestPosts,
     cleanupTestStories,
@@ -111,5 +118,66 @@ setup.describe("Test Data Setup", () => {
         console.log(`✓ Found ${posts.length} community posts`);
 
         console.log("Test data verification completed successfully");
+    });
+});
+
+setup.describe("Novel Test Data Setup", () => {
+    setup("cleanup existing novel test data", async () => {
+        console.log("Cleaning up existing novel test data...");
+
+        try {
+            await cleanupNovelTestData();
+            console.log("✓ Novel test data cleaned up");
+        } catch (error) {
+            console.warn("Novel cleanup failed (may be first run):", error);
+        }
+
+        console.log("Novel test data cleanup completed");
+    });
+
+    setup("create novel test data", async () => {
+        console.log("Creating novel test data with static content...");
+
+        await insertNovelTestData();
+
+        console.log("Novel test data created successfully");
+        console.log(`  Story ID: ${TEST_IDS.story}`);
+        console.log(`  Characters: ${Object.keys(TEST_IDS.characters).length}`);
+        console.log(`  Settings: ${Object.keys(TEST_IDS.settings).length}`);
+        console.log(`  Part ID: ${TEST_IDS.part}`);
+        console.log(`  Chapters: ${Object.keys(TEST_IDS.chapters).length}`);
+        console.log(`  Scenes: ${Object.keys(TEST_IDS.scenes).length}`);
+    });
+
+    setup("verify novel test data creation", async () => {
+        console.log("Verifying novel test data...");
+
+        const verification = await verifyNovelTestData();
+
+        // Verify story exists
+        expect(verification.story).toBeTruthy();
+        console.log("✓ Test story exists");
+
+        // Verify characters
+        expect(verification.characters).toBe(2);
+        console.log(`✓ Found ${verification.characters} characters`);
+
+        // Verify settings
+        expect(verification.settings).toBe(2);
+        console.log(`✓ Found ${verification.settings} settings`);
+
+        // Verify parts
+        expect(verification.parts).toBe(1);
+        console.log(`✓ Found ${verification.parts} parts`);
+
+        // Verify chapters
+        expect(verification.chapters).toBe(2);
+        console.log(`✓ Found ${verification.chapters} chapters`);
+
+        // Verify scenes
+        expect(verification.scenes).toBe(6);
+        console.log(`✓ Found ${verification.scenes} scenes`);
+
+        console.log("Novel test data verification completed successfully");
     });
 });

@@ -325,10 +325,9 @@ dotenv --file .env.local run node test-scripts/verify-image-urls.mjs
 2. **Novels - Reading Experience** (30 min)
    - **TC-NOVELS-FUNC-001**: Rate story
    - **TC-NOVELS-FUNC-002**: Track reading history
-   - **TC-NOVELS-FUNC-003**: View chapter preview
+   - **TC-NOVELS-FUNC-003**: Scene list shows all scenes for story
    - **TC-NOVELS-FUNC-004**: Post/view comments
    - **TC-NOVELS-FUNC-005**: Save reading progress
-   - **TC-NOVELS-FUNC-006**: Adjust font/theme
 
 3. **Comics - Reading Experience** (30 min)
    - **TC-COMICS-FUNC-001**: Rate comic
@@ -491,6 +490,15 @@ dotenv --file .env.local run node test-scripts/run-api-tests.mjs
    - Verify query optimization
    - Test with large datasets
 
+5. **Caching Performance** (30 min)
+   - **TC-NOVELS-CACHE-001 to 006**: Novels caching tests
+   - **TC-COMICS-CACHE-001 to 006**: Comics caching tests
+   - Test SWR client-side caching
+   - Test localStorage persistence
+   - Test ETag/304 responses
+   - Test Redis cache hit/miss rates
+   - Test cache invalidation
+
 **Tools:**
 ```bash
 # Lighthouse CI
@@ -498,12 +506,21 @@ npx lighthouse http://localhost:3000 --view
 
 # Load testing
 dotenv --file .env.local run node test-scripts/load-test.mjs
+
+# Cache performance testing
+dotenv --file .env.local run npx playwright test tests/cross-cutting/performance.spec.ts --headed
+
+# Redis cache monitoring
+redis-cli MONITOR
 ```
 
 **Success Criteria:**
 - All performance thresholds met
 - No performance regressions
 - Lighthouse scores > 90
+- Redis cache hit rate > 80%
+- ETag validation returns 304 for unchanged content
+- SWR returns cached data within 10ms
 
 ---
 
@@ -1248,6 +1265,7 @@ BLOB_READ_WRITE_TOKEN=[token]
 |---------|------|---------|--------|
 | 1.0 | 2025-11-05 | Initial test development guide | Claude |
 | 2.0 | 2025-11-19 | Major updates for alignment with current codebase:<br>- Added Test Frameworks overview section<br>- Updated Test Organization to include both Playwright and Jest directories<br>- Updated all file names to match actual codebase (e.g., `studio.writer.spec.ts`)<br>- Added `iteration-testing/` directory documentation<br>- Added Jest test execution commands section<br>- Added cross-reference to test-specification.md Test Directory Structure<br>- Updated running commands with project-based and pattern-based examples | Claude |
+| 2.1 | 2025-11-19 | Aligned with test-specification.md v2.2:<br>- Updated Novels tests to use scene list instead of chapter preview<br>- Removed font/theme controls test (not implemented)<br>- Added Caching Performance test group to Phase 6 (TC-NOVELS-CACHE, TC-COMICS-CACHE)<br>- Added cache testing tools and success criteria (Redis hit rate, ETag, SWR) | Claude |
 
 ---
 
