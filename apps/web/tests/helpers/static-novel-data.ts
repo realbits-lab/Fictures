@@ -79,8 +79,34 @@ export function getTestStory() {
         viewCount: 150,
         rating: 4,
         ratingCount: 25,
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/cover.png",
+        imageVariants: {
+            imageId: "img_test_I6FEGVua",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/story/original/img_test_I6FEGVua-dcPr66d3UJeFWC9TqNWukykHmsY40l.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/story/variants/img_test_I6FEGVua_1x-1IyJHY1HBENBiM8uZbct4GNpPYbI27.avif",
+                    width: 832,
+                    height: 468,
+                    size: 34438,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/story/variants/img_test_I6FEGVua_2x-UdcolX8PlcXFLKEZrygFoaEUzHSvCa.avif",
+                    width: 1664,
+                    height: 936,
+                    size: 83929,
+                },
+            ],
+            generatedAt: "2025-11-19T14:07:24.982Z",
+        },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };
@@ -139,8 +165,34 @@ export function getTestProtagonist() {
             emotionalRange:
                 "Restrained but capable of deep emotion when barriers break",
         },
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/characters/test-char-protagonist-001/portrait.png",
+        imageVariants: {
+            imageId: "img_test_xZL5J2E9",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/character/original/img_test_xZL5J2E9-LBUm9QiZTmJ7d7AaTtb5JlelpQldJv.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/character/variants/img_test_xZL5J2E9_1x-5tauNJsg5Sx5dS0Xy3VYJ0ofhWoMxE.avif",
+                    width: 512,
+                    height: 512,
+                    size: 30455,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/character/variants/img_test_xZL5J2E9_2x-GAaQOj0sPz1ZlxOBIpRZ40iHF3GvaS.avif",
+                    width: 1024,
+                    height: 1024,
+                    size: 64098,
+                },
+            ],
+            generatedAt: "2025-11-19T14:07:53.086Z",
+        },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };
@@ -199,8 +251,34 @@ export function getTestAntagonist() {
             emotionalRange:
                 "Deliberately suppressed, but ancient grief leaks through in unguarded moments",
         },
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/characters/test-char-antagonist-001/portrait.png",
+        imageVariants: {
+            imageId: "img_test_WahaDdl3",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/character/original/img_test_WahaDdl3-FguTaQRynphD4KRGvzZebXp60xNJcQ.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/character/variants/img_test_WahaDdl3_1x-246UmIv4p9xBRmN0QNOrppiFATRiHH.avif",
+                    width: 512,
+                    height: 512,
+                    size: 20832,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/character/variants/img_test_WahaDdl3_2x-vYaFp69BIT28Z2ESnA264aQzh7Zyqd.avif",
+                    width: 1024,
+                    height: 1024,
+                    size: 46478,
+                },
+            ],
+            generatedAt: "2025-11-19T14:08:17.750Z",
+        },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
     };
@@ -313,8 +391,34 @@ export function getTestCastleSetting() {
         },
         architecturalStyle:
             "Gothic fortress with silver-inlaid stone and defensive wards woven into every arch",
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/settings/test-setting-castle-001/visual.png",
+        imageVariants: {
+            imageId: "img_test_snF7ChDM",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/setting/original/img_test_snF7ChDM-e06AxwqHbzU9grv2V1lPvyu5zVeKOf.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/setting/variants/img_test_snF7ChDM_1x-SqtSwnny2BF7voYZnME6xvYwlP2TQr.avif",
+                    width: 512,
+                    height: 512,
+                    size: 31015,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/setting/variants/img_test_snF7ChDM_2x-6Hq6C6i6MxCuDx8VXzAK5QAiXhKY5a.avif",
+                    width: 1024,
+                    height: 1024,
+                    size: 74666,
+                },
+            ],
+            generatedAt: "2025-11-19T14:08:43.210Z",
+        },
         visualReferences: ["Minas Tirith from LOTR", "Hogwarts in darkness"],
         colorPalette: [
             "silver and steel gray",
@@ -433,8 +537,34 @@ export function getTestForestSetting() {
         },
         architecturalStyle:
             "Natural cathedral of interlocking branches with ancient carved stones marking boundaries",
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/settings/test-setting-forest-001/visual.png",
+        imageVariants: {
+            imageId: "img_test_Uw7Vjk78",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/setting/original/img_test_Uw7Vjk78-XqBzjDP0oL6jxNE6chF0c0tSjlVkfL.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/setting/variants/img_test_Uw7Vjk78_1x-VV8g3UNLrYIEZ5SNiazRbAoksINWCf.avif",
+                    width: 512,
+                    height: 512,
+                    size: 26434,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/setting/variants/img_test_Uw7Vjk78_2x-Pwm73IabvpotTss9429JvWwWe0qOtC.avif",
+                    width: 1024,
+                    height: 1024,
+                    size: 68480,
+                },
+            ],
+            generatedAt: "2025-11-19T14:09:09.934Z",
+        },
         visualReferences: ["Mirkwood from Hobbit", "Forbidden Forest"],
         colorPalette: [
             "deep forest green",
@@ -633,8 +763,34 @@ For a moment, something like respect flickered in Varen's weathered face. "I exp
 As she left the Hall of Echoes, Elena felt the weight of every portrait watching her—past heroes who had never hesitated, never frozen when duty called.
 
 *I will not fail again*, she promised them silently. *Whatever it costs me.*`,
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scenes/test-scene-001-001/image.png",
+        imageVariants: {
+            imageId: "img_test_vCdLI2sW",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/original/img_test_vCdLI2sW-JJXUTIOEKGKb1mGik3WytPh6Bpp4Ud.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_vCdLI2sW_1x-PHJLAnMoWLUK8jgmG1PvDBB3mWb0V1.avif",
+                    width: 832,
+                    height: 468,
+                    size: 65222,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_vCdLI2sW_2x-fIkrc9LFx2O59D20zjnjXoeFTQmLAo.avif",
+                    width: 1664,
+                    height: 936,
+                    size: 141486,
+                },
+            ],
+            generatedAt: "2025-11-19T14:09:42.690Z",
+        },
         novelStatus: "published" as const,
         publishedAt: new Date().toISOString(),
         publishedBy: getWriterUserId(),
@@ -716,8 +872,34 @@ But then the kingdom would fall. And everyone in it—the young squires, the fam
 Aldric had died believing in her. Was she going to prove him wrong?
 
 The question hung in the cold air, unanswered.`,
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scenes/test-scene-001-002/image.png",
+        imageVariants: {
+            imageId: "img_test_teJcOy4t",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/original/img_test_teJcOy4t-mEehfxMLkDY8A1o5XifQgbyL20clLn.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_teJcOy4t_1x-2jIWXTfmxSIqsRnBcPJiNMRnCqmVSf.avif",
+                    width: 832,
+                    height: 468,
+                    size: 40653,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_teJcOy4t_2x-XSbsCxc9MkmmG3mAAspi8U6hM2p5kt.avif",
+                    width: 1664,
+                    height: 936,
+                    size: 96432,
+                },
+            ],
+            generatedAt: "2025-11-19T14:10:15.536Z",
+        },
         novelStatus: "published" as const,
         publishedAt: new Date().toISOString(),
         publishedBy: getWriterUserId(),
@@ -807,8 +989,34 @@ As their voices echoed through the ancient hall, Elena felt something shift in h
 Purpose.
 
 "We leave at first light," she said. "May the Dawn guide us into shadow."`,
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scenes/test-scene-001-003/image.png",
+        imageVariants: {
+            imageId: "img_test_MSs0vSlH",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/original/img_test_MSs0vSlH-3EDdFsxgFMmFpPaPEnBcGyVE0XPuMV.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_MSs0vSlH_1x-mKESv5WN1KLTxVUv5tkqmV85VlmLLq.avif",
+                    width: 832,
+                    height: 468,
+                    size: 57237,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_MSs0vSlH_2x-xCjQL4TYsFnSvJDgYERkpDAnho1P90.avif",
+                    width: 1664,
+                    height: 936,
+                    size: 128644,
+                },
+            ],
+            generatedAt: "2025-11-19T14:10:49.726Z",
+        },
         novelStatus: "published" as const,
         publishedAt: new Date().toISOString(),
         publishedBy: getWriterUserId(),
@@ -886,8 +1094,34 @@ Elena felt her companions' fear like a physical weight. It would be easy to let 
 She urged her horse ahead, projecting confidence she didn't feel. Behind her, she heard the others fall in line, trusting her to lead them through the dark.
 
 The whispers followed them, patient as only ancient things can be.`,
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scenes/test-scene-002-001/image.png",
+        imageVariants: {
+            imageId: "img_test_Ynf6Tmez",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/original/img_test_Ynf6Tmez-mlfwzqQ3C2lqiAZ9waBEaqVW740wgW.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_Ynf6Tmez_1x-SwDAC76CTsy30x1JODRgXUKRA3DfhI.avif",
+                    width: 832,
+                    height: 468,
+                    size: 47254,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_Ynf6Tmez_2x-oSiedi3PtvvO5nAS9THxxJKydXudoK.avif",
+                    width: 1664,
+                    height: 936,
+                    size: 120679,
+                },
+            ],
+            generatedAt: "2025-11-19T14:11:27.281Z",
+        },
         novelStatus: "published" as const,
         publishedAt: new Date().toISOString(),
         publishedBy: getWriterUserId(),
@@ -1003,8 +1237,34 @@ As her team fought their way back together, Elena caught a glimpse of something 
 But he was smiling. Proud.
 
 Then he was gone, and there was only the forest, and the fight, and the choice she made in every moment not to give in.`,
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scenes/test-scene-002-002/image.png",
+        imageVariants: {
+            imageId: "img_test_yy_XZmgj",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/original/img_test_yy_XZmgj-4vmKFhoRTkPYuY5xETQP9uyZ6tB3qE.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_yy_XZmgj_1x-IL1wcuF6dtT7JMQhwgDbB4WDPVKEwY.avif",
+                    width: 832,
+                    height: 468,
+                    size: 31377,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_yy_XZmgj_2x-aUGz0B2Q8KVMG9xKYlrxOWH9FwEAhN.avif",
+                    width: 1664,
+                    height: 936,
+                    size: 74400,
+                },
+            ],
+            generatedAt: "2025-11-19T14:12:02.370Z",
+        },
         novelStatus: "published" as const,
         publishedAt: new Date().toISOString(),
         publishedBy: getWriterUserId(),
@@ -1102,8 +1362,34 @@ As her companions settled into uneasy sleep, Elena stood watch, one hand on Aldr
 She smiled grimly.
 
 *Let's see what else you have*, she thought.`,
-        imageUrl: null,
-        imageVariants: null,
+        imageUrl:
+            "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scenes/test-scene-002-003/image.png",
+        imageVariants: {
+            imageId: "img_test_vWTcW_3P",
+            originalUrl:
+                "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/original/img_test_vWTcW_3P-oLuFpwm4f2mhZvKEfpIrmGrzszdrxM.png",
+            variants: [
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "1x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_vWTcW_3P_1x-c65x4Wzb3VhWb5bqAk0QdNs6R7bfts.avif",
+                    width: 832,
+                    height: 468,
+                    size: 43588,
+                },
+                {
+                    format: "avif",
+                    device: "mobile",
+                    resolution: "2x",
+                    url: "https://s5qoi7bpa6gvaz9j.public.blob.vercel-storage.com/test/stories/test-story-novel-001/scene/variants/img_test_vWTcW_3P_2x-doNA53o4XYiFAeHjtjrEVFVWxnVIXk.avif",
+                    width: 1664,
+                    height: 936,
+                    size: 113057,
+                },
+            ],
+            generatedAt: "2025-11-19T14:12:34.349Z",
+        },
         novelStatus: "published" as const,
         publishedAt: new Date().toISOString(),
         publishedBy: getWriterUserId(),
