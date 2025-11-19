@@ -85,7 +85,7 @@ export function getTestStory() {
         title: "Test Novel: The Shadow's Edge",
         summary:
             "A young knight must confront her deepest fears when an ancient darkness threatens to consume her kingdom. Through trials of courage and sacrifice, she discovers that true strength comes not from the absence of fear, but from the choice to act despite it.",
-        genre: "fantasy" as const,
+        genre: "Fantasy" as const,
         tone: "hopeful" as const,
         moralFramework:
             "Courage is not the absence of fear, but the triumph over it. True heroes are those who choose to act despite their fears, protecting others at great personal cost.",
