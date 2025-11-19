@@ -6,6 +6,8 @@
  */
 
 import { execSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { type FullConfig } from "@playwright/test";
 import {
 	runMigrations,
@@ -22,6 +24,11 @@ async function globalSetup(config: FullConfig) {
 	// Set environment variables for the test process
 	process.env.DATABASE_URL = connectionString;
 	process.env.DATABASE_URL_UNPOOLED = connectionString;
+
+	// Write testcontainers DATABASE_URL to temporary file for config to read
+	const dbUrlFile = join(process.cwd(), ".testcontainers-db-url");
+	writeFileSync(dbUrlFile, connectionString);
+	console.log(`📝 Wrote DATABASE_URL to .testcontainers-db-url`);
 
 	// Run migrations
 	await runMigrations(connectionString);

@@ -3,9 +3,21 @@
  *
  * This configuration uses testcontainers for isolated database testing.
  * Run with: npx playwright test --config=playwright.testcontainers.config.ts
+ *
+ * DATABASE_URL is passed via process.env from global-setup.ts
  */
 
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
+
+// Read DATABASE_URL from temporary file created by global-setup
+// This file is created before webServer starts
+const dbUrlFile = join(__dirname, ".testcontainers-db-url");
+let testcontainersDbUrl = "";
+if (existsSync(dbUrlFile)) {
+	testcontainersDbUrl = readFileSync(dbUrlFile, "utf-8").trim();
+}
 
 export default defineConfig({
 	testDir: "./tests",
@@ -36,15 +48,17 @@ export default defineConfig({
 		},
 	],
 
-	// Start web server before tests
+	// Web server configuration
+	// DATABASE_URL is passed via env property from testcontainers
 	webServer: {
-		command: "dotenv -e .env.local -- pnpm dev",
+		command: "pnpm dev",
 		url: "http://localhost:3000",
-		reuseExistingServer: !process.env.CI,
+		reuseExistingServer: false, // Always start fresh for testcontainers
 		timeout: 120000,
 		env: {
-			// Database URL will be set by global-setup
 			NODE_ENV: "test",
+			DATABASE_URL: testcontainersDbUrl,
+			DATABASE_URL_UNPOOLED: testcontainersDbUrl,
 		},
 	},
 });
