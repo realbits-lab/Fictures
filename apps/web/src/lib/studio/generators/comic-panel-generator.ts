@@ -4,22 +4,32 @@
  * Generates images for webtoon panels based on toonplay specifications.
  * Uses database-driven character descriptions for visual consistency.
  *
+ * Uploads images to Vercel Blob following the hierarchy:
+ * {env}/stories/{storyId}/comics/{sceneId}/panel/original/panel-{n}.png
+ *
  * NOTE: This generator does NOT save to database.
  * Database operations are handled by the caller (API route or service).
  */
 
+import { put } from "@vercel/blob";
+import type { InferSelectModel } from "drizzle-orm";
+import { nanoid } from "nanoid";
 import type {
     AiComicPanelSpecType,
     AiComicToonplayType,
 } from "@/lib/schemas/ai/ai-toonplay";
-import { type InferSelectModel } from "drizzle-orm";
-import { characters, settings } from "@/lib/schemas/database";
+import type { characters, settings } from "@/lib/schemas/database";
+import type { GeneratorImageResult } from "@/lib/schemas/generators/types";
+import { generateImage } from "@/lib/studio/generators/images-generator";
+import {
+    type OptimizedImageSet,
+    optimizeImage,
+} from "@/lib/studio/services/image-optimization-service";
+import { getComicPanelPath } from "@/lib/utils/blob-path";
 
 // Database row types
 type Character = InferSelectModel<typeof characters>;
 type Setting = InferSelectModel<typeof settings>;
-import type { GeneratorImageResult } from "@/lib/schemas/generators/types";
-import { generateImage } from "@/lib/studio/generators/images-generator";
 
 /**
  * Parameters for comic panel generation
@@ -44,7 +54,7 @@ export interface GeneratedPanelResult {
     blobUrl: string;
     width: number;
     height: number;
-    optimizedSet?: any; // OptimizedImageSet from image-optimization-service
+    optimizedSet: OptimizedImageSet;
     model: string;
     provider: string;
     toonplaySpec: AiComicPanelSpecType;
@@ -77,13 +87,17 @@ export async function generateComicPanels(
     const {
         toonplay,
         storyId,
-        chapterId,
+        _chapterId,
         sceneId,
         characters,
         settings,
         storyGenre,
         onProgress,
-    }: GenerateComicPanelsParams = params;
+    } = params as GenerateComicPanelsParams & { _chapterId?: string };
+
+    // Note: chapterId is passed in params but not used directly in generator
+    // It's available via params.chapterId if needed in the future
+    void params.chapterId;
 
     console.log(
         `[comic-panel-generator] 🎨 Generating ${toonplay.total_panels} panel images`,
@@ -150,20 +164,58 @@ export async function generateComicPanels(
             firstProvider = result.provider;
         }
 
+        // 6. Upload to Vercel Blob using proper hierarchy
+        const imageId = `img_${Date.now()}_${nanoid(8)}`;
+        const blobPath = getComicPanelPath(
+            storyId,
+            sceneId,
+            panel.panel_number,
+        );
+
+        console.log(
+            `[comic-panel-generator] Uploading panel ${panel.panel_number} to Vercel Blob: ${blobPath}`,
+        );
+
+        const blob = await put(blobPath, result.imageBuffer, {
+            access: "public",
+            contentType: "image/png",
+        });
+
+        console.log(
+            `[comic-panel-generator] ✓ Panel ${panel.panel_number} uploaded: ${blob.url}`,
+        );
+
+        // 7. Generate optimized variants
+        console.log(
+            `[comic-panel-generator] Generating optimized variants for panel ${panel.panel_number}...`,
+        );
+
+        const optimizedSet: OptimizedImageSet = await optimizeImage(
+            blob.url,
+            imageId,
+            storyId,
+            "panel",
+            sceneId,
+        );
+
+        console.log(
+            `[comic-panel-generator] ✓ Created ${optimizedSet.variants.length} variants for panel ${panel.panel_number}`,
+        );
+
         generatedPanels.push({
             panel_number: panel.panel_number,
-            imageUrl: result.imageUrl,
-            blobUrl: result.imageUrl,
+            imageUrl: blob.url,
+            blobUrl: blob.url,
             width: result.width,
             height: result.height,
-            optimizedSet: undefined, // No optimization in generator layer
+            optimizedSet,
             model: result.model,
             provider: result.provider,
             toonplaySpec: panel,
         });
 
         console.log(
-            `[comic-panel-generator] ✅ Generated panel ${panel.panel_number}: ${result.imageUrl}`,
+            `[comic-panel-generator] ✅ Generated panel ${panel.panel_number}: ${blob.url}`,
         );
     }
 

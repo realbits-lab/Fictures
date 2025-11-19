@@ -35,48 +35,56 @@ export function getBlobPath(path: string, env?: FicturesEnvironment): string {
 /**
  * Construct story cover image blob path
  *
+ * Path: {env}/stories/{storyId}/story/original/{imageId}.png
+ *
  * @param storyId - Story ID
+ * @param imageId - Image ID (e.g., timestamp or nanoid)
  * @param env - Optional environment override
  * @returns Blob path for story cover image
  */
 export function getStoryCoverPath(
     storyId: string,
+    imageId: string,
     env?: FicturesEnvironment,
 ): string {
-    return getBlobPath(`stories/${storyId}/cover.png`, env);
+    return getBlobPath(`stories/${storyId}/story/original/${imageId}.png`, env);
 }
 
 /**
  * Construct scene image blob path
  *
+ * Path: {env}/stories/{storyId}/scene/original/{imageId}.png
+ *
  * @param storyId - Story ID
- * @param sceneId - Scene ID
+ * @param imageId - Image ID (e.g., timestamp or nanoid)
  * @param env - Optional environment override
  * @returns Blob path for scene image
  */
 export function getSceneImagePath(
     storyId: string,
-    sceneId: string,
+    imageId: string,
     env?: FicturesEnvironment,
 ): string {
-    return getBlobPath(`stories/${storyId}/scenes/${sceneId}/image.png`, env);
+    return getBlobPath(`stories/${storyId}/scene/original/${imageId}.png`, env);
 }
 
 /**
  * Construct character portrait blob path
  *
+ * Path: {env}/stories/{storyId}/character/original/{imageId}.png
+ *
  * @param storyId - Story ID
- * @param characterId - Character ID
+ * @param imageId - Image ID (e.g., timestamp or nanoid)
  * @param env - Optional environment override
  * @returns Blob path for character portrait
  */
 export function getCharacterPortraitPath(
     storyId: string,
-    characterId: string,
+    imageId: string,
     env?: FicturesEnvironment,
 ): string {
     return getBlobPath(
-        `stories/${storyId}/characters/${characterId}/portrait.png`,
+        `stories/${storyId}/character/original/${imageId}.png`,
         env,
     );
 }
@@ -84,24 +92,28 @@ export function getCharacterPortraitPath(
 /**
  * Construct setting visual blob path
  *
+ * Path: {env}/stories/{storyId}/setting/original/{imageId}.png
+ *
  * @param storyId - Story ID
- * @param settingId - Setting ID
+ * @param imageId - Image ID (e.g., timestamp or nanoid)
  * @param env - Optional environment override
  * @returns Blob path for setting visual
  */
 export function getSettingVisualPath(
     storyId: string,
-    settingId: string,
+    imageId: string,
     env?: FicturesEnvironment,
 ): string {
     return getBlobPath(
-        `stories/${storyId}/settings/${settingId}/visual.png`,
+        `stories/${storyId}/setting/original/${imageId}.png`,
         env,
     );
 }
 
 /**
  * Construct comic panel image blob path
+ *
+ * Path: {env}/stories/{storyId}/comics/{sceneId}/panel/original/panel-{n}.png
  *
  * @param storyId - Story ID
  * @param sceneId - Scene ID
@@ -116,7 +128,7 @@ export function getComicPanelPath(
     env?: FicturesEnvironment,
 ): string {
     return getBlobPath(
-        `stories/${storyId}/scenes/${sceneId}/panels/panel-${panelNumber}.png`,
+        `stories/${storyId}/comics/${sceneId}/panel/original/panel-${panelNumber}.png`,
         env,
     );
 }

@@ -140,11 +140,13 @@ cd apps/ai-server
 - **AI Server (Port 8000)**: Kill any process using port 8000 before running the server in `apps/ai-server/`
 
 **Process Management Principle**:
-- **ALWAYS kill processes by PID (process number), NEVER by process name**
-- Use `lsof -ti :PORT` to get PIDs, then `kill -9 PID` to terminate
-- Process names can match multiple unrelated processes and cause unintended termination
-- Example: `lsof -ti :3000 | xargs -r kill -9` (safe, targeted)
-- Never use: `pkill next` or `killall node` (dangerous, kills all matching processes)
+- **Use `fuser` for safe port-based process termination**
+- `fuser -k PORT/tcp` kills only the process owning that port
+- Avoids killing unrelated processes (like VS Code Remote SSH)
+- Example: `fuser -k 3000/tcp 2>/dev/null || true` (safe, targeted)
+- Alternative: `lsof -ti :3000 -sTCP:LISTEN | xargs -r kill -9` (kills only listener)
+- **Avoid**: `lsof -ti :3000 | xargs kill` (can kill VS Code SSH and other related processes)
+- **Avoid**: `pkill next` or `killall node` (dangerous, kills all matching processes)
 
 **Quick Start - Running Both Servers**:
 
@@ -160,7 +162,7 @@ cd ../..
 
 # 3. Start Web Server (Next.js)
 cd apps/web
-dotenv -e .env.local -- pnpm dev > ../../logs/dev-server.log 2>&1 &
+NEXT_PUBLIC_APP_URL=http://[public_ip]:3000 dotenv -e .env.local -- pnpm dev > ../../logs/dev-server.log 2>&1 &
 cd ../..
 
 # 4. Verify both servers are running

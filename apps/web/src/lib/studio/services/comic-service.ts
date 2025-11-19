@@ -280,7 +280,7 @@ export async function generateAndSaveComic(
                 panelNumber: panelResult.panel_number,
                 shotType: panelSpec.shot_type,
                 imageUrl: panelResult.imageUrl,
-                imageVariants: panelResult.optimizedSet || null,
+                imageVariants: panelResult.optimizedSet,
                 narrative: panelSpec.narrative || null,
                 dialogue: panelSpec.dialogue || [],
                 sfx: panelSpec.sfx || [],

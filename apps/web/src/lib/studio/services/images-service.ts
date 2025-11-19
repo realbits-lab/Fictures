@@ -180,8 +180,12 @@ export class ImagesService {
 
         console.log(`[images-service] Using aspect ratio: ${aspectRatio}`);
 
-        // 2. Verify ownership before generating
-        await this.verifyOwnership(contentId, imageType, userId);
+        // 2. Verify ownership and get storyId
+        const storyId = await this.verifyOwnershipAndGetStoryId(
+            contentId,
+            imageType,
+            userId,
+        );
 
         // 3. Generate image via generator (pure generation, no upload)
         const iterationDimensions = isIterationProfile
@@ -207,7 +211,13 @@ export class ImagesService {
 
         // 4. Upload original to Vercel Blob
         const uploadStartTime = Date.now();
-        const blobPath = this.buildBlobPath(contentId, imageType);
+        const imageId = `img_${Date.now()}_${nanoid(8)}`;
+        const blobPath = this.buildBlobPath(
+            storyId,
+            imageType,
+            contentId,
+            imageId,
+        );
 
         console.log(`[images-service] Uploading to Vercel Blob: ${blobPath}`);
 
@@ -228,9 +238,6 @@ export class ImagesService {
 
         console.log(`[images-service] Generating optimized variants...`);
 
-        // Generate unique image ID
-        const imageId = `img_${Date.now()}_${nanoid(8)}`;
-
         // Map GeneratorImageType to OptimizationImageType
         const optimizationImageType:
             | "story"
@@ -242,7 +249,7 @@ export class ImagesService {
         const optimizedSet: OptimizedImageSet = await optimizeImage(
             blob.url,
             imageId,
-            contentId,
+            storyId,
             optimizationImageType,
             imageType === "scene" || imageType === "comic-panel"
                 ? contentId
@@ -295,22 +302,26 @@ export class ImagesService {
     }
 
     /**
-     * Verify user owns the content entity before generating image
+     * Verify user owns the content entity and return storyId
+     *
+     * @returns storyId for the content
      */
-    private async verifyOwnership(
+    private async verifyOwnershipAndGetStoryId(
         contentId: string,
         imageType: GeneratorImageType,
         userId: string,
-    ): Promise<void> {
+    ): Promise<string> {
         let authorId: string | undefined;
+        let storyId: string | undefined;
 
         if (imageType === "story") {
             const [story] = await db
-                .select({ authorId: stories.authorId })
+                .select({ authorId: stories.authorId, id: stories.id })
                 .from(stories)
                 .where(eq(stories.id, contentId))
                 .limit(1);
             authorId = story?.authorId;
+            storyId = story?.id;
         } else if (imageType === "character") {
             // Characters reference story, need to check story.authorId
             const [character] = await db
@@ -320,6 +331,7 @@ export class ImagesService {
                 .limit(1);
 
             if (character) {
+                storyId = character.storyId;
                 const [story] = await db
                     .select({ authorId: stories.authorId })
                     .from(stories)
@@ -336,6 +348,7 @@ export class ImagesService {
                 .limit(1);
 
             if (setting) {
+                storyId = setting.storyId;
                 const [story] = await db
                     .select({ authorId: stories.authorId })
                     .from(stories)
@@ -344,30 +357,23 @@ export class ImagesService {
                 authorId = story?.authorId;
             }
         } else if (imageType === "scene" || imageType === "comic-panel") {
-            // Scenes reference chapter → part → story, need to check story.authorId
-            const [scene] = await db
+            // Scenes reference chapter → story, need to check story.authorId
+            const [result] = await db
                 .select({
-                    chapterId: scenes.chapterId,
+                    authorId: stories.authorId,
+                    storyId: stories.id,
                 })
                 .from(scenes)
+                .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
+                .innerJoin(stories, eq(chapters.storyId, stories.id))
                 .where(eq(scenes.id, contentId))
                 .limit(1);
 
-            if (scene) {
-                // Query story through joins
-                const [result] = await db
-                    .select({ authorId: stories.authorId })
-                    .from(scenes)
-                    .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
-                    .innerJoin(stories, eq(chapters.storyId, stories.id))
-                    .where(eq(scenes.id, contentId))
-                    .limit(1);
-
-                authorId = result?.authorId;
-            }
+            authorId = result?.authorId;
+            storyId = result?.storyId;
         }
 
-        if (!authorId) {
+        if (!authorId || !storyId) {
             throw new Error(`Content not found: ${contentId}`);
         }
 
@@ -376,6 +382,8 @@ export class ImagesService {
                 `Unauthorized: User ${userId} does not own content ${contentId}`,
             );
         }
+
+        return storyId;
     }
 
     /**
@@ -430,27 +438,35 @@ export class ImagesService {
 
     /**
      * Build Vercel Blob path for image
+     *
+     * Path structure follows documented hierarchy:
+     * - Story: {env}/stories/{storyId}/story/original/{imageId}.png
+     * - Character: {env}/stories/{storyId}/character/original/{imageId}.png
+     * - Setting: {env}/stories/{storyId}/setting/original/{imageId}.png
+     * - Scene: {env}/stories/{storyId}/scene/original/{imageId}.png
+     * - Comic panel: {env}/stories/{storyId}/comics/{sceneId}/panel/original/{imageId}.png
      */
     private buildBlobPath(
-        contentId: string,
+        storyId: string,
         imageType: GeneratorImageType,
+        contentId: string,
+        imageId: string,
     ): string {
-        const timestamp = Date.now();
-
         let path: string;
 
         if (imageType === "story") {
-            path = `stories/${contentId}/story/original/${timestamp}.png`;
+            path = `stories/${storyId}/story/original/${imageId}.png`;
         } else if (imageType === "character") {
-            path = `stories/${contentId}/character/original/${timestamp}.png`;
+            path = `stories/${storyId}/character/original/${imageId}.png`;
         } else if (imageType === "setting") {
-            path = `stories/${contentId}/setting/original/${timestamp}.png`;
+            path = `stories/${storyId}/setting/original/${imageId}.png`;
         } else if (imageType === "scene") {
-            path = `stories/${contentId}/scene/original/${timestamp}.png`;
+            path = `stories/${storyId}/scene/original/${imageId}.png`;
         } else if (imageType === "comic-panel") {
-            path = `stories/${contentId}/panel/original/${timestamp}.png`;
+            // For comic panels, contentId is the sceneId
+            path = `stories/${storyId}/comics/${contentId}/panel/original/${imageId}.png`;
         } else {
-            path = `stories/${contentId}/${imageType}/original/${timestamp}.png`;
+            path = `stories/${storyId}/${imageType}/original/${imageId}.png`;
         }
 
         // Apply environment prefix (develop/ or main/)
