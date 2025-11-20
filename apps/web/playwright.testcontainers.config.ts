@@ -4,20 +4,11 @@
  * This configuration uses testcontainers for isolated database testing.
  * Run with: npx playwright test --config=playwright.testcontainers.config.ts
  *
- * DATABASE_URL is passed via process.env from global-setup.ts
+ * DATABASE_URL is read from .testcontainers-db-url file at webServer start time.
+ * The file is created by global-setup.ts which runs before webServer starts.
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
 import { defineConfig, devices } from "@playwright/test";
-
-// Read DATABASE_URL from temporary file created by global-setup
-// This file is created before webServer starts
-const dbUrlFile = join(__dirname, ".testcontainers-db-url");
-let testcontainersDbUrl = "";
-if (existsSync(dbUrlFile)) {
-	testcontainersDbUrl = readFileSync(dbUrlFile, "utf-8").trim();
-}
 
 export default defineConfig({
 	testDir: "./tests",
@@ -49,16 +40,14 @@ export default defineConfig({
 	],
 
 	// Web server configuration
-	// DATABASE_URL is passed via env property from testcontainers
+	// Uses shell script to read DATABASE_URL from file at runtime (after global-setup creates it)
 	webServer: {
-		command: "pnpm dev",
+		command: "rm -rf .next && bash -c 'export DATABASE_URL=$(cat .testcontainers-db-url) && export DATABASE_URL_UNPOOLED=$DATABASE_URL && echo \"[WEBSERVER] DATABASE_URL: $DATABASE_URL\" && pnpm dotenv -e .env.local -- pnpm dev'",
 		url: "http://localhost:3000",
 		reuseExistingServer: false, // Always start fresh for testcontainers
 		timeout: 120000,
 		env: {
 			NODE_ENV: "test",
-			DATABASE_URL: testcontainersDbUrl,
-			DATABASE_URL_UNPOOLED: testcontainersDbUrl,
 		},
 	},
 });

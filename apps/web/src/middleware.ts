@@ -4,6 +4,9 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
+// Use Node.js runtime to support pg package
+export const runtime = "nodejs";
+
 export default auth((req: NextRequest) => {
     const { pathname } = req.nextUrl;
 
