@@ -134,21 +134,42 @@ async function resolveAuthentication(
  * );
  * ```
  */
-export function withAuthentication<P = Record<string, unknown>>(
+// Overload for handlers without context (static routes)
+export function withAuthentication(
+    handler: (request: NextRequest) => Promise<NextResponse | Response>,
+    options?: AuthMiddlewareOptions,
+): (request: NextRequest) => Promise<NextResponse | Response>;
+// Overload for handlers with context (dynamic routes)
+export function withAuthentication<
+    P extends { params: Promise<Record<string, string>> },
+>(
     handler: (
         request: NextRequest,
         context: P,
     ) => Promise<NextResponse | Response>,
+    options?: AuthMiddlewareOptions,
+): (request: NextRequest, context: P) => Promise<NextResponse | Response>;
+// Implementation
+export function withAuthentication<P>(
+    handler:
+        | ((request: NextRequest) => Promise<NextResponse | Response>)
+        | ((
+              request: NextRequest,
+              context: P,
+          ) => Promise<NextResponse | Response>),
     options: AuthMiddlewareOptions = {},
-): (request: NextRequest, context: P) => Promise<NextResponse | Response> {
-    return async (request: NextRequest, context: P) => {
-        const {
-            requiredScopes = [],
-            allowAnonymous = false,
-            debug = false,
-            onError,
-        } = options;
+) {
+    const {
+        requiredScopes = [],
+        allowAnonymous = false,
+        debug = false,
+        onError,
+    } = options;
 
+    const authHandler = async (
+        request: NextRequest,
+        context?: P,
+    ): Promise<NextResponse | Response> => {
         try {
             // Resolve authentication from request
             let authContext = await resolveAuthentication(request);
@@ -177,11 +198,27 @@ export function withAuthentication<P = Record<string, unknown>>(
             }
 
             // Run the handler with authentication context
+            const executeHandler = () => {
+                if (handler.length === 1) {
+                    return (
+                        handler as (
+                            request: NextRequest,
+                        ) => Promise<NextResponse | Response>
+                    )(request);
+                }
+                return (
+                    handler as (
+                        request: NextRequest,
+                        context: P,
+                    ) => Promise<NextResponse | Response>
+                )(request, context as P);
+            };
+
             if (!authContext) {
-                return handler(request, context);
+                return executeHandler();
             }
 
-            return withAuth(authContext, () => handler(request, context));
+            return withAuth(authContext, executeHandler);
         } catch (error) {
             // ALWAYS log errors in development to help debugging
             const isDev = process.env.NODE_ENV === "development";
@@ -228,6 +265,12 @@ export function withAuthentication<P = Record<string, unknown>>(
             return NextResponse.json({ error: errorMessage }, { status: 500 });
         }
     };
+
+    // Return function with appropriate signature based on handler arity
+    if (handler.length === 1) {
+        return (request: NextRequest) => authHandler(request);
+    }
+    return authHandler;
 }
 
 /**
@@ -239,25 +282,65 @@ export function withAuthentication<P = Record<string, unknown>>(
  *
  * @example
  * ```typescript
- * export const POST = requireScopes('stories:write', 'images:write')(
- *   withAuthentication(async (req) => {
- *     // Only accessible with both scopes
- *     return Response.json({ success: true });
- *   })
+ * // For routes without dynamic params
+ * export const POST = requireScopes('stories:write')(
+ *   async (req) => Response.json({ success: true })
+ * );
+ *
+ * // For routes with dynamic params
+ * export const POST = requireScopes('stories:write')(
+ *   async (req, { params }) => {
+ *     const { id } = await params;
+ *     return Response.json({ id });
+ *   }
  * );
  * ```
  */
 export function requireScopes(...scopes: string[]) {
-    return <P = Record<string, unknown>>(
+    // Overloaded return for routes without context
+    function wrapper(
+        handler: (request: NextRequest) => Promise<NextResponse | Response>,
+    ): (request: NextRequest) => Promise<NextResponse | Response>;
+    // Overloaded return for routes with context (dynamic params)
+    function wrapper<P extends { params: Promise<Record<string, string>> }>(
         handler: (
             request: NextRequest,
             context: P,
         ) => Promise<NextResponse | Response>,
-    ): ((
-        request: NextRequest,
-        context: P,
-    ) => Promise<NextResponse | Response>) =>
-        withAuthentication(handler, { requiredScopes: scopes });
+    ): (request: NextRequest, context: P) => Promise<NextResponse | Response>;
+    // Implementation
+    function wrapper<P>(
+        handler:
+            | ((request: NextRequest) => Promise<NextResponse | Response>)
+            | ((
+                  request: NextRequest,
+                  context: P,
+              ) => Promise<NextResponse | Response>),
+    ) {
+        // Check if handler expects context by examining its length
+        if (handler.length === 1) {
+            // Handler only expects request - use first overload
+            return withAuthentication(
+                handler as (
+                    request: NextRequest,
+                ) => Promise<NextResponse | Response>,
+                { requiredScopes: scopes },
+            );
+        }
+        // Handler expects both request and context - use second overload
+        // Type assertion needed because P is generic
+        return withAuthentication(
+            handler as (
+                request: NextRequest,
+                context: { params: Promise<Record<string, string>> },
+            ) => Promise<NextResponse | Response>,
+            { requiredScopes: scopes },
+        ) as (
+            request: NextRequest,
+            context: P,
+        ) => Promise<NextResponse | Response>;
+    }
+    return wrapper;
 }
 
 /**
@@ -280,13 +363,40 @@ export function requireScopes(...scopes: string[]) {
  * });
  * ```
  */
-export function optionalAuth<P = Record<string, unknown>>(
+export function optionalAuth(
+    handler: (request: NextRequest) => Promise<NextResponse | Response>,
+): (request: NextRequest) => Promise<NextResponse | Response>;
+export function optionalAuth<
+    P extends { params: Promise<Record<string, string>> },
+>(
     handler: (
         request: NextRequest,
         context: P,
     ) => Promise<NextResponse | Response>,
-): (request: NextRequest, context: P) => Promise<NextResponse | Response> {
-    return withAuthentication(handler, { allowAnonymous: true });
+): (request: NextRequest, context: P) => Promise<NextResponse | Response>;
+export function optionalAuth<P>(
+    handler:
+        | ((request: NextRequest) => Promise<NextResponse | Response>)
+        | ((
+              request: NextRequest,
+              context: P,
+          ) => Promise<NextResponse | Response>),
+): unknown {
+    if (handler.length === 1) {
+        return withAuthentication(
+            handler as (
+                request: NextRequest,
+            ) => Promise<NextResponse | Response>,
+            { allowAnonymous: true },
+        );
+    }
+    return withAuthentication(
+        handler as (
+            request: NextRequest,
+            context: { params: Promise<Record<string, string>> },
+        ) => Promise<NextResponse | Response>,
+        { allowAnonymous: true },
+    );
 }
 
 /**
@@ -303,13 +413,40 @@ export function optionalAuth<P = Record<string, unknown>>(
  * });
  * ```
  */
-export function adminOnly<P = Record<string, unknown>>(
+export function adminOnly(
+    handler: (request: NextRequest) => Promise<NextResponse | Response>,
+): (request: NextRequest) => Promise<NextResponse | Response>;
+export function adminOnly<
+    P extends { params: Promise<Record<string, string>> },
+>(
     handler: (
         request: NextRequest,
-        context?: P,
+        context: P,
     ) => Promise<NextResponse | Response>,
-): (request: NextRequest, context?: P) => Promise<NextResponse | Response> {
-    return withAuthentication(handler, { requiredScopes: ["admin:all"] });
+): (request: NextRequest, context: P) => Promise<NextResponse | Response>;
+export function adminOnly<P>(
+    handler:
+        | ((request: NextRequest) => Promise<NextResponse | Response>)
+        | ((
+              request: NextRequest,
+              context: P,
+          ) => Promise<NextResponse | Response>),
+): unknown {
+    if (handler.length === 1) {
+        return withAuthentication(
+            handler as (
+                request: NextRequest,
+            ) => Promise<NextResponse | Response>,
+            { requiredScopes: ["admin:all"] },
+        );
+    }
+    return withAuthentication(
+        handler as (
+            request: NextRequest,
+            context: { params: Promise<Record<string, string>> },
+        ) => Promise<NextResponse | Response>,
+        { requiredScopes: ["admin:all"] },
+    );
 }
 
 /**

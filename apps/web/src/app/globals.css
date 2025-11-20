@@ -5,41 +5,48 @@
 /* Default Light Theme - Runtime CSS Variables */
 @layer base {
 	:root {
-		/* Bridge variables for Tailwind v3 - map theme colors to standard names */
-		--color-primary: var(--theme-color-primary);
-		--color-primary-foreground: var(--theme-color-primary-foreground);
-		--color-secondary: var(--theme-color-secondary);
-		--color-secondary-foreground: var(--theme-color-secondary-foreground);
-		--color-muted: var(--theme-color-muted);
-		--color-muted-foreground: var(--theme-color-muted-foreground);
-		--color-accent: var(--theme-color-accent);
-		--color-accent-foreground: var(--theme-color-accent-foreground);
-		--color-destructive: var(--theme-color-destructive);
-		--color-destructive-foreground: var(--theme-color-destructive-foreground);
-		--color-border: var(--theme-color-border);
-		--color-input: var(--theme-color-input);
-		--color-ring: var(--theme-color-ring);
-		--color-background: var(--theme-color-background);
-		--color-foreground: var(--theme-color-foreground);
-		--color-card: var(--theme-color-card);
-		--color-card-foreground: var(--theme-color-card-foreground);
-		--color-popover: var(--theme-color-popover);
-		--color-popover-foreground: var(--theme-color-popover-foreground);
+		/* Core Color Variables (RGB format for Tailwind v3) */
+		--background: 255 255 255;
+		--foreground: 39 39 42;
+
+		--card: 255 255 255;
+		--card-foreground: 39 39 42;
+
+		--popover: 255 255 255;
+		--popover-foreground: 39 39 42;
+
+		--primary: 59 130 246;
+		--primary-foreground: 255 255 255;
+
+		--secondary: 244 244 245;
+		--secondary-foreground: 39 39 42;
+
+		--muted: 244 244 245;
+		--muted-foreground: 113 113 122;
+
+		--accent: 244 244 245;
+		--accent-foreground: 39 39 42;
+
+		--destructive: 239 68 68;
+		--destructive-foreground: 255 255 255;
+
+		--border: 228 228 231;
+		--input: 228 228 231;
+		--ring: 59 130 246;
+
+		/* Border Radius */
+		--radius: 0.5rem;
+		--radius-button: 0.5rem;
+		--radius-card: 0.5rem;
+		--radius-input: 0.375rem;
+		--radius-badge: 0.25rem;
+		--radius-dialog: 0.75rem;
 
 		/* Font variables */
-		--font-sans: var(--theme-font-sans);
-		--font-mono: var(--theme-font-mono);
-		--font-heading: var(--theme-font-heading);
-		--font-body: var(--theme-font-body);
-
-		/* Radius variables */
-		--radius: var(--theme-radius);
-
-		/* Base Font Stacks */
-		--theme-font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-		--theme-font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-		--theme-font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
-		--theme-font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+		--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+		--font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+		--font-heading: "Poppins", ui-sans-serif, system-ui, sans-serif;
+		--font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
 		/* Base Shadows */
 		--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -59,35 +66,6 @@
 		--blur-lg: blur(16px);
 		--blur-xl: blur(24px);
 
-		/* Theme Colors */
-		--theme-color-primary: 59 130 246;
-		--theme-color-primary-foreground: 255 255 255;
-		--theme-color-secondary: 244 244 245;
-		--theme-color-secondary-foreground: 39 39 42;
-		--theme-color-muted: 244 244 245;
-		--theme-color-muted-foreground: 113 113 122;
-		--theme-color-accent: 244 244 245;
-		--theme-color-accent-foreground: 39 39 42;
-		--theme-color-destructive: 239 68 68;
-		--theme-color-destructive-foreground: 255 255 255;
-		--theme-color-border: 228 228 231;
-		--theme-color-input: 228 228 231;
-		--theme-color-ring: 59 130 246;
-		--theme-color-background: 255 255 255;
-		--theme-color-foreground: 39 39 42;
-		--theme-color-card: 255 255 255;
-		--theme-color-card-foreground: 39 39 42;
-		--theme-color-popover: 255 255 255;
-		--theme-color-popover-foreground: 39 39 42;
-
-		/* Border Radius */
-		--theme-radius: 0.5rem;
-		--radius-button: 0.5rem;
-		--radius-card: 0.5rem;
-		--radius-input: 0.375rem;
-		--radius-badge: 0.25rem;
-		--radius-dialog: 0.75rem;
-
 		/* Border Widths */
 		--border-width: 1px;
 		--border-width-thick: 2px;
@@ -102,27 +80,35 @@
 
 /* Dark Theme */
 [data-theme="dark"] {
-	--theme-color-primary: 59 130 246;
-	--theme-color-primary-foreground: 255 255 255;
-	--theme-color-secondary: 39 39 42;
-	--theme-color-secondary-foreground: 244 244 245;
-	--theme-color-muted: 39 39 42;
-	--theme-color-muted-foreground: 161 161 170;
-	--theme-color-accent: 39 39 42;
-	--theme-color-accent-foreground: 244 244 245;
-	--theme-color-destructive: 239 68 68;
-	--theme-color-destructive-foreground: 255 255 255;
-	--theme-color-border: 39 39 42;
-	--theme-color-input: 39 39 42;
-	--theme-color-ring: 59 130 246;
-	--theme-color-background: 9 9 11;
-	--theme-color-foreground: 244 244 245;
-	--theme-color-card: 9 9 11;
-	--theme-color-card-foreground: 244 244 245;
-	--theme-color-popover: 9 9 11;
-	--theme-color-popover-foreground: 244 244 245;
+	--background: 9 9 11;
+	--foreground: 244 244 245;
 
-	--theme-radius: 0.5rem;
+	--card: 9 9 11;
+	--card-foreground: 244 244 245;
+
+	--popover: 9 9 11;
+	--popover-foreground: 244 244 245;
+
+	--primary: 59 130 246;
+	--primary-foreground: 255 255 255;
+
+	--secondary: 39 39 42;
+	--secondary-foreground: 244 244 245;
+
+	--muted: 39 39 42;
+	--muted-foreground: 161 161 170;
+
+	--accent: 39 39 42;
+	--accent-foreground: 244 244 245;
+
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+
+	--border: 39 39 42;
+	--input: 39 39 42;
+	--ring: 59 130 246;
+
+	--radius: 0.5rem;
 	--radius-button: 0.5rem;
 	--radius-card: 0.375rem;
 	--radius-input: 0.25rem;
@@ -139,27 +125,35 @@
 
 /* Blue Ocean Theme */
 [data-theme="ocean"] {
-	--theme-color-primary: 59 130 246;
-	--theme-color-primary-foreground: 255 255 255;
-	--theme-color-secondary: 219 234 254;
-	--theme-color-secondary-foreground: 23 37 84;
-	--theme-color-muted: 219 234 254;
-	--theme-color-muted-foreground: 59 130 246;
-	--theme-color-accent: 147 197 253;
-	--theme-color-accent-foreground: 23 37 84;
-	--theme-color-destructive: 239 68 68;
-	--theme-color-destructive-foreground: 255 255 255;
-	--theme-color-border: 147 197 253;
-	--theme-color-input: 219 234 254;
-	--theme-color-ring: 59 130 246;
-	--theme-color-background: 248 250 252;
-	--theme-color-foreground: 23 37 84;
-	--theme-color-card: 255 255 255;
-	--theme-color-card-foreground: 23 37 84;
-	--theme-color-popover: 255 255 255;
-	--theme-color-popover-foreground: 23 37 84;
+	--background: 248 250 252;
+	--foreground: 23 37 84;
 
-	--theme-radius: 0.75rem;
+	--card: 255 255 255;
+	--card-foreground: 23 37 84;
+
+	--popover: 255 255 255;
+	--popover-foreground: 23 37 84;
+
+	--primary: 59 130 246;
+	--primary-foreground: 255 255 255;
+
+	--secondary: 219 234 254;
+	--secondary-foreground: 23 37 84;
+
+	--muted: 219 234 254;
+	--muted-foreground: 59 130 246;
+
+	--accent: 147 197 253;
+	--accent-foreground: 23 37 84;
+
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+
+	--border: 147 197 253;
+	--input: 219 234 254;
+	--ring: 59 130 246;
+
+	--radius: 0.75rem;
 	--radius-button: 0.875rem;
 	--radius-card: 1rem;
 	--radius-input: 0.75rem;
@@ -168,9 +162,9 @@
 	--border-width: 1px;
 	--border-width-thick: 2px;
 	--border-style: solid;
-	--theme-font-sans: "Nunito Variable", var(--theme-font-sans);
-	--theme-font-heading: "Nunito Variable", var(--theme-font-heading);
-	--theme-font-body: "Inter Variable", var(--theme-font-body);
+	--font-sans: "Nunito Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Nunito Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-body: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
 	--shadow: var(--shadow-lg);
 	--animate-duration: var(--animate-duration-slow);
@@ -179,27 +173,35 @@
 
 /* Purple Dream Theme */
 [data-theme="purple"] {
-	--theme-color-primary: 147 51 234;
-	--theme-color-primary-foreground: 255 255 255;
-	--theme-color-secondary: 233 213 255;
-	--theme-color-secondary-foreground: 66 21 101;
-	--theme-color-muted: 233 213 255;
-	--theme-color-muted-foreground: 147 51 234;
-	--theme-color-accent: 196 181 253;
-	--theme-color-accent-foreground: 66 21 101;
-	--theme-color-destructive: 239 68 68;
-	--theme-color-destructive-foreground: 255 255 255;
-	--theme-color-border: 196 181 253;
-	--theme-color-input: 233 213 255;
-	--theme-color-ring: 147 51 234;
-	--theme-color-background: 250 245 255;
-	--theme-color-foreground: 66 21 101;
-	--theme-color-card: 255 255 255;
-	--theme-color-card-foreground: 66 21 101;
-	--theme-color-popover: 255 255 255;
-	--theme-color-popover-foreground: 66 21 101;
+	--background: 250 245 255;
+	--foreground: 66 21 101;
 
-	--theme-radius: 1rem;
+	--card: 255 255 255;
+	--card-foreground: 66 21 101;
+
+	--popover: 255 255 255;
+	--popover-foreground: 66 21 101;
+
+	--primary: 147 51 234;
+	--primary-foreground: 255 255 255;
+
+	--secondary: 233 213 255;
+	--secondary-foreground: 66 21 101;
+
+	--muted: 233 213 255;
+	--muted-foreground: 147 51 234;
+
+	--accent: 196 181 253;
+	--accent-foreground: 66 21 101;
+
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+
+	--border: 196 181 253;
+	--input: 233 213 255;
+	--ring: 147 51 234;
+
+	--radius: 1rem;
 	--radius-button: 1.25rem;
 	--radius-card: 1.5rem;
 	--radius-input: 1rem;
@@ -208,9 +210,9 @@
 	--border-width: 2px;
 	--border-width-thick: 3px;
 	--border-style: solid;
-	--theme-font-sans: "DM Sans Variable", var(--theme-font-sans);
-	--theme-font-heading: "Space Grotesk Variable", var(--theme-font-heading);
-	--theme-font-body: "DM Sans Variable", var(--theme-font-body);
+	--font-sans: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-body: "DM Sans Variable", ui-sans-serif, system-ui, sans-serif;
 
 	--shadow: var(--shadow-xl);
 	--animate-duration: var(--animate-duration-fast);
@@ -219,27 +221,35 @@
 
 /* Forest Green Theme */
 [data-theme="forest"] {
-	--theme-color-primary: 34 197 94;
-	--theme-color-primary-foreground: 255 255 255;
-	--theme-color-secondary: 220 252 231;
-	--theme-color-secondary-foreground: 14 90 40;
-	--theme-color-muted: 220 252 231;
-	--theme-color-muted-foreground: 34 197 94;
-	--theme-color-accent: 134 239 172;
-	--theme-color-accent-foreground: 14 90 40;
-	--theme-color-destructive: 239 68 68;
-	--theme-color-destructive-foreground: 255 255 255;
-	--theme-color-border: 134 239 172;
-	--theme-color-input: 220 252 231;
-	--theme-color-ring: 34 197 94;
-	--theme-color-background: 247 254 231;
-	--theme-color-foreground: 14 90 40;
-	--theme-color-card: 255 255 255;
-	--theme-color-card-foreground: 14 90 40;
-	--theme-color-popover: 255 255 255;
-	--theme-color-popover-foreground: 14 90 40;
+	--background: 247 254 231;
+	--foreground: 14 90 40;
 
-	--theme-radius: 0.375rem;
+	--card: 255 255 255;
+	--card-foreground: 14 90 40;
+
+	--popover: 255 255 255;
+	--popover-foreground: 14 90 40;
+
+	--primary: 34 197 94;
+	--primary-foreground: 255 255 255;
+
+	--secondary: 220 252 231;
+	--secondary-foreground: 14 90 40;
+
+	--muted: 220 252 231;
+	--muted-foreground: 34 197 94;
+
+	--accent: 134 239 172;
+	--accent-foreground: 14 90 40;
+
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+
+	--border: 134 239 172;
+	--input: 220 252 231;
+	--ring: 34 197 94;
+
+	--radius: 0.375rem;
 	--radius-button: 0.375rem;
 	--radius-card: 0.5rem;
 	--radius-input: 0.25rem;
@@ -248,9 +258,9 @@
 	--border-width: 1px;
 	--border-width-thick: 2px;
 	--border-style: solid;
-	--theme-font-sans: "Inter Variable", var(--theme-font-sans);
-	--theme-font-heading: "Fraunces Variable", var(--theme-font-heading);
-	--theme-font-body: "Source Sans 3 Variable", var(--theme-font-body);
+	--font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Fraunces Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-body: "Source Sans 3 Variable", ui-sans-serif, system-ui, sans-serif;
 
 	--shadow: var(--shadow-sm);
 	--animate-duration: var(--animate-duration-normal);
@@ -259,27 +269,35 @@
 
 /* Warm Sunset Theme */
 [data-theme="sunset"] {
-	--theme-color-primary: 234 88 12;
-	--theme-color-primary-foreground: 255 255 255;
-	--theme-color-secondary: 254 215 170;
-	--theme-color-secondary-foreground: 120 40 14;
-	--theme-color-muted: 254 215 170;
-	--theme-color-muted-foreground: 234 88 12;
-	--theme-color-accent: 253 186 116;
-	--theme-color-accent-foreground: 120 40 14;
-	--theme-color-destructive: 239 68 68;
-	--theme-color-destructive-foreground: 255 255 255;
-	--theme-color-border: 253 186 116;
-	--theme-color-input: 254 215 170;
-	--theme-color-ring: 234 88 12;
-	--theme-color-background: 255 247 237;
-	--theme-color-foreground: 120 40 14;
-	--theme-color-card: 255 255 255;
-	--theme-color-card-foreground: 120 40 14;
-	--theme-color-popover: 255 255 255;
-	--theme-color-popover-foreground: 120 40 14;
+	--background: 255 247 237;
+	--foreground: 120 40 14;
 
-	--theme-radius: 1.5rem;
+	--card: 255 255 255;
+	--card-foreground: 120 40 14;
+
+	--popover: 255 255 255;
+	--popover-foreground: 120 40 14;
+
+	--primary: 234 88 12;
+	--primary-foreground: 255 255 255;
+
+	--secondary: 254 215 170;
+	--secondary-foreground: 120 40 14;
+
+	--muted: 254 215 170;
+	--muted-foreground: 234 88 12;
+
+	--accent: 253 186 116;
+	--accent-foreground: 120 40 14;
+
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+
+	--border: 253 186 116;
+	--input: 254 215 170;
+	--ring: 234 88 12;
+
+	--radius: 1.5rem;
 	--radius-button: 1.75rem;
 	--radius-card: 2rem;
 	--radius-input: 1.5rem;
@@ -288,9 +306,9 @@
 	--border-width: 1px;
 	--border-width-thick: 2px;
 	--border-style: solid;
-	--theme-font-sans: "Manrope Variable", var(--theme-font-sans);
-	--theme-font-heading: "Playfair Display Variable", var(--theme-font-heading);
-	--theme-font-body: "Manrope Variable", var(--theme-font-body);
+	--font-sans: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Playfair Display Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-body: "Manrope Variable", ui-sans-serif, system-ui, sans-serif;
 
 	--shadow: var(--shadow-2xl);
 	--animate-duration: var(--animate-duration-slow);
@@ -299,27 +317,35 @@
 
 /* Rose Garden Theme */
 [data-theme="rose"] {
-	--theme-color-primary: 244 63 94;
-	--theme-color-primary-foreground: 255 255 255;
-	--theme-color-secondary: 254 205 211;
-	--theme-color-secondary-foreground: 120 14 43;
-	--theme-color-muted: 254 205 211;
-	--theme-color-muted-foreground: 244 63 94;
-	--theme-color-accent: 251 113 133;
-	--theme-color-accent-foreground: 120 14 43;
-	--theme-color-destructive: 239 68 68;
-	--theme-color-destructive-foreground: 255 255 255;
-	--theme-color-border: 251 113 133;
-	--theme-color-input: 254 205 211;
-	--theme-color-ring: 244 63 94;
-	--theme-color-background: 255 241 242;
-	--theme-color-foreground: 120 14 43;
-	--theme-color-card: 255 255 255;
-	--theme-color-card-foreground: 120 14 43;
-	--theme-color-popover: 255 255 255;
-	--theme-color-popover-foreground: 120 14 43;
+	--background: 255 241 242;
+	--foreground: 120 14 43;
 
-	--theme-radius: 0.25rem;
+	--card: 255 255 255;
+	--card-foreground: 120 14 43;
+
+	--popover: 255 255 255;
+	--popover-foreground: 120 14 43;
+
+	--primary: 244 63 94;
+	--primary-foreground: 255 255 255;
+
+	--secondary: 254 205 211;
+	--secondary-foreground: 120 14 43;
+
+	--muted: 254 205 211;
+	--muted-foreground: 244 63 94;
+
+	--accent: 251 113 133;
+	--accent-foreground: 120 14 43;
+
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+
+	--border: 251 113 133;
+	--input: 254 205 211;
+	--ring: 244 63 94;
+
+	--radius: 0.25rem;
 	--radius-button: 0.25rem;
 	--radius-card: 0.375rem;
 	--radius-input: 0.1875rem;
@@ -328,9 +354,9 @@
 	--border-width: 1px;
 	--border-width-thick: 1px;
 	--border-style: solid;
-	--theme-font-sans: "Plus Jakarta Sans Variable", var(--theme-font-sans);
-	--theme-font-heading: "Crimson Text Variable", var(--theme-font-heading);
-	--theme-font-body: "Plus Jakarta Sans Variable", var(--theme-font-body);
+	--font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "Crimson Text Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-body: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
 
 	--shadow: var(--shadow-md);
 	--animate-duration: var(--animate-duration-fast);
@@ -339,27 +365,35 @@
 
 /* Midnight Theme */
 [data-theme="midnight"] {
-	--theme-color-primary: 168 85 247;
-	--theme-color-primary-foreground: 255 255 255;
-	--theme-color-secondary: 30 41 59;
-	--theme-color-secondary-foreground: 203 213 225;
-	--theme-color-muted: 30 41 59;
-	--theme-color-muted-foreground: 148 163 184;
-	--theme-color-accent: 51 65 85;
-	--theme-color-accent-foreground: 203 213 225;
-	--theme-color-destructive: 239 68 68;
-	--theme-color-destructive-foreground: 255 255 255;
-	--theme-color-border: 51 65 85;
-	--theme-color-input: 30 41 59;
-	--theme-color-ring: 168 85 247;
-	--theme-color-background: 15 23 42;
-	--theme-color-foreground: 241 245 249;
-	--theme-color-card: 30 41 59;
-	--theme-color-card-foreground: 241 245 249;
-	--theme-color-popover: 30 41 59;
-	--theme-color-popover-foreground: 241 245 249;
+	--background: 15 23 42;
+	--foreground: 241 245 249;
 
-	--theme-radius: 0.125rem;
+	--card: 30 41 59;
+	--card-foreground: 241 245 249;
+
+	--popover: 30 41 59;
+	--popover-foreground: 241 245 249;
+
+	--primary: 168 85 247;
+	--primary-foreground: 255 255 255;
+
+	--secondary: 30 41 59;
+	--secondary-foreground: 203 213 225;
+
+	--muted: 30 41 59;
+	--muted-foreground: 148 163 184;
+
+	--accent: 51 65 85;
+	--accent-foreground: 203 213 225;
+
+	--destructive: 239 68 68;
+	--destructive-foreground: 255 255 255;
+
+	--border: 51 65 85;
+	--input: 30 41 59;
+	--ring: 168 85 247;
+
+	--radius: 0.125rem;
 	--radius-button: 0.125rem;
 	--radius-card: 0.1875rem;
 	--radius-input: 0.0625rem;
@@ -368,9 +402,9 @@
 	--border-width: 1px;
 	--border-width-thick: 1px;
 	--border-style: solid;
-	--theme-font-sans: "Outfit Variable", var(--theme-font-sans);
-	--theme-font-heading: "JetBrains Mono Variable", var(--theme-font-heading);
-	--theme-font-body: "IBM Plex Sans Variable", var(--theme-font-body);
+	--font-sans: "Outfit Variable", ui-sans-serif, system-ui, sans-serif;
+	--font-heading: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, monospace;
+	--font-body: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
 
 	--shadow: var(--shadow-2xl);
 	--animate-duration: var(--animate-duration-fast);
@@ -380,25 +414,33 @@
 /* Auto theme based on system preference */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme]) {
+		--background: 9 9 11;
+		--foreground: 244 244 245;
+
+		--card: 9 9 11;
+		--card-foreground: 244 244 245;
+
+		--popover: 9 9 11;
+		--popover-foreground: 244 244 245;
+
 		--primary: 59 130 246;
 		--primary-foreground: 255 255 255;
+
 		--secondary: 39 39 42;
 		--secondary-foreground: 244 244 245;
+
 		--muted: 39 39 42;
 		--muted-foreground: 161 161 170;
+
 		--accent: 39 39 42;
 		--accent-foreground: 244 244 245;
+
 		--destructive: 239 68 68;
 		--destructive-foreground: 255 255 255;
+
 		--border: 39 39 42;
 		--input: 39 39 42;
 		--ring: 59 130 246;
-		--background: 9 9 11;
-		--foreground: 244 244 245;
-		--card: 9 9 11;
-		--card-foreground: 244 244 245;
-		--popover: 9 9 11;
-		--popover-foreground: 244 244 245;
 	}
 }
 

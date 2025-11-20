@@ -237,13 +237,13 @@ function calculateMetricDeltas(
 function calculateStatisticalSignificance(
     controlScores: number[],
     experimentScores: number[],
-): { pValue: number; confidenceLevel: number } {
+): { pValue: number; confidenceLevel: number; sampleSize: number } {
     // Simple t-test implementation
     const n1 = controlScores.length;
     const n2 = experimentScores.length;
 
     if (n1 < 2 || n2 < 2) {
-        return { pValue: 1.0, confidenceLevel: 0 };
+        return { pValue: 1.0, confidenceLevel: 0, sampleSize: n1 + n2 };
     }
 
     const mean1 =
@@ -264,7 +264,7 @@ function calculateStatisticalSignificance(
     const standardError = pooledStd * Math.sqrt(1 / n1 + 1 / n2);
 
     if (standardError === 0) {
-        return { pValue: 1.0, confidenceLevel: 0 };
+        return { pValue: 1.0, confidenceLevel: 0, sampleSize: n1 + n2 };
     }
 
     const tStatistic = (mean2 - mean1) / standardError;
@@ -275,7 +275,7 @@ function calculateStatisticalSignificance(
     const pValue = Math.min(1.0, Math.max(0.0, 2 * (1 - Math.abs(tStatistic) / 2)));
     const confidenceLevel = pValue < 0.05 ? 0.95 : pValue < 0.1 ? 0.90 : 0.0;
 
-    return { pValue, confidenceLevel };
+    return { pValue, confidenceLevel, sampleSize: n1 + n2 };
 }
 
 /**

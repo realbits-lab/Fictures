@@ -98,7 +98,24 @@ class RedisCache {
                 if (this.config.enableLogging) {
                     console.log(`[RedisCache] HIT: ${key} (${getTime}ms)`);
                 }
-                return JSON.parse(value) as T;
+                try {
+                    return JSON.parse(value) as T;
+                } catch (parseError) {
+                    // Corrupted cache data - delete it and return null
+                    console.error(
+                        `[RedisCache] Corrupted data for key ${key}, deleting:`,
+                        parseError,
+                    );
+                    this.metrics.errors++;
+                    // Asynchronously delete the corrupted key
+                    this.del(key).catch((err: unknown) =>
+                        console.error(
+                            `[RedisCache] Failed to delete corrupted key ${key}:`,
+                            err,
+                        ),
+                    );
+                    return null;
+                }
             } else {
                 this.metrics.misses++;
                 if (this.config.enableLogging) {

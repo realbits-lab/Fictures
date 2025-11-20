@@ -114,14 +114,17 @@ async function fetchStoryForReading(storyId: string) {
     );
 
     // For reading mode, scenes are loaded on demand (see getChapterScenesForReading)
+    // Chapters inherit status from story since they don't have their own status field
     return {
         ...story,
+        userId: story.authorId, // Map authorId to userId for compatibility
         parts: storyParts.map((part) => ({
             ...part,
             chapters: allChapters
                 .filter((chapter) => chapter.partId === part.id)
                 .map((chapter) => ({
                     ...chapter,
+                    status: story.status, // Chapters inherit story status
                     scenes: undefined, // Will be loaded on demand
                 })),
         })),
@@ -129,6 +132,7 @@ async function fetchStoryForReading(storyId: string) {
             .filter((chapter) => !chapter.partId)
             .map((chapter) => ({
                 ...chapter,
+                status: story.status, // Chapters inherit story status
                 scenes: undefined, // Will be loaded on demand
             })),
     };

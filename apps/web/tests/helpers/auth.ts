@@ -66,7 +66,7 @@ export function loadAuthData(): AuthData {
     }
 
     // Validate required profiles
-    const requiredRoles = ["manager", "writer", "reader"];
+    const requiredRoles = ["manager", "writer", "reader"] as const;
     for (const role of requiredRoles) {
         if (!authData.profiles[role]) {
             throw new Error(`Missing ${role} profile in .auth/user.json`);

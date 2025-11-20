@@ -358,14 +358,17 @@ export class RelationshipManager {
 
         if (!includeScenes) {
             // For reading mode - don't load scenes, they'll be fetched on demand
+            // Chapters inherit status from story since they don't have their own status field
             return {
                 ...story,
+                userId: story.authorId, // Map authorId to userId for compatibility
                 parts: storyParts.map((part) => ({
                     ...part,
                     chapters: allChapters
                         .filter((chapter) => chapter.partId === part.id)
                         .map((chapter) => ({
                             ...chapter,
+                            status: story.status, // Chapters inherit story status
                             scenes: undefined, // Will be loaded on demand
                         })),
                 })),
@@ -373,6 +376,7 @@ export class RelationshipManager {
                     .filter((chapter) => !chapter.partId)
                     .map((chapter) => ({
                         ...chapter,
+                        status: story.status, // Chapters inherit story status
                         scenes: undefined, // Will be loaded on demand
                     })),
             };

@@ -503,8 +503,18 @@ export async function getStoryWithStructure(
     ]);
 
     // Apply dynamic status calculations to match original interface
+    // For reading mode (includeScenes=false), preserve inherited status from story
     const structuredParts = result.parts.map((part) => {
         const partChapters = part.chapters.map((chapter) => {
+            // For reading mode, scenes is undefined - preserve inherited status
+            if (chapter.scenes === undefined) {
+                return {
+                    ...chapter,
+                    // status already set to story.status in relationships.ts
+                    scenes: undefined,
+                };
+            }
+
             const chapterScenes = (chapter.scenes || [])
                 .map((scene) => {
                     // Calculate dynamic scene status
@@ -545,6 +555,15 @@ export async function getStoryWithStructure(
 
     // Process standalone chapters
     const standaloneChapters = result.chapters.map((chapter) => {
+        // For reading mode, scenes is undefined - preserve inherited status
+        if (chapter.scenes === undefined) {
+            return {
+                ...chapter,
+                // status already set to story.status in relationships.ts
+                scenes: undefined,
+            };
+        }
+
         const chapterScenes = (chapter.scenes || [])
             .map((scene) => {
                 const dynamicSceneStatus = calculateSceneStatus({
