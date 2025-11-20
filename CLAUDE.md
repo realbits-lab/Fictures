@@ -140,19 +140,20 @@ cd apps/ai-server
 - **AI Server (Port 8000)**: Kill any process using port 8000 before running the server in `apps/ai-server/`
 
 **Process Management Principle**:
-- **Use `fuser` for safe port-based process termination**
-- `fuser -k PORT/tcp` kills only the process owning that port
-- Avoids killing unrelated processes (like VS Code Remote SSH)
-- Example: `fuser -k 3000/tcp 2>/dev/null || true` (safe, targeted)
-- Alternative: `lsof -ti :3000 -sTCP:LISTEN | xargs -r kill -9` (kills only listener)
+- **Kill only node processes on specific ports** to avoid killing IDE processes (VS Code, Cursor)
+- **Recommended command**: `lsof -i :3000 -sTCP:LISTEN | grep -E "^node" | awk '{print $2}' | xargs -r kill -9`
+  - Filters for `node` processes only, leaving Cursor/VS Code untouched
+- **Alternative for Linux**: `fuser -k PORT/tcp` (requires `psmisc` package, not available on macOS via Homebrew)
+- **Avoid**: `lsof -ti :3000 -sTCP:LISTEN | xargs kill` (kills ALL listeners including IDE)
 - **Avoid**: `lsof -ti :3000 | xargs kill` (can kill VS Code SSH and other related processes)
 - **Avoid**: `pkill next` or `killall node` (dangerous, kills all matching processes)
 
 **Quick Start - Running Both Servers**:
 
 ```bash
-# 1. Kill existing processes on ports 3000 and 8000
-fuser -k 3000/tcp 8000/tcp 2>/dev/null || true
+# 1. Kill existing node processes on ports 3000 and 8000 (safe for IDE)
+lsof -i :3000 -sTCP:LISTEN | grep -E "^node" | awk '{print $2}' | xargs -r kill -9 2>/dev/null || true
+lsof -i :8000 -sTCP:LISTEN | grep -E "^(python|uvicorn)" | awk '{print $2}' | xargs -r kill -9 2>/dev/null || true
 
 # 2. Start AI Server (Python FastAPI) - MUST use venv
 cd apps/ai-server

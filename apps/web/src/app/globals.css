@@ -1,48 +1,40 @@
-@import "tailwindcss";
-
-/* Tailwind v4 Theme Variables - Bridge to runtime theme system */
-@theme {
-	/* Color variables - generate Tailwind utilities (bg-primary, text-foreground, etc.) */
-	--color-primary: var(--theme-color-primary);
-	--color-primary-foreground: var(--theme-color-primary-foreground);
-	--color-secondary: var(--theme-color-secondary);
-	--color-secondary-foreground: var(--theme-color-secondary-foreground);
-	--color-muted: var(--theme-color-muted);
-	--color-muted-foreground: var(--theme-color-muted-foreground);
-	--color-accent: var(--theme-color-accent);
-	--color-accent-foreground: var(--theme-color-accent-foreground);
-	--color-destructive: var(--theme-color-destructive);
-	--color-destructive-foreground: var(--theme-color-destructive-foreground);
-	--color-border: var(--theme-color-border);
-	--color-input: var(--theme-color-input);
-	--color-ring: var(--theme-color-ring);
-	--color-background: var(--theme-color-background);
-	--color-foreground: var(--theme-color-foreground);
-	--color-card: var(--theme-color-card);
-	--color-card-foreground: var(--theme-color-card-foreground);
-	--color-popover: var(--theme-color-popover);
-	--color-popover-foreground: var(--theme-color-popover-foreground);
-
-	/* Font variables */
-	--font-sans: var(--theme-font-sans);
-	--font-mono: var(--theme-font-mono);
-	--font-heading: var(--theme-font-heading);
-	--font-body: var(--theme-font-body);
-
-	/* Radius variables */
-	--radius: var(--theme-radius);
-	--radius-sm: 0.25rem;
-	--radius-md: 0.375rem;
-	--radius-lg: 0.5rem;
-	--radius-xl: 0.75rem;
-	--radius-2xl: 1rem;
-	--radius-3xl: 1.5rem;
-	--radius-full: 9999px;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Default Light Theme - Runtime CSS Variables */
 @layer base {
 	:root {
+		/* Bridge variables for Tailwind v3 - map theme colors to standard names */
+		--color-primary: var(--theme-color-primary);
+		--color-primary-foreground: var(--theme-color-primary-foreground);
+		--color-secondary: var(--theme-color-secondary);
+		--color-secondary-foreground: var(--theme-color-secondary-foreground);
+		--color-muted: var(--theme-color-muted);
+		--color-muted-foreground: var(--theme-color-muted-foreground);
+		--color-accent: var(--theme-color-accent);
+		--color-accent-foreground: var(--theme-color-accent-foreground);
+		--color-destructive: var(--theme-color-destructive);
+		--color-destructive-foreground: var(--theme-color-destructive-foreground);
+		--color-border: var(--theme-color-border);
+		--color-input: var(--theme-color-input);
+		--color-ring: var(--theme-color-ring);
+		--color-background: var(--theme-color-background);
+		--color-foreground: var(--theme-color-foreground);
+		--color-card: var(--theme-color-card);
+		--color-card-foreground: var(--theme-color-card-foreground);
+		--color-popover: var(--theme-color-popover);
+		--color-popover-foreground: var(--theme-color-popover-foreground);
+
+		/* Font variables */
+		--font-sans: var(--theme-font-sans);
+		--font-mono: var(--theme-font-mono);
+		--font-heading: var(--theme-font-heading);
+		--font-body: var(--theme-font-body);
+
+		/* Radius variables */
+		--radius: var(--theme-radius);
+
 		/* Base Font Stacks */
 		--theme-font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 		--theme-font-mono: "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
