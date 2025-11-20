@@ -23,6 +23,7 @@
  *   --skip-images             Skip image generation step
  *   --skip-toonplay           Skip toonplay generation step
  *   --skip-comic-panels       Skip comic panel generation step
+ *   --skip-publish            Skip publishing step
  *   --help, -h                Show this help message
  *
  * Prerequisites:
@@ -77,6 +78,7 @@ Options:
   --skip-images             Skip image generation step
   --skip-toonplay           Skip toonplay generation step
   --skip-comic-panels       Skip comic panel generation step
+  --skip-publish            Skip publishing step
   --help, -h                Show this help message
 
 Examples:
@@ -91,6 +93,9 @@ Examples:
 
   # Skip comic panel generation
   dotenv --file .env.local run pnpm exec tsx scripts/generate-full-pipeline.ts --skip-comic-panels
+
+  # Skip publishing (keep as draft)
+  dotenv --file .env.local run pnpm exec tsx scripts/generate-full-pipeline.ts --skip-publish
 `);
     process.exit(0);
 }
@@ -107,6 +112,7 @@ const config = {
     skipImages: hasFlag("--skip-images"),
     skipToonplay: hasFlag("--skip-toonplay"),
     skipComicPanels: hasFlag("--skip-comic-panels"),
+    skipPublish: hasFlag("--skip-publish"),
 };
 
 console.log("🚀 Full Pipeline Generation Script");
@@ -135,6 +141,9 @@ console.log(
 );
 console.log(
     `   4. Comic Panel Generation: ${config.skipComicPanels ? "⏭️ Skipped" : "✅"}`,
+);
+console.log(
+    `   5. Publish All Content: ${config.skipPublish ? "⏭️ Skipped" : "✅"}`,
 );
 console.log();
 
@@ -307,6 +316,27 @@ async function runPipeline() {
         }
     } else {
         console.log("\n⏭️  Skipping Comic Panel Generation");
+    }
+
+    // Step 5: Publish All Content
+    if (!config.skipPublish) {
+        const publishStart = Date.now();
+        const publishResult = await runScript(
+            "scripts/publish-all.ts",
+            ["--story-id", storyId],
+            "Publish All Content",
+        );
+        results.push({
+            step: "Publish All Content",
+            success: publishResult.success,
+            duration: (Date.now() - publishStart) / 1000 / 60,
+        });
+
+        if (!publishResult.success) {
+            console.error("\n⚠️ Publishing failed.");
+        }
+    } else {
+        console.log("\n⏭️  Skipping Publish All Content");
     }
 
     // Final Summary
