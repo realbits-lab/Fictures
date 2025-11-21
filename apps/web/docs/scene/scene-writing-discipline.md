@@ -1,5 +1,14 @@
 # Scene Writing Discipline for AI Content Generation
 
+## Overview
+
+This document defines the writing discipline and technical implementation for AI-generated scene content. It covers both the creative writing guidelines and the technical generation parameters.
+
+**Related Files:**
+- `src/lib/studio/generators/scene-content-generator.ts` - Scene content generation logic
+- `src/lib/studio/prompts/v1.1/scene-content-prompt.js` - Prompt templates
+- `src/lib/studio/generators/ai-client.ts` - AI client configuration
+
 ## Core Principles
 
 ### 1. Mobile-First Readability
@@ -11,6 +20,82 @@
 - **Forward Movement**: Every element must drive the story forward
 - **Zero Friction**: Remove any stylistic barriers to rapid consumption
 - **Binge Optimization**: Design for continuous chapter-to-chapter reading
+
+## Technical Implementation
+
+### Token Limits by Scene Phase
+
+The scene content generator uses phase-specific token limits with a 50% buffer to prevent truncation:
+
+| Scene Phase | Word Target | Token Limit | Calculation |
+|-------------|-------------|-------------|-------------|
+| setup | 600 words | 1200 tokens | 600/0.75 × 1.5 |
+| transition | 600 words | 1200 tokens | 600/0.75 × 1.5 |
+| adversity | 800 words | 1600 tokens | 800/0.75 × 1.5 |
+| virtue | 1000 words | 2000 tokens | 1000/0.75 × 1.5 |
+| consequence | 900 words | 1800 tokens | 900/0.75 × 1.5 |
+
+**Token-to-Word Ratio**: ~0.75 (1000 tokens ≈ 750 words)
+
+### Generation Parameters
+
+```typescript
+// Current generation configuration
+{
+    temperature: 0.85,      // Creative but controlled
+    maxTokens: 1200-2000,   // Phase-specific
+    topP: 0.5,              // Lower than default 0.95 to prevent premature stop tokens
+}
+```
+
+**Why `topP: 0.5`?**
+- Gemini 2.5 models can select stop tokens prematurely with higher `topP` values
+- Lowering from 0.95 to 0.5 reduces truncation issues
+- Research from Google AI forums confirms this approach
+
+### Truncation Prevention System
+
+The generator implements a multi-layer truncation prevention system:
+
+#### 1. Content-Based Detection
+```typescript
+function isContentTruncated(content: string): boolean {
+    // Valid sentence endings
+    const validEndings = [".", "!", "?", '"', "'", ")", "】", "」", "』"];
+
+    // Check for valid ending or intentional ellipsis
+    if (validEndings.includes(lastChar)) return false;
+    if (trimmed.endsWith("...") || trimmed.endsWith("…")) return false;
+
+    return true; // Likely truncated
+}
+```
+
+#### 2. API Response Detection
+```typescript
+function isResponseTruncated(response: TextGenerationResponse): boolean {
+    // Gemini: "MAX_TOKENS", AI Server: "length"
+    const truncationReasons = ["MAX_TOKENS", "length", "SAFETY"];
+    return truncationReasons.includes(response.finishReason || "");
+}
+```
+
+#### 3. Retry Logic
+- **Max Retries**: 2 attempts after initial generation
+- **Token Increase**: 50% per retry (e.g., 1600 → 2400 → 3600)
+- **Logging**: Detailed warnings for debugging
+
+### Generation Flow
+
+```
+1. Calculate base token limit from scene.cyclePhase
+2. Generate content with topP: 0.5
+3. Check for truncation (API + content-based)
+4. If truncated and retries remaining:
+   - Increase maxTokens by 50%
+   - Regenerate
+5. Return content with metadata
+```
 
 ## Quantitative Parameters
 
@@ -165,6 +250,43 @@ CALM: 15-20 word sentences, moderate complexity
 - [ ] Vocabulary accessible to target audience
 - [ ] Rhythm varies with content
 
+## Troubleshooting
+
+### Common Issues
+
+#### 1. Content Ends Mid-Sentence
+**Cause**: Token limit reached before sentence completion
+
+**Solution** (implemented):
+- Increased base token limits by 50%
+- Added truncation detection
+- Retry with higher limits if truncated
+- Lowered `topP` to 0.5
+
+#### 2. Empty Response with MAX_TOKENS
+**Cause**: Known Gemini API bug where truncated responses return empty
+
+**Solution**:
+- Check `finishReason` in response
+- Retry with higher token limit
+- Use streaming for partial responses if needed
+
+#### 3. Premature Stop Token Selection
+**Cause**: High `topP` (0.95) allows model to select stop tokens early
+
+**Solution**:
+- Lower `topP` to 0.5 (implemented)
+- Increases probability of continuing generation
+
+### Monitoring
+
+Check server logs for truncation warnings:
+```
+[scene-content-generator] ⚠️ Content truncated (attempt 1/3)
+[scene-content-generator] 🔄 Retrying with increased token limit: 2400
+[scene-content-generator] ✅ Content completed on retry 1
+```
+
 ## AI System Prompt Template
 
 ```
@@ -196,6 +318,11 @@ FORMAT:
 - New speaker = new paragraph
 - Single blank line between paragraphs
 - Sentence fragments for emphasis only
+
+COMPLETION REQUIREMENT:
+- MUST end with complete sentences
+- NEVER end mid-sentence or mid-word
+- Final sentence must have proper punctuation (. ! ? " ')
 ```
 
 ## Examples of Effective Scene Openings
@@ -230,3 +357,8 @@ Emma's hands wouldn't stop shaking.
 This discipline prioritizes **reader retention** over literary elegance. Every stylistic choice serves the singular goal of creating an addictive, frictionless reading experience optimized for serial consumption on mobile devices. The prose is not "dumbed down" but rather **precision-engineered** for its specific medium and audience.
 
 When implementing these guidelines, remember: The story is the signal, the prose is merely the carrier wave. Optimize for maximum signal clarity and minimum transmission loss.
+
+---
+
+**Last Updated**: 2025-01-21
+**Related Issues**: Scene content truncation fix (increased token limits, added retry logic, lowered topP)

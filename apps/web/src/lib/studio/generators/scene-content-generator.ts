@@ -12,6 +12,7 @@ import type {
     GeneratorSceneContentParams,
     GeneratorSceneContentResult,
     SceneContentPromptParams,
+    TextGenerationResponse,
 } from "@/lib/schemas/generators/types";
 import { createTextGenerationClient } from "./ai-client";
 import {
@@ -24,6 +25,43 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
+
+/**
+ * Check if content appears to be truncated (ends mid-sentence)
+ */
+function isContentTruncated(content: string): boolean {
+    const trimmed = content.trim();
+    if (!trimmed) return true;
+
+    // Get the last character
+    const lastChar = trimmed[trimmed.length - 1];
+
+    // Valid sentence endings
+    const validEndings = [".", "!", "?", '"', "'", ")", "】", "」", "』"];
+
+    // Check if ends with valid punctuation
+    if (validEndings.includes(lastChar)) {
+        return false;
+    }
+
+    // Check for ellipsis (intentional trailing)
+    if (trimmed.endsWith("...") || trimmed.endsWith("…")) {
+        return false;
+    }
+
+    // Content likely truncated if it doesn't end with valid punctuation
+    return true;
+}
+
+/**
+ * Check if the API response indicates truncation due to token limit
+ */
+function isResponseTruncated(response: TextGenerationResponse): boolean {
+    // Gemini uses "MAX_TOKENS" or "STOP" for finish reason
+    // AI Server uses "length" for truncation
+    const truncationReasons = ["MAX_TOKENS", "length", "SAFETY"];
+    return truncationReasons.includes(response.finishReason || "");
+}
 
 /**
  * Generate prose content for a single scene
@@ -62,7 +100,10 @@ export async function generateSceneContent(
 
     // 3. Build context strings using common builders
     const storyContext: string = buildStoryContext(story as any);
-    const partContext: string = buildPartContext(part as any, characters as any);
+    const partContext: string = buildPartContext(
+        part as any,
+        characters as any,
+    );
     const chapterContext: string = buildChapterContext(chapter as any);
     const sceneContext: string = buildSceneContext(scene as any);
     const charactersStr: string = buildCharactersContext(characters as any);
@@ -101,36 +142,89 @@ export async function generateSceneContent(
 
     // 4. Calculate appropriate token limit based on scene cycle phase
     // Token-to-word ratio: ~0.75 (1000 tokens ≈ 750 words)
-    // Phase-specific limits (with 20% buffer for flexibility):
-    // - setup/transition: 600 words max → 800 tokens (600/0.75 × 1.2)
-    // - adversity: 800 words max → 1067 tokens (800/0.75 × 1.2)
-    // - virtue: 1000 words max → 1333 tokens (1000/0.75 × 1.2)
-    // - consequence: 900 words max → 1200 tokens (900/0.75 × 1.2)
+    // Phase-specific limits (with 50% buffer to prevent truncation):
+    // - setup/transition: 600 words max → 1200 tokens (600/0.75 × 1.5)
+    // - adversity: 800 words max → 1600 tokens (800/0.75 × 1.5)
+    // - virtue: 1000 words max → 2000 tokens (1000/0.75 × 1.5)
+    // - consequence: 900 words max → 1800 tokens (900/0.75 × 1.5)
     const maxTokensByPhase: Record<string, number> = {
-        setup: 800,
-        transition: 800,
-        adversity: 1067,
-        virtue: 1333,
-        consequence: 1200,
+        setup: 1200,
+        transition: 1200,
+        adversity: 1600,
+        virtue: 2000,
+        consequence: 1800,
     };
 
-    // Use phase-specific limit or default to 1333 (virtue scene limit)
-    const maxTokens: number = maxTokensByPhase[scene.cyclePhase || ""] || 1333;
+    // Use phase-specific limit or default to 2000 (virtue scene limit)
+    const baseMaxTokens: number =
+        maxTokensByPhase[scene.cyclePhase || ""] || 2000;
 
     console.log(
-        `[scene-content-generator] Token limit for ${scene.cyclePhase || "unknown"} phase: ${maxTokens}`,
+        `[scene-content-generator] Token limit for ${scene.cyclePhase || "unknown"} phase: ${baseMaxTokens}`,
     );
 
-    // 5. Generate scene content using direct text generation (no schema)
-    const response = await client.generate({
-        prompt: userPromptText,
-        systemPrompt,
-        temperature: 0.85,
-        maxTokens,
-    });
+    // 5. Generate scene content with retry logic for truncation
+    const MAX_RETRIES = 2;
+    let currentMaxTokens = baseMaxTokens;
+    let response: TextGenerationResponse | null = null;
+    let content = "";
+    let retryCount = 0;
+
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+        response = await client.generate({
+            prompt: userPromptText,
+            systemPrompt,
+            temperature: 0.85,
+            maxTokens: currentMaxTokens,
+            // Lower topP from default 0.95 to 0.5 to reduce premature stop token selection
+            // This helps prevent truncation issues with Gemini 2.5 models
+            topP: 0.5,
+        });
+
+        content = response.text.trim();
+
+        // Check for truncation
+        const apiTruncated = isResponseTruncated(response);
+        const contentTruncated = isContentTruncated(content);
+
+        if (apiTruncated || contentTruncated) {
+            console.warn(
+                `[scene-content-generator] ⚠️ Content truncated (attempt ${attempt + 1}/${MAX_RETRIES + 1}):`,
+                {
+                    apiTruncated,
+                    contentTruncated,
+                    finishReason: response.finishReason,
+                    currentMaxTokens,
+                    contentEnding: content.slice(-50),
+                },
+            );
+
+            if (attempt < MAX_RETRIES) {
+                // Increase token limit by 50% for retry
+                currentMaxTokens = Math.floor(currentMaxTokens * 1.5);
+                retryCount++;
+                console.log(
+                    `[scene-content-generator] 🔄 Retrying with increased token limit: ${currentMaxTokens}`,
+                );
+                continue;
+            }
+
+            // Final attempt still truncated - log warning but continue
+            console.error(
+                `[scene-content-generator] ❌ Content still truncated after ${MAX_RETRIES + 1} attempts. Using truncated content.`,
+            );
+        } else {
+            // Content looks complete
+            if (attempt > 0) {
+                console.log(
+                    `[scene-content-generator] ✅ Content completed on retry ${attempt}`,
+                );
+            }
+            break;
+        }
+    }
 
     // 6. Extract and process generated content
-    const content: string = response.text.trim();
     const wordCount: number = content.split(/\s+/).length;
 
     // 7. Calculate total generation time
@@ -140,7 +234,9 @@ export async function generateSceneContent(
         sceneId: (scene as any).id || "unknown",
         cyclePhase: scene.cyclePhase,
         wordCount,
-        tokenLimit: maxTokens,
+        tokenLimit: currentMaxTokens,
+        retries: retryCount,
+        finishReason: response?.finishReason,
         generationTime: totalTime,
     });
 
@@ -150,7 +246,7 @@ export async function generateSceneContent(
         wordCount,
         metadata: {
             generationTime: totalTime,
-            model: response.model,
+            model: response?.model || "unknown",
         },
     };
 }

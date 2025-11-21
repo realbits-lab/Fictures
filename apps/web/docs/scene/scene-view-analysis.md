@@ -9,15 +9,17 @@ This system displays scene-level view statistics in both Community and Analysis 
 ### Important Implementation Notes
 
 **Database Schema:**
-- The `scenes` table stores format-specific view counts only: `novel_view_count`, `novel_unique_view_count`, `comic_view_count`, `comic_unique_view_count`
-- Total views are calculated by summing novel + comic views: `novel_view_count + comic_view_count`
+- The `scenes` table stores both total and format-specific view counts:
+  - `view_count` - **Aggregate total** (novel + comic views, incremented on every view)
+  - `unique_view_count` - **Aggregate unique** (incremented for each new viewer per format)
+  - `novel_view_count`, `novel_unique_view_count` - Novel format specific
+  - `comic_view_count`, `comic_unique_view_count` - Comic format specific
+  - `last_viewed_at` - Timestamp of most recent view
+- **Aggregation**: `view_count` = `novel_view_count` + `comic_view_count` (maintained automatically by API)
 - Scene numbers use `orderIndex` field (not `sceneNumber`)
 - Chapter numbers also use `orderIndex` field (not `chapterNumber`)
 
-**Fixed Issues:**
-- Initially tried to query non-existent `viewCount` and `uniqueViewCount` columns
-- Fixed by using format-specific columns and calculating totals via SQL aggregation
-- Added proper null safety checks for empty result sets
+**Schema Location:** `src/lib/schemas/database/index.ts` (lines 652-663)
 
 ## Architecture
 
@@ -30,13 +32,14 @@ This system displays scene-level view statistics in both Community and Analysis 
 │  └── scenes table                        │
 │      ├── view_count (total)             │
 │      ├── unique_view_count (total)      │
-│      ├── novel_view_count              │
+│      ├── novel_view_count               │
 │      ├── novel_unique_view_count        │
-│      ├── comic_view_count              │
-│      └── comic_unique_view_count        │
+│      ├── comic_view_count               │
+│      ├── comic_unique_view_count        │
+│      └── last_viewed_at                 │
 │                                          │
 │           ↓                              │
-│  API: /api/stories/[storyId]/scene-stats│
+│  API: /api/studio/story/[id]/scene-stats│
 │  ├── Aggregates all scene metrics       │
 │  ├── Supports filtering & sorting        │
 │  └── Calculates format distribution     │
@@ -51,9 +54,9 @@ This system displays scene-level view statistics in both Community and Analysis 
 
 ## API Endpoint
 
-### GET `/api/stories/[storyId]/scene-stats`
+### GET `/api/studio/story/[id]/scene-stats`
 
-**Location**: `src/app/api/stories/[storyId]/scene-stats/route.ts`
+**Location**: `src/app/api/studio/story/[id]/scene-stats/route.ts`
 
 **Query Parameters**:
 - `format` - Filter by format: `all`, `novel`, `comic` (default: `all`)
@@ -399,13 +402,13 @@ function AnalysisDashboard({ storyId }) {
 ### API Testing
 ```bash
 # Test basic fetch
-curl http://localhost:3000/api/stories/STORY_ID/scene-stats
+curl http://localhost:3000/api/studio/story/STORY_ID/scene-stats
 
 # Test sorting by novel views
-curl http://localhost:3000/api/stories/STORY_ID/scene-stats?sortBy=novel&order=desc
+curl http://localhost:3000/api/studio/story/STORY_ID/scene-stats?sortBy=novel&order=desc
 
 # Test pagination
-curl http://localhost:3000/api/stories/STORY_ID/scene-stats?limit=5&offset=10
+curl http://localhost:3000/api/studio/story/STORY_ID/scene-stats?limit=5&offset=10
 ```
 
 ## Future Enhancements
@@ -439,10 +442,11 @@ Potential additions for future iterations:
 
 ## Related Documentation
 
-- **Scene View Tracking**: `docs/scene-view-tracking.md`
-- **Migration**: `drizzle/0031_add_format_to_scene_views.sql`
-- **Database Schema**: `src/lib/schemas/database/index.ts`
-- **API Implementation**: `src/app/api/stories/[storyId]/scene-stats/route.ts`
+- **Scene View Tracking**: `docs/scene/scene-view-tracking.md`
+- **Database Schema**: `src/lib/schemas/database/index.ts` (scenes table: lines 652-663, scene_views table: lines 1453-1484)
+- **API Implementation**: `src/app/api/studio/story/[id]/scene-stats/route.ts`
+- **View Tracking API**: `src/app/api/studio/scenes/[id]/view/route.ts`
+- **React Hook**: `src/hooks/use-scene-view.ts`
 
 ## Summary
 

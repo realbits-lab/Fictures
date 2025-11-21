@@ -17,38 +17,41 @@ The view tracking system provides:
 
 ### Database Schema
 
-**`scene_views` Table**:
-```sql
-CREATE TABLE scene_views (
-  id TEXT PRIMARY KEY,
-  scene_id TEXT NOT NULL REFERENCES scenes(id) ON DELETE CASCADE,
-  user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-  session_id TEXT,  -- For anonymous users
-  ip_address TEXT,  -- Optional, for analytics
-  user_agent TEXT,  -- Optional, for analytics
-  viewed_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+**Schema Location:** `src/lib/schemas/database/index.ts`
 
-  -- Ensure at least one identifier exists
-  CONSTRAINT scene_views_user_or_session CHECK (
-    (user_id IS NOT NULL) OR (session_id IS NOT NULL)
-  )
-);
+**`scene_views` Table** (lines 1453-1484):
+```typescript
+export const sceneViews = pgTable("scene_views", {
+  id: text().default("gen_random_uuid()").primaryKey().notNull(),
+  sceneId: text("scene_id").notNull(),
+  userId: text("user_id"),
+  sessionId: text("session_id"),
+  readingFormat: readingFormat("reading_format").default("novel").notNull(), // "novel" | "comic"
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  viewedAt: timestamp("viewed_at", { mode: "string" }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).defaultNow().notNull(),
+});
 ```
 
-**Indexes** (for performance):
-- `idx_scene_views_scene_id` - Fast lookups by scene
-- `idx_scene_views_user_id` - Fast lookups by user
-- `idx_scene_views_session_id` - Fast lookups by session
-- `idx_scene_views_unique_user` - Unique constraint per user+scene
-- `idx_scene_views_unique_session` - Unique constraint per session+scene
+**Foreign Keys**:
+- `scene_id` → `scenes.id` (ON DELETE CASCADE)
+- `user_id` → `users.id` (ON DELETE SET NULL)
 
-**`scenes` Table Updates**:
-```sql
-ALTER TABLE scenes ADD COLUMN:
-  view_count INTEGER NOT NULL DEFAULT 0,           -- Total views (can include repeats)
-  unique_view_count INTEGER NOT NULL DEFAULT 0,    -- Distinct viewers (users/sessions)
-  last_viewed_at TIMESTAMP                         -- Last view timestamp
+**`scenes` Table Analytics Fields** (lines 652-663):
+```typescript
+// === ANALYTICS ===
+// Aggregate totals (novel + comic combined, maintained by API)
+viewCount: integer("view_count").default(0).notNull(),           // = novel_view_count + comic_view_count
+uniqueViewCount: integer("unique_view_count").default(0).notNull(), // incremented per new viewer per format
+
+// Format-specific counts
+novelViewCount: integer("novel_view_count").default(0).notNull(),
+novelUniqueViewCount: integer("novel_unique_view_count").default(0).notNull(),
+comicViewCount: integer("comic_view_count").default(0).notNull(),
+comicUniqueViewCount: integer("comic_unique_view_count").default(0).notNull(),
+
+lastViewedAt: timestamp("last_viewed_at", { mode: "string" }),
 ```
 
 ### Session Management
@@ -73,33 +76,46 @@ const sessionId = await getOrCreateSessionId(userId);
 
 ## API Endpoints
 
-### POST `/api/scenes/[id]/view`
+**Location:** `src/app/api/studio/scenes/[id]/view/route.ts`
 
-Track a scene view.
+### POST `/api/studio/scenes/[id]/view`
+
+Track a scene view with format-specific tracking.
+
+**Request Body**:
+```json
+{
+  "reading_format": "novel"  // "novel" | "comic" (default: "novel")
+}
+```
 
 **Behavior**:
 1. Get user ID (if logged in) or session ID (if anonymous)
-2. Check if this user/session already viewed this scene
-3. If new viewer:
-   - Create `scene_views` record
+2. Check if this user/session already viewed this scene **in this format**
+3. If new viewer for this format:
+   - Create `scene_views` record with `reading_format`
    - Increment scene's `unique_view_count`
-4. Always increment scene's `view_count` (allows repeat view tracking)
+   - Increment format-specific `novel_unique_view_count` or `comic_unique_view_count`
+4. Always increment scene's `view_count` and format-specific view count
 5. Update `last_viewed_at` timestamp
-6. Return updated counts
-
-**Request**: No body required
+6. Return updated counts (total and format-specific)
 
 **Response**:
 ```json
 {
   "success": true,
   "sceneId": "scene_abc123",
-  "isNewView": true,  // false if user/session already viewed
+  "isNewView": true,
+  "readingFormat": "novel",
   "viewCount": 156,
   "uniqueViewCount": 98,
+  "novelViewCount": 120,
+  "novelUniqueViewCount": 75,
+  "comicViewCount": 36,
+  "comicUniqueViewCount": 23,
   "viewer": {
-    "userId": "user_xyz789",  // or null
-    "sessionId": null,  // or "sess_..."
+    "userId": "user_xyz789",
+    "sessionId": null,
     "isAuthenticated": true
   }
 }
@@ -107,16 +123,19 @@ Track a scene view.
 
 **Client Usage**:
 ```typescript
-const response = await fetch(`/api/scenes/${sceneId}/view`, {
-  method: 'POST'
+const response = await fetch(`/api/studio/scenes/${sceneId}/view`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ reading_format: 'novel' })
 });
 
 const data = await response.json();
 console.log(`Total views: ${data.viewCount}`);
-console.log(`Unique viewers: ${data.uniqueViewCount}`);
+console.log(`Novel views: ${data.novelViewCount}`);
+console.log(`Comic views: ${data.comicViewCount}`);
 ```
 
-### GET `/api/scenes/[id]/view`
+### GET `/api/studio/scenes/[id]/view`
 
 Get view statistics for a scene.
 
@@ -127,6 +146,10 @@ Get view statistics for a scene.
   "viewCount": 156,
   "uniqueViewCount": 98,
   "lastViewedAt": "2025-10-26T12:34:56.789Z",
+  "novelViewCount": 120,
+  "novelUniqueViewCount": 75,
+  "comicViewCount": 36,
+  "comicUniqueViewCount": 23,
   "hasViewedByCurrentUser": true
 }
 ```
@@ -135,22 +158,23 @@ Get view statistics for a scene.
 
 ### useSceneView Hook
 
-**Location**: `src/hooks/useSceneView.ts`
+**Location**: `src/hooks/use-scene-view.ts`
 
-Automatically tracks scene views when scenes are loaded.
+Automatically tracks scene views when scenes are loaded, with format-specific tracking.
 
 **Features**:
 - Debounces API calls (1 second default)
-- Prevents duplicate tracking in same session
+- Prevents duplicate tracking in same session **per format**
+- Format-specific tracking key: `${sceneId}:${readingFormat}`
 - Works with React component lifecycle
-- Automatic cache revalidation
+- Automatic SWR cache revalidation
 
 **Usage**:
 ```typescript
-import { useSceneView } from '@/hooks/useSceneView';
+import { useSceneView } from '@/hooks/use-scene-view';
 
 function SceneReader({ sceneId }: { sceneId: string }) {
-  // Automatically tracks view when sceneId changes
+  // Automatically tracks novel view when sceneId changes
   const { hasViewed } = useSceneView(sceneId);
 
   return (
@@ -165,15 +189,27 @@ function SceneReader({ sceneId }: { sceneId: string }) {
 **Options**:
 ```typescript
 useSceneView(sceneId, {
-  enabled: true,        // Enable/disable tracking
-  debounceMs: 1000     // Debounce delay (default: 1000ms)
+  enabled: true,           // Enable/disable tracking
+  debounceMs: 1000,        // Debounce delay (default: 1000ms)
+  readingFormat: 'novel'   // 'novel' | 'comic' (default: 'novel')
 });
+```
+
+**Format-Specific Tracking Example**:
+```typescript
+// Track novel views in novel reader
+useSceneView(sceneId, { readingFormat: 'novel' });
+
+// Track comic views in comic reader
+useSceneView(sceneId, { readingFormat: 'comic' });
+
+// Same scene can be tracked separately for each format
 ```
 
 **Integration Example** (`ChapterReaderClient.tsx`):
 ```typescript
 // Track views automatically when scene is selected
-useSceneView(selectedSceneId);
+useSceneView(selectedSceneId, { readingFormat: 'novel' });
 ```
 
 ## UI Components
@@ -241,24 +277,34 @@ import { ViewCountSkeleton } from '@/components/ui/view-count';
 
 ### Unique Views (`uniqueViewCount`)
 - **What**: Distinct viewers (unique users + unique sessions)
-- **Includes**: Only first view per user/session
+- **Includes**: Only first view per user/session **per format**
 - **Use Case**: Reach metrics, audience size
-- **Increment**: Only for new viewers
+- **Increment**: Only for new viewers in that format
+
+### Format-Specific Views
+- **`novelViewCount`** / **`novelUniqueViewCount`**: Views from novel reader
+- **`comicViewCount`** / **`comicUniqueViewCount`**: Views from comic reader
+- Same user viewing both formats = 2 unique views (one per format)
 
 ### Example Scenario:
 ```
-User A (logged in) views scene twice:
-  - First view: viewCount +1, uniqueViewCount +1
-  - Second view: viewCount +1, uniqueViewCount +0
+User A (logged in) views scene as novel twice, then as comic once:
+  - First novel view: viewCount +1, novelViewCount +1, uniqueViewCount +1, novelUniqueViewCount +1
+  - Second novel view: viewCount +1, novelViewCount +1
+  - First comic view: viewCount +1, comicViewCount +1, uniqueViewCount +1, comicUniqueViewCount +1
 
-User B (anonymous) views scene three times:
-  - First view: viewCount +1, uniqueViewCount +1
-  - Second view: viewCount +1, uniqueViewCount +0
-  - Third view: viewCount +1, uniqueViewCount +0
+User B (anonymous) views scene as novel three times:
+  - First view: viewCount +1, novelViewCount +1, uniqueViewCount +1, novelUniqueViewCount +1
+  - Second view: viewCount +1, novelViewCount +1
+  - Third view: viewCount +1, novelViewCount +1
 
 Final counts:
-  - viewCount: 5 (total views)
-  - uniqueViewCount: 2 (User A + User B)
+  - viewCount: 6 (total views)
+  - uniqueViewCount: 3 (User A novel + User A comic + User B novel)
+  - novelViewCount: 5 (2 from A + 3 from B)
+  - novelUniqueViewCount: 2 (User A + User B)
+  - comicViewCount: 1 (from A)
+  - comicUniqueViewCount: 1 (User A)
 ```
 
 ## Privacy & GDPR Compliance
@@ -451,25 +497,31 @@ WHERE story_id = ?;
 
 ## Related Documentation
 
-- **Database Schema**: `drizzle/0030_add_scene_views.sql`
+- **Database Schema**: `src/lib/schemas/database/index.ts`
+  - `scenes` table analytics fields: lines 652-663
+  - `scene_views` table: lines 1453-1484
 - **Session Management**: `src/lib/utils/session.ts`
-- **API Endpoint**: `src/app/api/scenes/[id]/view/route.ts`
-- **React Hook**: `src/hooks/useSceneView.ts`
-- **UI Component**: `src/components/ui/view-count.tsx`
-- **Analytics Guide**: `docs/analytics-specification.md`
-- **Privacy Policy**: `docs/privacy-policy.md`
+- **API Endpoint**: `src/app/api/studio/scenes/[id]/view/route.ts`
+- **Scene Stats API**: `src/app/api/studio/story/[id]/scene-stats/route.ts`
+- **React Hook**: `src/hooks/use-scene-view.ts`
+- **UI Components**:
+  - `src/components/ui/view-count.tsx`
+  - `src/components/ui/scene-view-badge.tsx`
+- **Scene View Analysis**: `docs/scene/scene-view-analysis.md`
 
 ## Summary
 
 The scene view tracking system provides:
 
 ✅ **Accurate Tracking** - Distinguishes between total and unique views
+✅ **Format-Specific Tracking** - Separate counts for novel and comic views
 ✅ **Anonymous Support** - Works for non-logged-in users with session cookies
 ✅ **Privacy-Friendly** - No PII stored for anonymous users
-✅ **High Performance** - Indexed queries, Redis caching, debounced tracking
-✅ **Easy Integration** - Simple React hook for automatic tracking
+✅ **High Performance** - Indexed queries, SWR caching, debounced tracking
+✅ **Easy Integration** - Simple React hook for automatic tracking with format option
 ✅ **Flexible Display** - Reusable UI components with multiple variants
 
-**Implementation Time**: Complete in 2-3 hours
-**Cost**: Minimal (storage for views table, negligible API overhead)
-**Maintenance**: Low (automated cache management, self-cleaning sessions)
+**Key Files:**
+- API: `src/app/api/studio/scenes/[id]/view/route.ts`
+- Hook: `src/hooks/use-scene-view.ts`
+- Schema: `src/lib/schemas/database/index.ts` (lines 652-663, 1453-1484)
