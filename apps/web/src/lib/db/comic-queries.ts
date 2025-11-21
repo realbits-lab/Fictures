@@ -1,6 +1,12 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { invalidateCache, withCache } from "@/lib/cache/redis-cache";
-import { chapters, parts, scenes, stories } from "@/lib/schemas/database";
+import {
+    chapters,
+    comicPanels,
+    parts,
+    scenes,
+    stories,
+} from "@/lib/schemas/database";
 import { db } from "./index";
 
 /**
@@ -141,39 +147,101 @@ async function fetchStoryWithComicPanels(storyId: string) {
         return null;
     }
 
-    // Extract panels from comicToonplay JSON field (panels are stored inline, not in separate table)
+    // ⚡ HYBRID PANEL LOADING: Check comic_panels table first, fallback to comicToonplay
     console.log(
-        `[PERF-QUERY] 🎨 Extracting comic panels from comicToonplay for ${allScenes.length} scenes...`,
+        `[PERF-QUERY] 🎨 Loading comic panels for ${allScenes.length} scenes...`,
     );
     const panelsExtractStart = performance.now();
 
-    // Group scenes by chapter and extract panels from comicToonplay
+    // 1. Get all scene IDs to query comic_panels table
+    const sceneIds = allScenes.map((s) => s.id);
+
+    // 2. Query comic_panels table for generated panel images
+    let dbPanels: any[] = [];
+    if (sceneIds.length > 0) {
+        dbPanels = await db
+            .select({
+                id: comicPanels.id,
+                sceneId: comicPanels.sceneId,
+                panelNumber: comicPanels.panelNumber,
+                shotType: comicPanels.shotType,
+                imageUrl: comicPanels.imageUrl,
+                imageVariants: comicPanels.imageVariants,
+                narrative: comicPanels.narrative,
+                dialogue: comicPanels.dialogue,
+                sfx: comicPanels.sfx,
+                description: comicPanels.description,
+            })
+            .from(comicPanels)
+            .where(inArray(comicPanels.sceneId, sceneIds))
+            .orderBy(asc(comicPanels.panelNumber));
+    }
+
+    // 3. Group DB panels by scene ID for quick lookup
+    const dbPanelsByScene = new Map<string, any[]>();
+    for (const panel of dbPanels) {
+        if (!dbPanelsByScene.has(panel.sceneId)) {
+            dbPanelsByScene.set(panel.sceneId, []);
+        }
+        dbPanelsByScene.get(panel.sceneId)?.push({
+            id: panel.id,
+            sceneId: panel.sceneId,
+            panelNumber: panel.panelNumber,
+            shotType: panel.shotType || "medium",
+            imageUrl: panel.imageUrl,
+            imageVariants: panel.imageVariants,
+            narrative: panel.narrative,
+            dialogue: panel.dialogue || [],
+            sfx: panel.sfx || [],
+            summary: panel.description,
+        });
+    }
+
+    console.log(
+        `[PERF-QUERY]   - DB panels: ${dbPanels.length} from comic_panels table`,
+    );
+
+    // 4. Group scenes by chapter, using DB panels if available, otherwise fallback to comicToonplay
     const scenesByChapter = new Map<string, any[]>();
     let totalPanels = 0;
+    let panelsFromDb = 0;
+    let panelsFromToonplay = 0;
 
     for (const scene of allScenes) {
         if (!scenesByChapter.has(scene.chapterId)) {
             scenesByChapter.set(scene.chapterId, []);
         }
 
-        // Extract panels from comicToonplay JSON field
-        const toonplay = scene.comicToonplay as any;
-        const panels = toonplay?.panels || [];
-        totalPanels += panels.length;
+        // Check if we have generated panels in DB for this scene
+        const generatedPanels = dbPanelsByScene.get(scene.id);
 
-        // Transform panels to expected format
-        const transformedPanels = panels.map((panel: any, index: number) => ({
-            id: panel.id || `panel_${scene.id}_${index + 1}`,
-            sceneId: scene.id,
-            panelNumber: panel.panel_number || index + 1,
-            shotType: panel.shot_type || "medium",
-            imageUrl: panel.image_url || scene.imageUrl,
-            imageVariants: panel.image_variants || null,
-            narrative: panel.narrative || null,
-            dialogue: panel.dialogue || [],
-            sfx: panel.sfx || [],
-            summary: panel.description || panel.summary || null,
-        }));
+        let transformedPanels: any[];
+
+        if (generatedPanels && generatedPanels.length > 0) {
+            // Use DB panels (have actual generated images)
+            transformedPanels = generatedPanels;
+            panelsFromDb += generatedPanels.length;
+        } else {
+            // Fallback: Extract panels from comicToonplay JSON field
+            const toonplay = scene.comicToonplay as any;
+            const panels = toonplay?.panels || [];
+            panelsFromToonplay += panels.length;
+
+            transformedPanels = panels.map((panel: any, index: number) => ({
+                id: panel.id || `panel_${scene.id}_${index + 1}`,
+                sceneId: scene.id,
+                panelNumber: panel.panel_number || index + 1,
+                shotType: panel.shot_type || "medium",
+                imageUrl: panel.image_url || scene.imageUrl, // Fallback to scene image
+                imageVariants: panel.image_variants || null,
+                narrative: panel.narrative || null,
+                dialogue: panel.dialogue || [],
+                sfx: panel.sfx || [],
+                summary: panel.description || panel.summary || null,
+            }));
+        }
+
+        totalPanels += transformedPanels.length;
 
         scenesByChapter.get(scene.chapterId)?.push({
             ...scene,
@@ -183,7 +251,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
 
     const panelsExtractDuration = performance.now() - panelsExtractStart;
     console.log(
-        `[PERF-QUERY]   - Panels: ${totalPanels} extracted from comicToonplay (${panelsExtractDuration.toFixed(2)}ms)`,
+        `[PERF-QUERY]   - Total panels: ${totalPanels} (${panelsFromDb} from DB, ${panelsFromToonplay} from toonplay) in ${panelsExtractDuration.toFixed(2)}ms`,
     );
 
     // Build hierarchical structure
