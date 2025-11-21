@@ -153,11 +153,15 @@ dotenv --file .env.local run pnpm test --watch
 
 ---
 
-### Recent Updates (v2.2 - 2025-11-19)
+### Recent Updates (v2.3 - 2025-11-21)
 
 **Key Changes:**
 
-1. **Novels Page Test Cases Updated**: Aligned with actual implementation
+1. **Community Page Caching Tests Added**:
+   - Added new Caching Performance Tests section (TC-COMMUNITY-CACHE-001 to 006)
+     - SWR caching, localStorage, ETag, Redis cache tests for post data
+
+2. **Novels Page Test Cases Updated**: Aligned with actual implementation
    - Removed duplicate genre filter tests (TC-NOVELS-NAV-002 and TC-NOVELS-CONTENT-005)
    - Changed chapter references to scene list (TC-NOVELS-NAV-003/004, TC-NOVELS-CONTENT-006/007)
    - Removed word count from metadata (not implemented)
@@ -461,11 +465,10 @@ The application has 8 main navigation items:
 - **TC-COMICS-CONTENT-001**: Published comics display correctly
 - **TC-COMICS-CONTENT-002**: Comic cards show title, genre, rating
 - **TC-COMICS-CONTENT-003**: Comic cover images display
-- **TC-COMICS-CONTENT-004**: Empty state for no comics
-- **TC-COMICS-CONTENT-005**: Genre filters work correctly
-- **TC-COMICS-CONTENT-006**: Panel images load in correct order
-- **TC-COMICS-CONTENT-007**: Scene descriptions render correctly
-- **TC-COMICS-CONTENT-008**: Comic layout (panels + text) displays properly
+- **TC-COMICS-CONTENT-004**: Genre filters work correctly
+- **TC-COMICS-CONTENT-005**: Panel images load in correct order
+- **TC-COMICS-CONTENT-006**: Scene descriptions render correctly
+- **TC-COMICS-CONTENT-007**: Comic layout (panels + text) displays properly
 
 #### Functionality Tests
 - **TC-COMICS-FUNC-001**: Comic rating system works
@@ -542,6 +545,14 @@ The application has 8 main navigation items:
 - **TC-COMMUNITY-ERROR-002**: Comment submission failure shows error
 - **TC-COMMUNITY-ERROR-003**: Like action failure shows error
 - **TC-COMMUNITY-ERROR-004**: Post creation failure shows validation errors
+
+#### Caching Performance Tests
+- **TC-COMMUNITY-CACHE-001**: SWR caching returns cached data on repeat requests
+- **TC-COMMUNITY-CACHE-002**: localStorage persists post data across page reloads
+- **TC-COMMUNITY-CACHE-003**: ETag validation returns 304 for unchanged content
+- **TC-COMMUNITY-CACHE-004**: Redis cache serves post data within 50ms
+- **TC-COMMUNITY-CACHE-005**: Cache invalidation clears stale data correctly
+- **TC-COMMUNITY-CACHE-006**: Cache miss falls back to database correctly
 
 ---
 
@@ -1031,6 +1042,7 @@ The application has 8 main navigation items:
 | 2.0 | 2025-11-05 | Restructured into test-specification.md (this file):<br>- Extracted specification content (test cases, requirements, success criteria)<br>- Removed execution plans, automation details, and implementation guidance<br>- Companion document: test-development.md for execution and automation | Claude |
 | 2.1 | 2025-11-19 | Added comprehensive Test Directory Structure section:<br>- Documented `tests/` (Playwright E2E) vs `__tests__/` (Jest unit) separation<br>- Added complete directory trees matching current codebase<br>- Added running commands for both frameworks<br>- Added key differences comparison table<br>- Added file naming conventions documentation | Claude |
 | 2.2 | 2025-11-19 | Novels and Comics Page test cases updated:<br>- Novels: Removed duplicate genre filter tests, changed chapter → scene references, removed unimplemented features<br>- Added Caching Performance Tests for both Novels (TC-NOVELS-CACHE-001-006) and Comics (TC-COMICS-CACHE-001-006)<br>- Tests cover SWR, localStorage, ETag, Redis cache | Claude |
+| 2.3 | 2025-11-21 | Community Page caching tests added:<br>- Added Caching Performance Tests section (TC-COMMUNITY-CACHE-001-006)<br>- Tests cover SWR, localStorage, ETag, Redis cache for post data | Claude |
 
 ---
 
