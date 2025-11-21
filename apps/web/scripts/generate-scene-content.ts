@@ -33,7 +33,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://192.168.45.157:3000";
 
 // ANSI color codes
 const colors = {
@@ -140,7 +140,11 @@ function loadApiKey(): string {
 
     try {
         const authData = JSON.parse(fs.readFileSync(authPath, "utf-8"));
-        const apiKey = authData?.profiles?.writer?.apiKey;
+        // Support both flat structure (profiles.writer) and environment structure (develop.profiles.writer)
+        const apiKey =
+            authData?.profiles?.writer?.apiKey ||
+            authData?.develop?.profiles?.writer?.apiKey ||
+            authData?.main?.profiles?.writer?.apiKey;
 
         if (!apiKey) {
             log("❌ Error: Writer API key not found in .auth/user.json", "red");
@@ -157,11 +161,13 @@ function loadApiKey(): string {
 
 async function checkServerHealth(): Promise<boolean> {
     try {
-        const response = await fetch(`${BASE_URL}/api/health`, {
+        // Just check if server responds (any status is ok, including redirects)
+        const response = await fetch(`${BASE_URL}/`, {
             method: "GET",
             signal: AbortSignal.timeout(5000),
+            redirect: "manual",
         });
-        return response.ok;
+        return response.status > 0;
     } catch {
         return false;
     }
@@ -289,44 +295,15 @@ async function main(): Promise<void> {
     }
     log(`   ✅ Server is running`, "green");
 
-    // 3. Fetch scene info
-    log(`\n📖 Fetching scene information...`, "cyan");
-    const sceneInfo = await fetchSceneInfo(args.sceneId, apiKey);
-
-    if (!sceneInfo) {
-        log(`   ❌ Scene not found: ${args.sceneId}`, "red");
-        process.exit(1);
-    }
-
-    log(`   ✅ Scene found: "${sceneInfo.title}"`, "green");
-    log(`   Phase: ${sceneInfo.cyclePhase || "unknown"}`, "blue");
-
-    if (sceneInfo.content) {
-        const wordCount = sceneInfo.content.split(/\s+/).length;
-        log(`   ⚠️  Scene already has content (${wordCount} words)`, "yellow");
-    }
-
-    if (!sceneInfo.summary) {
-        log(`   ❌ Scene has no summary - cannot generate content`, "red");
-        log(`   Generate scene summaries first using the story generation pipeline`, "yellow");
-        process.exit(1);
-    }
-
-    if (args.verbose) {
-        log(`\n📝 Scene Summary Preview:`, "cyan");
-        const summaryPreview = sceneInfo.summary.substring(0, 200);
-        log(`   ${summaryPreview}${sceneInfo.summary.length > 200 ? "..." : ""}`, "blue");
-    }
-
-    // 4. Dry run check
+    // 3. Dry run check
     if (args.dryRun) {
         logSection("Dry Run Complete");
-        log(`\n✅ Would generate content for scene: "${sceneInfo.title}"`, "green");
+        log(`\n✅ Would generate content for scene: ${args.sceneId}`, "green");
         log(`   Run without --dry-run to execute generation`, "yellow");
         process.exit(0);
     }
 
-    // 5. Generate content
+    // 4. Generate content
     logSection("Generating Content");
 
     const result = await generateSceneContent(

@@ -308,7 +308,7 @@ async function prepareTestData(): Promise<void> {
                 summary: "Dynamic testing scenario",
                 cyclePhase: "adversity",
                 emotionalBeat: "tension",
-                dialogueVsDescription: "40% dialogue, 60% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% ratio (v1.2)
                 suggestedLength: "medium",
                 orderIndex: 0,
             },
@@ -321,7 +321,7 @@ async function prepareTestData(): Promise<void> {
                 summary: "Introspective evaluation moment",
                 cyclePhase: "virtue",
                 emotionalBeat: "hope",
-                dialogueVsDescription: "50% dialogue, 50% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% ratio (v1.2)
                 suggestedLength: "medium",
                 orderIndex: 1,
             },

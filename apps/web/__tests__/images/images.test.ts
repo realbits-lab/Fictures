@@ -269,7 +269,7 @@ beforeAll(async () => {
                 summary: "First test scene for image generation",
                 cyclePhase: "adversity",
                 emotionalBeat: "tension",
-                dialogueVsDescription: "50% dialogue, 50% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% ratio (v1.2)
                 suggestedLength: "medium",
                 orderIndex: 0,
             },
@@ -282,7 +282,7 @@ beforeAll(async () => {
                 summary: "Second test scene for comic panel",
                 cyclePhase: "virtue",
                 emotionalBeat: "hope",
-                dialogueVsDescription: "60% dialogue, 40% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% ratio (v1.2)
                 suggestedLength: "medium",
                 orderIndex: 1,
             },
@@ -295,7 +295,7 @@ beforeAll(async () => {
                 summary: "Third test scene for metadata testing",
                 cyclePhase: "consequence",
                 emotionalBeat: "relief",
-                dialogueVsDescription: "40% dialogue, 60% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% ratio (v1.2)
                 suggestedLength: "medium",
                 orderIndex: 2,
             },

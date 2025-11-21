@@ -339,7 +339,7 @@ The Hero reached out, fingers trembling just above the glowing surface. This was
 Light exploded outward, engulfing everything in brilliant radiance. The temple awakened.`,
             cyclePhase: "virtue",
             emotionalBeat: "hope",
-            dialogueVsDescription: "30% dialogue, 70% description",
+            // Removed: dialogueVsDescription - Now using fixed 40-60% ratio (v1.2)
             suggestedLength: "medium",
             orderIndex: 0,
         })

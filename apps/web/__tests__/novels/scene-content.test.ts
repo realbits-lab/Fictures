@@ -313,10 +313,7 @@ describe("Scene Content API", () => {
                 Array.isArray(scene.sensoryAnchors),
         ).toBe(true);
 
-        expect(
-            scene.dialogueVsDescription === null ||
-                typeof scene.dialogueVsDescription === "string",
-        ).toBe(true);
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
 
         expect(
             scene.suggestedLength === null ||

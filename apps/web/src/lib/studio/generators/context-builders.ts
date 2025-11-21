@@ -154,7 +154,7 @@ Cycle Phase: ${scene.cyclePhase || "N/A"}
 Emotional Beat: ${scene.emotionalBeat || "N/A"}
 Suggested Length: ${scene.suggestedLength || "medium"}
 Sensory Anchors: ${Array.isArray(scene.sensoryAnchors) ? scene.sensoryAnchors.join(", ") : "Use setting-appropriate details"}
-Dialogue vs Description: ${scene.dialogueVsDescription || "Balanced mix"}`;
+Dialogue Ratio: 40-60% (fixed for all scenes - v1.2)`;
 }
 
 /**

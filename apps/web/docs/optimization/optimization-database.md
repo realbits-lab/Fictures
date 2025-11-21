@@ -295,7 +295,7 @@ const sceneEditingColumns = {
   ...sceneReadingColumns,
   characterFocus: scenes.characterFocus, // Planning metadata
   sensoryAnchors: scenes.sensoryAnchors,
-  dialogueVsDescription: scenes.dialogueVsDescription,
+  // dialogueVsDescription: REMOVED in v1.2 - Now using fixed 40-60% dialogue ratio
   suggestedLength: scenes.suggestedLength,
 };
 ```
@@ -434,7 +434,8 @@ fictures:chapter:{id}:scenes (ZSET: score=orderIndex, member=sceneId)
 
 # Scenes with visibility and publishing
 fictures:scene:{id}:public (HASH: title, content, cyclePhase, emotionalBeat, visibility, publishedAt, viewCount)
-fictures:scene:{id}:planning (HASH: characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength)
+fictures:scene:{id}:planning (HASH: characterFocus, sensoryAnchors, suggestedLength)
+# Note: dialogueVsDescription REMOVED in v1.2 - Now using fixed 40-60% dialogue ratio
 
 # Characters with core traits
 fictures:story:{id}:characters (ZSET: score=isMain, member=characterId)
@@ -575,7 +576,7 @@ setInterval(warmPopularStoriesCache, 30 * 60 * 1000);
 - **Image fields**: imageUrl, imageVariants
 - **Adversity-Triumph fields**:
   - cyclePhase, emotionalBeat
-  - Planning metadata: characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength
+  - Planning metadata: characterFocus, sensoryAnchors, suggestedLength (dialogueVsDescription REMOVED v1.2)
 - **Publishing fields**:
   - visibility (private/unlisted/public), publishedAt, scheduledFor
   - autoPublish, publishedBy, unpublishedAt, unpublishedBy

@@ -46,13 +46,34 @@ The scene summary provides the specification for what this scene should accompli
 | Formatting | Block style | NO indentation, blank line between |
 | White Space | Maximum | Short paragraphs create visual breathing room |
 
-## Dialogue Format
+## Dialogue Format (CRITICAL - 40-60% RULE)
+
+**MANDATORY DIALOGUE RATIO: 40-60% of total word count MUST be dialogue.**
+
+This ratio is FIXED for ALL scenes regardless of type. It ensures:
+- Reader engagement through character voice
+- Pacing balance between action and conversation
+- Webtoon adaptation compatibility (Toonplay methodology)
+
 | Parameter | Target | Implementation |
 |-----------|--------|----------------|
-| Dialogue Ratio | 40-60% by word count | Balance with narration |
+| **Dialogue Ratio** | **40-60% by word count** | **MANDATORY - Count as you write** |
 | Speaker Format | New speaker = New paragraph | Always maintain clarity |
 | Action Tags | Every 2-3 dialogue lines | Ground characters in scene |
 | Action Separation | Action on new line | NEVER combine dialogue + action in same line |
+
+**How to Achieve 40-60% Dialogue:**
+1. For every 100 words of narration, write 65-150 words of dialogue
+2. If scene feels narration-heavy, ADD dialogue exchanges
+3. If scene feels dialogue-heavy, ADD action beats and descriptions
+4. Internal monologue counts as narration, NOT dialogue
+5. Dialogue tags ("she said") count toward dialogue word count
+
+**Self-Check Formula:**
+- Count total words in scene
+- Count words inside quotation marks (dialogue)
+- Dialogue % = (dialogue words / total words) × 100
+- Target: 40% ≤ result ≤ 60%
 
 ## Dynamic Style by Scene Type
 

@@ -176,7 +176,8 @@ async function fetchChapterScenesForReading(chapterId: string) {
             createdAt: scenes.createdAt,
             updatedAt: scenes.updatedAt,
             // ❌ SKIPPED: goal, conflict, outcome (legacy fields - removed from schema)
-            // ❌ SKIPPED: characterFocus, sensoryAnchors, dialogueVsDescription, suggestedLength (planning metadata - studio-only)
+            // ❌ SKIPPED: characterFocus, sensoryAnchors, suggestedLength (planning metadata - studio-only)
+            // ❌ SKIPPED: dialogueVsDescription (removed v1.2 - now using fixed 40-60% ratio)
         })
         .from(scenes)
         .where(eq(scenes.chapterId, chapterId))

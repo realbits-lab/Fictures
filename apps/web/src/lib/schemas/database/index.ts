@@ -604,7 +604,7 @@ export const scenes = pgTable(
             .$type<string[]>()
             .default([])
             .notNull(),
-        dialogueVsDescription: text("dialogue_vs_description").notNull(), // Balance guidance (e.g., "60% dialogue, 40% description")
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: text("suggested_length").notNull(), // 'short' | 'medium' | 'long' (short: 300-500, medium: 500-800, long: 800-1000 words)
 
         // === GENERATED PROSE (Execution Layer) ===

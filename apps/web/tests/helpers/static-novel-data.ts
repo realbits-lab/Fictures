@@ -750,7 +750,7 @@ export function getTestScene1_1() {
             "silver banners rustling",
             "weight of mentor's sword",
         ],
-        dialogueVsDescription: "40% dialogue, 60% description",
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: "medium" as const,
         content: `The summons came at dawn, carried by a young squire whose eyes held a mixture of awe and pity. Elena knew that look well—it was the same one she had worn when delivering messages to knights marked for dangerous duty.
 
@@ -853,7 +853,7 @@ export function getTestScene1_2() {
             "cold marble of memorial stones",
             "echo of her own breathing",
         ],
-        dialogueVsDescription: "20% dialogue, 80% description",
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: "medium" as const,
         content: `The Memorial Hall was always coldest at twilight, when the sun's last rays painted crimson across the names carved into marble walls. Elena stood before the newest stone, where the chiseled letters of Aldric's name still held sharp edges that time had not yet worn smooth.
 
@@ -962,7 +962,7 @@ export function getTestScene1_3() {
             "clatter of armor as knights stand",
             "her own voice growing stronger",
         ],
-        dialogueVsDescription: "50% dialogue, 50% description",
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: "long" as const,
         content: `The great hall fell silent as Elena stepped onto the raised platform. Before her stood two dozen knights—volunteers who had answered the call despite knowing the mission's dangers. Their faces held a range of expressions: determination, fear, curiosity. All of them watching her.
 
@@ -1079,7 +1079,7 @@ export function getTestScene2_1() {
             "ground soft with decay",
             "light fading rapidly",
         ],
-        dialogueVsDescription: "35% dialogue, 65% description",
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: "medium" as const,
         content: `The boundary between ordinary forest and Whispering Woods was marked by nothing so obvious as a fence or sign. One moment the team rode through autumn woods painted in gold and crimson; the next, the colors leached away as if drained by an unseen force.
 
@@ -1184,7 +1184,7 @@ export function getTestScene2_2() {
             "shadow wolves howling",
             "cold sweat on skin",
         ],
-        dialogueVsDescription: "30% dialogue, 70% description",
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: "long" as const,
         content: `The attack came without warning.
 
@@ -1327,7 +1327,7 @@ export function getTestScene2_3() {
             "companions breathing steadily",
             "whisper of spirit voice",
         ],
-        dialogueVsDescription: "45% dialogue, 55% description",
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: "medium" as const,
         content: `They made camp in a small clearing where moonlight broke through the canopy—one of those rare pockets where the forest's malevolence seemed to hold less power. Elena moved among her wounded, applying healing salves and binding injuries with practiced hands.
 

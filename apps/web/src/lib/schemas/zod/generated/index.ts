@@ -344,7 +344,7 @@ export const insertSceneSchema = createInsertSchema(scenes, {
     characterFocus: z.array(z.string()),
     sensoryAnchors: z.array(z.string()),
     suggestedLength: z.enum(SUGGESTED_LENGTHS).optional(),
-    dialogueVsDescription: z.string().optional(),
+    // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
 });
 
 /**

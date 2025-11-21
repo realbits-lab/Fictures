@@ -545,7 +545,7 @@ export const AiSceneSummaryZodSchema = insertSceneSchema
         characterFocus: true,
         settingId: true,
         sensoryAnchors: true,
-        dialogueVsDescription: true,
+        // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
         suggestedLength: true,
     })
     .extend({

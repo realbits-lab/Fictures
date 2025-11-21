@@ -120,7 +120,7 @@ export class RelationshipManager {
                 characterFocus: (sceneData as any).characterFocus || [],
                 settingId: (sceneData as any).settingId || "",
                 sensoryAnchors: [],
-                dialogueVsDescription: "50% dialogue, 50% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
                 suggestedLength: "medium",
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),

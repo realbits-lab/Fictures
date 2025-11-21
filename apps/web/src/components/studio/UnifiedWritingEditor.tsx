@@ -2236,12 +2236,10 @@ export function UnifiedWritingEditor({
                                             </tr>
                                             <tr className="border-b">
                                                 <td className="py-2 px-4 font-medium bg-gray-50 dark:bg-gray-800">
-                                                    Dialogue vs Description
+                                                    Dialogue Ratio
                                                 </td>
                                                 <td className="py-2 px-4">
-                                                    {(selectedScene as any)
-                                                        .dialogueVsDescription ||
-                                                        "N/A"}
+                                                    40-60% (fixed for all scenes)
                                                 </td>
                                             </tr>
                                             <tr className="border-b">

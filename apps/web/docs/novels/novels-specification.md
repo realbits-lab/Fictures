@@ -879,7 +879,7 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
   characterFocus: string[];     // Character IDs featured (primary + supporting)
   settingId: string;            // Selected from Chapter.settingIds
   sensoryAnchors: string[];     // Concrete sensory details
-  dialogueVsDescription: string; // e.g., "60% dialogue, 40% description"
+  // dialogueVsDescription: REMOVED in v1.2 - Now using fixed 40-60% dialogue ratio for ALL scenes
   suggestedLength: 'short' | 'medium' | 'long';
 }
 ```
@@ -908,7 +908,7 @@ The 4-phase narrative cycle (Adversity → Virtue → Consequence → New Advers
 2. **Apply Character Voices**: Use Character.voiceStyle for authentic dialogue
 3. **Apply Sensory Details**: Use Setting.sensory + scene.sensoryAnchors
 4. **Apply Genre/Tone**: Use Story.genre and Story.tone for atmosphere
-5. **Balance Dialogue/Description**: Follow scene.dialogueVsDescription ratio
+5. **Balance Dialogue/Description**: Apply fixed 40-60% dialogue ratio for ALL scenes (v1.2)
 6. **Target Length**: Follow scene.suggestedLength (short: 300-500, medium: 500-800, long: 800-1000 words)
 7. **Generate Prose**: Create full narrative content
 

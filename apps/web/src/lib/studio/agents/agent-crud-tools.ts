@@ -470,7 +470,7 @@ export const getScene = createTool({
                 characterFocus: scene.characterFocus,
                 settingId: scene.settingId,
                 sensoryAnchors: scene.sensoryAnchors,
-                dialogueVsDescription: scene.dialogueVsDescription,
+                // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
                 suggestedLength: scene.suggestedLength,
                 novelStatus: scene.novelStatus,
                 comicStatus: scene.comicStatus,
@@ -511,7 +511,7 @@ export const createScene = createTool({
                 cyclePhase: "setup",
                 emotionalBeat: "hope",
                 settingId: "", // Required - should be provided by caller
-                dialogueVsDescription: "50% dialogue, 50% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
                 suggestedLength: "medium",
                 characterFocus: [],
                 sensoryAnchors: [],

@@ -178,8 +178,7 @@ export class SceneSummaryService {
             characterFocus: generationResult.scene.characterFocus || [],
             settingId: generationResult.scene.settingId || null,
             sensoryAnchors: generationResult.scene.sensoryAnchors || [],
-            dialogueVsDescription:
-                generationResult.scene.dialogueVsDescription || null,
+            // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
             suggestedLength: generationResult.scene.suggestedLength || null,
 
             // === GENERATED PROSE (Execution Layer) ===
@@ -229,7 +228,7 @@ export class SceneSummaryService {
             .insert(scenes)
             .values({
                 ...validatedScene,
-                dialogueVsDescription: validatedScene.dialogueVsDescription || "50% dialogue, 50% description",
+                // Removed: dialogueVsDescription - Now using fixed 40-60% dialogue ratio for all scenes (v1.2)
                 suggestedLength: validatedScene.suggestedLength || "medium",
             } as any)
             .returning()) as Scene[];
