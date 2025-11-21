@@ -9,12 +9,12 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import type { InferSelectModel } from "drizzle-orm";
-import { characters, settings } from "@/lib/schemas/database";
-import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
 import { generateRequestId } from "@/lib/auth/context";
 import { withAuth } from "@/lib/auth/server-context";
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
+import type { characters, settings } from "@/lib/schemas/database";
+import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
 
 process.env.COMICS_IMAGE_ONLY = process.env.COMICS_IMAGE_ONLY || "true";
 
@@ -91,7 +91,12 @@ function buildStubToonplay(): AiComicToonplayType {
                 shot_type: "establishing_shot",
                 description: `${baseDescription} Panel one sets tone.`,
                 characters_visible: ["char_stub"],
-                character_poses: { char_stub: "Confident stance surveying ruins" },
+                character_poses: [
+                    {
+                        character_id: "char_stub",
+                        pose: "Confident stance surveying ruins",
+                    },
+                ],
                 setting_focus: "Vast floating archive",
                 lighting: "Radiant golden shafts of light",
                 camera_angle: "wide panoramic",
@@ -104,7 +109,12 @@ function buildStubToonplay(): AiComicToonplayType {
                 shot_type: "medium_shot",
                 description: `${baseDescription} Panel two heightens detail.`,
                 characters_visible: ["char_stub"],
-                character_poses: { char_stub: "Kneeling inspecting glyphs" },
+                character_poses: [
+                    {
+                        character_id: "char_stub",
+                        pose: "Kneeling inspecting glyphs",
+                    },
+                ],
                 setting_focus: "Ancient glyphs glowing softly",
                 lighting: "Focused glowing runes",
                 camera_angle: "eye level",
@@ -123,7 +133,12 @@ function buildStubToonplay(): AiComicToonplayType {
                 shot_type: "close_up",
                 description: `${baseDescription} Panel three captures emotion.`,
                 characters_visible: ["char_stub"],
-                character_poses: { char_stub: "Hand outstretched toward glyph" },
+                character_poses: [
+                    {
+                        character_id: "char_stub",
+                        pose: "Hand outstretched toward glyph",
+                    },
+                ],
                 setting_focus: "Glyphs pulsing brighter",
                 lighting: "Intense rim light",
                 camera_angle: "dramatic low angle",
@@ -153,10 +168,11 @@ function buildStubCharacters(): CharacterRow[] {
             storyId: "story_stub",
             name: "Aria",
             role: "protagonist",
+            isMain: true,
             summary: "Curious explorer",
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            coreTrait: "curiosity",
+            coreTrait: "wisdom" as const,
             internalFlaw: "impatience",
             externalGoal: "uncover hidden truths",
             backstory: "Raised among scholars of light archives.",
@@ -176,7 +192,9 @@ function buildStubCharacters(): CharacterRow[] {
                 vocabulary: "poetic",
                 speechPatterns: ["measured"],
             },
-        } as CharacterRow,
+            imageUrl: null,
+            imageVariants: null,
+        } as unknown as CharacterRow,
     ];
 }
 
@@ -187,20 +205,42 @@ function buildStubSettings(): SettingRow[] {
             storyId: "story_stub",
             name: "Luminous Archive",
             summary: "Suspended library of light",
-            adversityElements: null,
-            virtueElements: null,
-            consequenceElements: null,
+            adversityElements: {
+                physicalObstacles: ["ancient traps"],
+                scarcityFactors: ["limited light sources"],
+                dangerSources: ["collapsing structures"],
+                socialDynamics: ["isolated scholars"],
+            },
+            virtueElements: {
+                witnessElements: ["ancient spirits"],
+                contrastElements: ["darkness vs light"],
+                opportunityElements: ["hidden passages"],
+                sacredSpaces: ["central archive"],
+            },
+            consequenceElements: {
+                transformativeElements: ["knowledge awakening"],
+                rewardSources: ["ancient wisdom"],
+                revelationTriggers: ["deciphered glyphs"],
+                communityResponses: ["grateful spirits"],
+            },
             symbolicMeaning: "knowledge triumphs over fear",
-            cycleAmplification: null,
             emotionalResonance: "wonder",
             mood: "awe",
+            sensory: {
+                sight: ["golden light", "floating books"],
+                sound: ["whispered echoes"],
+                smell: ["ancient parchment"],
+                touch: ["smooth stone"],
+                taste: [],
+            },
+            architecturalStyle: "floating monoliths",
+            visualReferences: ["Studio Ghibli", "ancient libraries"],
+            colorPalette: ["gold", "teal"],
+            imageUrl: null,
+            imageVariants: null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            sensory: null,
-            architecturalStyle: "floating monoliths",
-            visualReferences: null,
-            colorPalette: ["gold", "teal"],
-        } as SettingRow,
+        } as unknown as SettingRow,
     ];
 }
 
@@ -255,7 +295,13 @@ async function generatePanels(forceRegenerate = false): Promise<PanelResult> {
 
 // ============================================================================
 function getPanelMetadata(panel: PanelResult["panels"][number]): PanelMetadata {
-    return (panel.metadata || {}) as PanelMetadata;
+    // Panel properties are directly on the panel object, not nested in metadata
+    return {
+        width: panel.width,
+        height: panel.height,
+        model: panel.model,
+        provider: panel.provider,
+    } as PanelMetadata;
 }
 
 function extractDimensionsFromDataUrl(imageUrl: string): {
@@ -335,7 +381,9 @@ describe("Comic Panel Image Generation Integration", () => {
             const expectedRatio = 9 / 16;
             const tolerance = 0.05;
 
-            expect(Math.abs(aspectRatio - expectedRatio)).toBeLessThan(tolerance);
+            expect(Math.abs(aspectRatio - expectedRatio)).toBeLessThan(
+                tolerance,
+            );
             logComicsTest(
                 "aspect-ratio",
                 `Panel ${panel.panel_number} computedRatio=${aspectRatio.toFixed(4)} within tolerance`,
@@ -384,10 +432,7 @@ describe("Comic Panel Image Generation Integration", () => {
             "metadata",
             `Metadata: panels=${metadata.totalPanels} time=${metadata.generationTime}ms model=${metadata.model}`,
         );
-        logComicsTest(
-            "metadata",
-            `aspectRatio=${metadata.aspectRatio ?? "n/a"}`,
-        );
+        logComicsTest("metadata", `provider=${metadata.provider}`);
 
         expect(metadata.totalPanels).toBe(result.panels.length);
         expect(metadata.generationTime).toBeGreaterThan(0);
@@ -396,7 +441,10 @@ describe("Comic Panel Image Generation Integration", () => {
     }, 120000);
 
     it("should generate images with consistent model/provider", async () => {
-        logComicsTest("consistency", "Checking panel model/provider consistency");
+        logComicsTest(
+            "consistency",
+            "Checking panel model/provider consistency",
+        );
         const result = await generatePanels();
 
         expect(result.metadata.model).toBeDefined();

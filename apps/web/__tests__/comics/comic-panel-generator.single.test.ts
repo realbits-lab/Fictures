@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
-import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import type { InferSelectModel } from "drizzle-orm";
-import { characters, settings } from "@/lib/schemas/database";
 import { generateRequestId } from "@/lib/auth/context";
 import { withAuth } from "@/lib/auth/server-context";
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
+import type { characters, settings } from "@/lib/schemas/database";
+import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
 
 jest.setTimeout(180_000);
 
@@ -39,8 +39,14 @@ function buildStubToonplay(): AiComicToonplayType {
                 shot_type: "close_up",
                 description: longText.slice(0, 260),
                 characters_visible: ["char_single"],
-                character_poses: { char_single: "Heroic stance with confident gaze" },
-                setting_focus: "Ancient floating library with shimmering glyphs",
+                character_poses: [
+                    {
+                        character_id: "char_single",
+                        pose: "Heroic stance with confident gaze",
+                    },
+                ],
+                setting_focus:
+                    "Ancient floating library with shimmering glyphs",
                 lighting: "Golden rim light with deep blue ambient glow",
                 camera_angle: "eye level dramatic framing",
                 mood: "hopeful",
@@ -68,10 +74,11 @@ function buildStubCharacter(): CharacterRow {
         storyId: "story_single",
         name: "Aria",
         role: "protagonist",
+        isMain: true,
         summary: "Heroic explorer",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        coreTrait: "courage",
+        coreTrait: "courage" as const,
         internalFlaw: "doubt",
         externalGoal: "discover the relic",
         backstory: "Raised among scholars of lost worlds.",
@@ -91,7 +98,9 @@ function buildStubCharacter(): CharacterRow {
             vocabulary: "poetic",
             speechPatterns: ["measured"],
         },
-    } as CharacterRow;
+        imageUrl: null,
+        imageVariants: null,
+    } as unknown as CharacterRow;
 }
 
 function buildStubSetting(): SettingRow {
@@ -100,20 +109,42 @@ function buildStubSetting(): SettingRow {
         storyId: "story_single",
         name: "Luminous Archive",
         summary: "Suspended library of light",
-        adversityElements: null,
-        virtueElements: null,
-        consequenceElements: null,
+        adversityElements: {
+            physicalObstacles: ["ancient traps"],
+            scarcityFactors: ["limited light sources"],
+            dangerSources: ["collapsing structures"],
+            socialDynamics: ["isolated scholars"],
+        },
+        virtueElements: {
+            witnessElements: ["ancient spirits"],
+            contrastElements: ["darkness vs light"],
+            opportunityElements: ["hidden passages"],
+            sacredSpaces: ["central archive"],
+        },
+        consequenceElements: {
+            transformativeElements: ["knowledge awakening"],
+            rewardSources: ["ancient wisdom"],
+            revelationTriggers: ["deciphered glyphs"],
+            communityResponses: ["grateful spirits"],
+        },
         symbolicMeaning: "knowledge triumphs over fear",
-        cycleAmplification: null,
         emotionalResonance: "wonder",
         mood: "awe",
+        sensory: {
+            sight: ["golden light", "floating books"],
+            sound: ["whispered echoes"],
+            smell: ["ancient parchment"],
+            touch: ["smooth stone"],
+            taste: [],
+        },
+        architecturalStyle: "floating monoliths",
+        visualReferences: ["Studio Ghibli", "ancient libraries"],
+        colorPalette: ["gold", "teal"],
+        imageUrl: null,
+        imageVariants: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        sensory: null,
-        architecturalStyle: "floating monoliths",
-        visualReferences: null,
-        colorPalette: ["gold", "teal"],
-    } as SettingRow;
+    } as unknown as SettingRow;
 }
 
 describe("Comic Panel Generator (single panel image)", () => {
@@ -154,4 +185,3 @@ describe("Comic Panel Generator (single panel image)", () => {
         expect(result.metadata.totalPanels).toBe(1);
     });
 });
-
