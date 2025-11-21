@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
     Badge,
     Button,
@@ -10,7 +9,7 @@ import {
     CardTitle,
     Skeleton,
 } from "@/components/ui";
-import { usePrivacySettings } from "@/lib/hooks/use-page-cache";
+import { usePrivacySettings } from "@/hooks/use-page-cache";
 
 export default function PrivacySecurityPage() {
     const {

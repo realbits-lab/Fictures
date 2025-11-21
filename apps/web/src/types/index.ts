@@ -2,49 +2,47 @@
  * Type Organization Index
  *
  * This file provides a quick reference to all type locations in the codebase.
- * Types are organized by architectural layer following Clean Architecture principles.
+ * All schemas and types are now unified under src/lib/schemas/ with a clear 5-layer architecture.
  *
- * ## Architecture Layers
+ * ## Unified Schema Architecture
+ *
+ * **Layer Flow**: database → zod → api → services → domain
+ *
+ * ### Database Layer (Drizzle ORM)
+ * - Location: src/lib/schemas/database/
+ * - Purpose: Database table definitions (SSOT for DB)
+ * - Example: stories, characters, scenes tables
+ *
+ * ### Zod Layer (Validation Schemas)
+ * - Location: src/lib/schemas/zod/
+ *   - zod/generated/ - Auto-generated from Drizzle
+ *   - zod/nested/ - Hand-written nested JSON schemas
+ *   - zod/ai/ - AI generation schemas
+ * - Purpose: Runtime validation and type inference
+ * - Example: Story, Character, Scene types
  *
  * ### API Layer (HTTP Contracts)
- * HTTP request/response types that define the public API contract.
- * - Location: src/app/star/api/types.ts
- * - Naming: ActionEntityRequest, ActionEntityResponse, ActionEntityErrorResponse
- * - Example: GenerateStoryRequest, GenerateStoryResponse
+ * - Location: src/lib/schemas/api/
+ * - Files: studio.ts, evaluation.ts
+ * - Naming: Api{Entity}Request, Api{Entity}Response
+ * - Example: ApiStoryRequest, ApiStoryResponse
  *
- * ### Service Layer (Business Logic)
- * Internal function parameters and results for business logic.
- * - Location: src/lib/star/types.ts
- * - Naming: ActionEntityParams, ActionEntityResult
- * - Example: GenerateStoryParams, GenerateStoryResult
+ * ### Services Layer (Business Logic)
+ * - Location: src/lib/schemas/services/
+ * - Files: generators.ts, evaluation/, validation/, improvement/
+ * - Naming: Generator{Entity}Params, Generator{Entity}Result
+ * - Example: GeneratorStoryParams, EvaluationResult
  *
- * ### Domain Layer (Core Concepts)
- * Domain-specific types and concepts.
- * - Location: src/lib/domain/types/
- * - Naming: Entity, EntityType, Concept
+ * ### Domain Layer (Domain Concepts)
+ * - Location: src/lib/schemas/domain/
+ * - Files: image.ts
+ * - Purpose: Domain-specific types not tied to DB/API/Services
  * - Example: ImageProvider, AspectRatio
  *
  * ### Shared Layer (Cross-cutting Concerns)
- * Globally shared types used across multiple layers.
  * - Location: src/types/ (this directory)
- * - Naming: Descriptive names based on purpose
- * - Example: ValidationResult, ReadingHistoryRecord
- *
- * ## Type Locations
- *
- * ### Global Shared Types (this directory)
- * - validation-evaluation.ts - Story validation and quality evaluation types
- * - reading-history.ts - Reading progress tracking and history
- * - next-auth.d.ts - NextAuth.js authentication type augmentation
- *
- * ### API Layer Types
- * - app/studio/api/types.ts - Studio generation API contracts (stories, characters, settings, etc.)
- *
- * ### Service Layer Types
- * - lib/studio/generators/types.ts - Generator function parameters and results
- *
- * ### Domain Layer Types
- * - lib/ai/types/image.ts - AI image generation domain types
+ * - Purpose: Globally shared types and re-exports
+ * - Files: reading-history.ts, validation-evaluation.ts, next-auth.d.ts
  *
  * ## Type Naming Conventions
  *
@@ -89,21 +87,49 @@
  *
  * ### From API Types
  * @example
- * import type { GenerateStoryRequest } from '@/app/studio/api/types';
+ * import type { ApiStoryRequest } from '@/lib/schemas/api/studio';
  *
  * ### From Service Types
  * @example
- * import type { GenerateStoryParams } from '@/lib/studio/generators/types';
+ * import type { GeneratorStoryParams } from '@/lib/schemas/services/generators';
  *
  * ### From Domain Types
  * @example
- * import type { ImageProvider } from '@/lib/ai/types/image';
+ * import type { ImageProvider } from '@/lib/schemas/domain/image';
  */
 
 // ============================================================================
 // Re-export Global Shared Types
 // ============================================================================
 
+// Evaluation types
+export type {
+    ChapterEvaluation,
+    CharacterEvaluation,
+    CrossReferenceAnalysis,
+    EvaluationScore,
+    OverallEvaluation,
+    PartEvaluation,
+    QuickEvaluationResult,
+    SceneEvaluation,
+    SettingEvaluation,
+    StoryEvaluationResult,
+} from "@/lib/schemas/services/evaluation";
+// Improvement types
+export type {
+    ChangeLog,
+    StoryImprovementRequest,
+    StoryImprovementResult,
+} from "@/lib/schemas/services/improvement";
+// Validation types
+export type {
+    FullValidationResult,
+    ValidationError,
+    ValidationRequest,
+    ValidationResult,
+    ValidationStats,
+    ValidationWarning,
+} from "@/lib/schemas/services/validation";
 // Reading history types
 export type {
     AddToHistoryOptions,
@@ -112,36 +138,16 @@ export type {
     ReadingHistoryRecord,
     StorageData,
 } from "./reading-history";
-// Validation and evaluation types
-export type {
-    ChangeLog,
-    ChapterEvaluation,
-    CharacterEvaluation,
-    ComprehensiveReport,
-    CrossReferenceAnalysis,
-    EvaluationRequest,
-    // Evaluation types
-    EvaluationScore,
-    FullValidationResult,
-    OverallEvaluation,
-    PartEvaluation,
-    QuickEvaluationResult,
-    SceneEvaluation,
-    SettingEvaluation,
-    StoryAnalysisRequest,
-    StoryAnalysisResponse,
-    StoryAnalysisWithImprovementResponse,
-    StoryEvaluationResult,
-    // Improvement types
-    StoryImprovementRequest,
-    StoryImprovementResult,
-    ValidationError,
-    // API types
-    ValidationRequest,
-    // Validation types
-    ValidationResult,
-    ValidationStats,
-    ValidationWarning,
-} from "./validation-evaluation";
+
+// Legacy API types (still in validation-evaluation.ts - will be migrated separately)
+// TODO: Migrate these types to the appropriate schema layer
+// These types are currently not used - the evaluation APIs use types from @/lib/schemas/api/evaluation
+// export type {
+//     ComprehensiveReport,
+//     EvaluationRequest,
+//     StoryAnalysisRequest,
+//     StoryAnalysisResponse,
+//     StoryAnalysisWithImprovementResponse,
+// } from "./validation-evaluation";
 
 // Note: next-auth.d.ts augments global types and doesn't need re-export

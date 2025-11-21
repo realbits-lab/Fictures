@@ -81,13 +81,16 @@ python --version  # Should show 3.12.7
 
 ## API Authentication
 
-**IMPORTANT**: All API endpoints require authentication via API key. Authentication is always enabled and cannot be disabled.
+**IMPORTANT**: All API endpoints require authentication. The AI server supports TWO distinct authentication methods:
 
-**Cross-System Compatible**: The AI server uses the same authentication system as the web app for seamless integration.
+1. **API Key Authentication** - Using `x-api-key` header (for server-to-server, scripts, testing)
+2. **Email/Password Authentication** - Using JWT tokens (for user sessions, not yet implemented)
+
+**Cross-System Compatible**: The AI server uses the same authentication database as the web app for seamless integration.
 
 **Complete Documentation**: [../../docs/operation/cross-system-authentication.md](../../docs/operation/cross-system-authentication.md)
 
-### Authentication Method
+### Method 1: API Key Authentication
 
 The AI server validates API keys against the web application's PostgreSQL database. API keys are stored securely using bcrypt hashing, ensuring compatibility between both systems.
 
@@ -95,14 +98,25 @@ The AI server validates API keys against the web application's PostgreSQL databa
 - **Hashing**: bcrypt (compatible with web app)
 - **Prefix Length**: 16 characters (for fast lookup)
 
-**Required Header Formats:**
-```bash
-# Option 1: Authorization header (recommended)
-Authorization: Bearer YOUR_API_KEY
+**Required Header Format:**
 
-# Option 2: x-api-key header
+```bash
+# Use x-api-key header
 x-api-key: YOUR_API_KEY
 ```
+
+**IMPORTANT**: The AI server ONLY accepts the `x-api-key` header for API key authentication. Do NOT use `Authorization: Bearer` for API keys.
+
+### Method 2: Email/Password Authentication (Future)
+
+For user session authentication (not yet implemented):
+
+```bash
+# Use Authorization header with JWT token
+Authorization: Bearer YOUR_JWT_TOKEN
+```
+
+**Status**: Not yet implemented. Currently, only API key authentication (`x-api-key` header) is supported.
 
 ### Getting API Keys for Testing
 
@@ -115,19 +129,7 @@ cat .auth/user.json | jq -r '.apiKey'
 
 **Example API Request:**
 ```bash
-# Using Authorization header
-curl -X POST "http://localhost:8000/api/v1/images/generate" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $(cat .auth/user.json | jq -r '.apiKey')" \
-  -d '{
-    "prompt": "A beautiful sunset over mountains",
-    "width": 1024,
-    "height": 1024,
-    "num_inference_steps": 4,
-    "guidance_scale": 1.0
-  }'
-
-# Using x-api-key header
+# Using x-api-key header (ONLY supported method)
 curl -X POST "http://localhost:8000/api/v1/images/generate" \
   -H "Content-Type: application/json" \
   -H "x-api-key: $(cat .auth/user.json | jq -r '.apiKey')" \
@@ -185,7 +187,7 @@ API keys can have different scopes for fine-grained access control (aligned with
 
 ### Configuration Options
 
-The `GENERATION_MODE` environment variable controls which services are enabled:
+The `AI_SERVER_GENERATION_MODE` environment variable controls which services are enabled:
 
 | Mode | Services Enabled | VRAM Usage | Use Case |
 |------|------------------|------------|----------|
@@ -200,13 +202,13 @@ To switch generation modes:
 1. **Edit `.env.local`**:
    ```bash
    # For text generation only
-   GENERATION_MODE=text
+   AI_SERVER_GENERATION_MODE=text
 
    # For image generation only (default)
-   GENERATION_MODE=image
+   AI_SERVER_GENERATION_MODE=image
 
    # For both (requires 24GB+ VRAM)
-   GENERATION_MODE=both
+   AI_SERVER_GENERATION_MODE=both
    ```
 
 2. **Restart the server** - Changes take effect on next startup
@@ -219,15 +221,15 @@ To switch generation modes:
 
 ### API Behavior by Mode
 
-**Text Mode (`GENERATION_MODE=text`)**:
+**Text Mode (`AI_SERVER_GENERATION_MODE=text`)**:
 - ✅ `/api/v1/text/*` endpoints available
 - ❌ `/api/v1/images/*` endpoints return 404
 
-**Image Mode (`GENERATION_MODE=image`)** - Default:
+**Image Mode (`AI_SERVER_GENERATION_MODE=image`)** - Default:
 - ✅ `/api/v1/images/*` endpoints available
 - ❌ `/api/v1/text/*` endpoints return 404
 
-**Both Mode (`GENERATION_MODE=both`)**:
+**Both Mode (`AI_SERVER_GENERATION_MODE=both`)**:
 - ✅ All endpoints available
 - ⚠️ Requires 24GB+ VRAM
 
@@ -259,6 +261,20 @@ pnpm generate:client  # Generates TypeScript client from OpenAPI spec
 ```
 
 ## Running the Server
+
+**CRITICAL: ComfyUI Server Dependency**
+
+When `AI_SERVER_GENERATION_MODE` is set to `image` or `both`, you **MUST** start the ComfyUI server before starting the AI server. The AI server will fail to initialize image generation services if ComfyUI is not running.
+
+**Start ComfyUI First (when using image mode):**
+```bash
+# 1. Start ComfyUI server (required for image generation)
+cd ~/.local/comfyui
+nohup python main.py --listen 127.0.0.1 --port 8188 > comfyui.log 2>&1 &
+
+# 2. Verify ComfyUI is running
+curl -s http://127.0.0.1:8188/ > /dev/null && echo "ComfyUI is running" || echo "ComfyUI is NOT running"
+```
 
 ### Development Mode (with auto-reload)
 ```bash
@@ -476,7 +492,7 @@ nohup python main.py --listen 127.0.0.1 --port 8188 > comfyui.log 2>&1 &
 The AI server connects to ComfyUI via HTTP API. Configure the URL in your `.env` file:
 
 ```bash
-COMFYUI_URL=http://127.0.0.1:8188
+AI_SERVER_COMFYUI_URL=http://127.0.0.1:8188
 ```
 
 ### Model Files
@@ -508,14 +524,14 @@ Create a `.env.local` file in `apps/ai-server/`:
 # - "text": Only text generation (vLLM, uses ~10GB VRAM)
 # - "image": Only image generation (ComfyUI, uses ~8GB VRAM) [DEFAULT]
 # - "both": Both services (requires 24GB+ VRAM or CPU offload)
-GENERATION_MODE=image
+AI_SERVER_GENERATION_MODE=image
 
 # =============================================================================
 # ComfyUI Configuration (External Image Generation Server)
 # =============================================================================
 # ComfyUI runs as a separate HTTP server and manages its own models
 # Install ComfyUI at: ~/.local/comfyui (see above for installation instructions)
-COMFYUI_URL=http://127.0.0.1:8188
+AI_SERVER_COMFYUI_URL=http://127.0.0.1:8188
 
 # =============================================================================
 # Authentication & Database
@@ -533,11 +549,11 @@ DATABASE_URL=postgresql://user:password@host:5432/database
 - `LOG_LEVEL` - Logging level (INFO)
 
 **Notes:**
-- `GENERATION_MODE` determines which models are loaded at startup (prevents VRAM overload)
+- `AI_SERVER_GENERATION_MODE` determines which models are loaded at startup (prevents VRAM overload)
 - When switching modes, simply change the environment variable and restart the server
-- ComfyUI manages its own models and runs externally (only used when `GENERATION_MODE` is "image" or "both")
+- ComfyUI manages its own models and runs externally (only used when `AI_SERVER_GENERATION_MODE` is "image" or "both")
 - API key authentication is **always enabled** (cannot be disabled)
-- No manual code changes needed - services load conditionally based on `GENERATION_MODE`
+- No manual code changes needed - services load conditionally based on `AI_SERVER_GENERATION_MODE`
 
 ## Code Guidelines
 

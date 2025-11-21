@@ -20,7 +20,7 @@
 
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 
@@ -107,7 +107,7 @@ export function AdvancedCacheMetricsDashboard() {
     // Fetch metrics with auto-refresh every 5 seconds
     const { data, error, mutate } = useSWR<MetricsResponse>(
         isVisible
-            ? `/studio/api/cache/metrics?timeRange=${timeRange}&groupBy=${groupBy}`
+            ? `/api/studio/cache/metrics?timeRange=${timeRange}&groupBy=${groupBy}`
             : null,
         fetcher,
         {
@@ -188,7 +188,7 @@ export function AdvancedCacheMetricsDashboard() {
         }
 
         try {
-            await fetch("/studio/api/cache/metrics", { method: "DELETE" });
+            await fetch("/api/studio/cache/metrics", { method: "DELETE" });
             mutate();
             alert("Cache metrics cleared successfully");
         } catch (error) {

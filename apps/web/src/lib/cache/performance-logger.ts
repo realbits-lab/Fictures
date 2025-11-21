@@ -170,7 +170,7 @@ export async function measureAsync<T>(
         const duration = logger.end(operationId, { success: true });
         return { result, duration };
     } catch (error) {
-        const duration = logger.end(operationId, {
+        const _duration = logger.end(operationId, {
             success: false,
             error: error instanceof Error ? error.message : "Unknown error",
         });
@@ -193,7 +193,7 @@ export function measureSync<T>(
         const duration = logger.end(operationId, { success: true });
         return { result, duration };
     } catch (error) {
-        const duration = logger.end(operationId, {
+        const _duration = logger.end(operationId, {
             success: false,
             error: error instanceof Error ? error.message : "Unknown error",
         });

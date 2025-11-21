@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 
@@ -36,7 +36,7 @@ export function SettingsDisplay({ storyData }: SettingsDisplayProps) {
 
             try {
                 const response = await fetch(
-                    `/studio/api/stories/${storyId}/settings`,
+                    `/api/studio/story/${storyId}/settings`,
                 );
                 if (response.ok) {
                     const data = await response.json();

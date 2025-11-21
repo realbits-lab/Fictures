@@ -1,4 +1,4 @@
-import { and, eq, gte, isNull, lte } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
@@ -6,7 +6,7 @@ import {
     publishingSchedules,
     scenes,
     scheduledPublications,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/database";
 
 interface CreateScheduleParams {
     storyId: string;
@@ -84,10 +84,10 @@ export async function createPublishingSchedule(
         scenesPerPublish,
         isActive: true,
         isCompleted: false,
-        nextPublishAt,
+        nextPublishAt: nextPublishAt.toISOString(),
         totalPublished: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
     } as any);
 
     // Generate scheduled publications
@@ -150,7 +150,12 @@ async function generateScheduledPublications(
         // Calculate publish datetime
         const publishDateTime = new Date(currentDate);
         const [hours, minutes] = publishTime.split(":");
-        publishDateTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        publishDateTime.setHours(
+            parseInt(hours, 10),
+            parseInt(minutes, 10),
+            0,
+            0,
+        );
 
         // Check if within date range
         if (endDate && publishDateTime > endDate) {
@@ -170,11 +175,11 @@ async function generateScheduledPublications(
                 storyId,
                 chapterId: scene.chapterId,
                 sceneId: scene.id,
-                scheduledFor: publishDateTime,
+                scheduledFor: publishDateTime.toISOString(),
                 status: "pending",
                 retryCount: 0,
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
             });
         }
 
@@ -247,7 +252,7 @@ function calculateNextDate(
 function calculateNextPublishTime(date: Date, time: string): Date {
     const publishDate = new Date(date);
     const [hours, minutes] = time.split(":");
-    publishDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+    publishDate.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
     return publishDate;
 }
 
@@ -259,7 +264,7 @@ export async function updateScheduleStatus(
         .update(publishingSchedules)
         .set({
             isActive,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(publishingSchedules.id, scheduleId));
 }
@@ -302,7 +307,7 @@ export async function pauseSchedule(scheduleId: string): Promise<void> {
         .update(publishingSchedules)
         .set({
             isActive: false,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(publishingSchedules.id, scheduleId));
 }
@@ -315,7 +320,7 @@ export async function resumeSchedule(scheduleId: string): Promise<void> {
         .update(publishingSchedules)
         .set({
             isActive: true,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(publishingSchedules.id, scheduleId));
 }
@@ -327,13 +332,13 @@ export async function publishScene(
     sceneId: string,
     publishedBy: string,
 ): Promise<void> {
-    const now = new Date();
+    const now = new Date().toISOString();
 
     await db
         .update(scenes)
         .set({
             publishedAt: now,
-            visibility: "public",
+            novelStatus: "published",
             publishedBy,
             unpublishedAt: null,
             unpublishedBy: null,
@@ -349,13 +354,13 @@ export async function unpublishScene(
     sceneId: string,
     unpublishedBy: string,
 ): Promise<void> {
-    const now = new Date();
+    const now = new Date().toISOString();
 
     await db
         .update(scenes)
         .set({
             publishedAt: null,
-            visibility: "private",
+            novelStatus: "draft",
             unpublishedAt: now,
             unpublishedBy,
             updatedAt: now,

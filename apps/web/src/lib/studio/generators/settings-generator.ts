@@ -8,18 +8,15 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import type {
+    GenerateSettingsParams,
+    GenerateSettingsResult,
+    SettingPromptParams,
+} from "@/lib/schemas/generators/types";
+import { type AiSettingType, AiSettingZodSchema } from "@/lib/schemas/zod/ai";
+import { createTextGenerationClient } from "./ai-client";
 import { buildStoryContext } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    GeneratorSettingsParams,
-    GeneratorSettingsResult,
-    SettingPromptParams,
-} from "./types";
-import {
-    type AiSettingType,
-    AiSettingZodSchema,
-} from "./zod-schemas.generated";
 
 /**
  * Generate story settings
@@ -28,17 +25,20 @@ import {
  * @returns Settings data (caller responsible for database save)
  */
 export async function generateSettings(
-    params: GeneratorSettingsParams,
-): Promise<GeneratorSettingsResult> {
+    params: GenerateSettingsParams,
+): Promise<GenerateSettingsResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
-    const { story, settingCount, onProgress }: GeneratorSettingsParams = params;
+    const { story, settingCount, onProgress }: GenerateSettingsParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient();
 
     const settings: AiSettingType[] = [];
 
     // 2. Build story context once (used for all settings)
-    const storyContext: string = buildStoryContext(story);
+    const storyContext: string = buildStoryContext(story as any);
     console.log("[settings-generator] Story context prepared");
 
     // 3. Generate each setting in sequence
@@ -63,7 +63,7 @@ export async function generateSettings(
             system: systemPrompt,
             user: userPromptText,
         }: { system: string; user: string } = promptManager.getPrompt(
-            textGenerationClient.getProviderType(),
+            client.getProviderType(),
             "setting",
             promptParams,
         );
@@ -73,16 +73,15 @@ export async function generateSettings(
         );
 
         // 6. Generate setting using structured output
-        const settingData: AiSettingType =
-            await textGenerationClient.generateStructured(
-                userPromptText,
-                AiSettingZodSchema,
-                {
-                    systemPrompt,
-                    temperature: 0.85,
-                    maxTokens: 8192,
-                },
-            );
+        const settingData: AiSettingType = await client.generateStructured(
+            userPromptText,
+            AiSettingZodSchema,
+            {
+                systemPrompt,
+                temperature: 0.3, // Low temperature for consistent JSON structure
+                maxTokens: 8192,
+            },
+        );
 
         settings.push(settingData);
 
@@ -108,7 +107,7 @@ export async function generateSettings(
     );
 
     // 8. Build and return result with metadata
-    const result: GeneratorSettingsResult = {
+    const result: GenerateSettingsResult = {
         settings,
         metadata: {
             totalGenerated: settings.length,

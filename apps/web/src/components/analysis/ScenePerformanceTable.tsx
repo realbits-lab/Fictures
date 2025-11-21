@@ -10,11 +10,10 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { FormatDistributionBar } from "@/components/ui/format-distribution";
-import { SceneViewBadge } from "@/components/ui/scene-view-badge";
 
 interface ScenePerformanceTableProps {
     storyId: string;
@@ -35,7 +34,7 @@ export function ScenePerformanceTable({
     const [limit] = useState(20);
 
     const { data, error, isLoading } = useSWR(
-        `/studio/api/stories/${storyId}/scene-stats?sortBy=${sortBy}&order=${order}&limit=${limit}`,
+        `/api/studio/story/${storyId}/scene-stats?sortBy=${sortBy}&order=${order}&limit=${limit}`,
         fetcher,
         {
             revalidateOnFocus: false,
@@ -151,7 +150,7 @@ export function ScenePerformanceTable({
 
                 {/* Table Body */}
                 <div className="space-y-2 mt-3">
-                    {scenes.map((scene: any, index: number) => (
+                    {scenes.map((scene: any, _index: number) => (
                         <div
                             key={scene.id}
                             className="grid grid-cols-12 gap-4 items-center py-3 px-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"

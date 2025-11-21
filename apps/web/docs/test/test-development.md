@@ -6,6 +6,222 @@ This document provides the **implementation guidance** for executing tests defin
 
 For test requirements, test cases, and success criteria, see [test-specification.md](test-specification.md).
 
+For test directory structure and framework comparison, see [Test Directory Structure](test-specification.md#test-directory-structure) in the specification document.
+
+### Test Framework
+
+The web application uses **Playwright** for E2E, API, and integration tests:
+
+| Framework | Directory | Purpose | File Pattern |
+|-----------|-----------|---------|--------------|
+| **Playwright** | `tests/` | E2E, API, integration tests | `*.spec.ts` |
+
+**Note:** This guide focuses exclusively on the `tests/` directory for Playwright-based testing. For unit tests using Jest, refer to the `__tests__/` directory separately.
+
+---
+
+## Testcontainers Integration
+
+### Overview
+
+Testcontainers provides isolated PostgreSQL database testing using Docker containers. This ensures tests run against a clean database without affecting development or production data.
+
+### Configuration
+
+The testcontainers configuration is defined in `playwright.testcontainers.config.ts`:
+
+```typescript
+// playwright.testcontainers.config.ts
+import { defineConfig, devices } from "@playwright/test";
+
+export default defineConfig({
+  testDir: "./tests",
+  fullyParallel: false, // Run sequentially to share database container
+  workers: 1, // Single worker to share database container
+  timeout: 240000,
+
+  // Global setup/teardown for testcontainers
+  globalSetup: "./tests/setup/global-setup.ts",
+  globalTeardown: "./tests/setup/global-teardown.ts",
+
+  use: {
+    baseURL: "http://localhost:3000",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
+    video: "retain-on-failure",
+    headless: true,
+  },
+
+  projects: [
+    {
+      name: "testcontainers",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: /novels\.e2e\.spec\.ts/, // Specify test pattern
+    },
+  ],
+
+  webServer: {
+    command: "dotenv -e .env.local -- pnpm dev",
+    url: "http://localhost:3000",
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  },
+});
+```
+
+### Running Tests with Testcontainers
+
+```bash
+# Run tests with testcontainers (isolated database)
+dotenv --file .env.local run npx playwright test --config=playwright.testcontainers.config.ts
+
+# Run specific test file with testcontainers
+dotenv --file .env.local run npx playwright test tests/e2e/novels.e2e.spec.ts --config=playwright.testcontainers.config.ts
+
+# Run in headed mode for debugging
+dotenv --file .env.local run npx playwright test --config=playwright.testcontainers.config.ts --headed
+
+# Run with verbose output
+dotenv --file .env.local run npx playwright test --config=playwright.testcontainers.config.ts --debug
+```
+
+### Testcontainers Setup Files
+
+**`tests/setup/global-setup.ts`** - Executed once before all tests:
+- Starts PostgreSQL container using Docker
+- Runs database migrations
+- Creates authentication users
+- Seeds test data
+
+**`tests/setup/global-teardown.ts`** - Executed once after all tests:
+- Stops PostgreSQL container
+- Cleans up resources
+
+**`tests/setup/testcontainers.setup.ts`** - Core testcontainers utilities:
+- `startPostgresContainer()` - Start PostgreSQL 16 Alpine container
+- `stopPostgresContainer()` - Stop and cleanup container
+- `runMigrations(dbUrl)` - Apply database schema using `drizzle-kit push` with `src/lib/schemas/database/index.ts`
+- `seedTestData(dbUrl)` - Insert static novel data from `helpers/static-novel-data.ts`
+- `cleanupTestData(dbUrl)` - Remove test data using `TEST_IDS`
+- `getTestDatabase(dbUrl)` - Get Drizzle database instance
+
+### Container Lifecycle
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  Global Setup                       │
+├─────────────────────────────────────────────────────┤
+│ 1. Start PostgreSQL container (postgres:16-alpine)  │
+│ 2. Run database migrations                          │
+│ 3. Setup auth users (manager, writer, reader)       │
+│ 4. Seed test data (stories, chapters, scenes)       │
+└─────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────┐
+│                  Test Execution                     │
+├─────────────────────────────────────────────────────┤
+│ • Tests run against isolated container database     │
+│ • All tests share same container (workers: 1)       │
+│ • Database state persists across tests              │
+└─────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌─────────────────────────────────────────────────────┐
+│                Global Teardown                      │
+├─────────────────────────────────────────────────────┤
+│ 1. Stop PostgreSQL container                        │
+│ 2. Remove Docker resources                          │
+└─────────────────────────────────────────────────────┘
+```
+
+### Prerequisites for Testcontainers
+
+1. **Docker must be running** - Testcontainers requires Docker Desktop or Docker Engine
+2. **Node.js 18+** - Required for testcontainers package
+3. **Sufficient disk space** - Docker images require ~200MB
+
+**Verify Docker is running:**
+```bash
+docker info
+```
+
+### Test Data Seeded by Testcontainers
+
+The `seedTestData()` function uses `tests/helpers/static-novel-data.ts` to create a complete story structure following the Adversity-Triumph Engine:
+
+**Story (1):**
+- `test-story-novel-001`: "Test Novel: The Shadow's Edge" (fantasy, published)
+- Complete with moral framework, image URL, and optimized variants
+
+**Characters (2):**
+- `test-char-protagonist-001`: Elena Brightblade (protagonist)
+- `test-char-antagonist-001`: Lord Malachar (antagonist)
+- Full character profiles with personality, backstory, physical descriptions, voice styles
+
+**Settings (2):**
+- `test-setting-castle-001`: Silverhold Castle
+- `test-setting-forest-001`: The Whispering Woods
+- Complete with adversity/virtue/consequence elements, sensory details
+
+**Part (1):**
+- `test-part-001`: "Part I: Into the Shadow"
+- With character arcs and macro-level narrative structure
+
+**Chapters (2):**
+- `test-chapter-001`: "Chapter 1: The Weight of Legacy" (3 scenes)
+- `test-chapter-002`: "Chapter 2: Whispers in the Dark" (3 scenes)
+- Each with micro-level character arcs and seed planting
+
+**Scenes (6):**
+- Chapter 1: The Commander's Summons, Ghosts of the Memorial Hall, The Choice to Lead
+- Chapter 2: Into the Whispering Woods, The Forest's Test, A Light in the Darkness
+- Full narrative content with images and optimized variants (AVIF + JPEG × mobile 1x/2x)
+
+**Users (via setup-auth-users.ts):**
+- manager@fictures.xyz (admin:all scope)
+- writer@fictures.xyz (stories:write scope)
+- reader@fictures.xyz (stories:read scope)
+
+### Benefits of Testcontainers
+
+| Benefit | Description |
+|---------|-------------|
+| **Isolation** | Each test run gets a fresh database |
+| **Consistency** | Same schema and data every time |
+| **No Cleanup** | Container destroyed after tests |
+| **CI/CD Ready** | Works in any environment with Docker |
+| **Production Parity** | Uses same PostgreSQL version as production |
+
+### Troubleshooting Testcontainers
+
+**Container fails to start:**
+```bash
+# Check Docker is running
+docker info
+
+# Check for port conflicts
+lsof -i :5432
+
+# Manually cleanup orphaned containers
+docker ps -a | grep postgres
+docker rm -f <container_id>
+```
+
+**Database connection errors:**
+```bash
+# Verify container is running
+docker ps | grep postgres
+
+# Check container logs
+docker logs <container_id>
+```
+
+**Timeout issues:**
+- Increase `timeout` in config (default: 240000ms)
+- Ensure sufficient system resources
+- Check network connectivity
+
 ---
 
 ## Test Data Preparation
@@ -97,6 +313,19 @@ dotenv --file .env.local run node scripts/remove-all-stories.mjs --dry-run
 - Vercel Blob images (all images with prefix `stories/{storyId}/`)
 - Community data (posts, likes, replies, bookmarks)
 - Analytics data (reading sessions, insights, events)
+
+**Toonplay Test Data:**
+```bash
+# Generate toonplay for test scene
+dotenv --file .env.local run node test-scripts/test-toonplay-generation.mjs SCENE_ID
+
+# Test toonplay evaluation
+dotenv --file .env.local run node test-scripts/test-toonplay-evaluation.mjs SCENE_ID
+
+# Options:
+# --mode quick|standard|thorough
+# --verbose (detailed output)
+```
 
 ### Test Data Verification
 
@@ -301,10 +530,9 @@ dotenv --file .env.local run node test-scripts/verify-image-urls.mjs
 2. **Novels - Reading Experience** (30 min)
    - **TC-NOVELS-FUNC-001**: Rate story
    - **TC-NOVELS-FUNC-002**: Track reading history
-   - **TC-NOVELS-FUNC-003**: View chapter preview
+   - **TC-NOVELS-FUNC-003**: Scene list shows all scenes for story
    - **TC-NOVELS-FUNC-004**: Post/view comments
    - **TC-NOVELS-FUNC-005**: Save reading progress
-   - **TC-NOVELS-FUNC-006**: Adjust font/theme
 
 3. **Comics - Reading Experience** (30 min)
    - **TC-COMICS-FUNC-001**: Rate comic
@@ -312,6 +540,16 @@ dotenv --file .env.local run node test-scripts/verify-image-urls.mjs
    - **TC-COMICS-FUNC-003**: Navigate panels
    - **TC-COMICS-FUNC-004**: Post/view comments
    - **TC-COMICS-FUNC-005**: Save reading progress
+
+3a. **Toonplay - Novel-to-Webtoon Generation** (30 min)
+   - **TC-TOONPLAY-FUNC-001**: Generate toonplay from scene (POST /api/studio/toonplay)
+   - **TC-TOONPLAY-FUNC-002**: Evaluate toonplay quality (weighted score >= 3.0/5.0)
+   - **TC-TOONPLAY-FUNC-003**: Iterative improvement loop (max 2 iterations)
+   - **TC-TOONPLAY-FUNC-004**: Generate 9:16 panel images (928×1664px)
+   - **TC-TOONPLAY-FUNC-005**: Create 4 image variants per panel (AVIF + JPEG × 1x/2x)
+   - **TC-TOONPLAY-FUNC-006**: Verify database-driven character consistency
+   - **TC-TOONPLAY-FUNC-007**: Validate content proportions (70% dialogue, <5% narration, <10% internal monologue)
+   - **TC-TOONPLAY-FUNC-008**: Update scene with toonplay data in database
 
 4. **Community - Social Features** (30 min)
    - **TC-COMMUNITY-FUNC-001**: Create post button (auth only)
@@ -457,6 +695,15 @@ dotenv --file .env.local run node test-scripts/run-api-tests.mjs
    - Verify query optimization
    - Test with large datasets
 
+5. **Caching Performance** (30 min)
+   - **TC-NOVELS-CACHE-001 to 006**: Novels caching tests
+   - **TC-COMICS-CACHE-001 to 006**: Comics caching tests
+   - Test SWR client-side caching
+   - Test localStorage persistence
+   - Test ETag/304 responses
+   - Test Redis cache hit/miss rates
+   - Test cache invalidation
+
 **Tools:**
 ```bash
 # Lighthouse CI
@@ -464,12 +711,21 @@ npx lighthouse http://localhost:3000 --view
 
 # Load testing
 dotenv --file .env.local run node test-scripts/load-test.mjs
+
+# Cache performance testing
+dotenv --file .env.local run npx playwright test tests/cross-cutting/performance.spec.ts --headed
+
+# Redis cache monitoring
+redis-cli MONITOR
 ```
 
 **Success Criteria:**
 - All performance thresholds met
 - No performance regressions
 - Lighthouse scores > 90
+- Redis cache hit rate > 80%
+- ETag validation returns 304 for unchanged content
+- SWR returns cached data within 10ms
 
 ---
 
@@ -639,34 +895,76 @@ export default defineConfig({
 
 ### Test Organization
 
+#### Playwright Tests (`tests/`)
+
 ```
 tests/
-├── setup/
-│   ├── auth.setup.ts           # Setup authentication state
-│   └── test-data.setup.ts      # Setup test data
-├── e2e/
-│   ├── home.spec.ts            # Home page redirect tests
-│   ├── studio.spec.ts          # Studio tests
-│   ├── novels.spec.ts          # Novels tests
-│   ├── comics.spec.ts          # Comics tests
-│   ├── community.spec.ts       # Community tests
-│   ├── publish.spec.ts         # Publish tests
-│   ├── analysis.spec.ts        # Analysis tests
-│   └── settings.spec.ts        # Settings tests
-├── api/
-│   ├── auth.api.spec.ts        # Auth API tests
-│   ├── story.api.spec.ts       # Story API tests
-│   ├── generation.api.spec.ts  # Generation API tests
-│   ├── community.api.spec.ts   # Community API tests
-│   └── analysis.api.spec.ts    # Analysis API tests
-├── cross-cutting/
-│   ├── mobile.spec.ts          # Mobile responsiveness
-│   ├── theme.spec.ts           # Theme switching
-│   ├── a11y.spec.ts            # Accessibility
-│   └── performance.spec.ts     # Performance tests
-└── errors/
-    ├── network-errors.spec.ts  # Network error handling
-    └── edge-cases.spec.ts      # Edge case testing
+├── setup/                           # Test setup and configuration
+│   ├── global-setup.ts              # Testcontainers global setup
+│   ├── global-teardown.ts           # Testcontainers cleanup
+│   ├── testcontainers.setup.ts      # Container utilities
+│   └── test-data.setup.ts           # Test data seeding
+├── e2e/                             # Page-level E2E tests
+│   ├── home.spec.ts
+│   ├── studio.writer.spec.ts        # Studio tests (writer role)
+│   ├── studio.reader.spec.ts        # Studio access denied (reader role)
+│   ├── studio-agent.writer.spec.ts  # AI agent tests (writer role)
+│   ├── novels.e2e.spec.ts           # Novels reading tests
+│   ├── comics.e2e.spec.ts           # Comics reading tests
+│   ├── community.e2e.spec.ts        # Community tests
+│   ├── publish.writer.spec.ts       # Publish tests (writer role)
+│   ├── analysis.writer.spec.ts      # Analysis tests (writer role)
+│   └── settings.authenticated.spec.ts # Settings tests (authenticated)
+├── api/                             # API endpoint tests
+│   ├── auth.api.spec.ts
+│   ├── story.api.spec.ts
+│   ├── generation.api.spec.ts
+│   ├── community.api.spec.ts
+│   ├── analysis.api.spec.ts
+│   ├── publish.api.spec.ts
+│   ├── image.api.spec.ts
+│   └── user.api.spec.ts
+├── cross-cutting/                   # Non-functional tests
+│   ├── mobile.mobile.spec.ts        # Mobile responsiveness
+│   ├── theme.spec.ts                # Theme switching
+│   ├── a11y.spec.ts                 # Accessibility
+│   └── performance.spec.ts          # Performance tests
+├── errors/                          # Error handling tests
+│   ├── network-errors.spec.ts
+│   └── edge-cases.spec.ts
+├── iteration-testing/               # A/B testing for generation
+│   ├── novels/                      # Novel prompt iterations
+│   │   ├── ab-test.ts
+│   │   ├── run-evaluation-suite.ts
+│   │   ├── chapter-prompt-test.ts
+│   │   ├── scene-summary-test.ts
+│   │   ├── scene-content-test.ts
+│   │   ├── config/                  # Test configurations
+│   │   └── src/                     # Test utilities
+│   ├── comics/                      # Comic generation tests
+│   │   ├── ab-test-comics.ts
+│   │   ├── run-comic-tests.ts
+│   │   ├── run-comic-image-tests.ts
+│   │   ├── config/                  # Test configurations
+│   │   └── src/                     # Test utilities
+│   ├── toonplay/                    # Toonplay adaptation tests
+│   │   ├── ab-test-toonplay.ts
+│   │   ├── run-toonplay-tests.ts
+│   │   ├── run-5-cycle-toonplay.ts
+│   │   ├── config/                  # Test configurations
+│   │   └── src/                     # Test utilities
+│   ├── images/                      # Image generation tests
+│   │   ├── ab-test-images.ts
+│   │   ├── run-image-tests.ts
+│   │   ├── config/                  # Test configurations
+│   │   └── src/                     # Test utilities
+│   ├── run-5-cycle-iteration.ts     # Iterative testing runner
+│   └── run-5-cycle-comics.ts        # Comics iteration runner
+└── helpers/                         # Shared test utilities
+    ├── auth.ts                      # Authentication helpers
+    ├── test-data.ts                 # Test data utilities
+    ├── static-novel-data.ts         # Static novel test data
+    └── novel-db-operations.ts       # Novel database operations
 ```
 
 ### Authentication Helper
@@ -732,24 +1030,68 @@ jobs:
 
 ### Running Tests
 
+#### Standard Playwright Tests
+
 ```bash
-# Run all tests
+# Run all Playwright tests
 dotenv --file .env.local run npx playwright test
 
 # Run specific test file
-dotenv --file .env.local run npx playwright test tests/e2e/studio.spec.ts
+dotenv --file .env.local run npx playwright test tests/e2e/studio.writer.spec.ts
+
+# Run by project (role-based)
+dotenv --file .env.local run npx playwright test --project=writer-tests
+dotenv --file .env.local run npx playwright test --project=reader-tests
+dotenv --file .env.local run npx playwright test --project=api
+
+# Run by pattern
+dotenv --file .env.local run npx playwright test tests/api/       # All API tests
+dotenv --file .env.local run npx playwright test tests/e2e/       # All E2E tests
+dotenv --file .env.local run npx playwright test tests/cross-cutting/  # Non-functional tests
 
 # Run tests in headed mode
 dotenv --file .env.local run npx playwright test --headed
-
-# Run tests for specific browser
-dotenv --file .env.local run npx playwright test --project=chromium
 
 # Run tests in debug mode
 dotenv --file .env.local run npx playwright test --debug
 
 # Generate test report
 npx playwright show-report
+```
+
+#### Playwright Tests with Testcontainers (Isolated Database)
+
+```bash
+# Run tests with isolated PostgreSQL container
+dotenv --file .env.local run npx playwright test --config=playwright.testcontainers.config.ts
+
+# Run specific test with testcontainers
+dotenv --file .env.local run npx playwright test tests/e2e/novels.e2e.spec.ts --config=playwright.testcontainers.config.ts
+
+# Run in headed mode for debugging
+dotenv --file .env.local run npx playwright test --config=playwright.testcontainers.config.ts --headed
+
+# Run in debug mode with testcontainers
+dotenv --file .env.local run npx playwright test --config=playwright.testcontainers.config.ts --debug
+```
+
+#### Iteration Testing (A/B Testing for AI Generation)
+
+```bash
+# Run novel iteration tests
+dotenv --file .env.local run npx tsx tests/iteration-testing/novels/ab-test.ts
+
+# Run comic iteration tests
+dotenv --file .env.local run npx tsx tests/iteration-testing/comics/ab-test-comics.ts
+
+# Run toonplay iteration tests
+dotenv --file .env.local run npx tsx tests/iteration-testing/toonplay/ab-test-toonplay.ts
+
+# Run image iteration tests
+dotenv --file .env.local run npx tsx tests/iteration-testing/images/ab-test-images.ts
+
+# Run 5-cycle iteration test
+dotenv --file .env.local run npx tsx tests/iteration-testing/run-5-cycle-iteration.ts
 ```
 
 ### Test Data Management
@@ -1130,6 +1472,17 @@ BLOB_READ_WRITE_TOKEN=[token]
 - Name: [Approver Name]
 - Role: Engineering Manager
 - Date: [YYYY-MM-DD]
+
+---
+
+## Change Log
+
+| Version | Date | Changes | Author |
+|---------|------|---------|--------|
+| 1.0 | 2025-11-05 | Initial test development guide | Claude |
+| 2.0 | 2025-11-19 | Major updates for alignment with current codebase:<br>- Added Test Frameworks overview section<br>- Updated Test Organization to include both Playwright and Jest directories<br>- Updated all file names to match actual codebase (e.g., `studio.writer.spec.ts`)<br>- Added `iteration-testing/` directory documentation<br>- Added Jest test execution commands section<br>- Added cross-reference to test-specification.md Test Directory Structure<br>- Updated running commands with project-based and pattern-based examples | Claude |
+| 2.1 | 2025-11-19 | Aligned with test-specification.md v2.2:<br>- Updated Novels tests to use scene list instead of chapter preview<br>- Removed font/theme controls test (not implemented)<br>- Added Caching Performance test group to Phase 6 (TC-NOVELS-CACHE, TC-COMICS-CACHE)<br>- Added cache testing tools and success criteria (Redis hit rate, ETag, SWR) | Claude |
+| 3.0 | 2025-11-19 | Refocused on tests/ directory only:<br>- Removed Jest/__tests__ references (focus on Playwright only)<br>- Added comprehensive Testcontainers Integration section<br>- Updated Test Organization with actual tests/ structure<br>- Added testcontainers setup files documentation<br>- Added container lifecycle diagram<br>- Added troubleshooting guide for testcontainers<br>- Updated Running Tests section with testcontainers commands<br>- Added iteration testing commands | Claude |
 
 ---
 

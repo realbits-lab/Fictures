@@ -1,33 +1,41 @@
 import { tool } from "ai";
+
+// Type helper for tool definitions to work around TypeScript overload issues
+const createTool = tool as any;
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
-import { apiKeys } from "@/lib/db/schema";
 import {
     getStudioAgentChat,
     updateStudioAgentChatPhase,
 } from "@/lib/db/studio-agent-operations";
+import { apiKeys } from "@/lib/schemas/database";
 
 // ==============================================================================
 // UTILITY TOOLS
 // API key validation and progress tracking
 // ==============================================================================
 
-export const validateApiKey = tool({
+const validateApiKeySchema = z.object({
+    userId: z.string().describe("The user ID"),
+    requiredScopes: z
+        .array(z.string())
+        .optional()
+        .describe('Required scopes (e.g., ["ai:use", "stories:write"])'),
+});
+
+export const validateApiKey = createTool({
     summary: "Validate user API key for Studio Agent operations",
-    parameters: z.object({
-        userId: z.string().describe("The user ID"),
-        requiredScopes: z
-            .array(z.string())
-            .optional()
-            .describe('Required scopes (e.g., ["ai:use", "stories:write"])'),
-    }),
-    execute: async ({ userId, requiredScopes = [] }) => {
+    parameters: validateApiKeySchema,
+    execute: async ({
+        userId,
+        requiredScopes = [],
+    }: z.infer<typeof validateApiKeySchema>) => {
         // Get user's API keys
         const userKeys = await db
             .select()
             .from(apiKeys)
-            .where(and(eq(apiKeys.userId, userId), eq(apiKeys.revoked, false)));
+            .where(and(eq(apiKeys.userId, userId), eq(apiKeys.isActive, true)));
 
         if (userKeys.length === 0) {
             return {
@@ -78,30 +86,37 @@ export const validateApiKey = tool({
     },
 });
 
-export const updatePhaseProgress = tool({
+const updatePhaseProgressSchema = z.object({
+    chatId: z.string().describe("The chat session ID"),
+    phase: z
+        .enum([
+            "story-summary",
+            "characters",
+            "settings",
+            "parts",
+            "chapters",
+            "scene-summaries",
+            "scene-content",
+            "evaluation",
+            "images",
+        ])
+        .describe("The current phase"),
+    completed: z.boolean().describe("Whether the phase is completed"),
+    progressPercent: z
+        .number()
+        .optional()
+        .describe("Progress percentage (0-100) within the phase"),
+});
+
+export const updatePhaseProgress = createTool({
     summary: "Update story generation phase progress in chat session",
-    parameters: z.object({
-        chatId: z.string().describe("The chat session ID"),
-        phase: z
-            .enum([
-                "story-summary",
-                "characters",
-                "settings",
-                "parts",
-                "chapters",
-                "scene-summaries",
-                "scene-content",
-                "evaluation",
-                "images",
-            ])
-            .describe("The current phase"),
-        completed: z.boolean().describe("Whether the phase is completed"),
-        progressPercent: z
-            .number()
-            .optional()
-            .describe("Progress percentage (0-100) within the phase"),
-    }),
-    execute: async ({ chatId, phase, completed, progressPercent }) => {
+    parameters: updatePhaseProgressSchema,
+    execute: async ({
+        chatId,
+        phase,
+        completed,
+        progressPercent,
+    }: z.infer<typeof updatePhaseProgressSchema>) => {
         try {
             // Update chat phase
             await updateStudioAgentChatPhase(chatId, phase, completed);
@@ -128,9 +143,9 @@ export const updatePhaseProgress = tool({
                 "images",
             ];
 
-            const completedPhases = (chat.completedPhases as string[]) || [];
+            const completedPhases = ((chat.context as any)?.completedPhases as string[]) || [];
             const currentPhaseIndex = phaseOrder.indexOf(
-                chat.currentPhase || "story-summary",
+                ((chat.context as any)?.currentPhase) || "story-summary",
             );
             const totalPhases = phaseOrder.length;
             const overallProgress = Math.floor(
@@ -142,7 +157,7 @@ export const updatePhaseProgress = tool({
                 message: completed
                     ? `Phase ${phase} completed`
                     : `Phase ${phase} in progress`,
-                currentPhase: chat.currentPhase,
+                currentPhase: ((chat.context as any)?.currentPhase) || "story-summary",
                 completedPhases: completedPhases,
                 overallProgress,
                 nextPhase:
@@ -162,12 +177,16 @@ export const updatePhaseProgress = tool({
     },
 });
 
-export const getGenerationProgress = tool({
+const getGenerationProgressSchema = z.object({
+    chatId: z.string().describe("The chat session ID"),
+});
+
+export const getGenerationProgress = createTool({
     summary: "Get current story generation progress and phase status",
-    parameters: z.object({
-        chatId: z.string().describe("The chat session ID"),
-    }),
-    execute: async ({ chatId }) => {
+    parameters: getGenerationProgressSchema,
+    execute: async ({
+        chatId,
+    }: z.infer<typeof getGenerationProgressSchema>) => {
         const chat = await getStudioAgentChat(chatId);
 
         if (!chat) {
@@ -189,8 +208,8 @@ export const getGenerationProgress = tool({
             "images",
         ];
 
-        const completedPhases = (chat.completedPhases as string[]) || [];
-        const currentPhase = chat.currentPhase || "story-summary";
+        const completedPhases = ((chat.context as any)?.completedPhases as string[]) || [];
+        const currentPhase = ((chat.context as any)?.currentPhase) || "story-summary";
         const currentPhaseIndex = phaseOrder.indexOf(currentPhase);
         const totalPhases = phaseOrder.length;
         const overallProgress = Math.floor(
@@ -229,54 +248,6 @@ export const getGenerationProgress = tool({
     },
 });
 
-export const createEmptyStory = tool({
-    summary: 'Create an empty story shell for "Create New Story" workflow',
-    parameters: z.object({
-        userId: z.string().describe("The user ID creating the story"),
-        title: z
-            .string()
-            .default("Untitled Story")
-            .describe("Initial story title"),
-    }),
-    execute: async ({ userId, title }) => {
-        try {
-            // Call the create-empty endpoint
-            const response = await fetch("/studio/api/stories/create-empty", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId,
-                    title,
-                }),
-            });
-
-            if (!response.ok) {
-                return {
-                    success: false,
-                    error: "Failed to create empty story",
-                };
-            }
-
-            const data = await response.json();
-
-            return {
-                success: true,
-                message: "Empty story created successfully",
-                storyId: data.storyId,
-                title: data.title,
-            };
-        } catch (error) {
-            return {
-                success: false,
-                error:
-                    error instanceof Error
-                        ? error.message
-                        : "Failed to create story",
-            };
-        }
-    },
-});
-
 // ==============================================================================
 // COMBINED UTILITY TOOLS EXPORT
 // ==============================================================================
@@ -285,5 +256,4 @@ export const studioAgentUtilityTools = {
     validateApiKey,
     updatePhaseProgress,
     getGenerationProgress,
-    createEmptyStory,
 };

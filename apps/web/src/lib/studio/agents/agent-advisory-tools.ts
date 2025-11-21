@@ -1,5 +1,8 @@
 import { tool } from "ai";
-import { and, count, eq } from "drizzle-orm";
+
+// Type helper for tool definitions to work around TypeScript overload issues
+const createTool = tool as any;
+import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
 import {
@@ -9,14 +12,14 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/database";
 
 // ==============================================================================
 // ADVISORY TOOLS
 // Prerequisites checking and validation
 // ==============================================================================
 
-export const checkPrerequisites = tool({
+export const checkPrerequisites = createTool({
     summary: "Check if prerequisites are met for a specific generation phase",
     parameters: z.object({
         storyId: z.string().describe("The story ID"),
@@ -210,12 +213,16 @@ export const checkPrerequisites = tool({
     },
 });
 
-export const validateStoryStructure = tool({
+const validateStoryStructureSchema = z.object({
+    storyId: z.string().describe("The story ID to validate"),
+});
+
+export const validateStoryStructure = createTool({
     summary: "Validate story structure integrity and completeness",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID to validate"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: validateStoryStructureSchema,
+    execute: async ({
+        storyId,
+    }: z.infer<typeof validateStoryStructureSchema>) => {
         const [story] = await db
             .select()
             .from(stories)
@@ -315,12 +322,14 @@ export const validateStoryStructure = tool({
     },
 });
 
-export const suggestNextPhase = tool({
+const suggestNextPhaseSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
+export const suggestNextPhase = createTool({
     summary: "Suggest the next logical phase based on current story state",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: suggestNextPhaseSchema,
+    execute: async ({ storyId }: z.infer<typeof suggestNextPhaseSchema>) => {
         const [story] = await db
             .select()
             .from(stories)

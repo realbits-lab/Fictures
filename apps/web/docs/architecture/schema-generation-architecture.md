@@ -19,7 +19,7 @@ JSON schemas (Gemini structured output)
 
 ### Layer 1: Database Schema (SSOT)
 
-**File:** `src/lib/db/schema.ts`
+**File:** `src/lib/schemas/database/index.ts`
 
 **Purpose:** Single source of truth for all data structures
 
@@ -46,7 +46,7 @@ export const characters = pgTable("characters", {
 
 ### Layer 2: Zod Schemas (Auto-Generated)
 
-**File:** `src/lib/studio/generators/zod-schemas.generated.ts`
+**File:** `src/lib/studio/generators/zod-schemas.ts`
 
 **Purpose:** Runtime validation + TypeScript type inference
 
@@ -56,7 +56,7 @@ export const characters = pgTable("characters", {
 ```typescript
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { characters } from "@/lib/db/schema";
+import { characters } from "@/lib/schemas/database";
 
 // Refine JSON fields with nested Zod schemas
 const personalitySchema = z.object({
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
 **Example:**
 ```typescript
 import { zodToJsonSchema } from "zod-to-json-schema";
-import { insertCharacterSchema } from "./zod-schemas.generated";
+import { insertCharacterSchema } from "./zod-schemas";
 
 const toGeminiJsonSchema = (zodSchema: any) => {
   const { $schema, ...rest } = zodToJsonSchema(zodSchema, {
@@ -139,7 +139,7 @@ src/lib/
 │
 └── studio/
     └── generators/
-        ├── zod-schemas.generated.ts       ← Auto-generated: Zod schemas + TS types
+        ├── zod-schemas.ts       ← Auto-generated: Zod schemas + TS types
         ├── json-schemas.generated.ts      ← Auto-generated: JSON schemas for Gemini
         ├── types.ts                       ← Manual: Generator function signatures
         ├── ai-client.ts                   ← Uses generated schemas
@@ -163,7 +163,7 @@ src/lib/
 
 The schema generation happens automatically through TypeScript imports and exports:
 
-1. **Zod schemas** are generated from Drizzle schema using `drizzle-zod` in `src/lib/studio/generators/zod-schemas.generated.ts`
+1. **Zod schemas** are generated from Drizzle schema using `drizzle-zod` in `src/lib/studio/generators/zod-schemas.ts`
 2. **JSON schemas** are generated from Zod schemas using `zod-to-json-schema` in `src/lib/studio/generators/json-schemas.generated.ts`
 3. All generated files are TypeScript files compiled and type-checked during the build process
 
@@ -203,7 +203,7 @@ The schema generation happens automatically through TypeScript imports and expor
 
 **Example:** Add `backstory` field to characters
 
-**Step 1:** Update Drizzle schema (`src/lib/db/schema.ts`)
+**Step 1:** Update Drizzle schema (`src/lib/schemas/database/index.ts`)
 ```typescript
 export const characters = pgTable("characters", {
   // ... existing fields
@@ -217,7 +217,7 @@ pnpm db:generate
 pnpm db:migrate
 ```
 
-**Step 3:** Update Zod refinement if needed (`src/lib/studio/generators/zod-schemas.generated.ts`)
+**Step 3:** Update Zod refinement if needed (`src/lib/studio/generators/zod-schemas.ts`)
 ```typescript
 export const insertCharacterSchema = createInsertSchema(characters, {
   // No changes needed - backstory is text field
@@ -238,7 +238,7 @@ pnpm build
 
 **Step 1:** Update Drizzle schema comment (documentation only - JSON fields are untyped in DB)
 
-**Step 2:** Update Zod refinement (`src/lib/studio/generators/zod-schemas.generated.ts`)
+**Step 2:** Update Zod refinement (`src/lib/studio/generators/zod-schemas.ts`)
 ```typescript
 const voiceStyleSchema = z.object({
   tone: z.string(),
@@ -283,7 +283,7 @@ src/lib/db/
 └── schema.ts                     ← SSOT: Database schema
 
 src/lib/studio/generators/
-├── zod-schemas.generated.ts      ← Auto-generated: Zod + TS types
+├── zod-schemas.ts      ← Auto-generated: Zod + TS types
 ├── json-schemas.generated.ts     ← Auto-generated: JSON schemas
 └── types.ts                      ← Manual: Function signatures only
 ```
@@ -304,7 +304,7 @@ import { CharacterJsonSchema } from "./json-schemas";
 
 **After:**
 ```typescript
-import { Character, InsertCharacter } from "./zod-schemas.generated";
+import { Character, InsertCharacter } from "./zod-schemas";
 import { CharacterJsonSchema } from "./json-schemas.generated";
 ```
 
@@ -317,8 +317,8 @@ import { CharacterJsonSchema } from "./json-schemas.generated";
 ## Best Practices
 
 ### 1. Never Edit Generated Files Manually
-- `zod-schemas.generated.ts` and `json-schemas.generated.ts` are auto-generated
-- Edit `src/lib/db/schema.ts` instead
+- `zod-schemas.ts` and `json-schemas.generated.ts` are auto-generated
+- Edit `src/lib/schemas/database/index.ts` instead
 - Refinements for JSON fields go in the generated files (but are template-based)
 
 ### 2. Use Zod Validation in API Routes
@@ -336,7 +336,7 @@ export async function POST(request: Request) {
 
 ### 3. Use Generated Types in Generators
 ```typescript
-import { Character, InsertCharacter } from "./zod-schemas.generated";
+import { Character, InsertCharacter } from "./zod-schemas";
 
 export async function generateCharacter(): Promise<Character> {
   // Return type is guaranteed to match database schema
@@ -363,11 +363,11 @@ export interface GenerateCharactersResult {
 
 ## Troubleshooting
 
-### Q: Build fails with "Cannot find module './zod-schemas.generated'"
+### Q: Build fails with "Cannot find module './zod-schemas'"
 
 **A:** The generated files are TypeScript files that exist in the source tree. Make sure they were created:
 ```bash
-ls src/lib/studio/generators/zod-schemas.generated.ts
+ls src/lib/studio/generators/zod-schemas.ts
 ls src/lib/studio/generators/json-schemas.generated.ts
 ```
 
@@ -379,7 +379,7 @@ ls src/lib/studio/generators/json-schemas.generated.ts
 
 ### Q: How do I refine a JSON field?
 
-**A:** Update the Zod refinement in `zod-schemas.generated.ts`:
+**A:** Update the Zod refinement in `zod-schemas.ts`:
 ```typescript
 const personalitySchema = z.object({
   traits: z.array(z.string()),
@@ -397,6 +397,6 @@ export const insertCharacterSchema = createInsertSchema(characters, {
 - **drizzle-zod Plugin:** https://orm.drizzle.team/docs/zod
 - **Zod Documentation:** https://zod.dev/
 - **zod-to-json-schema:** https://github.com/StefanTerdell/zod-to-json-schema
-- **Database Schema:** `src/lib/db/schema.ts`
-- **Generated Zod Schemas:** `src/lib/studio/generators/zod-schemas.generated.ts`
+- **Database Schema:** `src/lib/schemas/database/index.ts`
+- **Generated Zod Schemas:** `src/lib/studio/generators/zod-schemas.ts`
 - **Generated JSON Schemas:** `src/lib/studio/generators/json-schemas.generated.ts`

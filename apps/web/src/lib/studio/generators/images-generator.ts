@@ -1,177 +1,166 @@
 /**
- * Images Generator
+ * Images Generator (Core Business Logic)
  *
- * Generates and optimizes images for story assets.
- * This is the ninth (final) phase of novel generation.
+ * Pure generation function - NO database operations, NO Vercel Blob uploads.
+ * Calls AI server directly with authentication context.
  *
- * NOTE: This generator does NOT save to database.
- * Database operations are handled by the caller (API route).
+ * Following Adversity-Triumph Engine pattern:
+ * - Generator layer: Core business logic only
+ * - Service layer handles database operations and uploads
+ * - API layer handles HTTP requests
+ *
+ * NOTE: This generator does NOT save to database or upload to Vercel Blob.
+ * Database operations and uploads are handled by the caller (Service layer).
  */
 
-import { generateStoryImage } from "@/lib/services/image-generation";
-import type { GeneratorImagesParams, GeneratorImagesResult } from "./types";
+import { getApiKey } from "@/lib/auth/server-context";
+import type { AspectRatio } from "@/lib/schemas/domain/image";
+import type {
+    GeneratorImageParams,
+    GeneratorImageResult,
+} from "@/lib/schemas/generators/types";
 
 /**
- * Generate images for story assets
- *
- * @param params - Images generation parameters
- * @returns Generated images data (caller responsible for database save)
+ * Get dimensions for aspect ratio
  */
-export async function generateImages(
-    params: GeneratorImagesParams,
-): Promise<GeneratorImagesResult> {
-    const startTime = Date.now();
+function getImageDimensions(aspectRatio: AspectRatio): {
+    width: number;
+    height: number;
+} {
+    const dimensionsMap: Record<
+        AspectRatio,
+        { width: number; height: number }
+    > = {
+        "1:1": { width: 1024, height: 1024 },
+        "16:9": { width: 1664, height: 936 },
+        "9:16": { width: 928, height: 1664 },
+        "2:3": { width: 832, height: 1248 },
+    };
+    return dimensionsMap[aspectRatio];
+}
+
+/**
+ * Generate image using AI provider
+ *
+ * This is a pure generation function that:
+ * 1. Creates AI client
+ * 2. Generates image via AI provider
+ * 3. Fetches image data
+ * 4. Returns image data (NO upload, NO database save)
+ *
+ * Now uses authentication context instead of passing API keys as parameters.
+ *
+ * @param params - Image generation parameters
+ * @returns Image generation result (caller handles upload/save)
+ */
+export async function generateImage(
+    params: GeneratorImageParams,
+): Promise<GeneratorImageResult> {
+    const startTime: number = Date.now();
     const {
-        storyId,
-        story,
-        characters = [],
-        settings = [],
-        scenes = [],
-        imageTypes,
-        onProgress,
-    } = params;
+        prompt,
+        aspectRatio,
+        seed,
+        imageType,
+        customDimensions,
+        inferenceSteps,
+    }: GeneratorImageParams = params;
 
-    const generatedImages: GeneratorImagesResult["generatedImages"] = [];
-    let imageCount = 0;
+    console.log(`[images-generator] 🎨 Generating ${imageType} image`);
+    console.log(`[images-generator] Aspect ratio: ${aspectRatio}`);
+    console.log(
+        `[images-generator] Prompt preview: ${prompt.substring(0, 100)}...`,
+    );
 
-    // Calculate total images to generate
-    const totalImages =
-        (imageTypes.includes("story") ? 1 : 0) +
-        (imageTypes.includes("character") ? characters.length : 0) +
-        (imageTypes.includes("setting") ? settings.length : 0) +
-        (imageTypes.includes("scene") ? scenes.length : 0);
+    // 1. Get API key from auth context
+    const apiKey = getApiKey();
 
-    // Generate story cover image
-    if (imageTypes.includes("story") && story) {
-        imageCount++;
-        if (onProgress) onProgress(imageCount, totalImages);
+    if (!apiKey) {
+        console.error(
+            "[images-generator] ERROR: No API key found in authentication context!",
+        );
+        throw new Error("No API key available for AI server image generation");
+    }
 
-        const prompt = `Story cover illustration for "${story.title}". ${story.summary}. Genre: ${story.genre}. Cinematic, professional book cover style.`;
+    console.log(
+        "[images-generator] API key from context:",
+        `${apiKey.substring(0, 10)}...`,
+    );
 
-        const result = await generateStoryImage({
+    // 2. Get dimensions for aspect ratio (allow overrides for iteration profile)
+    const dimensions = customDimensions ?? getImageDimensions(aspectRatio);
+    console.log(
+        `[images-generator] Dimensions: ${dimensions.width}×${dimensions.height}`,
+    );
+
+    // 3. Call AI server directly
+    const aiServerUrl =
+        process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
+    const timeout = parseInt(
+        process.env.AI_SERVER_IMAGE_TIMEOUT || "120000",
+        10,
+    );
+
+    console.log(`[images-generator] Calling AI server: ${aiServerUrl}`);
+
+    const response = await fetch(`${aiServerUrl}/api/v1/images/generate`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+        },
+        body: JSON.stringify({
             prompt,
-            storyId,
-            imageType: "story",
-            style: "vivid",
-            quality: "standard",
-        });
-
-        generatedImages.push({
-            type: "story",
-            entityId: storyId,
-            imageUrl: result.url,
-            variants: result.optimizedSet,
-        });
-
-        console.log(`[images-generator] Generated story cover image:`, {
-            imageId: result.imageId,
-            url: result.url,
-        });
-    }
-
-    // Generate character images
-    if (imageTypes.includes("character")) {
-        for (const character of characters) {
-            imageCount++;
-            if (onProgress) onProgress(imageCount, totalImages);
-
-            const prompt = `Character portrait: ${character.name}. ${character.summary}. Appearance: ${character.appearance.physicalDescription}. Professional character art, realistic style.`;
-
-            const result = await generateStoryImage({
-                prompt,
-                storyId,
-                imageType: "character",
-                style: "vivid",
-                quality: "standard",
-            });
-
-            generatedImages.push({
-                type: "character",
-                entityId: character.id,
-                imageUrl: result.url,
-                variants: result.optimizedSet,
-            });
-
-            console.log(`[images-generator] Generated character image:`, {
-                characterId: character.id,
-                characterName: character.name,
-                imageId: result.imageId,
-            });
-        }
-    }
-
-    // Generate setting images
-    if (imageTypes.includes("setting")) {
-        for (const setting of settings) {
-            imageCount++;
-            if (onProgress) onProgress(imageCount, totalImages);
-
-            const prompt = `Setting illustration: ${setting.name}. ${setting.description}. Mood: ${setting.mood}. Sensory details: ${setting.sensory?.sight?.join(", ")}. Cinematic environment art, realistic style.`;
-
-            const result = await generateStoryImage({
-                prompt,
-                storyId,
-                imageType: "setting",
-                style: "vivid",
-                quality: "standard",
-            });
-
-            generatedImages.push({
-                type: "setting",
-                entityId: setting.id,
-                imageUrl: result.url,
-                variants: result.optimizedSet,
-            });
-
-            console.log(`[images-generator] Generated setting image:`, {
-                settingId: setting.id,
-                settingName: setting.name,
-                imageId: result.imageId,
-            });
-        }
-    }
-
-    // Generate scene images
-    if (imageTypes.includes("scene")) {
-        for (const scene of scenes) {
-            imageCount++;
-            if (onProgress) onProgress(imageCount, totalImages);
-
-            const prompt = `Scene illustration: ${scene.title}. ${scene.summary}. Emotional beat: ${scene.emotionalBeat}. Sensory anchors: ${scene.sensoryAnchors?.join(", ")}. Cinematic, widescreen composition.`;
-
-            const result = await generateStoryImage({
-                prompt,
-                storyId,
-                imageType: "scene",
-                style: "vivid",
-                quality: "standard",
-            });
-
-            generatedImages.push({
-                type: "scene",
-                entityId: scene.id || `scene_${imageCount}`,
-                imageUrl: result.url,
-                variants: result.optimizedSet,
-            });
-
-            console.log(`[images-generator] Generated scene image:`, {
-                sceneId: scene.id,
-                sceneTitle: scene.title,
-                imageId: result.imageId,
-            });
-        }
-    }
-
-    console.log("[images-generator] All images generated:", {
-        count: generatedImages.length,
-        generationTime: Date.now() - startTime,
+            width: dimensions.width,
+            height: dimensions.height,
+            num_inference_steps: inferenceSteps ?? 4,
+            guidance_scale: 1.0,
+            seed,
+        }),
+        signal: AbortSignal.timeout(timeout),
     });
 
+    if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`AI Server error: ${response.status} - ${error}`);
+    }
+
+    const result = await response.json();
+
+    console.log(`[images-generator] ✓ Image generated successfully`);
+    console.log(`[images-generator] Model: ${result.model}`);
+
+    // 4. Fetch image data from AI server URL
+    const imageResponse: Response = await fetch(result.image_url);
+    if (!imageResponse.ok) {
+        throw new Error(
+            `Failed to fetch generated image: ${imageResponse.statusText}`,
+        );
+    }
+
+    const imageBuffer: ArrayBuffer = await imageResponse.arrayBuffer();
+    const imageSize: number = imageBuffer.byteLength;
+
+    console.log(
+        `[images-generator] Image size: ${(imageSize / 1024 / 1024).toFixed(2)} MB`,
+    );
+
+    const generationTime: number = Date.now() - startTime;
+
+    console.log(
+        `[images-generator] ✓ Generation complete (${generationTime}ms)`,
+    );
+
+    // 5. Return image data (caller handles upload and database save)
     return {
-        generatedImages,
-        metadata: {
-            totalGenerated: generatedImages.length,
-            generationTime: Date.now() - startTime,
-        },
+        imageUrl: result.image_url,
+        imageBuffer,
+        width: result.width ?? dimensions.width,
+        height: result.height ?? dimensions.height,
+        size: imageSize,
+        aspectRatio,
+        model: result.model,
+        provider: "ai-server",
+        generationTime,
     };
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { StoryGrid } from "@/components/browse/StoryGrid";
@@ -9,15 +8,11 @@ import {
     StoryGridSkeleton,
     StoryLoadingError,
 } from "@/components/common";
-import { Button, SkeletonLoader } from "@/components/ui";
-import { useUserStories } from "@/lib/hooks/use-page-cache";
-
-import { StoryCard } from "./StoryCard";
-import { StoryTableView } from "./story-table-view";
-import { ViewToggle } from "./view-toggle";
+import { SkeletonLoader } from "@/components/ui";
+import { useUserStories } from "@/hooks/use-page-cache";
 
 export function DashboardClient() {
-    const [view, setView] = useState<"card" | "table">("card");
+    const [_view, _setView] = useState<"card" | "table">("card");
     const { data: session } = useSession();
     const {
         data,
@@ -28,7 +23,7 @@ export function DashboardClient() {
     } = useUserStories();
 
     // Transform data to match StoryGrid expected format
-    const stories = (data?.stories || []).map((story: any) => ({
+    const stories = (Array.isArray(data) ? data : (data as any)?.stories || []).map((story: any) => ({
         id: story.id,
         title: story.title,
         summary: story.summary || "", // Story summary from database

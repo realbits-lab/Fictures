@@ -171,6 +171,57 @@ Get daily aggregated metrics for a story.
 
 Manage community posts, likes, and replies.
 
+### Get Community Stories
+
+Get community stories with Redis caching for optimized performance.
+
+**Endpoint:** `GET /api/community/stories`
+
+**Authentication:** Optional (Session)
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| page | number | No | Page number (default: 1) |
+| limit | number | No | Items per page (default: 20) |
+| sort | string | No | Sort: `recent`, `popular`, `rating` |
+
+**Success Response (200):**
+
+```json
+{
+  "stories": [
+    {
+      "id": "story_abc123",
+      "title": "The Adventure",
+      "summary": "A hero's journey...",
+      "genre": "Fantasy",
+      "coverImageUrl": "https://...",
+      "author": {
+        "id": "user_xyz",
+        "name": "John Doe"
+      },
+      "likes": 89,
+      "views": 1250,
+      "publishedAt": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 150
+  }
+}
+```
+
+**Caching:**
+- Uses 3-layer caching: Redis + HTTP ETag + localStorage
+- Cache invalidated on story modifications
+- ETag support for efficient client-side caching
+
+---
+
 ### Create Post
 
 Create a new community post.
@@ -554,9 +605,104 @@ Get the timeline of scheduled publications.
 
 ---
 
+### Publish Scene
+
+Publish a specific scene.
+
+**Endpoint:** `POST /api/publish/scenes/[sceneId]`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "sceneId": "scene_abc123",
+  "publishedAt": "2024-01-15T10:30:00.000Z"
+}
+```
+
+---
+
+### Unpublish Scene
+
+Unpublish a previously published scene.
+
+**Endpoint:** `POST /api/publish/scenes/[sceneId]/unpublish`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "sceneId": "scene_abc123",
+  "unpublishedAt": "2024-01-15T10:35:00.000Z"
+}
+```
+
+---
+
+### Cron Job for Scheduled Publishing
+
+Automated endpoint for scheduled scene publishing.
+
+**Endpoint:** `POST /api/publish/cron`
+
+**Authentication:** Required (`CRON_SECRET`)
+
+**Description:** Triggered by Vercel Cron to publish scheduled scenes.
+
+---
+
 ## Comics APIs
 
 Generate and manage comic panels for stories.
+
+### Get Published Comics
+
+Get list of published comics available to read.
+
+**Endpoint:** `GET /api/comics/published`
+
+**Authentication:** Optional (Session)
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| page | number | No | Page number (default: 1) |
+| limit | number | No | Items per page (default: 20) |
+| sort | string | No | Sort: `recent`, `popular` |
+
+**Success Response (200):**
+
+```json
+{
+  "comics": [
+    {
+      "id": "story_abc123",
+      "title": "The Adventure",
+      "coverImageUrl": "https://...",
+      "author": {
+        "id": "user_xyz",
+        "name": "John Doe"
+      },
+      "views": 1250,
+      "publishedAt": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 20,
+    "total": 50
+  }
+}
+```
+
+---
 
 ### Generate Panels
 
@@ -784,11 +930,13 @@ Update reading history for a story.
 
 User preferences and API key management.
 
+**Note:** API key management endpoints require `admin:all` scope.
+
 ### Get User Settings
 
-Get current user settings.
+Get current user account settings and preferences.
 
-**Endpoint:** `GET /settings/api/user`
+**Endpoint:** `GET /api/settings/user`
 
 **Authentication:** Required (Session)
 
@@ -814,9 +962,9 @@ Get current user settings.
 
 ### Update User Settings
 
-Update user preferences.
+Update user account settings and preferences.
 
-**Endpoint:** `PATCH /settings/api/user`
+**Endpoint:** `PUT /api/settings/user`
 
 **Authentication:** Required (Session)
 
@@ -850,13 +998,67 @@ Update user preferences.
 
 ---
 
+### Get Privacy Settings
+
+Get user privacy settings.
+
+**Endpoint:** `GET /api/settings/privacy`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "privacy": {
+    "profileVisibility": "public",
+    "showReadingHistory": true,
+    "allowAnalytics": true
+  }
+}
+```
+
+---
+
+### Update Privacy Settings
+
+Update user privacy settings.
+
+**Endpoint:** `PUT /api/settings/privacy`
+
+**Authentication:** Required (Session)
+
+**Request Body:**
+
+```json
+{
+  "profileVisibility": "private",
+  "showReadingHistory": false
+}
+```
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "privacy": {
+    "profileVisibility": "private",
+    "showReadingHistory": false,
+    "allowAnalytics": true
+  }
+}
+```
+
+---
+
 ### List API Keys
 
 Get all API keys for the authenticated user.
 
-**Endpoint:** `GET /settings/api/api-keys`
+**Endpoint:** `GET /api/settings/api-keys`
 
-**Authentication:** Required (Session)
+**Authentication:** Required (Session with `admin:all` scope)
 
 **Success Response (200):**
 
@@ -881,9 +1083,9 @@ Get all API keys for the authenticated user.
 
 Create a new API key.
 
-**Endpoint:** `POST /settings/api/api-keys`
+**Endpoint:** `POST /api/settings/api-keys`
 
-**Authentication:** Required (Session)
+**Authentication:** Required (Session with `admin:all` scope)
 
 **Request Body:**
 
@@ -929,9 +1131,9 @@ Create a new API key.
 
 Revoke an API key.
 
-**Endpoint:** `POST /settings/api/api-keys/[id]/revoke`
+**Endpoint:** `POST /api/settings/api-keys/[id]/revoke`
 
-**Authentication:** Required (Session)
+**Authentication:** Required (Session with `admin:all` scope)
 
 **URL Parameters:**
 

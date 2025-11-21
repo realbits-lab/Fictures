@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import React, { useState } from "react";
+import { useState } from "react";
 import { SignInButton } from "@/components/auth/SignInButton";
 import { SignOutButton } from "@/components/auth/SignOutButton";
 import { Button } from "@/components/ui";

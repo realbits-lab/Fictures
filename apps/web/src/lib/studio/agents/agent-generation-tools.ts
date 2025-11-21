@@ -1,4 +1,7 @@
 import { tool } from "ai";
+
+// Type helper for tool definitions to work around TypeScript overload issues
+const createTool = tool as any;
 import { z } from "zod";
 
 // ==============================================================================
@@ -6,13 +9,18 @@ import { z } from "zod";
 // Integration with existing Novel Generation API endpoints
 // ==============================================================================
 
-export const generateStorySummary = tool({
+const generateStorySummarySchema = z.object({
+    storyId: z.string().describe("The story ID to generate summary for"),
+    userPrompt: z.string().describe("User story concept, genre, themes"),
+});
+
+export const generateStorySummary = createTool({
     summary: "Generate initial story summary from user concept (Phase 1 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID to generate summary for"),
-        userPrompt: z.string().describe("User story concept, genre, themes"),
-    }),
-    execute: async ({ storyId, userPrompt }) => {
+    parameters: generateStorySummarySchema,
+    execute: async ({
+        storyId,
+        userPrompt,
+    }: z.infer<typeof generateStorySummarySchema>) => {
         // Call existing generation API
         const requestBody: {
             storyId: string;
@@ -22,7 +30,7 @@ export const generateStorySummary = tool({
             concept: userPrompt,
         };
 
-        const response = await fetch("/studio/api/novels/story", {
+        const response = await fetch("/api/studio/story", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -48,19 +56,21 @@ export const generateStorySummary = tool({
     },
 });
 
-export const generateCharacters = tool({
+const generateCharactersSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
+export const generateCharacters = createTool({
     summary: "Generate character profiles with AI portraits (Phase 2 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: generateCharactersSchema,
+    execute: async ({ storyId }: z.infer<typeof generateCharactersSchema>) => {
         const requestBody: {
             storyId: string;
         } = {
             storyId,
         };
 
-        const response = await fetch("/studio/api/characters", {
+        const response = await fetch("/api/studio/characters", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -83,20 +93,22 @@ export const generateCharacters = tool({
     },
 });
 
-export const generateSettings = tool({
+const generateSettingsSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
+export const generateSettings = createTool({
     summary:
         "Generate story locations/settings with environment images (Phase 3 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: generateSettingsSchema,
+    execute: async ({ storyId }: z.infer<typeof generateSettingsSchema>) => {
         const requestBody: {
             storyId: string;
         } = {
             storyId,
         };
 
-        const response = await fetch("/studio/api/settings", {
+        const response = await fetch("/api/studio/settings", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -119,19 +131,21 @@ export const generateSettings = tool({
     },
 });
 
-export const generateParts = tool({
+const generatePartsSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+});
+
+export const generateParts = createTool({
     summary: "Generate story parts/acts structure (Phase 4 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-    }),
-    execute: async ({ storyId }) => {
+    parameters: generatePartsSchema,
+    execute: async ({ storyId }: z.infer<typeof generatePartsSchema>) => {
         const requestBody: {
             storyId: string;
         } = {
             storyId,
         };
 
-        const response = await fetch("/studio/api/parts", {
+        const response = await fetch("/api/studio/parts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -154,16 +168,21 @@ export const generateParts = tool({
     },
 });
 
-export const generateChapters = tool({
+const generateChaptersSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    partId: z
+        .string()
+        .optional()
+        .describe("Optional: generate chapters for specific part"),
+});
+
+export const generateChapters = createTool({
     summary: "Generate chapters with outlines (Phase 5 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        partId: z
-            .string()
-            .optional()
-            .describe("Optional: generate chapters for specific part"),
-    }),
-    execute: async ({ storyId, partId }) => {
+    parameters: generateChaptersSchema,
+    execute: async ({
+        storyId,
+        partId,
+    }: z.infer<typeof generateChaptersSchema>) => {
         const requestBody: {
             storyId: string;
             partId?: string;
@@ -172,7 +191,7 @@ export const generateChapters = tool({
             partId,
         };
 
-        const response = await fetch("/studio/api/chapters", {
+        const response = await fetch("/api/studio/chapters", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -195,16 +214,21 @@ export const generateChapters = tool({
     },
 });
 
-export const generateSceneSummaries = tool({
+const generateSceneSummariesSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    chapterId: z
+        .string()
+        .optional()
+        .describe("Optional: generate scenes for specific chapter"),
+});
+
+export const generateSceneSummaries = createTool({
     summary: "Generate scene summaries/outlines (Phase 6 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        chapterId: z
-            .string()
-            .optional()
-            .describe("Optional: generate scenes for specific chapter"),
-    }),
-    execute: async ({ storyId, chapterId }) => {
+    parameters: generateSceneSummariesSchema,
+    execute: async ({
+        storyId,
+        chapterId,
+    }: z.infer<typeof generateSceneSummariesSchema>) => {
         const requestBody: {
             storyId: string;
             chapterId?: string;
@@ -213,7 +237,7 @@ export const generateSceneSummaries = tool({
             chapterId,
         };
 
-        const response = await fetch("/studio/api/scene-summaries", {
+        const response = await fetch("/api/studio/scene-summaries", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -236,19 +260,23 @@ export const generateSceneSummaries = tool({
     },
 });
 
-export const generateSceneContent = tool({
+const generateSceneContentSchema = z.object({
+    sceneId: z.string().describe("The scene ID to generate content for"),
+});
+
+export const generateSceneContent = createTool({
     summary: "Generate full scene prose content (Phase 7 of 9)",
-    parameters: z.object({
-        sceneId: z.string().describe("The scene ID to generate content for"),
-    }),
-    execute: async ({ sceneId }) => {
+    parameters: generateSceneContentSchema,
+    execute: async ({
+        sceneId,
+    }: z.infer<typeof generateSceneContentSchema>) => {
         const requestBody: {
             sceneId: string;
         } = {
             sceneId,
         };
 
-        const response = await fetch("/studio/api/scene-content", {
+        const response = await fetch("/api/studio/scene-content", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -272,20 +300,22 @@ export const generateSceneContent = tool({
     },
 });
 
-export const evaluateScene = tool({
+const improveSceneSchema = z.object({
+    sceneId: z.string().describe("The scene ID to improve"),
+});
+
+export const improveScene = createTool({
     summary:
-        "Evaluate scene quality using Architectonics of Engagement (Phase 8 of 9)",
-    parameters: z.object({
-        sceneId: z.string().describe("The scene ID to evaluate"),
-    }),
-    execute: async ({ sceneId }) => {
+        "Improve scene quality using Architectonics of Engagement (Phase 8 of 9)",
+    parameters: improveSceneSchema,
+    execute: async ({ sceneId }: z.infer<typeof improveSceneSchema>) => {
         const requestBody: {
             sceneId: string;
         } = {
             sceneId,
         };
 
-        const response = await fetch("/studio/api/novels/scene-evaluation", {
+        const response = await fetch("/api/studio/scene-improvement", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -294,7 +324,7 @@ export const evaluateScene = tool({
         if (!response.ok) {
             return {
                 success: false,
-                error: "Scene evaluation failed",
+                error: "Scene improvement failed",
             };
         }
 
@@ -302,7 +332,7 @@ export const evaluateScene = tool({
 
         return {
             success: true,
-            message: `Scene evaluated - Score: ${data.score}/4.0`,
+            message: `Scene improved - Score: ${data.score}/4.0`,
             score: data.score,
             categories: data.categories,
             feedback: data.feedback,
@@ -311,22 +341,26 @@ export const evaluateScene = tool({
     },
 });
 
-export const generateImages = tool({
+const generateImagesSchema = z.object({
+    storyId: z.string().describe("The story ID"),
+    imageType: z
+        .enum(["story", "character", "setting", "scene"])
+        .describe("Type of image to generate"),
+    entityId: z
+        .string()
+        .optional()
+        .describe("Optional: specific entity ID for character/setting/scene"),
+});
+
+export const generateImages = createTool({
     summary:
         "Generate images for story elements using Gemini 2.5 Flash (Phase 9 of 9)",
-    parameters: z.object({
-        storyId: z.string().describe("The story ID"),
-        imageType: z
-            .enum(["story", "character", "setting", "scene"])
-            .describe("Type of image to generate"),
-        entityId: z
-            .string()
-            .optional()
-            .describe(
-                "Optional: specific entity ID for character/setting/scene",
-            ),
-    }),
-    execute: async ({ storyId, imageType, entityId }) => {
+    parameters: generateImagesSchema,
+    execute: async ({
+        storyId,
+        imageType,
+        entityId,
+    }: z.infer<typeof generateImagesSchema>) => {
         const requestBody: {
             storyId: string;
             imageType: "story" | "character" | "setting" | "scene";
@@ -337,7 +371,7 @@ export const generateImages = tool({
             entityId,
         };
 
-        const response = await fetch("/studio/api/images", {
+        const response = await fetch("/api/studio/images", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),
@@ -373,6 +407,6 @@ export const studioAgentGenerationTools = {
     generateChapters,
     generateSceneSummaries,
     generateSceneContent,
-    evaluateScene,
+    improveScene,
     generateImages,
 };

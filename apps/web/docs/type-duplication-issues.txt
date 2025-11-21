@@ -1,0 +1,267 @@
+================================================================================
+TYPE DUPLICATION ISSUES - DETAILED ANALYSIS
+================================================================================
+
+CRITICAL ISSUE #1: EVALUATION TYPES DEFINED IN MULTIPLE PLACES
+================================================================================
+
+Location 1: API Layer
+  File: /src/app/api/evaluation/types.ts (476 lines)
+  Purpose: HTTP API contracts for evaluation endpoints
+  Contains:
+    - EvaluationMode, MetricMethod, MetricSeverity
+    - BaseEvaluationRequest, BaseEvaluationResponse
+    - StoryEvaluationRequest, StoryEvaluationResponse
+    - CharacterEvaluationRequest, CharacterEvaluationResult, CharacterEvaluationResponse
+    - SettingEvaluationRequest, SettingEvaluationResult, SettingEvaluationResponse
+    - PartEvaluationRequest, PartEvaluationResponse
+    - ChapterEvaluationRequest, ChapterEvaluationResponse
+    - SceneSummaryEvaluationRequest, SceneSummaryEvaluationResponse
+    - SceneContentEvaluationRequest, SceneContentEvaluationResponse
+    - BatchEvaluationRequest, BatchEvaluationResponse
+    - StoryPipelineEvaluationRequest, StoryPipelineEvaluationResponse
+    - CorePrincipleRequest, CorePrincipleResponse, AllCorePrinciplesResponse
+    - StoryReportRequest, ExecutiveSummary, FullStoryReport
+    - ComparisonRequest, ComparisonResponse, StoryComparison
+    - EvaluationError, EVALUATION_ERROR_CODES (constants)
+
+Location 2: Schema Layer
+  File: /src/lib/schemas/evaluation/ (101 lines total across 4 files)
+  Purpose: Zod validation schemas for evaluation
+  Contains:
+    - evaluationMetricsSchema (metrics.ts - 96 lines)
+    - analysisPointSchema, categoryAnalysisSchema (results.ts)
+    - actionableFeedbackSchema, evaluationSummarySchema (results.ts)
+    - evaluationResultSchema, EvaluationResult type (results.ts)
+    - Evaluation request parameters (requests.ts - 38 lines)
+    - Story-specific evaluation (story-evaluation.ts - 101 lines)
+
+Location 3: Global Re-exports
+  File: /src/types/index.ts (154 lines)
+  Purpose: Central type organization
+  Contains:
+    Re-exports from: @/lib/schemas/evaluation
+    Also references: validation-evaluation.ts (NOT FOUND - legacy)
+
+PROBLEM ANALYSIS:
+================================================================================
+
+1. SPLIT SSOT
+   - No single source of truth for evaluation types
+   - API layer has complete types (476 lines)
+   - Schema layer has partial types (101 lines)
+   - Unclear which should be authoritative
+
+2. INCOMPLETE OVERLAP
+   - API has types not in schemas: CorePrincipleResponse, FullStoryReport
+   - Schemas have types not in API: analysisPointSchema, categoryAnalysisSchema
+   - Different levels of abstraction
+
+3. RE-EXPORT COMPLEXITY
+   - /src/types/index.ts re-exports evaluation types from schemas
+   - But doesn't import types from /src/app/api/evaluation/types.ts
+   - Multiple import paths possible
+
+4. MAINTENANCE BURDEN
+   - Changes to evaluation must be made in potentially 2-3 places
+   - Risk of divergence between API and schema types
+   - Hard to determine which is the source of truth
+
+EXAMPLE: Tracking Changes
+================================================================================
+
+If someone wants to add a new field to evaluation results:
+1. Should they modify /src/app/api/evaluation/types.ts?
+2. Or /src/lib/schemas/evaluation/results.ts?
+3. Or both?
+4. How would a developer know?
+
+Current state is ambiguous.
+
+================================================================================
+
+CRITICAL ISSUE #2: ZOD SCHEMAS IN API LAYER
+================================================================================
+
+Location: /src/app/api/studio/types.ts (404 lines)
+Contains BOTH:
+  - TypeScript interfaces (ApiStoryRequest, ApiStoryResponse, etc.)
+  - Zod validation schemas (generateStorySchema, generateCharactersSchema, etc.)
+
+Problem:
+  - Violates separation of concerns
+  - Zod schemas should be in /src/lib/schemas/
+  - API files should only contain TypeScript types
+  - Creates mixed responsibilities in single file
+
+Example:
+  ┌─ TypeScript Type
+  │  export interface ApiStoryRequest {
+  │    userPrompt: string;
+  │    language?: string;
+  │    preferredGenre?: StoryGenre;
+  │    preferredTone?: StoryTone;
+  │  }
+  │
+  └─ Zod Schema (should be in schemas/)
+     export const generateStorySchema = z.object({
+       userPrompt: z.string().min(1),
+       language: z.string().optional().default("English"),
+       preferredGenre: z.enum(STORY_GENRES).optional(),
+       preferredTone: z.enum(STORY_TONES).optional(),
+     });
+
+This creates duplication:
+  - Type definition in API file
+  - Equivalent schema in same file
+  - Both describe same thing, different syntax
+
+================================================================================
+
+CRITICAL ISSUE #3: MISSING SCHEMA TO TYPE FLOW
+================================================================================
+
+Good Pattern (Database Layer):
+  drizzle/index.ts (Drizzle table definitions - SSOT)
+    ↓ (createInsertSchema/createSelectSchema)
+  generated-zod/index.ts (Zod validators)
+    ↓ (infer types)
+  TypeScript types (Story, Character, etc.)
+    ↓ (import)
+  API routes, services, components (use types)
+
+Missing Pattern (Evaluation/Validation):
+  ??? (Zod schemas - WHERE IS THE SSOT?)
+    ↓
+  evaluationResultSchema, validationResultSchema
+    ↓ (infer types)
+  ??? (What types are derived?)
+    ↓
+  ??? (Where are API types?)
+
+No clear SSOT or derivation flow visible.
+
+================================================================================
+
+CRITICAL ISSUE #4: UNUSED/DUPLICATED VALIDATION SCHEMAS
+================================================================================
+
+Question: Are these schemas actually used?
+
+Location: /src/lib/schemas/evaluation/metrics.ts
+  - evaluationMetricsSchema (Zod)
+  - Type inferred from Zod
+
+Location: /src/app/api/evaluation/types.ts
+  - MetricResult interface (TypeScript)
+  - No schema
+
+Are both used? Is one redundant?
+If metrics.ts is SSOT, why isn't it generating the type?
+If types.ts MetricResult is SSOT, why have schemas at all?
+
+This pattern repeats for:
+  - Validation schemas (32 lines)
+  - Improvement schemas (74 lines)
+
+Unknown: Which are authoritative? Which are used?
+
+================================================================================
+
+NAMING INCONSISTENCY ANALYSIS
+================================================================================
+
+API Layer
+  File: /src/app/api/studio/types.ts
+  Pattern: Api{Entity}{Suffix}
+  Examples:
+    - ApiStoryRequest
+    - ApiStoryResponse
+    - ApiCharactersRequest
+    - ApiCharactersResponse
+
+API Layer (Inconsistent!)
+  File: /src/app/api/evaluation/types.ts
+  Pattern: {Entity}Evaluation{Suffix}
+  Examples:
+    - StoryEvaluationRequest
+    - StoryEvaluationResponse
+    - CharacterEvaluationRequest (NOTE: No "Api" prefix!)
+    - CharacterEvaluationResponse
+
+Service Layer
+  File: /src/lib/studio/generators/types.ts
+  Pattern: Generator{Entity}{Params|Result}
+  Examples:
+    - GeneratorStoryParams
+    - GeneratorStoryResult
+    - GeneratorCharactersParams
+
+Domain Layer
+  File: /src/lib/ai/types/image.ts
+  Pattern: {Entity}{Concept}
+  Examples:
+    - ImageProvider
+    - ImageGenerationRequest
+    - ImageGenerationResponse
+
+Schema Layer
+  Pattern: {entity}{component}Schema
+  Examples:
+    - insertStorySchema
+    - selectStorySchema
+    - evaluationMetricsSchema
+    - evaluationResultSchema
+    - analysisPointSchema
+
+INCONSISTENCY:
+  - API layer has TWO different patterns
+  - Studio API: Api prefix (correct)
+  - Evaluation API: No prefix (inconsistent!)
+  - This makes it unclear which layer an interface belongs to
+
+================================================================================
+
+SUMMARY OF ISSUES
+================================================================================
+
+Issue 1: Evaluation Types
+  - Duplicated in API and schema layers
+  - ~400+ lines of duplication
+  - Unclear SSOT
+  - Maintenance risk
+
+Issue 2: Zod Schemas in API Files  
+  - /src/app/api/studio/types.ts has 8+ Zod schemas
+  - Violates separation of concerns
+  - Should be in /src/lib/schemas/studio/
+  - Creates mixed responsibilities
+
+Issue 3: Missing SSOT Flow Documentation
+  - Evaluation/validation schemas lack clear SSOT
+  - Database layer has clear flow (drizzle → zod → types)
+  - Other domains are unclear
+
+Issue 4: Naming Inconsistency
+  - Studio API: Api{Entity}{Suffix} ✓
+  - Evaluation API: {Entity}Evaluation{Suffix} ✗
+  - Should standardize
+
+Issue 5: Unused Schemas?
+  - /src/lib/schemas/evaluation/ may duplicate /src/app/api/evaluation/types.ts
+  - /src/lib/schemas/validation/ may be unused
+  - /src/lib/schemas/improvement/ may be unused
+  - Unknown without auditing actual usage
+
+Issue 6: Re-export Complexity
+  - Types exported from /src/types/index.ts
+  - Also types in /src/app/api/ directories
+  - Multiple import paths possible
+  - Can import same type from different places
+
+TOTAL IMPACT:
+  ~900+ lines of potentially duplicated type definitions
+  4-6 unclear architectural patterns
+  Multiple paths to same information
+
+================================================================================

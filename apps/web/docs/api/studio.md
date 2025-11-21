@@ -9,7 +9,10 @@ The Studio APIs provide comprehensive functionality for writers to:
 2. **Chapter Management**: Organize and edit chapters
 3. **Scene Management**: Write and edit individual scenes
 4. **AI Generation**: Generate story content using AI
-5. **Scene Evaluation**: Assess and improve scene quality
+5. **AI Agent**: Chat-based AI assistance for story creation and editing
+6. **Toonplay Generation**: Convert stories to webtoon/comic scripts
+7. **Comic Panel Generation**: Generate visual comic panels for scenes
+8. **Scene Evaluation**: Assess and improve scene quality
 
 **Base Path:** `/studio/api/*`
 
@@ -23,7 +26,7 @@ The Studio APIs provide comprehensive functionality for writers to:
 
 Get all stories for the authenticated user with detailed dashboard data.
 
-**Endpoint:** `GET /studio/api/stories`
+**Endpoint:** `GET /studio/api/story`
 
 **Authentication:** Required (API Key with `stories:read` OR Session)
 
@@ -73,7 +76,7 @@ Get all stories for the authenticated user with detailed dashboard data.
 **Example:**
 
 ```bash
-curl -X GET http://localhost:3000/studio/api/stories \
+curl -X GET http://localhost:3000/studio/api/story \
   -H "Authorization: Bearer YOUR_API_KEY"
 ```
 
@@ -83,7 +86,7 @@ curl -X GET http://localhost:3000/studio/api/stories \
 
 Create a new empty story.
 
-**Endpoint:** `POST /studio/api/stories`
+**Endpoint:** `POST /studio/api/story`
 
 **Authentication:** Required (API Key with `stories:write` OR Session)
 
@@ -126,7 +129,7 @@ Create a new empty story.
 **Example:**
 
 ```bash
-curl -X POST http://localhost:3000/studio/api/stories \
+curl -X POST http://localhost:3000/studio/api/story \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_API_KEY" \
   -d '{
@@ -142,7 +145,7 @@ curl -X POST http://localhost:3000/studio/api/stories \
 
 Get detailed information about a specific story including chapters.
 
-**Endpoint:** `GET /studio/api/stories/[id]`
+**Endpoint:** `GET /studio/api/story/[id]`
 
 **Authentication:** Required (Session)
 
@@ -181,7 +184,7 @@ Get detailed information about a specific story including chapters.
 **Example:**
 
 ```bash
-curl -X GET http://localhost:3000/studio/api/stories/story_abc123 \
+curl -X GET http://localhost:3000/studio/api/story/story_abc123 \
   -H "Cookie: next-auth.session-token=YOUR_SESSION"
 ```
 
@@ -191,7 +194,7 @@ curl -X GET http://localhost:3000/studio/api/stories/story_abc123 \
 
 Update story metadata and settings.
 
-**Endpoint:** `PATCH /studio/api/stories/[id]`
+**Endpoint:** `PATCH /studio/api/story/[id]`
 
 **Authentication:** Required (Session)
 
@@ -243,7 +246,7 @@ Update story metadata and settings.
 **Example:**
 
 ```bash
-curl -X PATCH http://localhost:3000/studio/api/stories/story_abc123 \
+curl -X PATCH http://localhost:3000/studio/api/story/story_abc123 \
   -H "Content-Type: application/json" \
   -H "Cookie: next-auth.session-token=YOUR_SESSION" \
   -d '{
@@ -258,7 +261,7 @@ curl -X PATCH http://localhost:3000/studio/api/stories/story_abc123 \
 
 Delete a story and all associated data (cascading deletion).
 
-**Endpoint:** `DELETE /studio/api/stories/[id]`
+**Endpoint:** `DELETE /studio/api/story/[id]`
 
 **Authentication:** Required (Session)
 
@@ -308,8 +311,166 @@ Delete a story and all associated data (cascading deletion).
 **Example:**
 
 ```bash
-curl -X DELETE http://localhost:3000/studio/api/stories/story_abc123 \
+curl -X DELETE http://localhost:3000/studio/api/story/story_abc123 \
   -H "Cookie: next-auth.session-token=YOUR_SESSION"
+```
+
+---
+
+### Get Story Visibility
+
+Get the visibility status of a story.
+
+**Endpoint:** `GET /studio/api/story/[id]/visibility`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "storyId": "story_abc123",
+  "isPublic": true,
+  "status": "published"
+}
+```
+
+---
+
+### Update Story Visibility
+
+Update the public visibility of a story.
+
+**Endpoint:** `PATCH /studio/api/story/[id]/visibility`
+
+**Authentication:** Required (Session)
+
+**Request Body:**
+
+```json
+{
+  "isPublic": true
+}
+```
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "storyId": "story_abc123",
+  "isPublic": true
+}
+```
+
+---
+
+### Like Story
+
+Toggle like status for a story.
+
+**Endpoint:** `POST /studio/api/story/[id]/like`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "liked": true,
+  "likeCount": 42
+}
+```
+
+---
+
+### Get Story Structure
+
+Get the complete story structure including parts, chapters, and scenes.
+
+**Endpoint:** `GET /studio/api/story/[id]/structure`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "story": {
+    "id": "story_abc123",
+    "title": "The Adventure"
+  },
+  "parts": [
+    {
+      "id": "part_xyz",
+      "title": "Part 1",
+      "chapters": [
+        {
+          "id": "chapter_123",
+          "title": "Chapter 1",
+          "scenes": [
+            {
+              "id": "scene_456",
+              "title": "Opening Scene"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### Get Story Characters
+
+Get all characters in a story.
+
+**Endpoint:** `GET /studio/api/story/[id]/characters`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "characters": [
+    {
+      "id": "char_abc",
+      "name": "Hero",
+      "role": "protagonist",
+      "description": "A brave adventurer..."
+    }
+  ]
+}
+```
+
+---
+
+### Get Published Stories
+
+Get published stories by the authenticated user.
+
+**Endpoint:** `GET /studio/api/story/published`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "stories": [
+    {
+      "id": "story_abc123",
+      "title": "Published Story",
+      "publishedAt": "2024-01-15T10:30:00.000Z",
+      "views": 1250,
+      "likes": 89
+    }
+  ]
+}
 ```
 
 ---
@@ -525,6 +686,267 @@ Assess scene quality using the "Architectonics of Engagement" framework.
 
 ---
 
+## AI Agent APIs
+
+### Studio Agent Chat
+
+Interactive AI agent for story generation and editing assistance.
+
+**Endpoint:** `POST /studio/api/agent`
+
+**Authentication:** Required (Session)
+
+**Request Body:**
+
+```json
+{
+  "message": "Help me create a fantasy story about a young hero",
+  "storyId": "story_abc123",
+  "agentType": "generation",
+  "chatId": "chat_xyz789"
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| message | string | Yes | User message/prompt |
+| storyId | string | No | Story ID for context |
+| agentType | string | No | Agent type: `generation` or `editing` |
+| chatId | string | No | Chat session ID for continuity |
+
+**Content-Type:** `text/event-stream` (Server-Sent Events)
+
+**SSE Event Stream:**
+
+```
+event: message
+data: {"content":"I'll help you create a fantasy story...","role":"assistant"}
+
+event: tool_call
+data: {"tool":"generateStory","args":{"genre":"fantasy"}}
+
+event: done
+data: {"chatId":"chat_xyz789"}
+```
+
+**Example:**
+
+```bash
+curl -X POST http://localhost:3000/studio/api/agent \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "message": "Create a mystery story set in Victorian London",
+    "agentType": "generation"
+  }'
+```
+
+---
+
+### Get Agent Chat Messages
+
+Retrieve messages from an agent chat session.
+
+**Endpoint:** `POST /studio/api/agent/[chatId]/messages`
+
+**Authentication:** Required (Session)
+
+**URL Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| chatId | string | Yes | Chat session ID |
+
+**Success Response (200):**
+
+```json
+{
+  "messages": [
+    {
+      "role": "user",
+      "content": "Help me create a story",
+      "timestamp": "2024-01-15T10:30:00.000Z"
+    },
+    {
+      "role": "assistant",
+      "content": "I'll help you create a story...",
+      "timestamp": "2024-01-15T10:30:05.000Z"
+    }
+  ]
+}
+```
+
+---
+
+## Toonplay Generation
+
+### Generate Toonplay Script
+
+Generate a webtoon/comic script from story content using the Toonplay methodology.
+
+**Endpoint:** `POST /studio/api/toonplay`
+
+**Authentication:** Required (Session)
+
+**Request Body:**
+
+```json
+{
+  "sceneId": "scene_abc123",
+  "style": "webtoon"
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| sceneId | string | Yes | Scene ID to convert |
+| style | string | No | Style: `webtoon`, `manga`, `western` |
+
+**Toonplay Methodology:**
+- **70% Dialogue**: Character conversations drive the narrative
+- **30% Visual Action**: Dynamic visual storytelling
+- **<5% Narration**: Minimal external narration
+- **<10% Internal Monologue**: Limited inner thoughts
+
+**Success Response (200):**
+
+```json
+{
+  "sceneId": "scene_abc123",
+  "script": {
+    "panels": [
+      {
+        "panelNumber": 1,
+        "type": "dialogue",
+        "description": "Close-up of character's face",
+        "dialogue": "I never thought it would come to this.",
+        "character": "protagonist"
+      },
+      {
+        "panelNumber": 2,
+        "type": "action",
+        "description": "Wide shot of the forest clearing",
+        "visualCues": ["dramatic lighting", "tension"]
+      }
+    ],
+    "totalPanels": 8,
+    "dialogueRatio": 0.72,
+    "actionRatio": 0.28
+  }
+}
+```
+
+**Example:**
+
+```bash
+curl -X POST http://localhost:3000/studio/api/toonplay \
+  -H "Content-Type: application/json" \
+  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
+  -d '{
+    "sceneId": "scene_abc123",
+    "style": "webtoon"
+  }'
+```
+
+---
+
+## Comic Panel Generation
+
+### Generate Comic Panels for Scene
+
+Generate visual comic panels for a scene.
+
+**Endpoint:** `POST /studio/api/scenes/[id]/comic/generate`
+
+**Authentication:** Required (API Key with `stories:write` OR Session)
+
+**URL Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| id | string | Yes | Scene ID |
+
+**Request Body:**
+
+```json
+{
+  "stylePreset": "webtoon",
+  "panelCount": 6
+}
+```
+
+**Parameters:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| stylePreset | string | No | Style: `webtoon`, `manga`, `western` |
+| panelCount | number | No | Number of panels to generate |
+
+**Success Response (200):**
+
+```json
+{
+  "sceneId": "scene_abc123",
+  "panels": [
+    {
+      "id": "panel_1",
+      "imageUrl": "https://blob.vercel-storage.com/...",
+      "imageVariants": { /* optimized variants */ },
+      "caption": "Panel description...",
+      "order": 1
+    }
+  ],
+  "totalPanels": 6,
+  "status": "generated"
+}
+```
+
+---
+
+### Publish Comic Panels
+
+Publish generated comic panels for public viewing.
+
+**Endpoint:** `POST /studio/api/scenes/[id]/comic/publish`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "sceneId": "scene_abc123",
+  "publishedAt": "2024-01-15T10:30:00.000Z"
+}
+```
+
+---
+
+### Unpublish Comic Panels
+
+Remove comic panels from public viewing.
+
+**Endpoint:** `POST /studio/api/scenes/[id]/comic/unpublish`
+
+**Authentication:** Required (Session)
+
+**Success Response (200):**
+
+```json
+{
+  "success": true,
+  "sceneId": "scene_abc123",
+  "unpublishedAt": "2024-01-15T10:35:00.000Z"
+}
+```
+
+---
+
 ## Chapter Management
 
 ### Get Chapter Details
@@ -640,12 +1062,12 @@ Delete a specific scene.
 
 ### Story Creation Workflow
 
-1. **Create Story**: POST `/studio/api/stories`
+1. **Create Story**: POST `/studio/api/story`
 2. **Generate Novel**: POST `/studio/api/novels` (optional)
 3. **Edit Content**: PATCH `/studio/api/chapters/[id]` or `/studio/api/scenes/[id]`
 4. **Evaluate Quality**: POST `/studio/api/evaluate/scene`
 5. **Generate Images**: POST `/studio/api/novels/images`
-6. **Publish**: PATCH `/studio/api/stories/[id]` with `status: "published"`
+6. **Publish**: PATCH `/studio/api/story/[id]` with `status: "published"`
 
 ### Performance Optimization
 

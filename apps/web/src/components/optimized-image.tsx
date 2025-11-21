@@ -3,16 +3,16 @@
 /**
  * OptimizedImage Component
  *
- * Responsive image component optimized for comics with 4-variant system.
- * Mobile-first approach with desktop fallback using mobile 2x (1280×720).
+ * Responsive image component optimized with 2-variant AVIF-only system.
+ * Mobile-first approach with desktop fallback using mobile 2x.
  *
  * Features:
- * - Automatic format selection (AVIF → JPEG fallback)
- * - 4 variants: mobile 1x/2x in AVIF and JPEG
+ * - AVIF-only format (93.8% browser support)
+ * - 2 variants: mobile 1x/2x
  * - Desktop uses mobile 2x (acceptable upscaling)
- * - 78% fewer variants vs original system
- * - 100% browser coverage
+ * - ~45KB total per image (15KB 1x + 30KB 2x)
  * - Uses Next.js Image for optimal loading
+ * - Original PNG fallback for unsupported browsers
  *
  * Usage:
  * ```tsx
@@ -26,7 +26,7 @@
  */
 
 import Image from "next/image";
-import type { ImageVariant } from "@/lib/services/image-optimization";
+import type { ImageVariant } from "@/lib/studio/services/image-optimization-service";
 
 export interface OptimizedImageProps {
     imageUrl?: string | null;
@@ -51,43 +51,25 @@ interface OptimizedImageSet {
 }
 
 /**
- * Detect browser support for modern image formats
- * Optimized for 2-format system: AVIF with JPEG fallback
+ * Get image format - AVIF-only
+ * Optimized for AVIF-only system (93.8% browser support)
  */
-function getSupportedFormat(): "avif" | "jpeg" {
-    if (typeof window === "undefined") {
-        return "avif"; // Default to AVIF for SSR
-    }
-
-    // Check for AVIF support
-    const avifSupport =
-        document
-            .createElement("canvas")
-            .toDataURL("image/avif")
-            .indexOf("data:image/avif") === 0;
-    if (avifSupport) return "avif";
-
-    // Fallback to JPEG
-    return "jpeg";
+function getSupportedFormat(): "avif" {
+    return "avif";
 }
 
 /**
  * Get the best variant for current viewport and format
- * Optimized for 4-variant system: mobile 1x/2x only
- * Desktop automatically uses mobile 2x (1280×720)
+ * Optimized for 2-variant AVIF system: mobile 1x/2x only
+ * Desktop automatically uses mobile 2x
  */
 function getBestVariant(
     variants: ImageVariant[],
-    format: "avif" | "jpeg",
+    format: "avif",
     viewportWidth: number = 1440,
 ): string | null {
-    // Filter by format
-    let formatVariants = variants.filter((v) => v.format === format);
-
-    // Fallback to JPEG if AVIF not available
-    if (formatVariants.length === 0) {
-        formatVariants = variants.filter((v) => v.format === "jpeg");
-    }
+    // Filter by AVIF format only
+    const formatVariants = variants.filter((v) => v.format === format);
 
     if (formatVariants.length === 0) {
         return null;
@@ -110,13 +92,10 @@ function getBestVariant(
 }
 
 /**
- * Generate srcSet string for a format
- * Optimized for 4-variant system: mobile 1x/2x only
+ * Generate srcSet string for AVIF format
+ * Optimized for 2-variant system: mobile 1x/2x only
  */
-function generateSrcSet(
-    variants: ImageVariant[],
-    format: "avif" | "jpeg",
-): string {
+function generateSrcSet(variants: ImageVariant[], format: "avif"): string {
     const formatVariants = variants
         .filter((v) => v.format === format)
         .sort((a, b) => a.width - b.width);
@@ -190,21 +169,14 @@ export function OptimizedImage({
 
     // Generate srcsets for each format
     const avifSrcSet = generateSrcSet(variants, "avif");
-    const jpegSrcSet = generateSrcSet(variants, "jpeg");
-
-    // Get best variant for the supported format as fallback
+    // Get best variant for AVIF as fallback
     const bestVariant = getBestVariant(variants, supportedFormat) || imageUrl;
 
     return (
         <picture className={className}>
-            {/* AVIF - best compression (93.8% browser support) */}
+            {/* AVIF - only format (93.8% browser support) */}
             {avifSrcSet && (
                 <source type="image/avif" srcSet={avifSrcSet} sizes={sizes} />
-            )}
-
-            {/* JPEG - universal fallback (100% browser support) */}
-            {jpegSrcSet && (
-                <source type="image/jpeg" srcSet={jpegSrcSet} sizes={sizes} />
             )}
 
             {/* Fallback img tag with Next.js Image optimization */}

@@ -255,7 +255,7 @@ Provide specific suggestions for improvement.`,
 
 async function evaluateChapter(
     chapter: any,
-    storySummary: string,
+    _storySummary: string,
 ): Promise<ChapterEvaluation> {
     try {
         const { object } = await generateObject({

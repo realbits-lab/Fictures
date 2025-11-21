@@ -6,7 +6,7 @@
  * one at a time, seeing all previous scenes in the chapter.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
 import {
@@ -16,26 +16,27 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Chapter = InferSelectModel<typeof chapters>;
+type Part = InferSelectModel<typeof parts>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
+type Scene = InferSelectModel<typeof scenes>;
+import { insertSceneSchema } from "@/lib/schemas/zod/generated";
 import { generateSceneSummary } from "../generators/scene-summary-generator";
 import type {
-    GeneratorSceneSummaryParams,
-    GeneratorSceneSummaryResult,
-} from "../generators/types";
-import {
-    type Chapter,
-    type Character,
-    insertSceneSchema,
-    type Part,
-    type Scene,
-    type Setting,
-    type Story,
-} from "../generators/zod-schemas.generated";
+    GenerateSceneSummaryParams,
+    GenerateSceneSummaryResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceSceneSummaryParams {
     storyId: string;
     chapterId: string;
     userId: string;
+    promptVersion?: string; // Optional scene_summary prompt version (e.g., "v1.1")
 }
 
 export interface ServiceSceneSummaryResult {
@@ -58,7 +59,7 @@ export class SceneSummaryService {
     async generateAndSave(
         params: ServiceSceneSummaryParams,
     ): Promise<ServiceSceneSummaryResult> {
-        const { storyId, chapterId, userId } = params;
+        const { storyId, chapterId, userId, promptVersion } = params;
 
         console.log(
             "[scene-summary-service] 📄 Generating next scene summary with full context...",
@@ -141,17 +142,18 @@ export class SceneSummaryService {
         );
 
         // 7. Generate next scene summary using singular generator with full context
-        const generateParams: GeneratorSceneSummaryParams = {
-            story,
-            part,
-            chapter,
-            characters: storyCharacters,
-            settings: storySettings,
-            previousScenes: allPreviousScenes,
+        const generateParams: GenerateSceneSummaryParams = {
+            story: story as any,
+            part: part as any,
+            chapter: chapter as any,
+            characters: storyCharacters as any,
+            settings: storySettings as any,
+            previousScenes: allPreviousScenes as any,
             sceneIndex: nextSceneIndex,
+            promptVersion,
         };
 
-        const generationResult: GeneratorSceneSummaryResult =
+        const generationResult: GenerateSceneSummaryResult =
             await generateSceneSummary(generateParams);
 
         // 8. Save scene summary to database
@@ -197,7 +199,7 @@ export class SceneSummaryService {
             autoPublish: false,
 
             // === COMIC FORMAT ===
-            comicStatus: "none",
+            comicStatus: "draft",
             comicPublishedAt: null,
             comicPublishedBy: null,
             comicUnpublishedAt: null,
@@ -225,7 +227,11 @@ export class SceneSummaryService {
 
         const savedSceneArray: Scene[] = (await db
             .insert(scenes)
-            .values(validatedScene)
+            .values({
+                ...validatedScene,
+                dialogueVsDescription: validatedScene.dialogueVsDescription || "50% dialogue, 50% description",
+                suggestedLength: validatedScene.suggestedLength || "medium",
+            } as any)
             .returning()) as Scene[];
         const savedScene: Scene = savedSceneArray[0];
 

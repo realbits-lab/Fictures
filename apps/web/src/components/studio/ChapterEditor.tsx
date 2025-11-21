@@ -2,17 +2,14 @@
 
 import * as yaml from "js-yaml";
 import { useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-    Badge,
     Button,
     Card,
     CardContent,
     CardHeader,
     CardTitle,
-    Progress,
 } from "@/components/ui";
-import { JSONDataDisplay } from "./JSONDataDisplay";
 import { StoryTreeArchitecture } from "./StoryTreeArchitecture";
 
 interface Scene {
@@ -103,7 +100,7 @@ export function ChapterEditor({
     const [lastSaved, setLastSaved] = useState<Date | null>(null);
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
-    const [yamlLevel, setYamlLevel] = useState<
+    const [_yamlLevel, _setYamlLevel] = useState<
         "story" | "part" | "chapter" | "scene"
     >("chapter");
     const [isSaving, setIsSaving] = useState(false);
@@ -126,7 +123,7 @@ export function ChapterEditor({
         setIsAutoSaving(true);
         try {
             const response = await fetch(
-                `/studio/api/chapters/${chapterData.id}/autosave`,
+                `/api/studio/chapters/${chapterData.id}/autosave`,
                 {
                     method: "POST",
                     headers: {
@@ -183,7 +180,7 @@ export function ChapterEditor({
             errors.push("Chapter exceeds recommended length");
         }
         setValidationErrors(errors);
-    }, [content, chapterData]);
+    }, [chapterData, currentWordCount]);
 
     // Check for chapterData AFTER all hooks
     if (!chapterData) {
@@ -208,7 +205,7 @@ export function ChapterEditor({
     }
 
     // Sample YAML data based on documentation
-    const sampleStoryData = {
+    const _sampleStoryData = {
         title: "The Shadow Keeper",
         genre: "urban_fantasy",
         words: 80000,
@@ -300,7 +297,7 @@ export function ChapterEditor({
         return `${diffMinutes} minutes ago`;
     };
 
-    const progressPercentage = (currentWordCount / 5000) * 100; // Target is 5000 words
+    const _progressPercentage = (currentWordCount / 5000) * 100; // Target is 5000 words
 
     const handleSave = async () => {
         if (!onSave || !externalHasChanges) return;
@@ -321,7 +318,7 @@ export function ChapterEditor({
         }
     };
 
-    const getSceneStatusIcon = (status: string) => {
+    const _getSceneStatusIcon = (status: string) => {
         switch (status) {
             case "completed":
                 return "✅";

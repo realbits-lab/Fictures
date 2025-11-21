@@ -1,0 +1,209 @@
+{
+  "cycle": 2,
+  "name": "Visual Transformation Focus",
+  "results": [
+    {
+      "testId": "action-sequence-1",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16387,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16327,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32724,
+      "successRate": 1,
+      "averageGenerationTime": 16357
+    },
+    {
+      "testId": "action-sequence-2",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16358,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16317,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32684,
+      "successRate": 1,
+      "averageGenerationTime": 16337.5
+    },
+    {
+      "testId": "action-sequence-3",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16363,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16344,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32717,
+      "successRate": 1,
+      "averageGenerationTime": 16353.5
+    },
+    {
+      "testId": "emotional-beat-1",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16326,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16329,
+      "successRate": 1,
+      "averageGenerationTime": 16326
+    },
+    {
+      "testId": "emotional-beat-2",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 12286,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12290,
+      "successRate": 1,
+      "averageGenerationTime": 12286
+    },
+    {
+      "testId": "emotional-beat-3",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 12405,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12409,
+      "successRate": 1,
+      "averageGenerationTime": 12405
+    },
+    {
+      "testId": "establishing-shot-1",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 16423,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16427,
+      "successRate": 1,
+      "averageGenerationTime": 16423
+    },
+    {
+      "testId": "establishing-shot-2",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 12375,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12379,
+      "successRate": 1,
+      "averageGenerationTime": 12375
+    },
+    {
+      "testId": "establishing-shot-3",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, expressive body language, character emotion through pose, environmental mood lighting, visual storytelling emphasis",
+          "generationTime": 12364,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12369,
+      "successRate": 1,
+      "averageGenerationTime": 12364
+    }
+  ],
+  "metrics": {
+    "totalTests": 9,
+    "totalPanels": 12,
+    "successfulPanels": 12,
+    "successRate": 1,
+    "averageGenerationTime": 15.022916666666665,
+    "minGenerationTime": 12.286,
+    "maxGenerationTime": 16.423
+  },
+  "improvements": [
+    "Show emotions through body language and poses",
+    "Use environmental storytelling (lighting, atmosphere)",
+    "Replace narration with visual cues",
+    "Target: emotions visible without text"
+  ],
+  "duration": 180.328,
+  "timestamp": "2025-11-18T09:51:33.360Z"
+}

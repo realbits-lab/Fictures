@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
@@ -9,20 +8,13 @@ import { CommunityPostsList } from "@/components/community/CommunityPostsList";
 import { CommunityStorySidebar } from "@/components/community/CommunityStorySidebar";
 import { CreatePostForm } from "@/components/community/CreatePostForm";
 import { MainLayout } from "@/components/layout";
-import {
-    Badge,
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui";
-import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { Badge, Button, Card, CardContent } from "@/components/ui";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 import {
     useCommunityPosts,
     useCommunityStory,
     useRevalidateCommunityPosts,
-} from "@/lib/hooks/use-community-cache";
+} from "@/hooks/use-community-cache";
 
 interface Character {
     id: string;
@@ -106,7 +98,7 @@ export default function StoryCommunityPage() {
         elapsedTime: `${(performance.now() - componentStartTime).toFixed(2)}ms`,
     });
 
-    const revalidatePosts = useRevalidateCommunityPosts(storyId);
+    const { revalidate: revalidatePosts } = useRevalidateCommunityPosts();
 
     const { executeAction: handleCreatePost } = useProtectedAction(() => {
         setShowCreateForm(true);
@@ -115,12 +107,12 @@ export default function StoryCommunityPage() {
     const handlePostCreated = async () => {
         setShowCreateForm(false);
         // Revalidate cache to show new post immediately
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     const handlePostDeleted = async () => {
         // Revalidate cache after post deletion
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     // Show error toasts if data fetching fails
@@ -133,7 +125,7 @@ export default function StoryCommunityPage() {
     }
 
     const story = storyData?.story;
-    const posts = postsData?.posts || [];
+    const posts = Array.isArray(postsData) ? postsData : [];
 
     if (isLoadingStory || !story) {
         return (

@@ -1,8 +1,7 @@
 "use client";
 
 import { BookOpen, Camera, Edit3, FileText, MapPin, Users } from "lucide-react";
-import React, { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { useMemo } from "react";
 import { type TreeDataItem, TreeView } from "@/components/ui/tree-view";
 
 interface Scene {
@@ -359,11 +358,11 @@ export function StoryStructureSidebar({
     // Generate tree data for both formats
     const novelTreeData = useMemo(
         () => generateTreeData("novel"),
-        [story, onSelectionChange],
+        [generateTreeData],
     );
     const comicTreeData = useMemo(
         () => generateTreeData("comic"),
-        [story, onSelectionChange],
+        [generateTreeData],
     );
 
     // Get initial selected item ID for each format

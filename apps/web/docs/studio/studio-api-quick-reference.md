@@ -94,9 +94,9 @@
 - **StoryGrid.tsx** → `/stories/[id]/read`
 
 ### Hooks
-- **useStories.ts** → `GET /studio/api/stories`
+- **useStories.ts** → `GET /studio/api/story`
 - **useChapterScenes.ts** → `GET /studio/api/chapters/[id]/scenes`
-- **useStoryReader.ts** → `GET /studio/api/stories/[id]/read`
+- **useStoryReader.ts** → `GET /studio/api/story/[id]/read`
 - **use-studio-agent-chat.ts** → `POST /studio/api/agent`
 
 ### Services

@@ -50,7 +50,7 @@ export function CommentForm({
 
         startTransition(async () => {
             try {
-                const endpoint = `/studio/api/stories/${storyId}/comments`;
+                const endpoint = `/api/studio/story/${storyId}/comments`;
                 const response = await fetch(endpoint, {
                     method: "POST",
                     headers: {
@@ -73,7 +73,7 @@ export function CommentForm({
 
                 // Track comment creation
                 if (data.comment?.id) {
-                    trackCommunity.comment(storyId);
+                    trackCommunity("comment", storyId);
                 }
 
                 setContent("");

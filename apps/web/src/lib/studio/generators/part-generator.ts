@@ -9,7 +9,13 @@
  * Database operations are handled by the caller (service/API layer).
  */
 
-import { textGenerationClient } from "./ai-client";
+import type {
+    GeneratePartParams,
+    GeneratePartResult,
+    PartPromptParams,
+} from "@/lib/schemas/generators/types";
+import { type AiPartType, AiPartZodSchema } from "@/lib/schemas/zod/ai";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
     buildPartsContext,
@@ -17,12 +23,6 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    GeneratorPartParams,
-    GeneratorPartResult,
-    PartPromptParams,
-} from "./types";
-import { type AiPartType, AiPartZodSchema } from "./zod-schemas.generated";
 
 /**
  * Generate ONE next story part with full context
@@ -31,8 +31,8 @@ import { type AiPartType, AiPartZodSchema } from "./zod-schemas.generated";
  * @returns Part data (caller responsible for database save)
  */
 export async function generatePart(
-    params: GeneratorPartParams,
-): Promise<GeneratorPartResult> {
+    params: GeneratePartParams,
+): Promise<GeneratePartResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -42,7 +42,11 @@ export async function generatePart(
         settings,
         previousParts,
         partIndex,
-    }: GeneratorPartParams = params;
+    }: GeneratePartParams = params;
+    const promptVersion = (params as any).promptVersion;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient();
 
     console.log(
         `[part-generator] 🎬 Generating part ${partIndex + 1} with full context...`,
@@ -52,14 +56,14 @@ export async function generatePart(
     );
 
     // 2. Build context strings using comprehensive builders
-    const charactersStr: string = buildCharactersContext(characters);
-    const settingsStr: string = buildSettingsContext(settings);
-    const storyContext: string = buildStoryContext(story);
+    const charactersStr: string = buildCharactersContext(characters as any);
+    const settingsStr: string = buildSettingsContext(settings as any);
+    const storyContext: string = buildStoryContext(story as any);
 
     // 3. Build previous parts context string using builder function
     const previousPartsContext: string = buildPartsContext(
-        previousParts,
-        characters,
+        previousParts as any,
+        characters as any,
     );
 
     console.log(
@@ -79,9 +83,10 @@ export async function generatePart(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "part",
         promptParams,
+        promptVersion, // Pass version for A/B testing
     );
 
     console.log(
@@ -89,12 +94,12 @@ export async function generatePart(
     );
 
     // 7. Generate part using structured output
-    const partData: AiPartType = await textGenerationClient.generateStructured(
+    const partData: AiPartType = await client.generateStructured(
         userPromptText,
         AiPartZodSchema,
         {
             systemPrompt,
-            temperature: 0.85,
+            temperature: 0.3, // Low temperature for consistent JSON structure
             maxTokens: 8192,
         },
     );
@@ -110,7 +115,7 @@ export async function generatePart(
     });
 
     // 9. Build and return result with metadata
-    const result: GeneratorPartResult = {
+    const result: GeneratePartResult = {
         part: partData,
         metadata: {
             generationTime: totalTime,

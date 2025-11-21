@@ -16,12 +16,12 @@ from fastapi.responses import JSONResponse
 
 from src.config import settings, API_HOST, API_PORT, CORS_ORIGINS, LOG_LEVEL
 
-# Conditional imports based on GENERATION_MODE
-if settings.generation_mode in ["text", "both"]:
+# Conditional imports based on AI_SERVER_GENERATION_MODE
+if settings.ai_server_generation_mode == "text":
     from src.routes import text_generation
     from src.services.text_service import text_service
 
-if settings.generation_mode in ["image", "both"]:
+if settings.ai_server_generation_mode == "image":
     from src.routes import image_generation
     from src.services.image_service_comfyui_api import qwen_comfyui_api_service as image_service
 
@@ -37,15 +37,15 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup and shutdown events."""
     # Startup
-    logger.info(f"Starting Fictures AI Server (mode: {settings.generation_mode})...")
+    logger.info(f"Starting Fictures AI Server (mode: {settings.ai_server_generation_mode})...")
 
-    if settings.generation_mode in ["text", "both"]:
+    if settings.ai_server_generation_mode == "text":
         logger.info("Text generation: ENABLED (vLLM with Qwen3-14B-AWQ)")
         logger.info("Text service configured for lazy initialization")
 
-    if settings.generation_mode in ["image", "both"]:
+    if settings.ai_server_generation_mode == "image":
         logger.info("Image generation: ENABLED (Qwen-Image-Lightning v2.0 FP8 via ComfyUI)")
-        logger.info(f"ComfyUI server: {settings.comfyui_url}")
+        logger.info(f"ComfyUI server: {settings.ai_server_comfyui_url}")
         logger.info("Image service configured for lazy initialization")
 
     yield
@@ -53,11 +53,11 @@ async def lifespan(app: FastAPI):
     # Shutdown
     logger.info("Shutting down Fictures AI Server...")
 
-    if settings.generation_mode in ["text", "both"]:
+    if settings.ai_server_generation_mode == "text":
         await text_service.shutdown()
         logger.info("Text service shut down")
 
-    if settings.generation_mode in ["image", "both"]:
+    if settings.ai_server_generation_mode == "image":
         await image_service.shutdown()
         logger.info("Image service shut down")
 
@@ -82,11 +82,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers based on GENERATION_MODE
-if settings.generation_mode in ["text", "both"]:
+# Include routers based on AI_SERVER_GENERATION_MODE
+if settings.ai_server_generation_mode == "text":
     app.include_router(text_generation.router, prefix="/api/v1/text", tags=["text-generation"])
 
-if settings.generation_mode in ["image", "both"]:
+if settings.ai_server_generation_mode == "image":
     app.include_router(image_generation.router, prefix="/api/v1/images", tags=["image-generation"])
 
 
@@ -111,11 +111,11 @@ async def health_check():
     """Health check endpoint."""
     models = {}
 
-    if settings.generation_mode in ["text", "both"]:
+    if settings.ai_server_generation_mode == "text":
         text_info = await text_service.get_model_info()
         models["text"] = text_info
 
-    if settings.generation_mode in ["image", "both"]:
+    if settings.ai_server_generation_mode == "image":
         image_info = await image_service.get_model_info()
         models["image"] = image_info
 
@@ -123,7 +123,7 @@ async def health_check():
         content={
             "status": "healthy",
             "version": "1.0.0",
-            "generation_mode": settings.generation_mode,
+            "generation_mode": settings.ai_server_generation_mode,
             "models": models,
         }
     )
@@ -132,13 +132,13 @@ async def health_check():
 @app.get("/api/v1/models")
 async def list_models():
     """List all available models."""
-    models = {"generation_mode": settings.generation_mode}
+    models = {"generation_mode": settings.ai_server_generation_mode}
 
-    if settings.generation_mode in ["text", "both"]:
+    if settings.ai_server_generation_mode == "text":
         text_info = await text_service.get_model_info()
         models["text_generation"] = [text_info]
 
-    if settings.generation_mode in ["image", "both"]:
+    if settings.ai_server_generation_mode == "image":
         image_info = await image_service.get_model_info()
         models["image_generation"] = [image_info]
 

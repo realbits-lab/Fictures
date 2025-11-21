@@ -1,8 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-    Badge,
     Button,
     Card,
     CardContent,
@@ -414,7 +413,7 @@ export function JSONDataDisplay({
         );
     };
 
-    const renderSceneJSON = () => {
+    const _renderSceneJSON = () => {
         if (!sceneData) return null;
 
         return (
@@ -468,7 +467,7 @@ export function JSONDataDisplay({
         );
     };
 
-    const getLevelIcon = () => {
+    const _getLevelIcon = () => {
         switch (currentLevel) {
             case "story":
                 return "📖";
@@ -483,7 +482,7 @@ export function JSONDataDisplay({
         }
     };
 
-    const getLevelTitle = () => {
+    const _getLevelTitle = () => {
         switch (currentLevel) {
             case "story":
                 return "Story JSON Data";

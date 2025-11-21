@@ -6,27 +6,36 @@
  * one at a time, seeing all previous chapters.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, characters, parts, stories } from "@/lib/db/schema";
-import { generateChapter } from "../generators/chapter-generator";
-import type {
-    GeneratorChapterParams,
-    GeneratorChapterResult,
-} from "../generators/types";
 import {
-    type Chapter,
-    type Character,
-    insertChapterSchema,
-    type Part,
-    type Story,
-} from "../generators/zod-schemas.generated";
+    chapters,
+    characters,
+    parts,
+    settings,
+    stories,
+} from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Part = InferSelectModel<typeof parts>;
+type Chapter = InferSelectModel<typeof chapters>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
+
+import type {
+    GenerateChapterParams,
+    GenerateChapterResult,
+} from "@/lib/schemas/generators/types";
+import { insertChapterSchema } from "@/lib/schemas/zod/generated";
+import { generateChapter } from "../generators/chapter-generator";
 
 export interface ServiceChapterParams {
     storyId: string;
     partId: string;
     userId: string;
+    promptVersion?: string; // Optional chapter prompt version (e.g., "v1.1")
 }
 
 export interface ServiceChapterResult {
@@ -48,7 +57,7 @@ export class ChapterService {
     async generateAndSave(
         params: ServiceChapterParams,
     ): Promise<ServiceChapterResult> {
-        const { storyId, partId, userId } = params;
+        const { storyId, partId, userId, promptVersion } = params;
 
         console.log(
             "[chapter-service] 📖 Generating next chapter with full context...",
@@ -89,6 +98,34 @@ export class ChapterService {
             throw new Error("Part does not belong to the specified story");
         }
 
+        console.log(
+            `[chapter-service] ========== RETRIEVED PART DEBUG ==========`,
+        );
+        console.log(`[chapter-service] Part ID: ${part.id}`);
+        console.log(`[chapter-service] Part title: ${part.title}`);
+        console.log(`[chapter-service] Part object keys:`, Object.keys(part));
+        console.log(
+            `[chapter-service] Part.characterArcs type: ${typeof part.characterArcs}`,
+        );
+        console.log(
+            `[chapter-service] Part.characterArcs value:`,
+            JSON.stringify(part.characterArcs, null, 2),
+        );
+        console.log(
+            `[chapter-service] Part.settingIds type: ${typeof part.settingIds}`,
+        );
+        console.log(
+            `[chapter-service] Part.settingIds value:`,
+            JSON.stringify(part.settingIds, null, 2),
+        );
+        console.log(
+            `[chapter-service] Raw part object:`,
+            JSON.stringify(part, null, 2),
+        );
+        console.log(
+            `[chapter-service] ============================================`,
+        );
+
         // 4. Fetch characters for the story
         const storyCharacters: Character[] = (await db
             .select()
@@ -100,6 +137,16 @@ export class ChapterService {
                 "Story must have characters before generating chapters",
             );
         }
+
+        // 4.5. Fetch settings for the story (optional but recommended)
+        const storySettings: Setting[] = (await db
+            .select()
+            .from(settings)
+            .where(eq(settings.storyId, storyId))) as Setting[];
+
+        console.log(
+            `[chapter-service] Found ${storySettings.length} settings for story`,
+        );
 
         // 5. Fetch ALL previous chapters for this story (FULL CONTEXT)
         const allPreviousChapters: Chapter[] = (await db
@@ -118,15 +165,17 @@ export class ChapterService {
         );
 
         // 6. Generate next chapter using singular generator with full context
-        const generateParams: GeneratorChapterParams = {
-            story,
-            part,
-            characters: storyCharacters,
-            previousChapters: allPreviousChapters,
+        const generateParams: GenerateChapterParams = {
+            story: story as any,
+            part: part as any,
+            characters: storyCharacters as any,
+            settings: storySettings.length > 0 ? (storySettings as any) : undefined,
+            previousChapters: allPreviousChapters as any,
             chapterIndex: nextChapterIndex,
-        };
+            promptVersion,
+        } as any;
 
-        const generationResult: GeneratorChapterResult =
+        const generationResult: GenerateChapterResult =
             await generateChapter(generateParams);
 
         // 8. Save chapter to database
@@ -152,6 +201,17 @@ export class ChapterService {
             contributesToMacroArc:
                 generationResult.chapter.contributesToMacroArc?.trim() ||
                 "Advances the story arc",
+            characterArc: generationResult.chapter.characterArc || {
+                characterId: focusCharacterId,
+                microAdversity: {
+                    internal: "Confronts personal doubts",
+                    external: "Faces immediate challenge",
+                },
+                microVirtue: "Shows courage in adversity",
+                microConsequence: "Earns small victory",
+                microNewAdversity: "Creates next complication",
+            },
+            settingIds: storySettings.map((s) => s.id),
             focusCharacters: generationResult.chapter.focusCharacters || [],
             adversityType: generationResult.chapter.adversityType || "internal",
             virtueType: generationResult.chapter.virtueType || "courage",

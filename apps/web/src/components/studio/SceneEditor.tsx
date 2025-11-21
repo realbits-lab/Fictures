@@ -1,7 +1,7 @@
 "use client";
 
 import yaml from "js-yaml";
-import React, { useState } from "react";
+import { useState } from "react";
 import { ComicPanelGeneratorButton } from "@/components/comic/comic-panel-generator-button";
 import {
     Button,

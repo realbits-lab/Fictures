@@ -6,26 +6,29 @@
  * one at a time, seeing all previous parts.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, parts, settings, stories } from "@/lib/db/schema";
+import { characters, parts, settings, stories } from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Part = InferSelectModel<typeof parts>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
+
+import { insertPartSchema } from "@/lib/schemas/zod/generated";
 import { generatePart } from "../generators/part-generator";
 import type {
-    GeneratorPartParams,
-    GeneratorPartResult,
-} from "../generators/types";
-import {
-    type Character,
-    insertPartSchema,
-    type Part,
-    type Setting,
-    type Story,
-} from "../generators/zod-schemas.generated";
+    GeneratePartParams,
+    GeneratePartResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServicePartParams {
     storyId: string;
     userId: string;
+    /** Optional prompt version for A/B testing (e.g., "v1.1") */
+    promptVersion?: string;
 }
 
 export interface ServicePartResult {
@@ -47,7 +50,7 @@ export class PartService {
     async generateAndSave(
         params: ServicePartParams,
     ): Promise<ServicePartResult> {
-        const { storyId, userId } = params;
+        const { storyId, userId, promptVersion } = params;
 
         console.log(
             "[part-service] 🎬 Generating next part with full context...",
@@ -109,27 +112,48 @@ export class PartService {
         console.log(`[part-service] Generating part ${nextPartIndex + 1}...`);
 
         // 6. Generate next part using singular generator with full context
-        const generateParams: GeneratorPartParams = {
-            story,
-            characters: storyCharacters,
-            settings: storySettings,
-            previousParts,
+        const generateParams: GeneratePartParams = {
+            story: story as any,
+            characters: storyCharacters as any,
+            settings: storySettings as any,
+            previousParts: previousParts as any,
             partIndex: nextPartIndex,
-        };
+            // promptVersion removed - not in GeneratePartParams type
+        } as any;
 
-        const generationResult: GeneratorPartResult =
+        const generationResult: GeneratePartResult =
             await generatePart(generateParams);
 
         // 7. Save part to database
         const now: string = new Date().toISOString();
         const partId: string = `part_${nanoid(16)}`;
 
+        // 7.5. Validate required fields from AI generation
+        if (
+            !generationResult.part.characterArcs ||
+            generationResult.part.characterArcs.length === 0
+        ) {
+            throw new Error(
+                "Part generation failed: characterArcs is required and must not be empty",
+            );
+        }
+
+        if (
+            !generationResult.part.settingIds ||
+            generationResult.part.settingIds.length === 0
+        ) {
+            throw new Error(
+                "Part generation failed: settingIds is required and must not be empty",
+            );
+        }
+
         const validatedPart = insertPartSchema.parse({
             id: partId,
             storyId,
             title: generationResult.part.title || `Part ${nextPartIndex + 1}`,
-            summary: generationResult.part.summary || null,
-            characterArcs: generationResult.part.characterArcs || null,
+            summary: generationResult.part.summary || "",
+            characterArcs: generationResult.part.characterArcs,
+            settingIds: generationResult.part.settingIds,
             orderIndex: nextPartIndex + 1,
             createdAt: now,
             updatedAt: now,
@@ -145,6 +169,8 @@ export class PartService {
             id: savedPart.id,
             title: savedPart.title,
             orderIndex: savedPart.orderIndex,
+            characterArcs: savedPart.characterArcs,
+            settingIds: savedPart.settingIds,
         });
 
         // 8. Return result

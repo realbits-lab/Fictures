@@ -9,7 +9,13 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import type {
+    ChapterPromptParams,
+    GenerateChapterParams,
+    GenerateChapterResult,
+} from "@/lib/schemas/generators/types";
+import { type AiChapterType, AiChapterZodSchema } from "@/lib/schemas/zod/ai";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildChapterContext,
     buildCharactersContext,
@@ -18,15 +24,6 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    ChapterPromptParams,
-    GeneratorChapterParams,
-    GeneratorChapterResult,
-} from "./types";
-import {
-    type AiChapterType,
-    AiChapterZodSchema,
-} from "./zod-schemas.generated";
 
 /**
  * Generate ONE next chapter with full context
@@ -35,8 +32,8 @@ import {
  * @returns Chapter data (caller responsible for database save)
  */
 export async function generateChapter(
-    params: GeneratorChapterParams,
-): Promise<GeneratorChapterResult> {
+    params: GenerateChapterParams,
+): Promise<GenerateChapterResult> {
     const startTime: number = Date.now();
 
     // 1. Extract parameters
@@ -47,7 +44,11 @@ export async function generateChapter(
         settings,
         previousChapters,
         chapterIndex,
-    }: GeneratorChapterParams = params;
+        promptVersion,
+    }: GenerateChapterParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient();
 
     console.log(
         `[chapter-generator] 📖 Generating chapter ${chapterIndex + 1} (Part: ${part.title})...`,
@@ -55,6 +56,22 @@ export async function generateChapter(
     console.log(
         `[chapter-generator] Previous chapters count: ${previousChapters.length}`,
     );
+
+    console.log(`[chapter-generator] ========== PART DATA DEBUG ==========`);
+    console.log(`[chapter-generator] Part ID: ${part.id}`);
+    console.log(`[chapter-generator] Part title: ${part.title}`);
+    console.log(
+        `[chapter-generator] Part.characterArcs type: ${typeof part.characterArcs}`,
+    );
+    console.log(
+        `[chapter-generator] Part.characterArcs value:`,
+        part.characterArcs,
+    );
+    console.log(
+        `[chapter-generator] Part.settingIds type: ${typeof part.settingIds}`,
+    );
+    console.log(`[chapter-generator] Part.settingIds value:`, part.settingIds);
+    console.log(`[chapter-generator] ======================================`);
 
     // 2. Get character arc for this chapter (using first character as focus)
     const focusCharacter = characters[0];
@@ -78,10 +95,10 @@ export async function generateChapter(
     );
 
     // 3. Build context strings using comprehensive builders
-    const charactersStr: string = buildCharactersContext(characters);
-    const storyContext: string = buildStoryContext(story);
+    const charactersStr: string = buildCharactersContext(characters as any);
+    const storyContext: string = buildStoryContext(story as any);
     const settingsStr: string = settings
-        ? buildSettingsContext(settings)
+        ? buildSettingsContext(settings as any)
         : "N/A";
 
     console.log(
@@ -89,14 +106,14 @@ export async function generateChapter(
     );
 
     // 4. Build comprehensive part context string using context builder
-    const partContext: string = buildPartContext(part, characters);
+    const partContext: string = buildPartContext(part as any, characters as any);
 
     // 5. Build previous chapters context string using context builder
     const previousChaptersContext: string =
         previousChapters.length > 0
             ? previousChapters
-                  .map((ch, idx) => {
-                      return `Chapter ${idx + 1}:\n${buildChapterContext(ch)}`;
+                  .map((ch: typeof previousChapters[0], idx: number) => {
+                      return `Chapter ${idx + 1}:\n${buildChapterContext(ch as any)}`;
                   })
                   .join("\n\n")
             : "None (this is the first chapter)";
@@ -119,9 +136,10 @@ export async function generateChapter(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "chapter",
         promptParams,
+        promptVersion,
     );
 
     console.log(
@@ -129,16 +147,18 @@ export async function generateChapter(
     );
 
     // 9. Generate chapter using structured output
-    const chapterData: AiChapterType =
-        await textGenerationClient.generateStructured(
-            userPromptText,
-            AiChapterZodSchema,
-            {
-                systemPrompt,
-                temperature: 0.85,
-                maxTokens: 8192,
-            },
-        );
+    // NOTE: For structured output with Qwen3, DO NOT specify maxTokens
+    // The model automatically uses its maximum output capacity for JSON generation
+    // Specifying maxTokens can cause JSON truncation and parsing failures
+    const chapterData: AiChapterType = await client.generateStructured(
+        userPromptText,
+        AiChapterZodSchema,
+        {
+            systemPrompt,
+            temperature: 0.3, // Low temperature for consistent JSON structure
+            // maxTokens: undefined, // Intentionally omitted - let model use maximum
+        },
+    );
 
     // 10. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
@@ -153,7 +173,7 @@ export async function generateChapter(
     );
 
     // 11. Build and return result with metadata
-    const result: GeneratorChapterResult = {
+    const result: GenerateChapterResult = {
         chapter: chapterData,
         metadata: {
             generationTime: totalTime,

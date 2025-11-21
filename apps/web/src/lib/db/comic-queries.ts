@@ -1,7 +1,13 @@
 import { and, asc, eq } from "drizzle-orm";
 import { invalidateCache, withCache } from "@/lib/cache/redis-cache";
+import {
+    chapters,
+    comicPanels,
+    parts,
+    scenes,
+    stories,
+} from "@/lib/schemas/database";
 import { db } from "./index";
-import { chapters, comicPanels, parts, scenes, stories } from "./schema";
 
 /**
  * ⚡ Comic-Optimized Database Queries
@@ -82,7 +88,6 @@ async function fetchStoryWithComicPanels(storyId: string) {
                     partId: chapters.partId,
                     title: chapters.title,
                     summary: chapters.summary,
-                    status: chapters.status,
                     orderIndex: chapters.orderIndex,
                     // ❌ SKIPPED: arcPosition, adversityType, virtueType, seedsPlanted, seedsResolved (studio-only)
                 })
@@ -98,7 +103,6 @@ async function fetchStoryWithComicPanels(storyId: string) {
                     title: scenes.title,
                     summary: scenes.summary,
                     orderIndex: scenes.orderIndex,
-                    visibility: scenes.visibility,
                     comicStatus: scenes.comicStatus,
                     comicPanelCount: scenes.comicPanelCount,
                     comicGeneratedAt: scenes.comicGeneratedAt,
@@ -108,12 +112,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
                     // ❌ SKIPPED: cyclePhase, emotionalBeat (studio analysis fields)
                 })
                 .from(scenes)
-                .where(
-                    and(
-                        eq(scenes.visibility, "public"),
-                        eq(scenes.comicStatus, "published"),
-                    ),
-                )
+                .where(eq(scenes.comicStatus, "published"))
                 .orderBy(asc(scenes.orderIndex)),
         ]);
     } catch (error) {
@@ -208,7 +207,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
         if (!panelsByScene.has(panel.sceneId)) {
             panelsByScene.set(panel.sceneId, []);
         }
-        panelsByScene.get(panel.sceneId)!.push(panel);
+        panelsByScene.get(panel.sceneId)?.push(panel);
     }
 
     // Filter scenes by chapter and attach panels
@@ -217,7 +216,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
         if (!scenesByChapter.has(scene.chapterId)) {
             scenesByChapter.set(scene.chapterId, []);
         }
-        scenesByChapter.get(scene.chapterId)!.push({
+        scenesByChapter.get(scene.chapterId)?.push({
             ...scene,
             comicPanels: panelsByScene.get(scene.id) || [],
         });

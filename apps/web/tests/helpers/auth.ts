@@ -10,9 +10,9 @@
  * - reader@fictures.xyz: Reader role (stories:read scope) - Read-only access
  */
 
+import fs from "node:fs";
+import path from "node:path";
 import { expect, type Page } from "@playwright/test";
-import fs from "fs";
-import path from "path";
 
 export interface AuthProfile {
     email: string;
@@ -32,6 +32,10 @@ export interface AuthData {
 
 /**
  * Load authentication data from .auth/user.json
+ *
+ * Handles both legacy flat structure and new environment-aware structure:
+ * - Legacy: { profiles: { manager, writer, reader } }
+ * - New: { main: { profiles: {...} }, develop: { profiles: {...} } }
  */
 export function loadAuthData(): AuthData {
     const authPath = path.resolve(process.cwd(), ".auth/user.json");
@@ -42,17 +46,34 @@ export function loadAuthData(): AuthData {
         );
     }
 
-    const authData = JSON.parse(fs.readFileSync(authPath, "utf-8"));
+    const rawData = JSON.parse(fs.readFileSync(authPath, "utf-8"));
+
+    // Handle environment-aware structure (new format)
+    // Use "develop" environment by default for tests
+    let authData: AuthData;
+    if (rawData.develop?.profiles || rawData.main?.profiles) {
+        // New environment-aware structure
+        const env = process.env.NODE_ENV === "production" ? "main" : "develop";
+        authData = rawData[env] as AuthData;
+        if (!authData) {
+            throw new Error(`Missing ${env} environment in .auth/user.json`);
+        }
+    } else if (rawData.profiles) {
+        // Legacy flat structure
+        authData = rawData as AuthData;
+    } else {
+        throw new Error("Invalid .auth/user.json structure");
+    }
 
     // Validate required profiles
-    const requiredRoles = ["manager", "writer", "reader"];
+    const requiredRoles = ["manager", "writer", "reader"] as const;
     for (const role of requiredRoles) {
         if (!authData.profiles[role]) {
             throw new Error(`Missing ${role} profile in .auth/user.json`);
         }
     }
 
-    return authData as AuthData;
+    return authData;
 }
 
 /**
@@ -151,7 +172,7 @@ export async function logout(page: Page): Promise<void> {
  */
 export async function isAuthenticated(page: Page): Promise<boolean> {
     // Try to access a protected route and check if redirected
-    const response = await page.goto("/studio");
+    const _response = await page.goto("/studio");
     const url = page.url();
 
     // If redirected to login, user is not authenticated

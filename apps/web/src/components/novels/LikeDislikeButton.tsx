@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils/cn";
 
 interface LikeDislikeButtonProps {
@@ -44,13 +44,13 @@ export function LikeDislikeButton({
 
                 switch (entityType) {
                     case "story":
-                        endpoint = `/studio/api/stories/${entityId}/${voteType}`;
+                        endpoint = `/api/studio/story/${entityId}/${voteType}`;
                         break;
                     case "chapter":
-                        endpoint = `/studio/api/chapters/${entityId}/${voteType}`;
+                        endpoint = `/api/studio/chapters/${entityId}/${voteType}`;
                         break;
                     case "scene":
-                        endpoint = `/studio/api/scenes/${entityId}/${voteType}`;
+                        endpoint = `/api/studio/scenes/${entityId}/${voteType}`;
                         break;
                     case "comment":
                         endpoint = `/api/comments/${entityId}/${voteType}`;

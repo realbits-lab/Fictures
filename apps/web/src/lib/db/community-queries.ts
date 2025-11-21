@@ -13,9 +13,15 @@
  * - getCommunityPostsForReading: < 100ms (cold), < 20ms (cached)
  */
 
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
+import {
+    characters,
+    communityPosts,
+    settings,
+    stories,
+    users,
+} from "@/lib/schemas/database";
 import { db } from "./index";
-import { characters, communityPosts, settings, stories, users } from "./schema";
 
 /**
  * Get community stories list for reading (optimized)
@@ -126,8 +132,9 @@ export async function getCommunityStoriesForReading() {
                 totalMembers: 0, // TODO: Calculate from community_members table when available
                 isActive,
                 lastActivity:
-                    lastActivityDate?.toISOString() ||
-                    story.createdAt.toISOString(),
+                    (lastActivityDate instanceof Date
+                        ? lastActivityDate.toISOString()
+                        : lastActivityDate) || story.createdAt,
             };
         });
 

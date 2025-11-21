@@ -9,7 +9,6 @@
 
 "use client";
 
-import React from "react";
 import useSWR from "swr";
 import {
     Card,
@@ -32,7 +31,7 @@ export function SceneViewStats({
     className = "",
 }: SceneViewStatsProps) {
     const { data, error, isLoading } = useSWR(
-        `/studio/api/stories/${storyId}/scene-stats?limit=5&sortBy=views`,
+        `/api/studio/story/${storyId}/scene-stats?limit=5&sortBy=views`,
         fetcher,
         {
             revalidateOnFocus: false,

@@ -2,28 +2,30 @@
  * Character Service
  *
  * Service layer for character generation and database persistence.
+ * Now uses authentication context instead of passing API keys as parameters.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { characters, stories } from "@/lib/db/schema";
+import { characters, stories } from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Character = InferSelectModel<typeof characters>;
+import { insertCharacterSchema } from "@/lib/schemas/zod/generated";
 import { generateCharacters } from "../generators/characters-generator";
 import type {
-    GeneratorCharactersParams,
-    GeneratorCharactersResult,
-} from "../generators/types";
-import {
-    type Character,
-    insertCharacterSchema,
-    type Story,
-} from "../generators/zod-schemas.generated";
+    GenerateCharactersParams,
+    GenerateCharactersResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceCharactersParams {
     storyId: string;
     characterCount: number;
     language?: string;
     userId: string;
+    // apiKey removed - now retrieved from auth context
 }
 
 export interface ServiceCharactersResult {
@@ -65,13 +67,14 @@ export class CharacterService {
         }
 
         // 3. Generate characters using pure generator
-        const generateParams: GeneratorCharactersParams = {
-            story,
+        // API key is automatically retrieved from auth context
+        const generateParams: GenerateCharactersParams = {
+            story: story as any,
             characterCount,
             language,
         };
 
-        const generationResult: GeneratorCharactersResult =
+        const generationResult: GenerateCharactersResult =
             await generateCharacters(generateParams);
 
         // 4. Save characters to database
@@ -85,6 +88,7 @@ export class CharacterService {
                 id: characterId,
                 storyId,
                 name: characterData.name || "Unnamed Character",
+                role: characterData.role || "supporting",
                 isMain: characterData.isMain ?? false,
                 summary: characterData.summary ?? null,
                 coreTrait: characterData.coreTrait ?? null,

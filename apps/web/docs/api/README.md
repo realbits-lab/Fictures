@@ -19,12 +19,16 @@ Production: https://fictures.xyz
 
 | Endpoint | Method | Description | Auth |
 |----------|--------|-------------|------|
-| `/studio/api/stories` | GET | List user stories | Required |
-| `/studio/api/stories` | POST | Create new story | Required |
-| `/studio/api/novels` | POST | Generate complete novel (SSE) | Required |
-| `/api/images/generate` | POST | Generate AI image | Required |
-| `/analysis/api/track` | POST | Track analytics event | Optional |
-| `/community/api/posts` | POST | Create community post | Required |
+| `/studio/api/story` | GET | List user stories | Required |
+| `/studio/api/story` | POST | Create new story | Required |
+| `/studio/api/images` | POST | Generate story images | Required |
+| `/studio/api/agent` | POST | AI agent chat/stream | Required |
+| `/studio/api/toonplay` | POST | Generate webtoon script | Required |
+| `/api/novels/published` | GET | Get published novels | Optional |
+| `/api/comics/published` | GET | Get published comics | Optional |
+| `/api/community/stories` | GET | Get community stories | Optional |
+| `/api/analysis/stats` | GET | Get story statistics | Required |
+| `/api/publish/schedules` | POST | Create publish schedule | Required |
 | `/api/auth/register` | POST | Register new user | None |
 | `/api/auth/change-password` | POST | Change password | Required |
 
@@ -64,13 +68,20 @@ Most API endpoints require authentication using one of the following methods:
 **Cron APIs** - Scheduled tasks for analytics and maintenance
 - [Cron APIs](./cron.md)
 
+**Evaluation APIs** - Story quality evaluation and assessment
+- [Evaluation APIs](./evaluation-api-structure.md)
+  - Scene content evaluation
+  - Character evaluation
+  - Core principles validation
+
 ### Feature APIs
 
-**Studio APIs** - Story creation, editing, and management
+**Studio APIs** - Story creation, editing, and AI generation
 - [Studio APIs](./studio.md)
   - Story CRUD operations
-  - AI novel generation
-  - Chapter and scene management
+  - AI agent chat and generation
+  - Scene and chapter management
+  - Toonplay/comic script generation
   - Scene quality evaluation
 
 **Analysis APIs** - Analytics tracking and statistics
@@ -78,9 +89,11 @@ Most API endpoints require authentication using one of the following methods:
   - Event tracking
   - Story statistics
   - Daily metrics
+  - Reader analytics
 
 **Community APIs** - Posts, likes, and replies
 - [Feature APIs - Community](./features.md#community-apis)
+  - Community stories (Redis cached)
   - Create and manage posts
   - Like and reply functionality
   - Story discussions
@@ -89,25 +102,27 @@ Most API endpoints require authentication using one of the following methods:
 - [Feature APIs - Publish](./features.md#publish-apis)
   - Publishing schedules
   - Timeline management
-  - Automated publishing
+  - Scene publishing
+  - Automated cron publishing
 
-**Comics APIs** - Comic panel generation
+**Comics APIs** - Comic panel generation and reading
 - [Feature APIs - Comics](./features.md#comics-apis)
-  - Generate panels
+  - Comic panel generation
+  - Published comics
   - Reading history
-  - Panel management
+  - History sync
 
 **Novels APIs** - Reading interface and history
 - [Feature APIs - Novels](./features.md#novels-apis)
   - Published novels list
   - Reading history
-  - Progress tracking
+  - History sync
 
 **Settings APIs** - User preferences and API keys
 - [Feature APIs - Settings](./features.md#settings-apis)
-  - User settings management
-  - API key CRUD operations
-  - Preferences
+  - User account settings
+  - Privacy settings
+  - API key CRUD operations (admin:all scope required)
 
 ## Common Response Formats
 

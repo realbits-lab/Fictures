@@ -1,23 +1,12 @@
 import { sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
-import { authenticateRequest, hasRequiredScope } from "@/lib/auth/dual-auth";
+import { requireScopes } from "@/lib/auth/middleware";
+import { getAuth } from "@/lib/auth/server-context";
 import { db } from "@/lib/db";
 
-export async function POST(request: NextRequest) {
+export const POST = requireScopes("admin:all")(async (request: NextRequest) => {
     try {
-        // Check authentication and admin scope
-        const authResult = await authenticateRequest(request);
-        if (!authResult) {
-            return new Response("Authentication required", { status: 401 });
-        }
-
-        // Require admin scope for database operations
-        if (!hasRequiredScope(authResult, "admin:all")) {
-            return new Response(
-                "Insufficient permissions. Required scope: admin:all",
-                { status: 403 },
-            );
-        }
+        const _auth = getAuth();
 
         const body = await request.json();
         const { query } = body;
@@ -33,19 +22,19 @@ export async function POST(request: NextRequest) {
             });
         }
 
-        console.log("🗑️ Executing database cleanup:", query);
+        console.log("Executing database cleanup:", query);
 
         // Execute the query
-        const result = await db.execute(sql.raw(query));
+        const _result = await db.execute(sql.raw(query));
 
-        console.log("✅ Database cleanup completed");
+        console.log("Database cleanup completed");
 
         return Response.json({
             success: true,
             message: "Database cleanup completed",
         });
     } catch (error) {
-        console.error("❌ Database operation error:", error);
+        console.error("Database operation error:", error);
         return Response.json(
             {
                 success: false,
@@ -56,4 +45,4 @@ export async function POST(request: NextRequest) {
             { status: 500 },
         );
     }
-}
+});

@@ -15,17 +15,16 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui";
-import { useWritingProgress, useWritingSession } from "@/hooks/useStoryWriter";
+import { useWritingProgress, useWritingSession } from "@/hooks/use-story-writer";
+import { useCacheInvalidation } from "@/hooks/use-cache-invalidation";
+import { useStoryData } from "@/hooks/use-story-data";
 import type {
     chapters,
     characters,
     parts,
     scenes,
     settings,
-    stories,
-} from "@/lib/db/schema";
-import { useCacheInvalidation } from "@/lib/hooks/use-cache-invalidation";
-import { useStoryData } from "@/lib/hooks/useStoryData";
+} from "@/lib/schemas/database";
 import { ImageContentDisplay } from "./ImageContentDisplay";
 import { StoryStructureSidebar } from "./StoryStructureSidebar";
 
@@ -139,7 +138,7 @@ export function UnifiedWritingEditor({
     initialSelection,
     disabled = false,
 }: UnifiedWritingEditorProps) {
-    const componentMountTime = Date.now();
+    const _componentMountTime = Date.now();
     console.log("\n🎨 [CLIENT] UnifiedWritingEditor component mounting");
     console.log(
         `📦 [CLIENT] Received story prop: ${initialStory.title} (ID: ${initialStory.id})`,
@@ -161,11 +160,11 @@ export function UnifiedWritingEditor({
         `🎯 [CLIENT] Initial selection: ${initialSelection?.level || "story"}`,
     );
 
-    const [jsonLevel, setJsonLevel] = useState<EditorLevel>("story");
+    const [_jsonLevel, setJsonLevel] = useState<EditorLevel>("story");
     const [isLoading, setIsLoading] = useState(false);
 
     // Collapse states for YAML data displays
-    const [storyDataCollapsed, setStoryDataCollapsed] = useState(false);
+    const [_storyDataCollapsed, _setStoryDataCollapsed] = useState(false);
 
     // Panel refs for wheel event isolation
     const leftPanelRef = useRef<HTMLDivElement>(null);
@@ -253,7 +252,7 @@ export function UnifiedWritingEditor({
     // Track writing session
     useEffect(() => {
         // Start a writing session when component mounts
-        const session = writingSession.startSession();
+        const _session = writingSession.startSession();
         console.log("✍️ Started writing session for:", story.title);
 
         // Cleanup: End session when component unmounts
@@ -268,7 +267,7 @@ export function UnifiedWritingEditor({
                 );
             }
         };
-    }, [story.id, story.title, writingSession]);
+    }, [story.title, writingSession]);
 
     // Sync story state when prop changes
     useEffect(() => {
@@ -328,12 +327,7 @@ export function UnifiedWritingEditor({
         }
 
         // Check if parsed data is already StoryDocument format
-        if (
-            parsedData &&
-            parsedData.story &&
-            parsedData.parts &&
-            parsedData.chapters
-        ) {
+        if (parsedData?.story && parsedData.parts && parsedData.chapters) {
             return parsedData as StoryDocument;
         }
 
@@ -462,7 +456,7 @@ export function UnifiedWritingEditor({
 
         console.log("✅ Story data state updated");
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [story]);
+    }, [story, parseStoryData]);
 
     const handleSelectionChange = async (selection: Selection) => {
         // If switching to a different story, trigger SWR fetch
@@ -533,7 +527,7 @@ export function UnifiedWritingEditor({
         setJsonLevel(selection.level);
     };
 
-    const handleSave = async (data: any) => {
+    const _handleSave = async (data: any) => {
         setIsLoading(true);
         try {
             // Check if this is scene data and we have a sceneId
@@ -549,14 +543,11 @@ export function UnifiedWritingEditor({
                     goal: data.goal,
                     conflict: data.obstacle,
                     outcome: data.outcome,
-                    status:
-                        data.content && data.content.trim()
-                            ? "in_progress"
-                            : "draft",
+                    status: data.content?.trim() ? "in_progress" : "draft",
                 };
 
                 const response = await fetch(
-                    `/studio/api/scenes/${currentSelection.sceneId}`,
+                    `/api/studio/scenes/${currentSelection.sceneId}`,
                     {
                         method: "PATCH",
                         headers: {
@@ -587,7 +578,7 @@ export function UnifiedWritingEditor({
                 // Save chapter HNS data
                 console.log("💾 Saving chapter HNS data...");
                 const response = await fetch(
-                    `/studio/api/chapters/${currentSelection.chapterId}/write`,
+                    `/api/studio/chapters/${currentSelection.chapterId}/write`,
                     {
                         method: "PATCH",
                         headers: {
@@ -621,7 +612,7 @@ export function UnifiedWritingEditor({
                 console.log("🎯 Story ID:", story.id);
 
                 const response = await fetch(
-                    `/studio/api/stories/${story.id}/write`,
+                    `/api/studio/story/${story.id}/write`,
                     {
                         method: "PATCH",
                         headers: {
@@ -658,7 +649,7 @@ export function UnifiedWritingEditor({
                 // Save part HNS data
                 console.log("💾 Saving part HNS data...");
                 const response = await fetch(
-                    `/studio/api/parts/${currentSelection.partId}/write`,
+                    `/api/studio/parts/${currentSelection.partId}/write`,
                     {
                         method: "PATCH",
                         headers: {
@@ -698,7 +689,7 @@ export function UnifiedWritingEditor({
         }
     };
 
-    const handleGenerate = async (data: any) => {
+    const _handleGenerate = async (data: any) => {
         setIsLoading(true);
         try {
             // Here you would generate parts/chapters/scenes based on the data
@@ -740,7 +731,7 @@ export function UnifiedWritingEditor({
 
         // If chapter is marked as published but has no content, force it to draft status
         if (currentChapter && currentChapterStatus === "published") {
-            const hasScenes =
+            const _hasScenes =
                 currentChapter.scenes && currentChapter.scenes.length > 0;
             const scenesWithContent =
                 currentChapter.scenes?.filter(
@@ -782,7 +773,7 @@ export function UnifiedWritingEditor({
         setIsLoading(true);
         try {
             const response = await fetch(
-                `/studio/api/chapters/${currentSelection.chapterId}/${endpoint}`,
+                `/api/studio/chapters/${currentSelection.chapterId}/${endpoint}`,
                 {
                     method: "POST",
                 },
@@ -833,7 +824,7 @@ export function UnifiedWritingEditor({
         setIsLoading(true);
         try {
             const response = await fetch(
-                `/studio/api/stories/${story.id}/visibility`,
+                `/api/studio/story/${story.id}/visibility`,
                 {
                     method: "PUT",
                     headers: {
@@ -860,7 +851,7 @@ export function UnifiedWritingEditor({
             }));
 
             // Show confirmation toast
-            const action = newVisibility ? "public" : "private";
+            const _action = newVisibility ? "public" : "private";
             const message = newVisibility
                 ? "Story is now public! It will appear in the community hub for discussions."
                 : "Story is now private! It has been removed from the community hub.";
@@ -886,7 +877,7 @@ export function UnifiedWritingEditor({
         }
     };
 
-    const handleToggleSceneStatus = async (
+    const _handleToggleSceneStatus = async (
         sceneId: string,
         currentStatus: string,
         event: React.MouseEvent,
@@ -907,7 +898,7 @@ export function UnifiedWritingEditor({
             }
 
             // Update scene status via API using JSON
-            const response = await fetch(`/studio/api/scenes/${sceneId}`, {
+            const response = await fetch(`/api/studio/scenes/${sceneId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
@@ -942,7 +933,7 @@ export function UnifiedWritingEditor({
     };
 
     // Create part data based on actual story data
-    const createPartData = (partNum: number, partTitle: string) => {
+    const _createPartData = (partNum: number, partTitle: string) => {
         // Get part data from actual story data if available
         const currentPart = sampleStoryData.parts.find(
             (p: any) =>
@@ -983,7 +974,7 @@ export function UnifiedWritingEditor({
     };
 
     // Helper function to find scene data
-    const findSceneData = () => {
+    const _findSceneData = () => {
         let selectedScene = null;
         let selectedSceneChapter = null;
         let sceneNumber = 1;
@@ -995,7 +986,7 @@ export function UnifiedWritingEditor({
                 const chapter = part.chapters.find(
                     (ch) => ch.id === currentSelection.chapterId,
                 );
-                if (chapter && chapter.scenes) {
+                if (chapter?.scenes) {
                     const foundSceneIndex = chapter.scenes.findIndex(
                         (scene) => scene.id === currentSelection.sceneId,
                     );
@@ -1013,7 +1004,7 @@ export function UnifiedWritingEditor({
                 const chapter = story.chapters.find(
                     (ch) => ch.id === currentSelection.chapterId,
                 );
-                if (chapter && chapter.scenes) {
+                if (chapter?.scenes) {
                     const foundSceneIndex = chapter.scenes.findIndex(
                         (scene) => scene.id === currentSelection.sceneId,
                     );
@@ -1537,7 +1528,7 @@ export function UnifiedWritingEditor({
                 // Find the selected chapter from story structure
                 let selectedChapter = null;
                 let selectedPartTitle = null;
-                let selectedPartData = null;
+                let _selectedPartData = null;
 
                 // Look in parts first
                 for (const part of story.parts) {
@@ -1548,7 +1539,7 @@ export function UnifiedWritingEditor({
                         selectedChapter = foundChapter;
                         selectedPartTitle = part.title;
                         // Create part data based on the part information
-                        selectedPartData = {
+                        _selectedPartData = {
                             ...part,
                             part: part.orderIndex,
                             words: (part as any).targetWordCount || 20000,
@@ -1574,7 +1565,7 @@ export function UnifiedWritingEditor({
                     partTitle: string | null,
                 ) => {
                     // Check if chapter has any actual content
-                    const hasScenes =
+                    const _hasScenes =
                         chapter.scenes && chapter.scenes.length > 0;
                     const scenesWithContent =
                         chapter.scenes?.filter(
@@ -3380,7 +3371,7 @@ export function UnifiedWritingEditor({
                                             currentChapter &&
                                             currentChapterStatus === "published"
                                         ) {
-                                            const hasScenes =
+                                            const _hasScenes =
                                                 currentChapter.scenes &&
                                                 currentChapter.scenes.length >
                                                     0;

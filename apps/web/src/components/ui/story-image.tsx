@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import { useState } from "react";
 
 interface StoryImageProps {
     src: string;
@@ -36,7 +36,6 @@ export function StoryImage({
                 return "/images/placeholder-story.svg";
             case "character":
                 return "/images/placeholder-character.svg";
-            case "inline":
             default:
                 return null;
         }

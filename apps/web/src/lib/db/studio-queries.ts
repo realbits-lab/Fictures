@@ -10,8 +10,8 @@
 
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { getCache } from "@/lib/cache/redis-cache";
+import { chapters, parts, stories } from "@/lib/schemas/database";
 import { db } from "./index";
-import { chapters, parts, stories } from "./schema";
 
 // Cache TTL configuration
 const CACHE_TTL = {
@@ -92,7 +92,6 @@ export async function getCachedUserStories(userId: string) {
                 storyId: chapters.storyId,
                 id: chapters.id,
                 orderIndex: chapters.orderIndex,
-                status: chapters.status,
             })
             .from(chapters)
             .where(inArray(chapters.storyId, storyIds))
@@ -117,15 +116,11 @@ export async function getCachedUserStories(userId: string) {
         // Get first chapter (already ordered by orderIndex)
         const firstChapter = storyChapters.length > 0 ? storyChapters[0] : null;
 
-        // Count completed chapters
-        const completedChapters = storyChapters.filter(
-            (ch) => ch.status === "published",
-        ).length;
+        // Count completed chapters (chapters don't have status field - use story status)
+        const completedChapters = storyChapters.length;
 
-        // Check if story is actually published (has published chapters AND is public)
-        const hasPublishedChapters = storyChapters.some(
-            (chapter) => chapter.status === "published",
-        );
+        // Check if story is actually published
+        const hasPublishedChapters = storyChapters.length > 0;
         const actualStatus =
             story.status === "published" && hasPublishedChapters
                 ? ("published" as const)

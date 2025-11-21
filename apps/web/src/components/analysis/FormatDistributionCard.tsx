@@ -9,7 +9,6 @@
 
 "use client";
 
-import React from "react";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { FormatDistribution } from "@/components/ui/format-distribution";
@@ -26,7 +25,7 @@ export function FormatDistributionCard({
     className = "",
 }: FormatDistributionCardProps) {
     const { data, error, isLoading } = useSWR(
-        `/studio/api/stories/${storyId}/scene-stats?limit=1`,
+        `/api/studio/story/${storyId}/scene-stats?limit=1`,
         fetcher,
         {
             revalidateOnFocus: false,

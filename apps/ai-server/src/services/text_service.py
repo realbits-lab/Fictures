@@ -14,12 +14,15 @@ user_lib = os.path.expanduser("~/lib")
 os.environ["LD_LIBRARY_PATH"] = f"{user_lib}:/usr/local/cuda-12.6/lib64:/lib/x86_64-linux-gnu:{os.environ.get('LD_LIBRARY_PATH', '')}"
 os.environ.setdefault("VLLM_TORCH_COMPILE_LEVEL", "0")  # Disable torch compilation
 
+# Disable V1 multiprocessing to avoid spawn ctypes errors in FastAPI context
+# FastAPI doesn't use if __name__ == "__main__" guard, causing re-execution issues
+os.environ["VLLM_ENABLE_V1_MULTIPROCESSING"] = "0"
+
 # vLLM 0.11.0 uses V1 engine (V0 has been removed)
 
 from vllm import AsyncLLMEngine, AsyncEngineArgs, SamplingParams
 from vllm.sampling_params import GuidedDecodingParams
 from src.config import settings
-from src.utils.gpu_utils import cleanup_gpu_memory, get_gpu_memory_info
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +43,11 @@ class TextGenerationService:
             return
 
         try:
-            # Clean GPU memory before loading model
+            # Don't clean GPU memory before vLLM initialization
+            # cleanup_gpu_memory() calls torch.cuda.is_available() which initializes CUDA
+            # This forces vLLM to use spawn multiprocessing method, causing ctypes errors
+            # Let vLLM handle GPU initialization itself
             logger.info("Preparing GPU for text model loading...")
-            cleanup_gpu_memory(force=True)
-
-            mem_info = get_gpu_memory_info()
-            if mem_info["available"]:
-                logger.info(f"GPU Memory before loading: {mem_info['free']:.2f}GB free")
 
             logger.info(f"Initializing vLLM engine with model: {self.model_name}")
             logger.info(f"Quantization: {settings.vllm_quantization}")
@@ -100,11 +101,14 @@ class TextGenerationService:
             await self.initialize()
 
         try:
-            # Create sampling parameters
+            # Create sampling parameters with min_tokens for long-form generation
+            # Ensure min_tokens doesn't exceed max_tokens (use 80% of max_tokens or 512, whichever is smaller)
+            calculated_min_tokens = min(512, int(max_tokens * 0.8))
             sampling_params = SamplingParams(
                 temperature=temperature,
                 top_p=top_p,
                 max_tokens=max_tokens,
+                min_tokens=calculated_min_tokens if calculated_min_tokens > 0 else None,
                 stop=stop_sequences,
             )
 
@@ -121,15 +125,36 @@ class TextGenerationService:
             # Get final output
             final_output = results[-1]
             generated_text = final_output.outputs[0].text
-            tokens_used = len(final_output.outputs[0].token_ids)
+            output_tokens = len(final_output.outputs[0].token_ids)
             finish_reason = final_output.outputs[0].finish_reason
 
-            logger.info(f"Text generation completed. Tokens used: {tokens_used}")
+            # Calculate input tokens (approximate from prompt length)
+            # vLLM doesn't directly provide input tokens, so we estimate
+            # Average: 1 token ≈ 4 characters for English text
+            estimated_input_tokens = len(prompt) // 4
+
+            # Total tokens (input + output)
+            total_tokens = estimated_input_tokens + output_tokens
+
+            logger.info("=" * 80)
+            logger.info("TEXT GENERATION TOKEN USAGE:")
+            logger.info(f"  Input tokens (estimated): {estimated_input_tokens}")
+            logger.info(f"  Output tokens: {output_tokens}")
+            logger.info(f"  Total tokens: {total_tokens}")
+            logger.info(f"  Finish reason: {finish_reason if finish_reason else 'unknown'}")
+            logger.info(f"  Prompt length: {len(prompt)} chars")
+            logger.info(f"  Output length: {len(generated_text)} chars")
+            logger.info("=" * 80)
 
             return {
                 "text": generated_text,
                 "model": self.model_name,
-                "tokens_used": tokens_used,
+                "tokens_used": output_tokens,
+                "tokens": {
+                    "input": estimated_input_tokens,
+                    "output": output_tokens,
+                    "total": total_tokens,
+                },
                 "finish_reason": finish_reason if finish_reason else "unknown",
             }
 
@@ -162,11 +187,14 @@ class TextGenerationService:
             await self.initialize()
 
         try:
-            # Create sampling parameters
+            # Create sampling parameters with min_tokens for long-form generation
+            # Ensure min_tokens doesn't exceed max_tokens (use 80% of max_tokens or 512, whichever is smaller)
+            calculated_min_tokens = min(512, int(max_tokens * 0.8))
             sampling_params = SamplingParams(
                 temperature=temperature,
                 top_p=top_p,
                 max_tokens=max_tokens,
+                min_tokens=calculated_min_tokens if calculated_min_tokens > 0 else None,
                 stop=stop_sequences,
             )
 
@@ -174,17 +202,38 @@ class TextGenerationService:
             logger.info(f"Starting streaming text generation with prompt length: {len(prompt)}")
             request_id = f"text-stream-{asyncio.current_task().get_name()}"
 
+            # Calculate estimated input tokens once
+            estimated_input_tokens = len(prompt) // 4
+
             async for request_output in self.engine.generate(
                 prompt, sampling_params, request_id=request_id
             ):
                 text = request_output.outputs[0].text
-                tokens_used = len(request_output.outputs[0].token_ids)
+                output_tokens = len(request_output.outputs[0].token_ids)
                 finish_reason = request_output.outputs[0].finish_reason
+                total_tokens = estimated_input_tokens + output_tokens
+
+                # Log when streaming completes
+                if finish_reason is not None:
+                    logger.info("=" * 80)
+                    logger.info("STREAMING TEXT GENERATION TOKEN USAGE:")
+                    logger.info(f"  Input tokens (estimated): {estimated_input_tokens}")
+                    logger.info(f"  Output tokens: {output_tokens}")
+                    logger.info(f"  Total tokens: {total_tokens}")
+                    logger.info(f"  Finish reason: {finish_reason}")
+                    logger.info(f"  Prompt length: {len(prompt)} chars")
+                    logger.info(f"  Output length: {len(text)} chars")
+                    logger.info("=" * 80)
 
                 yield {
                     "text": text,
                     "model": self.model_name,
-                    "tokens_used": tokens_used,
+                    "tokens_used": output_tokens,
+                    "tokens": {
+                        "input": estimated_input_tokens,
+                        "output": output_tokens,
+                        "total": total_tokens,
+                    },
                     "finish_reason": finish_reason if finish_reason else None,
                     "done": finish_reason is not None,
                 }
@@ -192,6 +241,116 @@ class TextGenerationService:
         except Exception as e:
             logger.error(f"Streaming text generation failed: {e}")
             raise
+
+    def _analyze_json_schema(self, json_schema: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Analyze JSON schema to extract complexity metrics for buffer calculation.
+
+        Args:
+            json_schema: The JSON schema dict
+
+        Returns:
+            Dictionary with schema analysis metrics
+        """
+        analysis = {
+            "max_depth": 0,
+            "total_properties": 0,
+            "array_fields": 0,
+            "nested_objects": 0,
+            "field_list": []
+        }
+
+        def analyze_recursive(schema: Any, current_depth: int = 0, path: str = "root") -> int:
+            """Recursively analyze schema structure."""
+            if not isinstance(schema, dict):
+                return current_depth
+
+            max_depth = current_depth
+
+            # Count properties (object fields)
+            if "properties" in schema:
+                props = schema["properties"]
+                analysis["total_properties"] += len(props)
+
+                for prop_name, prop_schema in props.items():
+                    field_path = f"{path}.{prop_name}"
+                    analysis["field_list"].append(field_path)
+
+                    # Check if it's an array
+                    if isinstance(prop_schema, dict):
+                        if prop_schema.get("type") == "array":
+                            analysis["array_fields"] += 1
+                        elif "properties" in prop_schema:
+                            analysis["nested_objects"] += 1
+
+                    depth = analyze_recursive(prop_schema, current_depth + 1, field_path)
+                    max_depth = max(max_depth, depth)
+
+            # Check items (array nesting)
+            if "items" in schema:
+                analysis["array_fields"] += 1
+                depth = analyze_recursive(schema["items"], current_depth + 1, f"{path}[]")
+                max_depth = max(max_depth, depth)
+
+            # Check oneOf, anyOf, allOf
+            for key in ["oneOf", "anyOf", "allOf"]:
+                if key in schema:
+                    for idx, sub_schema in enumerate(schema[key]):
+                        depth = analyze_recursive(sub_schema, current_depth + 1, f"{path}.{key}[{idx}]")
+                        max_depth = max(max_depth, depth)
+
+            return max_depth
+
+        # Perform analysis
+        analysis["max_depth"] = analyze_recursive(json_schema)
+
+        return analysis
+
+    def _estimate_json_closing_tokens(self, json_schema: Dict[str, Any]) -> int:
+        """
+        Estimate how many tokens are needed to properly close a JSON structure.
+
+        Args:
+            json_schema: The JSON schema dict
+
+        Returns:
+            Estimated number of tokens needed for closing brackets/braces
+        """
+        # Analyze schema structure
+        analysis = self._analyze_json_schema(json_schema)
+
+        # Log detailed analysis
+        logger.info("=" * 80)
+        logger.info("JSON SCHEMA ANALYSIS:")
+        logger.info(f"  Max nesting depth: {analysis['max_depth']}")
+        logger.info(f"  Total properties: {analysis['total_properties']}")
+        logger.info(f"  Array fields: {analysis['array_fields']}")
+        logger.info(f"  Nested objects: {analysis['nested_objects']}")
+        logger.info(f"  Field structure: {', '.join(analysis['field_list'][:10])}{'...' if len(analysis['field_list']) > 10 else ''}")
+
+        # Calculate buffer with enhanced formula
+        # Base formula: depth * 10 + base_buffer
+        # Enhanced: Consider arrays and nested objects as they need more closing tokens
+        depth_tokens = analysis["max_depth"] * 10
+        array_tokens = analysis["array_fields"] * 5  # Arrays need closing brackets
+        nested_tokens = analysis["nested_objects"] * 3  # Nested objects need closing braces
+        base_buffer = 50  # Base safety buffer
+
+        estimated_tokens = depth_tokens + array_tokens + nested_tokens + base_buffer
+
+        # Cap at reasonable maximum
+        final_buffer = min(estimated_tokens, 300)
+
+        logger.info(f"  Buffer calculation breakdown:")
+        logger.info(f"    - Depth tokens ({analysis['max_depth']} * 10): {depth_tokens}")
+        logger.info(f"    - Array tokens ({analysis['array_fields']} * 5): {array_tokens}")
+        logger.info(f"    - Nested tokens ({analysis['nested_objects']} * 3): {nested_tokens}")
+        logger.info(f"    - Base buffer: {base_buffer}")
+        logger.info(f"    - Total calculated: {estimated_tokens}")
+        logger.info(f"    - Final buffer (capped at 300): {final_buffer}")
+        logger.info("=" * 80)
+
+        return final_buffer
 
     async def generate_structured(
         self,
@@ -204,9 +363,10 @@ class TextGenerationService:
         max_tokens: int = 2048,
         temperature: float = 0.7,
         top_p: float = 0.9,
+        max_retries: int = 2,
     ) -> dict:
         """
-        Generate structured output using vLLM guided decoding.
+        Generate structured output using vLLM guided decoding with retry logic.
 
         Args:
             prompt: Input text prompt
@@ -218,12 +378,25 @@ class TextGenerationService:
             max_tokens: Maximum number of tokens to generate
             temperature: Sampling temperature (0.0 to 2.0)
             top_p: Nucleus sampling parameter (0.0 to 1.0)
+            max_retries: Maximum number of retries for incomplete JSON (default: 2)
 
         Returns:
             Dictionary containing structured output and metadata
         """
         if not self._initialized or self.engine is None:
             await self.initialize()
+
+        # Add buffer for JSON closing (approximately 200 tokens for safety)
+        # This ensures there's enough space to properly close nested structures
+        effective_max_tokens = max_tokens
+        if guided_type == "json" and json_schema:
+            # Estimate closing tokens needed based on schema depth
+            closing_buffer = self._estimate_json_closing_tokens(json_schema)
+            effective_max_tokens = max_tokens + closing_buffer
+            logger.info(
+                f"Added {closing_buffer} token buffer for JSON closing. "
+                f"Effective max_tokens: {effective_max_tokens}"
+            )
 
         try:
             # Create guided decoding params based on type
@@ -243,55 +416,201 @@ class TextGenerationService:
                     f"choices={choices is not None}, grammar={grammar is not None}"
                 )
 
-            # Create sampling parameters with guided decoding
-            sampling_params = SamplingParams(
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens,
-                guided_decoding=guided_params,
-            )
+            # Retry loop for JSON generation
+            retry_count = 0
+            last_error = None
 
-            # Generate text with guided decoding
-            logger.info(
-                f"Generating structured output (type: {guided_type}) with prompt length: {len(prompt)}"
-            )
-            request_id = f"structured-{asyncio.current_task().get_name()}"
+            while retry_count <= max_retries:
+                # Create sampling parameters with guided decoding
+                # Use effective_max_tokens which includes buffer for closing
+                current_max_tokens = (
+                    effective_max_tokens if retry_count == 0 else effective_max_tokens * 1.2
+                )
 
-            results = []
-            async for request_output in self.engine.generate(
-                prompt, sampling_params, request_id=request_id
-            ):
-                results.append(request_output)
+                sampling_params = SamplingParams(
+                    temperature=temperature,
+                    top_p=top_p,
+                    max_tokens=int(current_max_tokens),
+                    guided_decoding=guided_params,
+                )
 
-            # Get final output
-            final_output = results[-1]
-            generated_text = final_output.outputs[0].text
-            tokens_used = len(final_output.outputs[0].token_ids)
-            finish_reason = final_output.outputs[0].finish_reason
+                # Generate text with guided decoding
+                attempt_msg = f" (attempt {retry_count + 1}/{max_retries + 1})" if retry_count > 0 else ""
+                logger.info(
+                    f"Generating structured output (type: {guided_type}) with prompt length: {len(prompt)}"
+                    f"{attempt_msg}"
+                )
+                request_id = f"structured-{asyncio.current_task().get_name()}-{retry_count}"
 
-            logger.info(
-                f"Structured output generation completed. Tokens used: {tokens_used}"
-            )
+                results = []
+                async for request_output in self.engine.generate(
+                    prompt, sampling_params, request_id=request_id
+                ):
+                    results.append(request_output)
 
-            # Parse JSON if type is "json"
-            parsed_output = None
-            is_valid = True
-            if guided_type == "json":
-                try:
-                    parsed_output = json.loads(generated_text)
-                    logger.info("JSON output parsed successfully")
-                except json.JSONDecodeError as e:
-                    logger.warning(f"Failed to parse JSON output: {e}")
-                    is_valid = False
+                # Get final output
+                final_output = results[-1]
+                generated_text = final_output.outputs[0].text
+                output_tokens = len(final_output.outputs[0].token_ids)
+                finish_reason = final_output.outputs[0].finish_reason
 
-            return {
-                "output": generated_text,
-                "parsed_output": parsed_output,
-                "model": self.model_name,
-                "tokens_used": tokens_used,
-                "finish_reason": finish_reason if finish_reason else "unknown",
-                "is_valid": is_valid,
-            }
+                # Calculate input tokens (estimate from prompt)
+                estimated_input_tokens = len(prompt) // 4
+                total_tokens = estimated_input_tokens + output_tokens
+
+                # Calculate token usage metrics
+                token_allocation = int(current_max_tokens)
+                token_utilization = (output_tokens / token_allocation) * 100 if token_allocation > 0 else 0
+                tokens_unused = token_allocation - output_tokens
+                output_size = len(generated_text)
+
+                logger.info("=" * 80)
+                logger.info("STRUCTURED GENERATION TOKEN USAGE:")
+                logger.info(f"  Input tokens (estimated): {estimated_input_tokens}")
+                logger.info(f"  Output tokens: {output_tokens}")
+                logger.info(f"  Total tokens: {total_tokens}")
+                logger.info(f"  Tokens allocated: {token_allocation}")
+                logger.info(f"  Tokens unused: {tokens_unused}")
+                logger.info(f"  Token utilization: {token_utilization:.1f}%")
+                logger.info(f"  Finish reason: {finish_reason}")
+                logger.info(f"  Output size: {output_size} characters")
+                logger.info(f"  Prompt length: {len(prompt)} chars")
+                logger.info(f"  Retry attempt: {retry_count + 1}/{max_retries + 1}")
+                logger.info("=" * 80)
+
+                # Parse JSON if type is "json"
+                parsed_output = None
+                is_valid = True
+                if guided_type == "json":
+                    try:
+                        parsed_output = json.loads(generated_text)
+
+                        # Calculate buffer efficiency
+                        if retry_count == 0:  # Only for first attempt
+                            allocated_buffer = token_allocation - max_tokens
+                            # How many tokens beyond max_tokens did we actually use?
+                            tokens_beyond_max = max(0, output_tokens - max_tokens)
+                            # Buffer efficiency = (tokens used beyond max) / (buffer allocated) * 100
+                            buffer_efficiency = (tokens_beyond_max / allocated_buffer * 100) if allocated_buffer > 0 else 0
+
+                            # Calculate buffer utilization percentage
+                            buffer_utilization = (tokens_beyond_max / allocated_buffer * 100) if allocated_buffer > 0 else 0
+                            tokens_unused_in_buffer = allocated_buffer - tokens_beyond_max
+
+                            logger.info("=" * 80)
+                            logger.info("✅ JSON PARSING SUCCESSFUL!")
+                            logger.info(f"  Base max_tokens: {max_tokens}")
+                            logger.info(f"  Buffer allocated: {allocated_buffer} tokens")
+                            logger.info(f"  Total allocated: {token_allocation} tokens")
+                            logger.info(f"  Tokens used: {output_tokens} tokens")
+                            logger.info(f"  Tokens beyond max_tokens: {tokens_beyond_max} tokens")
+                            logger.info(f"  Buffer utilization: {buffer_utilization:.1f}%")
+                            logger.info(f"  Buffer unused: {tokens_unused_in_buffer} tokens")
+                            if tokens_beyond_max == 0:
+                                logger.info(f"  ℹ️  Model finished within max_tokens - No buffer needed")
+                            elif buffer_utilization < 50:
+                                logger.info(f"  ✅ Buffer is over-allocated (used {buffer_utilization:.1f}%)")
+                            elif 50 <= buffer_utilization <= 100:
+                                logger.info(f"  ✅ Buffer is well-sized (used {buffer_utilization:.1f}%)")
+                            else:
+                                logger.info(f"  ⚠️  Buffer was insufficient (needed {buffer_utilization:.1f}%)")
+                            logger.info("=" * 80)
+
+                        # Success! Return immediately
+                        return {
+                            "output": generated_text,
+                            "parsed_output": parsed_output,
+                            "model": self.model_name,
+                            "tokens_used": output_tokens,
+                            "tokens": {
+                                "input": estimated_input_tokens,
+                                "output": output_tokens,
+                                "total": total_tokens,
+                            },
+                            "finish_reason": finish_reason if finish_reason else "unknown",
+                            "is_valid": True,
+                            "retry_count": retry_count,
+                        }
+                    except json.JSONDecodeError as e:
+                        last_error = e
+
+                        logger.error("=" * 80)
+                        logger.error(f"❌ JSON PARSING FAILED (attempt {retry_count + 1}/{max_retries + 1})")
+                        logger.error(f"  Error: {e}")
+                        logger.error(f"  Error position: char {e.pos} (line {e.lineno}, col {e.colno})")
+                        logger.error(f"  Token allocation: {token_allocation}")
+                        logger.error(f"  Tokens used: {output_tokens} ({token_utilization:.1f}%)")
+
+                        # Show context around error
+                        if e.pos and e.pos > 0:
+                            context_start = max(0, e.pos - 100)
+                            context_end = min(len(generated_text), e.pos + 100)
+                            context = generated_text[context_start:context_end]
+                            logger.error(f"  Context: ...{context}...")
+
+                        # Analyze why parsing failed
+                        if token_utilization > 95:
+                            logger.error(f"  ⚠️  LIKELY CAUSE: Hit token limit (>{token_utilization:.0f}% used)")
+                            logger.error(f"  ⚠️  RECOMMENDATION: Increase buffer or max_tokens")
+                        elif finish_reason == "length":
+                            logger.error(f"  ⚠️  CONFIRMED CAUSE: Generation stopped due to length limit")
+                        else:
+                            logger.error(f"  ⚠️  POSSIBLE CAUSE: Model output formatting issue")
+
+                        logger.error("=" * 80)
+
+                        is_valid = False
+
+                        # If we've exhausted retries, return the last attempt
+                        if retry_count >= max_retries:
+                            logger.error("=" * 80)
+                            logger.error(f"🚫 RETRY LIMIT REACHED - Returning invalid output")
+                            logger.error(f"  Total attempts: {retry_count + 1}")
+                            logger.error(f"  Final error: {str(last_error)}")
+                            logger.error("=" * 80)
+
+                            return {
+                                "output": generated_text,
+                                "parsed_output": None,
+                                "model": self.model_name,
+                                "tokens_used": output_tokens,
+                                "tokens": {
+                                    "input": estimated_input_tokens,
+                                    "output": output_tokens,
+                                    "total": total_tokens,
+                                },
+                                "finish_reason": finish_reason if finish_reason else "unknown",
+                                "is_valid": False,
+                                "retry_count": retry_count,
+                                "error": str(last_error),
+                            }
+
+                        # Retry with increased tokens
+                        retry_count += 1
+                        new_max_tokens = int(effective_max_tokens * 1.2)
+
+                        logger.info("=" * 80)
+                        logger.info(f"🔄 INITIATING RETRY #{retry_count}")
+                        logger.info(f"  Previous max_tokens: {token_allocation}")
+                        logger.info(f"  New max_tokens: {new_max_tokens} (+20%)")
+                        logger.info(f"  Reason: JSON truncation detected")
+                        logger.info("=" * 80)
+                else:
+                    # Not JSON type, return immediately
+                    return {
+                        "output": generated_text,
+                        "parsed_output": parsed_output,
+                        "model": self.model_name,
+                        "tokens_used": output_tokens,
+                        "tokens": {
+                            "input": estimated_input_tokens,
+                            "output": output_tokens,
+                            "total": total_tokens,
+                        },
+                        "finish_reason": finish_reason if finish_reason else "unknown",
+                        "is_valid": is_valid,
+                        "retry_count": 0,
+                    }
 
         except Exception as e:
             logger.error(f"Structured output generation failed: {e}")
@@ -314,10 +633,8 @@ class TextGenerationService:
             # vLLM doesn't have explicit shutdown, engine will be cleaned up
             self.engine = None
             self._initialized = False
-
-            # Clean up GPU memory after shutdown
-            logger.info("Cleaning up GPU memory after text model shutdown")
-            cleanup_gpu_memory(force=True)
+            # GPU memory will be automatically cleaned up when engine is destroyed
+            logger.info("vLLM engine shut down")
 
 
 # Global service instance

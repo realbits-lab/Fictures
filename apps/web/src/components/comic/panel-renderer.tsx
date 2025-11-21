@@ -12,7 +12,6 @@ import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton-loader";
 import { cn } from "@/lib/utils";
 import { DialogueBubbleGroup } from "./dialogue-bubble";
-import { SFXTextGroup } from "./sfx-text";
 
 interface PanelDialogue {
     character_id: string;

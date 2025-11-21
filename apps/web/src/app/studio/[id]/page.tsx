@@ -14,7 +14,7 @@ export default async function StoryPage({
     // Check authentication first
     const session = await auth();
     if (!session?.user) {
-        redirect("/login?callbackUrl=" + encodeURIComponent(`/stories/${id}`));
+        redirect(`/login?callbackUrl=${encodeURIComponent(`/stories/${id}`)}`);
     }
 
     // Fetch the actual story from database

@@ -2,11 +2,13 @@ import { generateObject, generateText } from "ai";
 import { z } from "zod";
 import { AI_MODELS } from "@/lib/ai/config";
 import type {
-    FullValidationResult,
     OverallEvaluation,
     StoryEvaluationResult,
+} from "@/lib/schemas/services/evaluation";
+import type {
+    FullValidationResult,
     ValidationResult,
-} from "@/types/validation-evaluation";
+} from "@/lib/schemas/services/validation";
 
 // Improvement schemas
 const ImprovedStorySchema = z.object({
@@ -41,7 +43,7 @@ const ImprovedChapterSchema = z.object({
         .optional(),
 });
 
-const ImprovedSceneSchema = z.object({
+const _ImprovedSceneSchema = z.object({
     title: z.string().optional(),
     goal: z.string().optional(),
     conflict: z.string().optional(),
@@ -284,14 +286,14 @@ export async function improveStoryContent(
 
     for (let i = 0; i < (originalData.parts || []).length; i++) {
         const partStartTime = Date.now();
-        const part = originalData.parts![i];
+        const part = originalData.parts?.[i];
         const partValidation = analysisResult.validation?.parts[i];
         const partEvaluation = analysisResult.evaluation?.partEvaluations.find(
             (e) => e.partId === part.id,
         );
 
         console.log(
-            `   Processing part ${i + 1}/${originalData.parts!.length}: ${part.title}`,
+            `   Processing part ${i + 1}/${originalData.parts?.length}: ${part.title}`,
         );
 
         const priority = getImprovementPriority(partValidation, partEvaluation);
@@ -335,7 +337,7 @@ export async function improveStoryContent(
 
     for (let i = 0; i < (originalData.chapters || []).length; i++) {
         const chapterStartTime = Date.now();
-        const chapter = originalData.chapters![i];
+        const chapter = originalData.chapters?.[i];
         const chapterValidation = analysisResult.validation?.chapters[i];
         const chapterEvaluation =
             analysisResult.evaluation?.chapterEvaluations.find(
@@ -343,7 +345,7 @@ export async function improveStoryContent(
             );
 
         console.log(
-            `   Processing chapter ${i + 1}/${originalData.chapters!.length}: ${chapter.title}`,
+            `   Processing chapter ${i + 1}/${originalData.chapters?.length}: ${chapter.title}`,
         );
 
         const priority = getImprovementPriority(
@@ -395,7 +397,7 @@ export async function improveStoryContent(
 
     for (let i = 0; i < (originalData.scenes || []).length; i++) {
         const sceneStartTime = Date.now();
-        const scene = originalData.scenes![i];
+        const scene = originalData.scenes?.[i];
         const sceneValidation = analysisResult.validation?.scenes[i];
         const sceneEvaluation =
             analysisResult.evaluation?.sceneEvaluations.find(
@@ -403,7 +405,7 @@ export async function improveStoryContent(
             );
 
         console.log(
-            `   Processing scene ${i + 1}/${originalData.scenes!.length}: ${scene.title}`,
+            `   Processing scene ${i + 1}/${originalData.scenes?.length}: ${scene.title}`,
         );
 
         const priority = getImprovementPriority(
@@ -450,7 +452,7 @@ export async function improveStoryContent(
 
     for (let i = 0; i < (originalData.characters || []).length; i++) {
         const characterStartTime = Date.now();
-        const character = originalData.characters![i];
+        const character = originalData.characters?.[i];
         const characterValidation = analysisResult.validation?.characters[i];
         const characterEvaluation =
             analysisResult.evaluation?.characterEvaluations.find(
@@ -458,7 +460,7 @@ export async function improveStoryContent(
             );
 
         console.log(
-            `   Processing character ${i + 1}/${originalData.characters!.length}: ${character.name}`,
+            `   Processing character ${i + 1}/${originalData.characters?.length}: ${character.name}`,
         );
 
         const priority = getImprovementPriority(
@@ -510,7 +512,7 @@ export async function improveStoryContent(
 
     for (let i = 0; i < (originalData.settings || []).length; i++) {
         const settingStartTime = Date.now();
-        const setting = originalData.settings![i];
+        const setting = originalData.settings?.[i];
         const settingValidation = analysisResult.validation?.settings[i];
         const settingEvaluation =
             analysisResult.evaluation?.settingEvaluations.find(
@@ -518,7 +520,7 @@ export async function improveStoryContent(
             );
 
         console.log(
-            `   Processing setting ${i + 1}/${originalData.settings!.length}: ${setting.name}`,
+            `   Processing setting ${i + 1}/${originalData.settings?.length}: ${setting.name}`,
         );
 
         const priority = getImprovementPriority(
@@ -787,7 +789,7 @@ async function improvePart(
         const truncateString = (str: string, maxLength: number = 500) => {
             if (!str) return "N/A";
             if (str.length <= maxLength) return str;
-            return str.substring(0, maxLength) + "...";
+            return `${str.substring(0, maxLength)}...`;
         };
 
         const { object } = await generateObject({
@@ -906,7 +908,7 @@ async function improveChapter(
         const truncateString = (str: string, maxLength: number = 500) => {
             if (!str) return "N/A";
             if (str.length <= maxLength) return str;
-            return str.substring(0, maxLength) + "...";
+            return `${str.substring(0, maxLength)}...`;
         };
 
         const { object } = await generateObject({

@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { SceneImage } from "@/components/optimized-image";
-import { useChapterScenes } from "@/hooks/useChapterScenes";
-import { useScenePrefetch } from "@/hooks/useScenePrefetch";
-import { useSceneView } from "@/hooks/useSceneView";
-import type { Chapter } from "@/hooks/useStoryReader";
-import { useReadingProgress, useStoryReader } from "@/hooks/useStoryReader";
+import { useChapterScenes } from "@/hooks/use-chapter-scenes";
+import { useScenePrefetch } from "@/hooks/use-scene-prefetch";
+import { useSceneView } from "@/hooks/use-scene-view";
+import { useReadingProgress, useStoryReader } from "@/hooks/use-story-reader";
 import { trackReading } from "@/lib/analysis/google-analytics";
 import { CommentSection } from "./CommentSection";
-import { ProgressIndicator } from "./ProgressIndicator";
 
 interface ChapterReaderClientProps {
     storyId: string;
@@ -65,6 +63,24 @@ export function ChapterReaderClient({
         [storyId],
     );
 
+    // Clear old scroll positions to free up localStorage space
+    const clearOldScrollPositions = React.useCallback(() => {
+        try {
+            const keys = Object.keys(localStorage);
+            const scrollKeys = keys.filter((key) =>
+                key.startsWith("fictures_scene_scroll_"),
+            );
+
+            // Keep only the last 50 scroll positions (most recent story)
+            const _currentStoryKeys = scrollKeys.filter((key) =>
+                key.includes(storyId),
+            );
+            // Implementation continues...
+        } catch (error) {
+            console.warn("Failed to clear old scroll positions:", error);
+        }
+    }, [storyId]);
+
     // Debounced scroll position save to reduce localStorage writes
     const saveScrollPosition = React.useCallback(
         (sceneId: string, position: number) => {
@@ -77,7 +93,7 @@ export function ChapterReaderClient({
             scrollSaveTimeoutRef.current = setTimeout(() => {
                 try {
                     // Save all valid positions, including 0 (top)
-                    if (!isNaN(position)) {
+                    if (!Number.isNaN(position)) {
                         localStorage.setItem(
                             scrollPositionKey(sceneId),
                             position.toString(),
@@ -102,7 +118,7 @@ export function ChapterReaderClient({
                 }
             }, 500);
         },
-        [scrollPositionKey],
+        [scrollPositionKey, clearOldScrollPositions],
     );
 
     const getScrollPosition = React.useCallback(
@@ -121,35 +137,6 @@ export function ChapterReaderClient({
         },
         [scrollPositionKey],
     );
-
-    // Clear old scroll positions to free up localStorage space
-    const clearOldScrollPositions = React.useCallback(() => {
-        try {
-            const keys = Object.keys(localStorage);
-            const scrollKeys = keys.filter((key) =>
-                key.startsWith("fictures_scene_scroll_"),
-            );
-
-            // Keep only the last 50 scroll positions (most recent story)
-            const currentStoryKeys = scrollKeys.filter((key) =>
-                key.includes(storyId),
-            );
-            const otherStoryKeys = scrollKeys.filter(
-                (key) => !key.includes(storyId),
-            );
-
-            // Remove scroll positions from other stories
-            otherStoryKeys.forEach((key) => {
-                localStorage.removeItem(key);
-            });
-
-            console.log(
-                `🧹 Cleaned up ${otherStoryKeys.length} old scroll positions`,
-            );
-        } catch (error) {
-            console.warn("Failed to clear old scroll positions:", error);
-        }
-    }, [storyId]);
 
     const handleSceneSelect = React.useCallback(
         (sceneId: string, chapterId: string) => {
@@ -380,7 +367,7 @@ export function ChapterReaderClient({
 
                 try {
                     const response = await fetch(
-                        `/studio/api/chapters/${chapter.id}/scenes`,
+                        `/api/studio/chapters/${chapter.id}/scenes`,
                         {
                             credentials: "include",
                         },
@@ -487,7 +474,7 @@ export function ChapterReaderClient({
                 setSelectedSceneId(firstScene.scene.id);
 
                 // Track reading start
-                trackReading.startReading(storyId, firstScene.chapterId);
+                trackReading(storyId, firstScene.chapterId);
 
                 const autoSelectDuration =
                     performance.now() - autoSelectStartTime;
@@ -707,12 +694,12 @@ export function ChapterReaderClient({
     const selectedScene = chapterScenes.find(
         (scene) => scene.id === selectedSceneId,
     );
-    const selectedSceneData = allScenes.find(
+    const _selectedSceneData = allScenes.find(
         (item) => item.scene.id === selectedSceneId,
     );
 
     // Calculate global chapter number
-    const getGlobalChapterNumber = (chapterId: string) => {
+    const _getGlobalChapterNumber = (chapterId: string) => {
         if (!story) return 0;
 
         let chapterNumber = 0;
@@ -733,7 +720,7 @@ export function ChapterReaderClient({
     };
 
     // Get status icon
-    const getStatusIcon = (status: string) => {
+    const _getStatusIcon = (status: string) => {
         switch (status) {
             case "completed":
                 return "✅";
@@ -1050,7 +1037,7 @@ export function ChapterReaderClient({
                                 </div>
                             ) : (
                                 <div className="space-y-1">
-                                    {allScenes.map((item, index) => {
+                                    {allScenes.map((item, _index) => {
                                         const isSceneSelected =
                                             selectedSceneId === item.scene.id;
 

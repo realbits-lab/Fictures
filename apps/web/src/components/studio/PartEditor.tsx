@@ -1,14 +1,7 @@
 "use client";
 
-import yaml from "js-yaml";
-import React, { useEffect, useState } from "react";
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
 
 // Part YAML interface based on part-specification.md
@@ -197,7 +190,7 @@ export function PartEditor({
         }
     };
 
-    const updateField = (path: string[], value: any) => {
+    const _updateField = (path: string[], value: any) => {
         const newData = { ...partData };
         let current: any = newData;
 

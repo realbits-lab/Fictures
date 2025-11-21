@@ -64,7 +64,7 @@ export function LoginForm() {
                 }
             } else if (result?.ok) {
                 // Track successful sign in
-                trackEngagement.signIn("email");
+                trackEngagement("sign_in", "email");
 
                 // Give browser a moment to detect the successful login
                 await new Promise((resolve) => setTimeout(resolve, 100));
@@ -72,7 +72,7 @@ export function LoginForm() {
                 // Navigate to trigger password save prompt
                 window.location.href = "/";
             }
-        } catch (error) {
+        } catch (_error) {
             setError("An error occurred during sign in");
             // Restore show password state on error
             if (wasShowingPassword && passwordInput) {
@@ -98,12 +98,12 @@ export function LoginForm() {
                 setError("Failed to sign in with Google");
             } else if (result?.ok) {
                 // Track successful sign in
-                trackEngagement.signIn("google");
+                trackEngagement("sign_in", "google");
 
                 router.push("/");
                 router.refresh();
             }
-        } catch (error) {
+        } catch (_error) {
             setError("An error occurred during sign in");
         } finally {
             setIsGoogleLoading(false);

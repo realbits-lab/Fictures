@@ -16,12 +16,12 @@ import { CommunityStorySidebar } from "@/components/community/CommunityStorySide
 import { CreatePostForm } from "@/components/community/CreatePostForm";
 // import { useSession } from "next/auth/react";
 import { Badge, Button, Card, CardContent } from "@/components/ui";
-import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 import {
     useCommunityPosts,
     useCommunityStory,
     useRevalidateCommunityPosts,
-} from "@/lib/hooks/use-community-cache";
+} from "@/hooks/use-community-cache";
 
 interface Character {
     id: string;
@@ -111,7 +111,7 @@ export function CommunityStoryDetailClient({
     const { data: storyData } = useCommunityStory(storyId);
     const { data: postsData } = useCommunityPosts(storyId);
 
-    const revalidatePosts = useRevalidateCommunityPosts(storyId);
+    const { revalidate: revalidatePosts } = useRevalidateCommunityPosts();
 
     const { executeAction: handleCreatePost } = useProtectedAction(() => {
         setShowCreateForm(true);
@@ -119,16 +119,16 @@ export function CommunityStoryDetailClient({
 
     const handlePostCreated = async () => {
         setShowCreateForm(false);
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     const handlePostDeleted = async () => {
-        await revalidatePosts();
+        await revalidatePosts(storyId);
     };
 
     // Use SSR data as fallback
     const story = storyData?.story || initialStory;
-    const posts = postsData?.posts || initialPosts;
+    const posts = Array.isArray(postsData) ? postsData : (postsData as any)?.posts || initialPosts;
 
     return (
         <div className="flex gap-6">

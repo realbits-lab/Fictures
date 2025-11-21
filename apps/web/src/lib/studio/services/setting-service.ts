@@ -4,25 +4,26 @@
  * Service layer for setting generation and database persistence.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { settings, stories } from "@/lib/db/schema";
+import { settings, stories } from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Setting = InferSelectModel<typeof settings>;
+import { insertSettingSchema } from "@/lib/schemas/zod/generated";
 import { generateSettings } from "../generators/settings-generator";
 import type {
-    GeneratorSettingsParams,
-    GeneratorSettingsResult,
-} from "../generators/types";
-import {
-    insertSettingSchema,
-    type Setting,
-    type Story,
-} from "../generators/zod-schemas.generated";
+    GenerateSettingsParams,
+    GenerateSettingsResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceSettingsParams {
     storyId: string;
     settingCount: number;
     userId: string;
+    // apiKey removed - now retrieved from auth context
 }
 
 export interface ServiceSettingsResult {
@@ -59,12 +60,12 @@ export class SettingService {
         }
 
         // 3. Generate settings using pure generator
-        const generateParams: GeneratorSettingsParams = {
-            story,
+        const generateParams: GenerateSettingsParams = {
+            story: story as any,
             settingCount,
         };
 
-        const generationResult: GeneratorSettingsResult =
+        const generationResult: GenerateSettingsResult =
             await generateSettings(generateParams);
 
         // 4. Save settings to database
@@ -80,8 +81,10 @@ export class SettingService {
                 name: settingData.name || "Unnamed Setting",
                 summary: settingData.summary || null,
                 adversityElements: settingData.adversityElements || null,
+                virtueElements: settingData.virtueElements || null,
+                consequenceElements: settingData.consequenceElements || null,
                 symbolicMeaning: settingData.symbolicMeaning || null,
-                cycleAmplification: settingData.cycleAmplification || null,
+                cycleAmplification: (settingData as any).cycleAmplification || null,
                 mood: settingData.mood || null,
                 emotionalResonance: settingData.emotionalResonance || null,
                 sensory: settingData.sensory || null,

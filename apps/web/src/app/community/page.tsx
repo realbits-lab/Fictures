@@ -11,8 +11,8 @@ import {
 } from "@/components/common";
 import { MainLayout } from "@/components/layout";
 import { SkeletonLoader } from "@/components/ui";
-import { useCommunityEvents } from "@/lib/hooks/use-community-events";
-import { useCommunityStories } from "@/lib/hooks/use-page-cache";
+import { useCommunityEvents } from "@/hooks/use-community-events";
+import { useCommunityStories } from "@/hooks/use-page-cache";
 import type {
     PostCreatedEvent,
     StoryPublishedEvent,
@@ -22,7 +22,7 @@ import type {
 export default function CommunityPage() {
     const { data: session } = useSession();
     const [newStoryCount, setNewStoryCount] = useState(0);
-    const [recentlyPublishedStories, setRecentlyPublishedStories] = useState<
+    const [_recentlyPublishedStories, setRecentlyPublishedStories] = useState<
         string[]
     >([]);
 
@@ -78,8 +78,8 @@ export default function CommunityPage() {
     });
 
     // Transform data when available - convert to StoryGrid compatible format
-    const stories = data?.success
-        ? data.stories.map((story: any) => ({
+    const stories = Array.isArray(data) && data.length > 0
+        ? data.map((story: any) => ({
               id: story.id,
               title: story.title,
               summary: story.summary || "No summary available",

@@ -7,7 +7,6 @@
  */
 
 import { Minus, TrendingDown, TrendingUp } from "lucide-react";
-import React from "react";
 
 interface TrendIndicatorProps {
     value: number; // Percentage change (positive or negative)

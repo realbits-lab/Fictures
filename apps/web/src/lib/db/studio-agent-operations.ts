@@ -1,15 +1,18 @@
-import { and, desc, eq } from "drizzle-orm";
-import { db } from "./index";
+import { and, desc, eq, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
 import {
-    type NewStudioAgentChat,
-    type NewStudioAgentMessage,
-    type NewStudioAgentToolExecution,
-    type StudioAgentChat,
-    type StudioAgentMessage,
     studioAgentChats,
     studioAgentMessages,
     studioAgentToolExecutions,
-} from "./schema";
+} from "@/lib/schemas/database";
+import { db } from "./index";
+
+// Type inference from schema
+type StudioAgentChat = InferSelectModel<typeof studioAgentChats>;
+type NewStudioAgentChat = InferInsertModel<typeof studioAgentChats>;
+type StudioAgentMessage = InferSelectModel<typeof studioAgentMessages>;
+type NewStudioAgentMessage = InferInsertModel<typeof studioAgentMessages>;
+type StudioAgentToolExecution = InferSelectModel<typeof studioAgentToolExecutions>;
+type NewStudioAgentToolExecution = InferInsertModel<typeof studioAgentToolExecutions>;
 
 // ==============================================================================
 // STUDIO AGENT CHAT OPERATIONS
@@ -102,7 +105,7 @@ export async function updateStudioAgentChatPhase(
                 currentPhase: nextPhase,
                 completedPhases: completedPhases,
             } as any,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(studioAgentChats.id, chatId));
 }
@@ -157,7 +160,7 @@ export async function getStudioAgentMessages(
 export async function getStudioAgentMessagesPaginated(
     chatId: string,
     limit: number = 50,
-    cursor?: string,
+    _cursor?: string,
 ) {
     const query = db
         .select()
@@ -172,7 +175,7 @@ export async function getStudioAgentMessagesPaginated(
         messages: messages.reverse(),
         nextCursor:
             messages.length === limit
-                ? messages[0]?.createdAt.toISOString()
+                ? messages[0]?.createdAt
                 : null,
         hasMore: messages.length === limit,
     };
@@ -209,7 +212,7 @@ export async function updateToolExecution(params: {
             toolOutput: params.toolOutput,
             status: params.status,
             error: params.error,
-            completedAt: new Date(),
+            completedAt: new Date().toISOString(),
             executionTimeMs,
         })
         .where(

@@ -6,7 +6,7 @@ import { trackEngagement } from "@/lib/analysis/google-analytics";
 
 export function SignOutButton() {
     const handleSignOut = () => {
-        trackEngagement.signOut();
+        trackEngagement("sign_out", "button");
         signOut({ callbackUrl: "/" });
     };
 

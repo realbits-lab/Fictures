@@ -7,7 +7,6 @@
  */
 
 import { Eye } from "lucide-react";
-import React from "react";
 import { formatCount } from "@/components/ui/view-count";
 
 interface SceneViewBadgeProps {

@@ -5,8 +5,13 @@ AI-powered image generation and upload services for story illustrations.
 ## Overview
 
 The Image APIs provide two main capabilities:
-1. **AI Image Generation**: Generate story illustrations using Google Gemini 2.5 Flash
+1. **AI Image Generation**: Generate story illustrations using AI server (supports multiple providers)
 2. **Image Upload**: Upload custom images to Vercel Blob storage
+
+**AI Server Integration:**
+The platform uses a dedicated AI server for image generation, configured via environment variables:
+- `AI_SERVER_IMAGE_URL` - Dedicated server for image generation
+- `AI_SERVER_IMAGE_TIMEOUT` - Generation timeout in ms (default: 120000)
 
 All generated images are automatically:
 - Stored in Vercel Blob storage
@@ -17,13 +22,15 @@ All generated images are automatically:
 
 ## Endpoints
 
-### Generate Story Image
+### Generate Story Images
 
-Generate an AI-powered story illustration using Google Gemini 2.5 Flash.
+Generate AI-powered story illustrations via the AI server.
 
-**Endpoint:** `POST /api/images/generate`
+**Endpoint:** `POST /studio/api/images`
 
 **Authentication:** Required (Session)
+
+**Note:** This is the primary endpoint for generating story, character, setting, and scene images.
 
 **Request Body:**
 
@@ -110,7 +117,7 @@ When `autoPrompt: true`, the system builds a prompt from story metadata:
 **Example - Manual Prompt:**
 
 ```bash
-curl -X POST http://localhost:3000/api/images/generate \
+curl -X POST http://localhost:3000/studio/api/images \
   -H "Content-Type: application/json" \
   -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN" \
   -d '{
@@ -124,7 +131,7 @@ curl -X POST http://localhost:3000/api/images/generate \
 **Example - Auto Prompt:**
 
 ```bash
-curl -X POST http://localhost:3000/api/images/generate \
+curl -X POST http://localhost:3000/studio/api/images \
   -H "Content-Type: application/json" \
   -H "Cookie: next-auth.session-token=YOUR_SESSION_TOKEN" \
   -d '{
@@ -138,7 +145,7 @@ curl -X POST http://localhost:3000/api/images/generate \
 
 1. **Validation**: Check authentication and ownership
 2. **Prompt**: Use provided prompt or auto-generate from story
-3. **Generation**: Call Google Gemini 2.5 Flash API
+3. **Generation**: Call AI server image generation endpoint
 4. **Upload**: Store original image in Vercel Blob
 5. **Optimization**: Generate 4 optimized variants automatically
 6. **Response**: Return URLs and metadata

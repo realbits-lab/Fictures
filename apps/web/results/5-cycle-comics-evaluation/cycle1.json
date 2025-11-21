@@ -1,0 +1,207 @@
+{
+  "cycle": 1,
+  "name": "Baseline",
+  "results": [
+    {
+      "testId": "action-sequence-1",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit",
+          "generationTime": 16405,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion",
+          "generationTime": 16347,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32768,
+      "successRate": 1,
+      "averageGenerationTime": 16376
+    },
+    {
+      "testId": "action-sequence-2",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit",
+          "generationTime": 16377,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion",
+          "generationTime": 16352,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32743,
+      "successRate": 1,
+      "averageGenerationTime": 16364.5
+    },
+    {
+      "testId": "action-sequence-3",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit",
+          "generationTime": 16350,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion",
+          "generationTime": 16401,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32761,
+      "successRate": 1,
+      "averageGenerationTime": 16375.5
+    },
+    {
+      "testId": "dialogue-heavy-1",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere",
+          "generationTime": 16352,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16357,
+      "successRate": 1,
+      "averageGenerationTime": 16352
+    },
+    {
+      "testId": "dialogue-heavy-2",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere",
+          "generationTime": 12376,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12380,
+      "successRate": 1,
+      "averageGenerationTime": 12376
+    },
+    {
+      "testId": "dialogue-heavy-3",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere",
+          "generationTime": 12365,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12369,
+      "successRate": 1,
+      "averageGenerationTime": 12365
+    },
+    {
+      "testId": "emotional-beat-1",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible",
+          "generationTime": 16303,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16306,
+      "successRate": 1,
+      "averageGenerationTime": 16303
+    },
+    {
+      "testId": "emotional-beat-2",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible",
+          "generationTime": 12307,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12312,
+      "successRate": 1,
+      "averageGenerationTime": 12307
+    },
+    {
+      "testId": "emotional-beat-3",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible",
+          "generationTime": 12300,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12304,
+      "successRate": 1,
+      "averageGenerationTime": 12300
+    }
+  ],
+  "metrics": {
+    "totalTests": 9,
+    "totalPanels": 12,
+    "successfulPanels": 12,
+    "successRate": 1,
+    "averageGenerationTime": 15.019583333333333,
+    "minGenerationTime": 12.3,
+    "maxGenerationTime": 16.405
+  },
+  "improvements": [
+    "Baseline metrics established",
+    "No changes from v1.0"
+  ],
+  "duration": 180.3,
+  "timestamp": "2025-11-18T09:48:28.027Z"
+}

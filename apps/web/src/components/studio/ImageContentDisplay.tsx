@@ -9,7 +9,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
     PanelRenderer,
     PanelRendererSkeleton,
@@ -95,10 +95,10 @@ export function ImageContentDisplay({
 
                 if (type === "scene" && format === "comic") {
                     // Fetch comic panel data
-                    endpoint = `/comics/api/${itemId}/panels`;
+                    endpoint = `/api/comics/${itemId}/panels`;
                 } else if (type === "scene") {
                     // Fetch novel scene data
-                    endpoint = `/studio/api/scenes/${itemId}`;
+                    endpoint = `/api/studio/scenes/${itemId}`;
                 } else if (type === "character") {
                     // Fetch character data
                     endpoint = `/api/characters/${itemId}`;

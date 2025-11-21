@@ -87,7 +87,7 @@ test.describe("Mobile Responsiveness", () => {
         );
 
         // Font size should be at least 14px on mobile
-        expect(parseInt(fontSize)).toBeGreaterThanOrEqual(14);
+        expect(parseInt(fontSize, 10)).toBeGreaterThanOrEqual(14);
     });
 
     test("TC-MOBILE-007: Bottom navigation accessible on mobile", async ({

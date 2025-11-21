@@ -1,0 +1,44 @@
+{
+  "cycle": 2,
+  "name": "Enhanced Prompt Specificity",
+  "imageMetrics": {
+    "version": "v1.2",
+    "totalTests": 9,
+    "testDate": "2025-11-17T23:45:45.605Z",
+    "averageWeightedScore": 4.501182033096927,
+    "passRate": 1,
+    "firstPassSuccessRate": 0.7777777777777778,
+    "categoryAverages": {
+      "generationQuality": 4.860520094562649,
+      "optimizationQuality": 5,
+      "visualQuality": 3.5,
+      "performance": 5
+    },
+    "averageAspectRatioAccuracy": 1.4184397163120512,
+    "resolutionComplianceRate": 1,
+    "averagePromptAdherence": 85,
+    "formatComplianceRate": 1,
+    "averageFileSize": 954.2925347222222,
+    "averageAvifCompressionRatio": 98.12128834529007,
+    "averageAvif1xSize": 18.335611979166668,
+    "averageAvif2xSize": 0,
+    "averageTotalVariantSize": 18.335611979166668,
+    "averageStorageRatio": 1.8787116547099327,
+    "averageVisualQualityScore": 3.5,
+    "averageArtifactCount": 0,
+    "aspectRatioPreservationRate": 1,
+    "variantCountComplianceRate": 1,
+    "averageGenerationTime": 8.163,
+    "averageOptimizationTime": 5.861777777777779,
+    "averageTotalTime": 18.38377777777778,
+    "successRate": 1,
+    "failurePatterns": []
+  },
+  "improvements": [
+    "Add lighting and atmosphere descriptors to prompts",
+    "Include composition guidelines in prompts",
+    "Add quality indicators (professional, detailed, etc.)"
+  ],
+  "duration": 196.611,
+  "timestamp": "2025-11-17T23:46:05.608Z"
+}

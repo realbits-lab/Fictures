@@ -6,23 +6,181 @@ This document defines the test requirements, test cases, and success criteria fo
 
 For test execution details, automation setup, and implementation guidance, see [test-development.md](test-development.md).
 
-### Recent Updates (v1.2 - 2025-11-05)
+---
+
+## Test Directory Structure
+
+The web application uses two separate test frameworks with distinct purposes:
+
+### `tests/` - Playwright E2E Tests
+
+**Framework**: Playwright
+**Purpose**: End-to-end integration tests, API tests, cross-cutting concerns
+**File Pattern**: `*.spec.ts`
+**Config**: `playwright.config.ts`
+
+```
+tests/
+├── setup/                    # Authentication setup
+│   ├── auth.setup.ts
+│   └── test-data.setup.ts
+├── e2e/                      # Page-level E2E tests
+│   ├── home.spec.ts
+│   ├── studio.writer.spec.ts
+│   ├── studio.reader.spec.ts
+│   ├── novels.e2e.spec.ts
+│   ├── comics.e2e.spec.ts
+│   ├── community.e2e.spec.ts
+│   ├── publish.writer.spec.ts
+│   ├── analysis.writer.spec.ts
+│   ├── settings.authenticated.spec.ts
+│   └── studio-agent.writer.spec.ts
+├── api/                      # API endpoint tests
+│   ├── auth.api.spec.ts
+│   ├── story.api.spec.ts
+│   ├── generation.api.spec.ts
+│   ├── community.api.spec.ts
+│   ├── analysis.api.spec.ts
+│   ├── publish.api.spec.ts
+│   ├── image.api.spec.ts
+│   └── user.api.spec.ts
+├── cross-cutting/            # Non-functional tests
+│   ├── mobile.mobile.spec.ts
+│   ├── theme.spec.ts
+│   ├── a11y.spec.ts
+│   └── performance.spec.ts
+├── errors/                   # Error handling tests
+│   ├── network-errors.spec.ts
+│   └── edge-cases.spec.ts
+├── iteration-testing/        # A/B testing for generation
+│   ├── novels/
+│   ├── comics/
+│   ├── toonplay/
+│   └── images/
+└── helpers/                  # Shared test utilities
+    ├── auth.ts
+    └── test-data.ts
+```
+
+**Running Playwright Tests:**
+```bash
+# Run all E2E tests
+dotenv --file .env.local run npx playwright test
+
+# Run specific test file
+dotenv --file .env.local run npx playwright test tests/e2e/studio.writer.spec.ts
+
+# Run API tests only
+dotenv --file .env.local run npx playwright test tests/api/
+
+# Run with headed browser
+dotenv --file .env.local run npx playwright test --headed
+```
+
+### `__tests__/` - Jest Unit Tests
+
+**Framework**: Jest
+**Purpose**: Unit tests for services, utilities, and components
+**File Pattern**: `*.test.ts` or `*.test.tsx`
+**Config**: `jest.config.js`
+
+```
+__tests__/
+├── novels/                   # Novel generation unit tests
+│   ├── story.test.ts
+│   ├── characters.test.ts
+│   ├── settings.test.ts
+│   ├── part.test.ts
+│   ├── chapter.test.ts
+│   ├── scene-summary.test.ts
+│   ├── scene-content.test.ts
+│   └── scene-improvement.test.ts
+├── comics/                   # Comic generation tests
+│   ├── comics.test.ts
+│   └── comic-panel-generator.single.test.ts
+├── toonplay/                 # Toonplay tests
+│   └── toonplay.test.ts
+├── images/                   # Image generation tests
+│   └── images.test.ts
+├── optimization/             # Performance optimization tests
+│   └── novels-optimization.test.ts
+├── components/               # React component tests
+└── helpers/                  # Shared test utilities
+    └── auth-loader.ts
+```
+
+**Running Jest Tests:**
+```bash
+# Run all unit tests
+dotenv --file .env.local run pnpm test
+
+# Run specific test file
+dotenv --file .env.local run pnpm test __tests__/novels/story.test.ts
+
+# Run with coverage
+dotenv --file .env.local run pnpm test --coverage
+
+# Run in watch mode
+dotenv --file .env.local run pnpm test --watch
+```
+
+### Key Differences
+
+| Aspect | `tests/` (Playwright) | `__tests__/` (Jest) |
+|--------|----------------------|---------------------|
+| Framework | Playwright | Jest |
+| File Pattern | `*.spec.ts` | `*.test.ts` |
+| Purpose | E2E, API, integration | Unit, service logic |
+| Browser | Real browser | Node.js environment |
+| Speed | Slower (browser) | Faster (no browser) |
+| Auth Method | Storage state files | API key from `.auth/user.json` |
+| Use When | Testing user flows, API contracts | Testing functions, services |
+
+### File Naming Conventions
+
+**Playwright Tests (`tests/`):**
+- `*.e2e.spec.ts` - General E2E tests (no auth required)
+- `*.writer.spec.ts` - Tests requiring writer role
+- `*.reader.spec.ts` - Tests requiring reader role
+- `*.manager.spec.ts` - Tests requiring manager role
+- `*.authenticated.spec.ts` - Tests requiring any authenticated user
+- `*.api.spec.ts` - API endpoint tests
+- `*.mobile.spec.ts` - Mobile viewport tests
+
+**Jest Tests (`__tests__/`):**
+- `*.test.ts` - TypeScript unit tests
+- `*.test.tsx` - React component tests
+
+---
+
+### Recent Updates (v2.2 - 2025-11-19)
 
 **Key Changes:**
 
-1. **Studio Agent Tests Added**: Comprehensive test suite for AI-powered writing assistant (6 test categories, 37 test cases)
-   - Navigation, access control, content, functionality, performance, and error handling
-   - Chat interface, message streaming, context awareness, and multi-turn conversations
-2. **Feature Removal Updates**:
-   - Removed search functionality tests from `/novels` (not implemented)
-   - Removed bookmark functionality tests from `/novels` and `/comics` (not implemented)
-   - Removed zoom/pan tests from `/comics` (not implemented)
-3. **API Path Verification**: Updated all API endpoint paths to match current codebase structure
-   - Story API: `/studio/api/stories/*` (not `/api/stories/*`)
-   - Generation API: `/studio/api/novels/*` and `/studio/api/novels`
-   - Community API: `/community/api/*` (not `/api/community/*`)
-   - Analysis API: `/analysis/api/*` (not `/api/analytics/*`)
-   - Publish API: `/publish/api/*` (scene-level publishing)
+1. **Novels Page Test Cases Updated**: Aligned with actual implementation
+   - Removed duplicate genre filter tests (TC-NOVELS-NAV-002 and TC-NOVELS-CONTENT-005)
+   - Changed chapter references to scene list (TC-NOVELS-NAV-003/004, TC-NOVELS-CONTENT-006/007)
+   - Removed word count from metadata (not implemented)
+   - Removed font size/theme controls test (TC-NOVELS-FUNC-006 - not implemented)
+   - Added new Caching Performance Tests section (TC-NOVELS-CACHE-001 to 006)
+     - SWR caching, localStorage, ETag, Redis cache tests
+
+2. **Comics Page Caching Tests Added**:
+   - Added new Caching Performance Tests section (TC-COMICS-CACHE-001 to 006)
+     - SWR caching, localStorage, ETag, Redis cache tests
+
+3. **Added Test Directory Structure Section**: Comprehensive documentation of the two-framework test architecture
+   - `tests/` - Playwright E2E tests (*.spec.ts)
+   - `__tests__/` - Jest unit tests (*.test.ts)
+   - Complete directory tree with all current test files
+   - Running commands for both frameworks
+   - Key differences comparison table
+   - File naming conventions
+
+4. **Clarified Test Framework Separation**:
+   - Playwright for E2E, API, and integration tests
+   - Jest for unit tests and service logic
+   - Auth method differences (storage state vs API keys)
 
 **See [Change Log](#change-log) for complete version history.**
 
@@ -234,10 +392,10 @@ The application has 8 main navigation items:
 
 #### Navigation Tests
 - **TC-NOVELS-NAV-001**: Novels menu item highlighted when active
-- **TC-NOVELS-NAV-002**: Genre filter navigation works
-- **TC-NOVELS-NAV-003**: Story card click opens reader
-- **TC-NOVELS-NAV-004**: Chapter navigation works correctly
-- **TC-NOVELS-NAV-005**: Bottom navigation bar persists while reading
+- **TC-NOVELS-NAV-002**: Story card click opens reader
+- **TC-NOVELS-NAV-003**: Scene navigation works correctly (prev/next scene)
+- **TC-NOVELS-NAV-004**: Bottom navigation bar persists while reading
+- **TC-NOVELS-NAV-005**: Scene list sidebar navigation works
 
 #### Access Control Tests
 - **TC-NOVELS-AUTH-001**: Anonymous users can access page
@@ -249,30 +407,36 @@ The application has 8 main navigation items:
 - **TC-NOVELS-CONTENT-001**: Published stories display correctly
 - **TC-NOVELS-CONTENT-002**: Story cards show title, genre, rating
 - **TC-NOVELS-CONTENT-003**: Story cover images display
-- **TC-NOVELS-CONTENT-004**: Empty state for no stories
-- **TC-NOVELS-CONTENT-005**: Genre filters work correctly
-- **TC-NOVELS-CONTENT-006**: Story metadata (author, date, word count) shows
-- **TC-NOVELS-CONTENT-007**: Chapter list displays correctly
-- **TC-NOVELS-CONTENT-008**: Scene content renders with proper formatting
+- **TC-NOVELS-CONTENT-004**: Story metadata (author, date) shows
+- **TC-NOVELS-CONTENT-005**: Scene list displays correctly in sidebar
+- **TC-NOVELS-CONTENT-006**: Scene content renders with proper formatting
+- **TC-NOVELS-CONTENT-007**: Scene images display with optimized variants
 
 #### Functionality Tests
 - **TC-NOVELS-FUNC-001**: Story rating system works
 - **TC-NOVELS-FUNC-002**: Reading history tracked for auth users
-- **TC-NOVELS-FUNC-003**: Story preview shows correct chapters
+- **TC-NOVELS-FUNC-003**: Scene list shows all scenes for story
 - **TC-NOVELS-FUNC-004**: Comments section functional
 - **TC-NOVELS-FUNC-005**: Reading progress saves correctly
-- **TC-NOVELS-FUNC-006**: Font size/theme controls work
 
 #### Performance Tests
 - **TC-NOVELS-PERF-001**: Story grid loads in under 2 seconds
 - **TC-NOVELS-PERF-002**: Pagination works smoothly
 - **TC-NOVELS-PERF-003**: Images lazy load correctly
-- **TC-NOVELS-PERF-004**: Chapter switching is instantaneous
+- **TC-NOVELS-PERF-004**: Scene switching is instantaneous
 - **TC-NOVELS-PERF-005**: Scroll performance is smooth
+
+#### Caching Performance Tests
+- **TC-NOVELS-CACHE-001**: SWR caching returns cached data on repeat requests
+- **TC-NOVELS-CACHE-002**: localStorage persists story data across page reloads
+- **TC-NOVELS-CACHE-003**: ETag validation returns 304 for unchanged content
+- **TC-NOVELS-CACHE-004**: Redis cache serves story data within 50ms
+- **TC-NOVELS-CACHE-005**: Cache invalidation clears stale data correctly
+- **TC-NOVELS-CACHE-006**: Cache miss falls back to database correctly
 
 #### Error Handling Tests
 - **TC-NOVELS-ERROR-001**: Story fetch failure shows error
-- **TC-NOVELS-ERROR-002**: Missing chapter shows appropriate message
+- **TC-NOVELS-ERROR-002**: Missing scene shows appropriate message
 - **TC-NOVELS-ERROR-003**: Image loading errors show fallback
 - **TC-NOVELS-ERROR-004**: Comments fetch failure doesn't break page
 
@@ -316,6 +480,14 @@ The application has 8 main navigation items:
 - **TC-COMICS-PERF-003**: Panel images preload correctly
 - **TC-COMICS-PERF-004**: Panel switching is instantaneous
 - **TC-COMICS-PERF-005**: Image optimization variants load correctly
+
+#### Caching Performance Tests
+- **TC-COMICS-CACHE-001**: SWR caching returns cached data on repeat requests
+- **TC-COMICS-CACHE-002**: localStorage persists comic data across page reloads
+- **TC-COMICS-CACHE-003**: ETag validation returns 304 for unchanged content
+- **TC-COMICS-CACHE-004**: Redis cache serves comic data within 50ms
+- **TC-COMICS-CACHE-005**: Cache invalidation clears stale data correctly
+- **TC-COMICS-CACHE-006**: Cache miss falls back to database correctly
 
 #### Error Handling Tests
 - **TC-COMICS-ERROR-001**: Comic fetch failure shows error
@@ -547,7 +719,7 @@ The application has 8 main navigation items:
 
 ### Story API
 
-#### Create Story (POST /studio/api/stories)
+#### Create Story (POST /studio/api/story)
 - **TC-API-STORY-001**: Authenticated writer can create story
 - **TC-API-STORY-002**: Anonymous user cannot create story (401)
 - **TC-API-STORY-003**: Reader role cannot create story (403)
@@ -557,7 +729,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-007**: Duplicate story titles allowed
 - **TC-API-STORY-008**: Story ID generated correctly
 
-#### Get Story (GET /studio/api/stories/:id)
+#### Get Story (GET /studio/api/story/:id)
 - **TC-API-STORY-009**: Public story accessible to all
 - **TC-API-STORY-010**: Draft story accessible only to author
 - **TC-API-STORY-011**: Non-existent story returns 404
@@ -565,7 +737,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-013**: Story includes all required fields
 - **TC-API-STORY-014**: Story includes related data (chapters, characters)
 
-#### Update Story (PUT /studio/api/stories/:id)
+#### Update Story (PUT /studio/api/story/:id)
 - **TC-API-STORY-015**: Story owner can update story
 - **TC-API-STORY-016**: Non-owner cannot update story (403)
 - **TC-API-STORY-017**: Manager can update any story
@@ -574,7 +746,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-020**: Concurrent updates handled correctly
 - **TC-API-STORY-021**: Status transitions validated correctly
 
-#### Delete Story (DELETE /studio/api/stories/:id)
+#### Delete Story (DELETE /studio/api/story/:id)
 - **TC-API-STORY-022**: Story owner can delete story
 - **TC-API-STORY-023**: Non-owner cannot delete story (403)
 - **TC-API-STORY-024**: Manager can delete any story
@@ -583,7 +755,7 @@ The application has 8 main navigation items:
 - **TC-API-STORY-027**: Blob images deleted correctly
 - **TC-API-STORY-028**: Soft delete preserves data in archive
 
-#### List Stories (GET /studio/api/stories)
+#### List Stories (GET /studio/api/story)
 - **TC-API-STORY-029**: Returns paginated list of stories
 - **TC-API-STORY-030**: Filters by status work correctly
 - **TC-API-STORY-031**: Filters by genre work correctly
@@ -857,6 +1029,8 @@ The application has 8 main navigation items:
 | 1.1 | 2025-11-05 | Updated to match actual implementation:<br>- Simplified Home page tests (redirect only)<br>- Changed Analytics → Analysis throughout<br>- Updated API endpoints to match implementation<br>- Verified schedule publish feature (implemented)<br>- Updated performance metrics for home redirect | Claude |
 | 1.2 | 2025-11-05 | Major updates for alignment with current codebase:<br>- Added Studio Agent test suite (37 test cases)<br>- Removed unimplemented features (search, bookmark, zoom/pan)<br>- Updated all API paths to match actual implementation<br>- Verified API paths against current codebase structure | Claude |
 | 2.0 | 2025-11-05 | Restructured into test-specification.md (this file):<br>- Extracted specification content (test cases, requirements, success criteria)<br>- Removed execution plans, automation details, and implementation guidance<br>- Companion document: test-development.md for execution and automation | Claude |
+| 2.1 | 2025-11-19 | Added comprehensive Test Directory Structure section:<br>- Documented `tests/` (Playwright E2E) vs `__tests__/` (Jest unit) separation<br>- Added complete directory trees matching current codebase<br>- Added running commands for both frameworks<br>- Added key differences comparison table<br>- Added file naming conventions documentation | Claude |
+| 2.2 | 2025-11-19 | Novels and Comics Page test cases updated:<br>- Novels: Removed duplicate genre filter tests, changed chapter → scene references, removed unimplemented features<br>- Added Caching Performance Tests for both Novels (TC-NOVELS-CACHE-001-006) and Comics (TC-COMICS-CACHE-001-006)<br>- Tests cover SWR, localStorage, ETag, Redis cache | Claude |
 
 ---
 

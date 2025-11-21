@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     Badge,
     Button,
@@ -9,8 +9,8 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui";
-import { useCacheManagement } from "@/lib/hooks/use-page-cache";
-import { CACHE_CONFIGS } from "@/lib/hooks/use-persisted-swr";
+import { useCacheManagement } from "@/hooks/use-page-cache";
+import { CACHE_CONFIGS } from "@/hooks/use-persisted-swr";
 
 interface CacheStats {
     totalSize: number;
@@ -70,23 +70,19 @@ export function CacheManagerWidget() {
         const k = 1024;
         const sizes = ["B", "KB", "MB", "GB"];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / k ** i).toFixed(2)) + " " + sizes[i];
+        return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
     };
 
     const getPageTypeIcon = (pageType: string) => {
         switch (pageType) {
-            case "writing":
-                return "✍️";
-            case "reading":
+            case "studio":
+                return "🎬";
+            case "novels":
                 return "📖";
+            case "comics":
+                return "🎨";
             case "community":
                 return "💬";
-            case "publish":
-                return "📤";
-            case "analytics":
-                return "📊";
-            case "settings":
-                return "⚙️";
             default:
                 return "📄";
         }
@@ -102,8 +98,9 @@ export function CacheManagerWidget() {
             ? Date.now() - new Date(pageStats.lastUpdated).getTime()
             : Infinity;
 
-        if (age < config.ttl * 0.5) return "fresh";
-        if (age < config.ttl) return "stale";
+        const ttl = config.ttl ?? Infinity;
+        if (age < ttl * 0.5) return "fresh";
+        if (age < ttl) return "stale";
         return "expired";
     };
 
@@ -190,7 +187,7 @@ export function CacheManagerWidget() {
                                 const pageStats = cacheStats.byPage?.[pageType];
                                 const health = getCacheHealth(pageType);
                                 const ttlMinutes = Math.round(
-                                    config.ttl / (1000 * 60),
+                                    (config.ttl ?? Infinity) / (1000 * 60),
                                 );
 
                                 return (
@@ -262,28 +259,20 @@ export function CacheManagerWidget() {
                     </h4>
                     <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                         <p>
-                            • <strong>Writing:</strong> 30min TTL (personal
-                            stories change infrequently)
+                            • <strong>Studio:</strong> 30min TTL (story
+                            creation and editing)
                         </p>
                         <p>
-                            • <strong>Reading:</strong> 10min TTL (public
-                            content updates regularly)
+                            • <strong>Novels:</strong> 5min TTL (text-based
+                            reading content)
                         </p>
                         <p>
-                            • <strong>Community:</strong> 5min TTL (active
-                            discussions change frequently)
+                            • <strong>Comics:</strong> 30min TTL (image-based
+                            content, immutable images)
                         </p>
                         <p>
-                            • <strong>Analytics:</strong> 2min TTL (metrics
-                            update frequently)
-                        </p>
-                        <p>
-                            • <strong>Publish:</strong> 1hr TTL (publishing
-                            schedules change moderately)
-                        </p>
-                        <p>
-                            • <strong>Settings:</strong> 24hr TTL (preferences
-                            rarely change)
+                            • <strong>Community:</strong> 30min TTL (comments
+                            and discussions)
                         </p>
                     </div>
                 </div>

@@ -12,7 +12,7 @@ import { and, eq } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { apiKeys, users } from "@/lib/db/schema";
+import { apiKeys, users } from "@/lib/schemas/database";
 
 export type AuthResult = {
     type: "session" | "api_key";
@@ -59,11 +59,16 @@ export async function authenticateRequest(
     // Fall back to session authentication
     const session = await auth();
     if (session?.user) {
+        const email = session.user.email;
+        if (!email) {
+            return null;
+        }
+
         // Get full user data including role
         const userResult = await db
             .select()
             .from(users)
-            .where(eq(users.email, session.user.email!))
+            .where(eq(users.email, email))
             .limit(1);
 
         if (userResult.length === 0) {

@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils/cn";
 
 interface ThemeSelectorProps {
@@ -255,7 +255,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
         if (!session?.user?.id) return;
 
         try {
-            await fetch("/settings/api/user", {
+            await fetch("/api/settings/user", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
@@ -283,7 +283,7 @@ export function ThemeSelector({ className }: ThemeSelectorProps) {
             if (!session?.user?.id) return;
 
             try {
-                const response = await fetch("/settings/api/user");
+                const response = await fetch("/api/settings/user");
                 if (response.ok) {
                     const settings = await response.json();
                     if (

@@ -4,7 +4,7 @@
  * Service layer for scene content generation and database persistence.
  */
 
-import { eq } from "drizzle-orm";
+import { eq, type InferSelectModel } from "drizzle-orm";
 import { db } from "@/lib/db";
 import {
     chapters,
@@ -13,25 +13,27 @@ import {
     scenes,
     settings,
     stories,
-} from "@/lib/db/schema";
+} from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+type Chapter = InferSelectModel<typeof chapters>;
+type Part = InferSelectModel<typeof parts>;
+type Character = InferSelectModel<typeof characters>;
+type Setting = InferSelectModel<typeof settings>;
+type Scene = InferSelectModel<typeof scenes>;
+
 import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
     GeneratorSceneContentParams,
     GeneratorSceneContentResult,
-} from "../generators/types";
-import type {
-    Chapter,
-    Character,
-    Part,
-    Scene,
-    Setting,
-    Story,
-} from "../generators/zod-schemas.generated";
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceSceneContentParams {
     sceneId: string;
     language?: string;
     userId: string;
+    promptVersion?: string; // Optional scene_content prompt version (e.g., "v1.1")
 }
 
 export interface ServiceSceneContentResult {
@@ -46,7 +48,7 @@ export class SceneContentService {
     async generateAndSave(
         params: ServiceSceneContentParams,
     ): Promise<ServiceSceneContentResult> {
-        const { sceneId, language = "English", userId } = params;
+        const { sceneId, language = "English", userId, promptVersion } = params;
 
         // 1. Fetch scene
         const sceneResult = await db
@@ -117,13 +119,14 @@ export class SceneContentService {
 
         // 8. Generate scene content using pure generator
         const generateParams: GeneratorSceneContentParams = {
-            story,
-            part,
-            chapter,
-            scene,
-            characters: storyCharacters,
-            settings: storySettings,
+            story: story as any,
+            part: part as any,
+            chapter: chapter as any,
+            scene: scene as any,
+            characters: storyCharacters as any,
+            settings: storySettings as any,
             language,
+            promptVersion,
         };
 
         const generationResult: GeneratorSceneContentResult =

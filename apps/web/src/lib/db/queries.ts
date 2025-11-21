@@ -1,10 +1,5 @@
 import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import type { ApiScope } from "../auth/api-keys";
-import { generateApiKeyId } from "../auth/api-keys";
-import { hashPassword } from "../auth/password";
-import { db } from "./index";
-import { RelationshipManager } from "./relationships";
 import {
     apiKeys,
     chapters,
@@ -16,7 +11,12 @@ import {
     stories,
     userStats,
     users,
-} from "./schema";
+} from "@/lib/schemas/database";
+import type { ApiScope } from "../auth/api-keys";
+import { generateApiKeyId } from "../auth/api-keys";
+import { hashPassword } from "../auth/password";
+import { db } from "./index";
+import { RelationshipManager } from "./relationships";
 
 // User authentication queries
 export async function findUserByEmail(email: string) {
@@ -37,7 +37,7 @@ export async function createUser(data: {
 }) {
     const userId = nanoid();
 
-    const [user] = await db
+    const userResult = await db
         .insert(users)
         .values({
             id: userId,
@@ -48,8 +48,10 @@ export async function createUser(data: {
             role: "reader",
             createdAt: new Date(),
             updatedAt: new Date(),
-        })
+        } as any)
         .returning();
+    
+    const user = userResult[0];
 
     return user;
 }
@@ -73,13 +75,13 @@ export async function updateUser(
     data: {
         name?: string;
         image?: string;
-        emailVerified?: Date;
+        emailVerified?: string;
         role?: "manager" | "writer" | "reader";
     },
 ) {
     const [user] = await db
         .update(users)
-        .set({ ...data, updatedAt: new Date() })
+        .set({ ...data, updatedAt: new Date().toISOString() })
         .where(eq(users.id, userId))
         .returning();
 
@@ -97,7 +99,7 @@ export async function createStory(
 ) {
     const storyId = nanoid();
 
-    const [story] = await db
+    const storyResult = await db
         .insert(stories)
         .values({
             id: storyId,
@@ -106,8 +108,10 @@ export async function createStory(
             genre: data.genre as any,
             authorId,
             status: "writing",
-        })
+        } as any)
         .returning();
+    
+    const story = storyResult[0];
 
     return story;
 }
@@ -136,7 +140,6 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
             storyId: chapters.storyId,
             id: chapters.id,
             orderIndex: chapters.orderIndex,
-            status: chapters.status,
         })
         .from(chapters)
         .where(inArray(chapters.storyId, storyIds))
@@ -161,23 +164,11 @@ export async function getUserStoriesWithFirstChapter(userId: string) {
         // Get first chapter (already ordered by orderIndex)
         const firstChapter = storyChapters.length > 0 ? storyChapters[0] : null;
 
-        // Count completed chapters
-        const completedChapters = storyChapters.filter(
-            (ch) => ch.status === "published",
-        ).length;
-
-        // Check if story is actually published (has published chapters AND is public)
-        const hasPublishedChapters = storyChapters.some(
-            (chapter) => chapter.status === "published",
-        );
-        const actualStatus =
-            story.status === "published" && hasPublishedChapters
-                ? ("published" as const)
-                : (story.status as any);
+        // Count total chapters
+        const completedChapters = storyChapters.length;
 
         return {
             ...story,
-            status: actualStatus, // Override with actual publication status
             firstChapterId: firstChapter?.id || null,
             totalChapters: storyChapters.length,
             completedChapters,
@@ -213,12 +204,12 @@ export async function updateStory(
         title: string;
         summary: string;
         genre: string;
-        status: "writing" | "published";
+        status: "draft" | "published";
     }>,
 ) {
     const [updatedStory] = await db
         .update(stories)
-        .set({ ...(data as any), updatedAt: new Date() })
+        .set({ ...(data as any), updatedAt: new Date().toISOString() })
         .where(and(eq(stories.id, storyId), eq(stories.authorId, userId)))
         .returning();
 
@@ -228,7 +219,7 @@ export async function updateStory(
 // Chapters queries
 export async function createChapter(
     storyId: string,
-    authorId: string,
+    _authorId: string,
     data: {
         title: string;
         partId?: string;
@@ -244,7 +235,6 @@ export async function createChapter(
             title: data.title,
             // authorId not passed - accessed via story JOIN
             orderIndex: data.orderIndex,
-            status: "writing",
         },
         data.partId,
     );
@@ -321,7 +311,7 @@ export async function updateChapter(
 
     const [updatedChapter] = await db
         .update(chapters)
-        .set({ ...data, updatedAt: new Date() })
+        .set({ ...data, updatedAt: new Date().toISOString() })
         .where(eq(chapters.id, chapterId))
         .returning();
 
@@ -374,12 +364,12 @@ export async function updateUserStats(
         totalWordsWritten: number;
         storiesPublished: number;
         chaptersPublished: number;
-        lastWritingDate: Date;
+        lastWritingDate: string;
     }>,
 ) {
     await db
         .update(userStats)
-        .set({ ...updates, updatedAt: new Date() })
+        .set({ ...updates, updatedAt: new Date().toISOString() })
         .where(eq(userStats.userId, userId));
 }
 
@@ -513,8 +503,18 @@ export async function getStoryWithStructure(
     ]);
 
     // Apply dynamic status calculations to match original interface
+    // For reading mode (includeScenes=false), preserve inherited status from story
     const structuredParts = result.parts.map((part) => {
         const partChapters = part.chapters.map((chapter) => {
+            // For reading mode, scenes is undefined - preserve inherited status
+            if (chapter.scenes === undefined) {
+                return {
+                    ...chapter,
+                    // status already set to story.status in relationships.ts
+                    scenes: undefined,
+                };
+            }
+
             const chapterScenes = (chapter.scenes || [])
                 .map((scene) => {
                     // Calculate dynamic scene status
@@ -533,15 +533,11 @@ export async function getStoryWithStructure(
 
             // Calculate dynamic chapter status
             const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
-            const finalStatus =
-                chapter.status === "published"
-                    ? "published"
-                    : dynamicChapterStatus;
 
             // Return ALL chapter fields from database
             return {
                 ...chapter,
-                status: finalStatus,
+                status: dynamicChapterStatus,
                 scenes: chapterScenes,
             };
         });
@@ -559,6 +555,15 @@ export async function getStoryWithStructure(
 
     // Process standalone chapters
     const standaloneChapters = result.chapters.map((chapter) => {
+        // For reading mode, scenes is undefined - preserve inherited status
+        if (chapter.scenes === undefined) {
+            return {
+                ...chapter,
+                // status already set to story.status in relationships.ts
+                scenes: undefined,
+            };
+        }
+
         const chapterScenes = (chapter.scenes || [])
             .map((scene) => {
                 const dynamicSceneStatus = calculateSceneStatus({
@@ -575,13 +580,11 @@ export async function getStoryWithStructure(
             .sort((a, b) => a.orderIndex - b.orderIndex);
 
         const dynamicChapterStatus = calculateChapterStatus(chapterScenes);
-        const finalStatus =
-            chapter.status === "published" ? "published" : dynamicChapterStatus;
 
         // Return ALL chapter fields from database
         return {
             ...chapter,
-            status: finalStatus,
+            status: dynamicChapterStatus,
             scenes: chapterScenes,
         };
     });
@@ -631,11 +634,6 @@ export async function getChapterWithPart(chapterId: string, userId?: string) {
                 storyId: chapters.storyId,
                 partId: chapters.partId,
                 orderIndex: chapters.orderIndex,
-                status: chapters.status,
-                purpose: chapters.purpose,
-                hook: chapters.hook,
-                publishedAt: chapters.publishedAt,
-                scheduledFor: chapters.scheduledFor,
                 createdAt: chapters.createdAt,
                 updatedAt: chapters.updatedAt,
             },
@@ -844,7 +842,7 @@ export async function createApiKey(data: {
 }) {
     const apiKeyId = generateApiKeyId();
 
-    const [apiKey] = await db
+    const apiKeyResult = await db
         .insert(apiKeys)
         .values({
             id: apiKeyId,
@@ -857,8 +855,10 @@ export async function createApiKey(data: {
             isActive: true,
             createdAt: new Date(),
             updatedAt: new Date(),
-        })
+        } as any)
         .returning();
+    
+    const apiKey = apiKeyResult[0];
 
     return apiKey;
 }
@@ -895,8 +895,8 @@ export async function updateApiKeyLastUsed(apiKeyId: string) {
     await db
         .update(apiKeys)
         .set({
-            lastUsedAt: new Date(),
-            updatedAt: new Date(),
+            lastUsedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(apiKeys.id, apiKeyId));
 }
@@ -906,7 +906,7 @@ export async function updateApiKey(
     data: {
         name?: string;
         scopes?: ApiScope[];
-        expiresAt?: Date | null;
+        expiresAt?: string | null;
         isActive?: boolean;
     },
 ) {
@@ -914,7 +914,7 @@ export async function updateApiKey(
         .update(apiKeys)
         .set({
             ...data,
-            updatedAt: new Date(),
+            updatedAt: new Date().toISOString(),
         })
         .where(eq(apiKeys.id, apiKeyId))
         .returning();

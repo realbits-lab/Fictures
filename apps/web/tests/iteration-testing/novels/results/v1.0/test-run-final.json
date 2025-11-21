@@ -1,0 +1,82 @@
+{
+    "version": "v1.0",
+    "testDate": "2025-11-14T19:13:08.238Z",
+    "testPrompts": ["last-garden"],
+    "evaluationMode": "quick",
+    "iterations": 1,
+    "stories": [
+        {
+            "storyId": "story_eh_v5tO1I7AwU5c5",
+            "prompt": "A story about a refugee woman who starts a garden in a destroyed city and the former enemy soldier who helps her without revealing his identity",
+            "promptVersion": "v1.0",
+            "generationTime": 388828,
+            "evaluationResults": {},
+            "corePrincipleScores": {
+                "cyclicStructure": 0,
+                "intrinsicMotivation": 0,
+                "earnedConsequence": 0,
+                "characterTransformation": 0,
+                "emotionalResonance": 0
+            },
+            "timestamp": "2025-11-14T19:13:08.238Z"
+        }
+    ],
+    "aggregatedMetrics": {
+        "cyclicStructure": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "intrinsicMotivation": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "earnedConsequence": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "characterTransformation": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        },
+        "emotionalResonance": {
+            "cycleCompleteness": 0,
+            "chapterCycleFocus": 0,
+            "phaseCoverage": 0,
+            "resolutionAdversityTransition": 0,
+            "stakesEscalation": 0,
+            "narrativeMomentum": 0,
+            "nestedCycleAlignment": 0,
+            "causalChainContinuity": 0,
+            "forwardMomentum": 0
+        }
+    },
+    "failurePatterns": []
+}

@@ -8,14 +8,14 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
-import { promptManager } from "./prompt-manager";
 import type {
-    GeneratorStoryParams,
-    GeneratorStoryResult,
+    GenerateStoryParams,
+    GenerateStoryResult,
     StoryPromptParams,
-} from "./types";
-import { type AiStoryType, AiStoryZodSchema } from "./zod-schemas.generated";
+} from "@/lib/schemas/generators/types";
+import { type AiStoryType, AiStoryZodSchema } from "@/lib/schemas/zod/ai";
+import { createTextGenerationClient } from "./ai-client";
+import { promptManager } from "./prompt-manager";
 
 /**
  * Generate story foundation from user prompt
@@ -24,8 +24,8 @@ import { type AiStoryType, AiStoryZodSchema } from "./zod-schemas.generated";
  * @returns Story data (caller responsible for database save)
  */
 export async function generateStory(
-    params: GeneratorStoryParams,
-): Promise<GeneratorStoryResult> {
+    params: GenerateStoryParams,
+): Promise<GenerateStoryResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
@@ -34,9 +34,13 @@ export async function generateStory(
         preferredGenre = "Slice" as const, // Default to Slice of Life genre
         preferredTone = "hopeful" as const,
         language = "English",
-    }: GeneratorStoryParams = params;
+    }: GenerateStoryParams = params;
+    const promptVersion = (params as any).promptVersion;
 
-    // 2. Get the prompt template for story generation
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient();
+
+    // 3. Get the prompt template for story generation
     const promptParams: StoryPromptParams = {
         userPrompt,
         genre: preferredGenre,
@@ -48,26 +52,26 @@ export async function generateStory(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "story",
         promptParams,
+        promptVersion,
     );
 
     console.log(
         "[story-generator] Using generateStructured method with manual schema",
     );
 
-    // 3. Generate story data using structured output method
-    const storyData: AiStoryType =
-        await textGenerationClient.generateStructured(
-            userPromptText,
-            AiStoryZodSchema,
-            {
-                systemPrompt,
-                temperature: 0.8,
-                maxTokens: 4096,
-            },
-        );
+    // 4. Generate story data using structured output method
+    const storyData: AiStoryType = await client.generateStructured(
+        userPromptText,
+        AiStoryZodSchema,
+        {
+            systemPrompt,
+            temperature: 0.3, // Low temperature for consistent JSON structure
+            maxTokens: 4096,
+        },
+    );
 
     console.log("[story-generator] Story generated:", {
         summary: storyData.summary,
@@ -85,11 +89,11 @@ export async function generateStory(
     }
 
     // 5. Build and return result with metadata
-    const result: GeneratorStoryResult = {
+    const result: GenerateStoryResult = {
         story: storyData,
         metadata: {
             generationTime: Date.now() - startTime,
-            model: textGenerationClient.getProviderType(),
+            model: client.getProviderType(),
         },
     };
 

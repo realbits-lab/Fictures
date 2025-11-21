@@ -2,10 +2,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MainLayout } from "@/components/layout";
 import { ChapterReaderClient } from "@/components/novels/ChapterReaderClient";
-import {
-    ChapterListSkeleton,
-    StoryHeaderSkeleton,
-} from "@/components/novels/ReadingSkeletons";
+import { SkeletonLoader } from "@/components/ui";
 import { getStoryForReading } from "@/lib/db/reading-queries";
 
 interface ReadPageProps {
@@ -51,7 +48,7 @@ export default async function ReadPage({ params }: ReadPageProps) {
     return (
         <MainLayout>
             {/* Stream story content progressively */}
-            <Suspense fallback={<StoryHeaderSkeleton />}>
+            <Suspense fallback={<SkeletonLoader>{null}</SkeletonLoader>}>
                 <StoryHeader storyId={id} />
             </Suspense>
         </MainLayout>

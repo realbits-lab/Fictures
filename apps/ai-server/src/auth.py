@@ -176,15 +176,10 @@ async def get_api_key_from_header(
     """
     Extract API key from headers.
 
-    Supports two header formats:
-    - Authorization: Bearer YOUR_API_KEY
+    Supports x-api-key header format:
     - x-api-key: YOUR_API_KEY
     """
-    # Try Authorization header first
-    if authorization and authorization.startswith("Bearer "):
-        return authorization[7:]  # Remove "Bearer " prefix
-
-    # Try x-api-key header
+    # Use x-api-key header
     if x_api_key:
         return x_api_key
 
@@ -210,7 +205,7 @@ async def require_api_key(
     if not api_key:
         raise HTTPException(
             status_code=401,
-            detail="API key required. Provide via 'Authorization: Bearer YOUR_API_KEY' or 'x-api-key: YOUR_API_KEY' header"
+            detail="API key required. Provide via 'x-api-key: YOUR_API_KEY' header"
         )
 
     # Verify API key

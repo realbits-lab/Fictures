@@ -20,7 +20,7 @@ import type {
     Scene,
     Setting,
     Story,
-} from "./zod-schemas.generated";
+} from "@/lib/schemas/zod/generated";
 
 // =============================================================================
 // Story Context Builders (Phase 1)
@@ -261,17 +261,8 @@ export function buildSettingContext(setting: Setting): string {
               })
             : {};
 
-    const cycleAmplification =
-        typeof setting.cycleAmplification === "object" &&
-        setting.cycleAmplification !== null
-            ? (setting.cycleAmplification as {
-                  setup?: string;
-                  confrontation?: string;
-                  virtue?: string;
-                  consequence?: string;
-                  transition?: string;
-              })
-            : {};
+    // cycleAmplification field removed from schema
+    const cycleAmplification = {};
 
     const sensory =
         typeof setting.sensory === "object" && setting.sensory !== null
@@ -301,11 +292,11 @@ export function buildSettingContext(setting: Setting): string {
     - Social Dynamics: ${adversityElements.socialDynamics?.join(", ") || "N/A"}
   Symbolic Meaning: ${setting.symbolicMeaning || "N/A"}
   Cycle Amplification:
-    - Setup: ${cycleAmplification.setup || "N/A"}
-    - Confrontation: ${cycleAmplification.confrontation || "N/A"}
-    - Virtue: ${cycleAmplification.virtue || "N/A"}
-    - Consequence: ${cycleAmplification.consequence || "N/A"}
-    - Transition: ${cycleAmplification.transition || "N/A"}
+    - Setup: N/A
+    - Confrontation: N/A
+    - Virtue: N/A
+    - Consequence: N/A
+    - Transition: N/A
   Mood: ${setting.mood || "N/A"}
   Emotional Resonance: ${setting.emotionalResonance || "N/A"}
   Sensory:

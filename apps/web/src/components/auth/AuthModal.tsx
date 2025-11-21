@@ -48,7 +48,7 @@ export function AuthModal() {
                 closeModal();
                 window.location.reload();
             }
-        } catch (error) {
+        } catch (_error) {
             setError("An error occurred during sign in");
         } finally {
             setIsLoading(false);

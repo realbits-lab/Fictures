@@ -1,27 +1,31 @@
 /**
  * Progressive Comic Panel Component
  *
- * Implements progressive loading strategy for comic panels:
- * - First 3 panels: Load immediately (above fold)
- * - Remaining panels: Lazy-load on scroll (IntersectionObserver)
- *
- * Performance Benefits:
- * - 40-50% faster initial render for long scenes (10+ panels)
- * - Reduced initial DOM size
- * - Smooth scrolling experience
+ * Implements progressive loading for comic panels:
+ * - First N panels load immediately
+ * - Remaining panels load as they enter viewport (Intersection Observer)
+ * - Shows skeleton while loading
+ * - Optimizes performance for long comic scenes
  */
 
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { PanelRenderer } from "./panel-renderer";
+import { PanelRenderer, PanelRendererSkeleton } from "./panel-renderer";
 
 interface PanelData {
     id: string;
     panel_number: number;
     shot_type: string;
     image_url: string;
-    image_variants?: any;
+    image_variants?: {
+        variants: Array<{
+            url: string;
+            format: string;
+            width: number;
+            height: number;
+        }>;
+    };
     narrative?: string | null;
     dialogue?: Array<{
         character_id: string;
@@ -41,11 +45,29 @@ interface ProgressiveComicPanelProps {
     totalPanels: number;
     characterNames?: Record<string, string>;
     onLoad?: (panelNumber: number) => void;
-    /**
-     * Number of initial panels to load immediately (above fold)
-     * Default: 3
-     */
-    initialLoadCount?: number;
+    initialLoadCount?: number; // How many panels to load immediately (default: 3)
+}
+
+/**
+ * Get recommended initial load count based on screen size
+ */
+export function getRecommendedInitialLoadCount(): number {
+    if (typeof window === "undefined") return 3;
+
+    const screenHeight = window.innerHeight;
+
+    // Mobile (< 768px)
+    if (window.innerWidth < 768) {
+        return screenHeight < 700 ? 2 : 3;
+    }
+
+    // Tablet (768-1024px)
+    if (window.innerWidth < 1024) {
+        return screenHeight < 800 ? 3 : 4;
+    }
+
+    // Desktop (> 1024px)
+    return screenHeight < 900 ? 4 : 5;
 }
 
 export function ProgressiveComicPanel({
@@ -56,92 +78,67 @@ export function ProgressiveComicPanel({
     onLoad,
     initialLoadCount = 3,
 }: ProgressiveComicPanelProps) {
-    const [shouldRender, setShouldRender] = useState(
-        panelIndex < initialLoadCount,
-    );
+    const [shouldLoad, setShouldLoad] = useState(false);
+    const [_isLoaded, setIsLoaded] = useState(false);
     const observerRef = useRef<HTMLDivElement>(null);
 
+    // Determine if this panel should load immediately
+    const shouldLoadImmediately = panelIndex < initialLoadCount;
+
     useEffect(() => {
-        // If already rendered or should be initially loaded, skip observer
-        if (shouldRender || panelIndex < initialLoadCount) {
+        // Load immediately if in initial batch
+        if (shouldLoadImmediately) {
+            setShouldLoad(true);
             return;
         }
+
+        // Use Intersection Observer for lazy loading
+        if (!observerRef.current) return;
 
         const observer = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    if (entry.isIntersecting) {
-                        setShouldRender(true);
-                        // Clean up observer after triggering
-                        if (observerRef.current) {
-                            observer.unobserve(observerRef.current);
-                        }
+                    if (entry.isIntersecting && !shouldLoad) {
+                        setShouldLoad(true);
+                        observer.disconnect();
                     }
                 });
             },
             {
-                // Load 1 viewport ahead for smooth scrolling
-                rootMargin: "100% 0px",
+                rootMargin: "200px", // Start loading 200px before panel enters viewport
                 threshold: 0.01,
             },
         );
 
-        if (observerRef.current) {
-            observer.observe(observerRef.current);
-        }
+        observer.observe(observerRef.current);
 
-        return () => {
-            observer.disconnect();
-        };
-    }, [shouldRender, panelIndex, initialLoadCount]);
+        return () => observer.disconnect();
+    }, [shouldLoadImmediately, shouldLoad]);
 
-    // Loading placeholder for panels below the fold
-    if (!shouldRender) {
-        return (
-            <div
-                ref={observerRef}
-                className="relative w-full"
-                style={{ minHeight: "400px" }} // Reserve space to prevent layout shift
-            >
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center text-sm text-gray-500 dark:text-gray-400">
-                        <div className="mb-2 text-2xl animate-pulse">🎨</div>
-                        <div>Panel {panel.panel_number} loading...</div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    const handleLoad = () => {
+        setIsLoaded(true);
+        onLoad?.(panel.panel_number);
+    };
 
-    // Render the actual panel
     return (
-        <PanelRenderer
-            panelNumber={panel.panel_number}
-            imageUrl={panel.image_url}
-            imageVariants={panel.image_variants}
-            narrative={panel.narrative}
-            dialogue={panel.dialogue}
-            sfx={panel.sfx}
-            description={panel.description}
-            characterNames={characterNames}
-            shotType={panel.shot_type}
-            priority={panelIndex === 0} // Prioritize first panel only
-            onLoad={() => onLoad?.(panel.panel_number)}
-        />
+        <div ref={observerRef} className="relative">
+            {shouldLoad ? (
+                <PanelRenderer
+                    panelNumber={panel.panel_number}
+                    imageUrl={panel.image_url}
+                    imageVariants={panel.image_variants}
+                    narrative={panel.narrative}
+                    dialogue={panel.dialogue}
+                    sfx={panel.sfx}
+                    description={panel.description}
+                    characterNames={characterNames}
+                    shotType={panel.shot_type}
+                    priority={panelIndex < 2} // Prioritize first 2 panels
+                    onLoad={handleLoad}
+                />
+            ) : (
+                <PanelRendererSkeleton />
+            )}
+        </div>
     );
-}
-
-/**
- * Get recommended initial load count based on screen size
- * Mobile: 2 panels
- * Tablet: 3 panels
- * Desktop: 4 panels
- */
-export function getRecommendedInitialLoadCount(): number {
-    if (typeof window === "undefined") return 3;
-
-    const width = window.innerWidth;
-    if (width < 640) return 2; // Mobile
-    if (width < 1024) return 3; // Tablet
-    return 4; // Desktop
 }

@@ -23,7 +23,7 @@
   <a href="#-platform-overview"><strong>Platform</strong></a> ·
   <a href="#-quick-start"><strong>Quick Start</strong></a> ·
   <a href="docs/API.md"><strong>API</strong></a> ·
-  <a href="docs/TESTING.md"><strong>Testing</strong></a> ·
+  <a href="docs/github/TESTING.md"><strong>Testing</strong></a> ·
   <a href="#-roadmap"><strong>Roadmap</strong></a>
 </p>
 
@@ -66,7 +66,7 @@ If it's not delightful, we're doing it wrong. Production-ready and actually fun 
 - **🧵 Threaded Discussions**: Because flat comment sections are so 2010
 - **👥 Moderation Tools**: Keep it friendly (or at least civil)
 
-**Want the full feature list?** Check out [📋 FEATURES.md](docs/FEATURES.md) for all the glorious details.
+**Want the full feature list?** Check out [📋 FEATURES.md](docs/github/FEATURES.md) for all the glorious details.
 
 ## 🛠️ Tech Stack
 
@@ -106,7 +106,7 @@ dotenv --file .env.local run pnpm dev
 
 **Visit** [http://localhost:3000](http://localhost:3000) and start writing! 🎉
 
-**Need details?** Full setup guide: [📖 GETTING_STARTED.md](docs/GETTING_STARTED.md)
+**Need details?** Full setup guide: [📖 GETTING_STARTED.md](docs/github/GETTING_STARTED.md)
 
 ### Key Routes (Where to Go)
 
@@ -116,7 +116,7 @@ dotenv --file .env.local run pnpm dev
 - **`/publish`** - Schedule automated releases
 - **`/analytics`** - See how your stories perform
 
-**First time here?** Check out [🎓 USER_GUIDE.md](docs/USER_GUIDE.md)
+**First time here?** Check out [🎓 USER_GUIDE.md](docs/github/USER_GUIDE.md)
 
 ---
 
@@ -124,11 +124,11 @@ dotenv --file .env.local run pnpm dev
 
 **Dive Deeper:**
 
-- **[🏗️ Getting Started](docs/GETTING_STARTED.md)** - Complete setup and installation guide
-- **[📋 All Features](docs/FEATURES.md)** - Comprehensive feature list
-- **[🧪 Testing Guide](docs/TESTING.md)** - Playwright E2E tests, coverage, debugging
+- **[🏗️ Getting Started](docs/github/GETTING_STARTED.md)** - Complete setup and installation guide
+- **[📋 All Features](docs/github/FEATURES.md)** - Comprehensive feature list
+- **[🧪 Testing Guide](docs/github/TESTING.md)** - Playwright E2E tests, coverage, debugging
 - **[🔧 Tech Details](apps/web/CLAUDE.md)** - Architecture, database, AI integration
-- **[🤝 Contributing](docs/CONTRIBUTING.md)** - How to contribute (we love PRs!)
+- **[🤝 Contributing](docs/github/CONTRIBUTING.md)** - How to contribute (we love PRs!)
 
 **Quick API Auth Methods:**
 1. Session-based (NextAuth.js cookies)
@@ -157,7 +157,7 @@ dotenv --file .env.local run pnpm dev
 
 **We love PRs!** Fork it, branch it, code it, test it (`pnpm test`), commit it, push it, PR it. ✨
 
-Full guidelines: [CONTRIBUTING.md](docs/CONTRIBUTING.md)
+Full guidelines: [CONTRIBUTING.md](docs/github/CONTRIBUTING.md)
 
 **Quick style guide:**
 - TypeScript everything (types are friends, not food)

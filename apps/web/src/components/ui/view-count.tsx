@@ -8,7 +8,6 @@
  */
 
 import { Eye } from "lucide-react";
-import React from "react";
 
 interface ViewCountProps {
     viewCount: number;
@@ -119,7 +118,6 @@ export function ViewCount({
                 </div>
             );
         }
-        case "total":
         default:
             displayCount =
                 showUnique && uniqueViewCount !== undefined
@@ -205,7 +203,6 @@ export function ViewCountBadge({
                 </div>
             );
         }
-        case "total":
         default:
             displayCount =
                 showUnique && uniqueViewCount !== undefined

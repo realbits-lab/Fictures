@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useState } from "react";
@@ -22,9 +21,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { trackSearch, trackStoryEvent } from "@/lib/analysis/google-analytics";
+import {
+    trackEngagement,
+    trackStoryView,
+} from "@/lib/analysis/google-analytics";
 import { STORY_GENRES } from "@/lib/constants/genres";
-import { readingHistoryManager } from "@/lib/storage/reading-history-manager";
+import { ReadingHistoryManager } from "@/lib/storage/reading-history-manager";
 import type { ReadingFormat } from "@/types/reading-history";
 
 interface Story {
@@ -69,7 +71,7 @@ export function StoryGrid({
     const [readingHistory, setReadingHistory] = useState<Set<string>>(
         new Set(),
     );
-    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+    const [_isLoadingHistory, setIsLoadingHistory] = useState(true);
 
     // Determine reading format based on pageType
     const format: ReadingFormat = pageType === "comics" ? "comic" : "novel";
@@ -85,8 +87,11 @@ export function StoryGrid({
 
             if (!session?.user?.id) {
                 // Anonymous user - use localStorage for specific format
-                const localHistory = readingHistoryManager.getHistory(format);
-                setReadingHistory(localHistory);
+                const localHistory = ReadingHistoryManager.getHistory(format);
+                const storyIds = new Set<string>(
+                    localHistory.map((h) => h.storyId),
+                );
+                setReadingHistory(storyIds);
                 setIsLoadingHistory(false);
                 return;
             }
@@ -103,8 +108,11 @@ export function StoryGrid({
                 } else {
                     // API failed, fallback to localStorage
                     const localHistory =
-                        readingHistoryManager.getHistory(format);
-                    setReadingHistory(localHistory);
+                        ReadingHistoryManager.getHistory(format);
+                    const storyIds = new Set<string>(
+                        localHistory.map((h) => h.storyId),
+                    );
+                    setReadingHistory(storyIds);
                 }
             } catch (error) {
                 console.error(
@@ -112,8 +120,11 @@ export function StoryGrid({
                     error,
                 );
                 // Fallback to localStorage
-                const localHistory = readingHistoryManager.getHistory(format);
-                setReadingHistory(localHistory);
+                const localHistory = ReadingHistoryManager.getHistory(format);
+                const storyIds = new Set<string>(
+                    localHistory.map((h) => h.storyId),
+                );
+                setReadingHistory(storyIds);
             } finally {
                 setIsLoadingHistory(false);
             }
@@ -130,11 +141,11 @@ export function StoryGrid({
         }
 
         // Track story view in GA (always track, regardless of auth)
-        trackStoryEvent.view(storyId, storyTitle);
+        trackStoryView(storyId, storyTitle || "");
 
         if (!session?.user?.id) {
             // Anonymous user - use localStorage only with format
-            readingHistoryManager.addToHistory(storyId, format);
+            ReadingHistoryManager.addToHistory(storyId, format);
             setReadingHistory((prev) => new Set([...prev, storyId]));
             return;
         }
@@ -149,17 +160,17 @@ export function StoryGrid({
 
             if (response.ok) {
                 // Also update localStorage as backup/cache with format
-                readingHistoryManager.addToHistory(storyId, format);
+                ReadingHistoryManager.addToHistory(storyId, format);
                 setReadingHistory((prev) => new Set([...prev, storyId]));
             } else {
                 // API failed, fallback to localStorage
-                readingHistoryManager.addToHistory(storyId, format);
+                ReadingHistoryManager.addToHistory(storyId, format);
                 setReadingHistory((prev) => new Set([...prev, storyId]));
             }
         } catch (error) {
             console.error(`Error recording ${format} story view:`, error);
             // Fallback to localStorage
-            readingHistoryManager.addToHistory(storyId, format);
+            ReadingHistoryManager.addToHistory(storyId, format);
             setReadingHistory((prev) => new Set([...prev, storyId]));
         }
     };
@@ -182,7 +193,6 @@ export function StoryGrid({
                 return (b.viewCount || 0) - (a.viewCount || 0);
             case "rating":
                 return (b.rating || 0) - (a.rating || 0);
-            case "latest":
             default:
                 return (
                     new Date(b.createdAt).getTime() -
@@ -358,7 +368,10 @@ export function StoryGrid({
                                     setSelectedGenre(genre);
                                     // Track genre filter
                                     if (genre !== "All") {
-                                        trackSearch.filterByGenre(genre);
+                                        trackEngagement(
+                                            "search",
+                                            "filter_genre_" + genre,
+                                        );
                                     }
                                 }}
                             >
@@ -432,7 +445,7 @@ export function StoryGrid({
                                                 : "story-card"
                                         }
                                         key={story.id}
-                                        onClick={async () => {
+                                        onClick={() => {
                                             // For studio page, navigate to edit page instead of reading page
                                             if (pageType === "studio") {
                                                 router.push(
@@ -441,7 +454,8 @@ export function StoryGrid({
                                             } else if (
                                                 pageType === "community"
                                             ) {
-                                                await recordStoryView(
+                                                // Fire-and-forget: record view without blocking navigation
+                                                recordStoryView(
                                                     story.id,
                                                     story.title,
                                                 );
@@ -449,7 +463,8 @@ export function StoryGrid({
                                                     `/community/story/${story.id}`,
                                                 );
                                             } else {
-                                                await recordStoryView(
+                                                // Fire-and-forget: record view without blocking navigation
+                                                recordStoryView(
                                                     story.id,
                                                     story.title,
                                                 );
@@ -461,7 +476,7 @@ export function StoryGrid({
                                         onMouseEnter={() => {
                                             // Prefetch story data on hover for instant navigation
                                             fetch(
-                                                `/studio/api/stories/${story.id}/read`,
+                                                `/api/studio/story/${story.id}/read`,
                                                 {
                                                     credentials: "include",
                                                 },
@@ -605,7 +620,7 @@ export function StoryGrid({
                                     return (
                                         <TableRow
                                             key={story.id}
-                                            onClick={async () => {
+                                            onClick={() => {
                                                 // For studio page, navigate to edit page instead of reading page
                                                 if (pageType === "studio") {
                                                     router.push(
@@ -614,7 +629,8 @@ export function StoryGrid({
                                                 } else if (
                                                     pageType === "community"
                                                 ) {
-                                                    await recordStoryView(
+                                                    // Fire-and-forget: record view without blocking navigation
+                                                    recordStoryView(
                                                         story.id,
                                                         story.title,
                                                     );
@@ -622,7 +638,8 @@ export function StoryGrid({
                                                         `/community/story/${story.id}`,
                                                     );
                                                 } else {
-                                                    await recordStoryView(
+                                                    // Fire-and-forget: record view without blocking navigation
+                                                    recordStoryView(
                                                         story.id,
                                                         story.title,
                                                     );
@@ -634,7 +651,7 @@ export function StoryGrid({
                                             onMouseEnter={() => {
                                                 // Prefetch story data on hover for instant navigation
                                                 fetch(
-                                                    `/studio/api/stories/${story.id}/read`,
+                                                    `/api/studio/story/${story.id}/read`,
                                                     {
                                                         credentials: "include",
                                                     },

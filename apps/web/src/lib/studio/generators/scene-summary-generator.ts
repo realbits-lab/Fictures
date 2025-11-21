@@ -9,7 +9,17 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import type {
+    CyclePhase,
+    GenerateSceneSummaryParams,
+    GenerateSceneSummaryResult,
+    SceneSummaryPromptParams,
+} from "@/lib/schemas/generators/types";
+import {
+    type AiSceneSummaryType,
+    AiSceneSummaryZodSchema,
+} from "@/lib/schemas/zod/ai";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildCharactersContext,
     buildPartContext,
@@ -18,16 +28,6 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    CyclePhase,
-    GeneratorSceneSummaryParams,
-    GeneratorSceneSummaryResult,
-    SceneSummaryPromptParams,
-} from "./types";
-import {
-    type AiSceneSummaryType,
-    AiSceneSummaryZodSchema,
-} from "./zod-schemas.generated";
 
 /**
  * Generate ONE next scene summary with full context
@@ -36,8 +36,8 @@ import {
  * @returns Scene summary data (caller responsible for database save)
  */
 export async function generateSceneSummary(
-    params: GeneratorSceneSummaryParams,
-): Promise<GeneratorSceneSummaryResult> {
+    params: GenerateSceneSummaryParams,
+): Promise<GenerateSceneSummaryResult> {
     const startTime = Date.now();
 
     // 1. Extract parameters
@@ -49,7 +49,11 @@ export async function generateSceneSummary(
         settings,
         previousScenes,
         sceneIndex,
-    }: GeneratorSceneSummaryParams = params;
+        promptVersion,
+    }: GenerateSceneSummaryParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient();
 
     console.log(
         `[scene-summary-generator] 📄 Generating scene ${sceneIndex + 1} (Chapter: ${chapter.title})...`,
@@ -58,36 +62,23 @@ export async function generateSceneSummary(
         `[scene-summary-generator] Previous scenes count: ${previousScenes.length}`,
     );
 
-    // 2. Determine cycle phase
-    const cyclePhases: CyclePhase[] = [
-        "setup",
-        "confrontation",
-        "virtue",
-        "consequence",
-        "transition",
-    ];
-    const cyclePhase =
-        cyclePhases[Math.min(sceneIndex, cyclePhases.length - 1)];
-
-    console.log(`[scene-summary-generator] Cycle phase: ${cyclePhase}`);
-
     // 3. Build context strings using common builders
-    const storyContext: string = buildStoryContext(story);
-    const partContext: string = buildPartContext(part, characters);
+    const storyContext: string = buildStoryContext(story as any);
+    const partContext: string = buildPartContext(part as any, characters as any);
     const chapterContext: string = `Title: ${chapter.title || "Untitled Chapter"}
 Summary: ${chapter.summary || "N/A"}
 Arc Position: ${chapter.arcPosition || "N/A"}
 Adversity Type: ${chapter.adversityType || "N/A"}
 Virtue Type: ${chapter.virtueType || "N/A"}`;
-    const charactersStr: string = buildCharactersContext(characters);
-    const settingsStr: string = buildSettingsContext(settings);
+    const charactersStr: string = buildCharactersContext(characters as any);
+    const settingsStr: string = buildSettingsContext(settings as any);
 
     console.log(
         `[scene-summary-generator] Context prepared: ${characters.length} characters, ${settings.length} settings`,
     );
 
     // 8. Build previous scenes context string using builder function
-    const previousScenesContext: string = buildScenesContext(previousScenes);
+    const previousScenesContext: string = buildScenesContext(previousScenes as any);
 
     console.log(
         `[scene-summary-generator] Previous scenes context prepared (${previousScenesContext.length} characters)`,
@@ -109,9 +100,10 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "scene_summary",
         promptParams,
+        promptVersion !== "v1.0" ? promptVersion : undefined,
     );
 
     console.log(
@@ -119,18 +111,67 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
     );
 
     // 6. Generate scene summary using structured output
-    const sceneData: AiSceneSummaryType =
-        await textGenerationClient.generateStructured(
-            userPromptText,
-            AiSceneSummaryZodSchema,
-            {
-                systemPrompt,
-                temperature: 0.8,
-                maxTokens: 8192,
-            },
-        );
+    const sceneData: AiSceneSummaryType = await client.generateStructured(
+        userPromptText,
+        AiSceneSummaryZodSchema,
+        {
+            systemPrompt,
+            temperature: 0.3, // Low temperature for consistent JSON structure
+            maxTokens: 8192,
+        },
+    );
 
-    // 7. Calculate total generation time
+    // 7. Validate cycle phase ordering based on previous scenes
+    const phaseOrder: CyclePhase[] = [
+        "setup",
+        "adversity",
+        "virtue",
+        "consequence",
+        "transition",
+    ];
+
+    // 7.1. Get previous scene's phase (or null if first scene)
+    const previousPhase: CyclePhase | null =
+        previousScenes.length > 0
+            ? previousScenes[previousScenes.length - 1].cyclePhase
+            : null;
+
+    const aiPhaseIndex = phaseOrder.indexOf(sceneData.cyclePhase);
+
+    // 7.2. Validate first scene must be "setup"
+    if (sceneIndex === 0) {
+        if (sceneData.cyclePhase !== "setup") {
+            console.warn(
+                `[scene-summary-generator] ⚠️ First scene must be "setup", but AI generated "${sceneData.cyclePhase}". Correcting to "setup".`,
+            );
+            sceneData.cyclePhase = "setup";
+        } else {
+            console.log(
+                `[scene-summary-generator] ✓ First scene correctly set to "setup"`,
+            );
+        }
+    }
+    // 7.3. Validate subsequent scenes follow ordering (same phase or later, no backwards)
+    else if (previousPhase) {
+        const prevPhaseIndex = phaseOrder.indexOf(previousPhase);
+
+        if (aiPhaseIndex < prevPhaseIndex) {
+            console.warn(
+                `[scene-summary-generator] ⚠️ AI-generated cyclePhase "${sceneData.cyclePhase}" goes backwards from previous scene's "${previousPhase}". Keeping previous phase.`,
+            );
+            sceneData.cyclePhase = previousPhase; // Stay at same phase instead of going backwards
+        } else if (aiPhaseIndex === prevPhaseIndex) {
+            console.log(
+                `[scene-summary-generator] ✓ Scene ${sceneIndex + 1} continues with "${sceneData.cyclePhase}" (same as previous)`,
+            );
+        } else {
+            console.log(
+                `[scene-summary-generator] ✓ Scene ${sceneIndex + 1} advances to "${sceneData.cyclePhase}" (from "${previousPhase}")`,
+            );
+        }
+    }
+
+    // 8. Calculate total generation time
     const totalTime = Date.now() - startTime;
 
     console.log(
@@ -138,11 +179,12 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
         {
             title: sceneData.title,
             cyclePhase: sceneData.cyclePhase,
+            previousPhase: previousPhase || "none (first scene)",
             generationTime: totalTime,
         },
     );
 
-    // 8. Build and return result with metadata
+    // 9. Build and return result with metadata
     return {
         scene: sceneData,
         metadata: {

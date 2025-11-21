@@ -1,0 +1,79 @@
+{
+  "config": {
+    "controlVersion": "v1.0",
+    "experimentVersion": "v1.1",
+    "testPrompts": [
+      "last-garden"
+    ],
+    "sampleSize": 2,
+    "hypothesis": "Experiment version will improve scene summary metrics (phase distribution, emotional beat, pacing)",
+    "expectedImprovement": "See hypothesis"
+  },
+  "testDate": "2025-11-16T05:43:22.905Z",
+  "control": [
+    {
+      "storyId": "story_8_pYkHu6soN6TZzp",
+      "chapterId": "chapter_JoRv-NQ4MuwacH5s",
+      "sceneIds": [
+        "scene_ieWP0UnY8skYeoOu",
+        "scene_elWcoak2BwJQXrjW",
+        "scene_1OmlEfJ99haEXaz5",
+        "scene_ud7Tyr3RCYT1fljl",
+        "scene_W1ktKfpAT0zWngEf"
+      ],
+      "evaluations": []
+    },
+    {
+      "storyId": "story_nVAe5AFM0zRtcGX5",
+      "chapterId": "chapter_-42NGY8I0wBVUE1d",
+      "sceneIds": [
+        "scene_snflrQI7JvmfEmgg",
+        "scene_yXi7m1f60bagnrWn",
+        "scene_V3Wo-_iIj4aYTPxe",
+        "scene_E5cpMwvR-uSojI8n",
+        "scene_5JZ0s0HhdUFetQqZ"
+      ],
+      "evaluations": []
+    }
+  ],
+  "experiment": [
+    {
+      "storyId": "story_8_pYkHu6soN6TZzp",
+      "chapterId": "chapter_JoRv-NQ4MuwacH5s",
+      "sceneIds": [
+        "scene_IQIPgLQVcYwDLxD6",
+        "scene_nZWs3304kV2FlpeI",
+        "scene_CY4XqSkxBJnG1dwL",
+        "scene__Qd2vVkoW9WOdvEJ",
+        "scene_Adq8V-S4-JZwG4bB"
+      ],
+      "evaluations": []
+    },
+    {
+      "storyId": "story_nVAe5AFM0zRtcGX5",
+      "chapterId": "chapter_-42NGY8I0wBVUE1d",
+      "sceneIds": [
+        "scene_2Pg5Fl4e7NIgehCu",
+        "scene_jNbmTPmazXjQyepY",
+        "scene_h7yeL5moVPG74bMc",
+        "scene_OdSmTZcBQSqU0yxM",
+        "scene_SNLRWfhN6WcRlo8D"
+      ],
+      "evaluations": []
+    }
+  ],
+  "comparison": {
+    "controlSnapshot": {},
+    "experimentSnapshot": {},
+    "deltas": {},
+    "pValue": {
+      "mean": null,
+      "median": null,
+      "variance": null,
+      "stdDev": null,
+      "min": null,
+      "max": null
+    },
+    "recommendation": "REVERT"
+  }
+}

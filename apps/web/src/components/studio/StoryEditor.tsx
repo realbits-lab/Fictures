@@ -1,16 +1,7 @@
 "use client";
 
-import yaml from "js-yaml";
-import React, { useEffect, useState } from "react";
-import {
-    Badge,
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-    Progress,
-} from "@/components/ui";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui";
 
 // Story YAML interface based on story-specification.md
 interface StoryData {
@@ -191,23 +182,23 @@ export function StoryEditor({
         }
     }, [externalStoryData]);
 
-    const [isEditing, setIsEditing] = useState(false);
-    const [editingSection, setEditingSection] = useState<string | null>(null);
+    const [_isEditing, _setIsEditing] = useState(false);
+    const [_editingSection, _setEditingSection] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
+    const [_isGenerating, setIsGenerating] = useState(false);
 
     // State for collapsible sections
-    const [charactersCollapsed, setCharactersCollapsed] = useState(true);
-    const [placesCollapsed, setPlacesCollapsed] = useState(true);
-    const [collapsedPlaceCards, setCollapsedPlaceCards] = useState<
+    const [_charactersCollapsed, _setCharactersCollapsed] = useState(true);
+    const [_placesCollapsed, _setPlacesCollapsed] = useState(true);
+    const [_collapsedPlaceCards, setCollapsedPlaceCards] = useState<
         Record<string, boolean>
     >({});
-    const [collapsedCharacterCards, setCollapsedCharacterCards] = useState<
+    const [_collapsedCharacterCards, setCollapsedCharacterCards] = useState<
         Record<string, boolean>
     >({});
 
     // Helper function to toggle individual place card collapse
-    const togglePlaceCard = (placeId: string) => {
+    const _togglePlaceCard = (placeId: string) => {
         setCollapsedPlaceCards((prev) => ({
             ...prev,
             [placeId]: !prev[placeId],
@@ -215,7 +206,7 @@ export function StoryEditor({
     };
 
     // Helper function to toggle individual character card collapse
-    const toggleCharacterCard = (characterId: string) => {
+    const _toggleCharacterCard = (characterId: string) => {
         setCollapsedCharacterCards((prev) => ({
             ...prev,
             [characterId]: !prev[characterId],
@@ -242,7 +233,7 @@ export function StoryEditor({
         }
     };
 
-    const handleGenerate = async () => {
+    const _handleGenerate = async () => {
         if (!onGenerate) return;
         setIsGenerating(true);
         try {
@@ -254,7 +245,7 @@ export function StoryEditor({
         }
     };
 
-    const updateField = (path: string[], value: any) => {
+    const _updateField = (path: string[], value: any) => {
         setStoryData((prev) => {
             const newData = { ...prev };
             let current: any = newData;
@@ -271,7 +262,7 @@ export function StoryEditor({
         });
     };
 
-    const handleStoryUpdate = (updatedData: StoryData) => {
+    const _handleStoryUpdate = (updatedData: StoryData) => {
         setStoryData(updatedData);
         if (onStoryUpdate) {
             onStoryUpdate(updatedData);

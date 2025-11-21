@@ -48,7 +48,6 @@ export function SFXText({
                     shadow: "drop-shadow-[0_4px_4px_rgba(0,0,0,0.4)]",
                     letterSpacing: "tracking-wide",
                 };
-            case "normal":
             default:
                 return {
                     size: "text-2xl md:text-3xl",
@@ -127,7 +126,7 @@ export function SFXTextGroup({ sfxList, className }: SFXTextGroupProps) {
     // Auto-position SFX to avoid overlap and create dynamic feel
     const getAutoPosition = (
         index: number,
-        total: number,
+        _total: number,
         emphasis: string,
     ) => {
         // Dramatic SFX typically go center or top-center

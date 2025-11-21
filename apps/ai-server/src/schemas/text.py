@@ -9,7 +9,7 @@ class TextGenerationRequest(BaseModel):
 
     prompt: str = Field(..., description="The text prompt for generation", min_length=1)
     max_tokens: Optional[int] = Field(
-        default=2048, description="Maximum number of tokens to generate", ge=1, le=8192
+        default=2048, description="Maximum number of tokens to generate", ge=1, le=40960
     )
     temperature: Optional[float] = Field(
         default=0.7, description="Sampling temperature", ge=0.0, le=2.0
@@ -129,7 +129,7 @@ class StructuredOutputRequest(BaseModel):
         ..., description="Guided decoding configuration for structured output"
     )
     max_tokens: Optional[int] = Field(
-        default=2048, description="Maximum number of tokens to generate", ge=1, le=8192
+        default=2048, description="Maximum number of tokens to generate", ge=1, le=40960
     )
     temperature: Optional[float] = Field(
         default=0.7, description="Sampling temperature", ge=0.0, le=2.0

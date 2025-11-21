@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ContentLoadError } from "@/components/error/ContentLoadError";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { BeautifulJSONDisplay } from "./BeautifulJSONDisplay";
@@ -39,7 +39,7 @@ export function CharactersDisplay({ storyData }: CharactersDisplayProps) {
 
             try {
                 const response = await fetch(
-                    `/studio/api/stories/${storyId}/characters`,
+                    `/api/studio/story/${storyId}/characters`,
                 );
                 if (response.ok) {
                     const data = await response.json();

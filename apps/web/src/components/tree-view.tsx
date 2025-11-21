@@ -104,9 +104,9 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeProps>(
                 items: TreeDataItem[] | TreeDataItem,
                 targetId: string,
             ) {
-                if (items instanceof Array) {
+                if (Array.isArray(items)) {
                     for (let i = 0; i < items.length; i++) {
-                        ids.push(items[i]!.id);
+                        ids.push(items[i]?.id);
                         if (walkTreeItems(items[i]!, targetId) && !expandAll) {
                             return true;
                         }
@@ -140,7 +140,7 @@ const TreeView = React.forwardRef<HTMLDivElement, TreeProps>(
                 />
                 <div
                     className="w-full h-[48px]"
-                    onDrop={(e) => {
+                    onDrop={(_e) => {
                         handleDrop({ id: "", name: "parent_div" });
                     }}
                 ></div>
@@ -178,7 +178,7 @@ const TreeItem = React.forwardRef<HTMLDivElement, TreeItemProps>(
         },
         ref,
     ) => {
-        if (!(data instanceof Array)) {
+        if (!Array.isArray(data)) {
             data = [data];
         }
         return (

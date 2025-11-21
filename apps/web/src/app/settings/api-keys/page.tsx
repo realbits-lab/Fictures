@@ -1,7 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
     Button,
@@ -64,7 +64,7 @@ export default function ApiKeysPage() {
     // Fetch API keys
     const fetchApiKeys = async () => {
         try {
-            const response = await fetch("/settings/api/api-keys");
+            const response = await fetch("/api/settings/api-keys");
             if (response.ok) {
                 const data: ApiKeyResponse = await response.json();
                 setApiKeys(data.apiKeys);
@@ -86,7 +86,7 @@ export default function ApiKeysPage() {
         if (session?.user?.id) {
             fetchApiKeys();
         }
-    }, [session?.user?.id]);
+    }, [session?.user?.id, fetchApiKeys]);
 
     // Show loading state for unauthenticated users AFTER all hooks
     if (!session?.user?.id) {
@@ -112,7 +112,7 @@ export default function ApiKeysPage() {
                     ? null
                     : getExpirationDate(expirationOption);
 
-            const response = await fetch("/settings/api/api-keys", {
+            const response = await fetch("/api/settings/api-keys", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -159,7 +159,7 @@ export default function ApiKeysPage() {
 
         try {
             const response = await fetch(
-                `/settings/api/api-keys/${keyId}/revoke`,
+                `/api/settings/api-keys/${keyId}/revoke`,
                 {
                     method: "POST",
                 },
@@ -188,7 +188,7 @@ export default function ApiKeysPage() {
         }
 
         try {
-            const response = await fetch(`/settings/api/api-keys/${keyId}`, {
+            const response = await fetch(`/api/settings/api-keys/${keyId}`, {
                 method: "DELETE",
             });
 

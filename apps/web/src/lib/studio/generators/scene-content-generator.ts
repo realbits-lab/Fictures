@@ -8,7 +8,12 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
+import type {
+    GeneratorSceneContentParams,
+    GeneratorSceneContentResult,
+    SceneContentPromptParams,
+} from "@/lib/schemas/generators/types";
+import { createTextGenerationClient } from "./ai-client";
 import {
     buildChapterContext,
     buildCharactersContext,
@@ -19,11 +24,6 @@ import {
     buildStoryContext,
 } from "./context-builders";
 import { promptManager } from "./prompt-manager";
-import type {
-    GeneratorSceneContentParams,
-    GeneratorSceneContentResult,
-    SceneContentPromptParams,
-} from "./types";
 
 /**
  * Generate prose content for a single scene
@@ -45,7 +45,11 @@ export async function generateSceneContent(
         characters,
         settings,
         language = "English",
+        promptVersion,
     }: GeneratorSceneContentParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient();
 
     console.log(
         `[scene-content-generator] 📝 Generating content for scene: ${scene.title}`,
@@ -53,17 +57,17 @@ export async function generateSceneContent(
 
     // 2. Find setting if scene has one
     const setting = scene.settingId
-        ? settings.find((s) => s.id === scene.settingId)
+        ? settings.find((s: any) => s.id === scene.settingId)
         : undefined;
 
     // 3. Build context strings using common builders
-    const storyContext: string = buildStoryContext(story);
-    const partContext: string = buildPartContext(part, characters);
-    const chapterContext: string = buildChapterContext(chapter);
-    const sceneContext: string = buildSceneContext(scene);
-    const charactersStr: string = buildCharactersContext(characters);
+    const storyContext: string = buildStoryContext(story as any);
+    const partContext: string = buildPartContext(part as any, characters as any);
+    const chapterContext: string = buildChapterContext(chapter as any);
+    const sceneContext: string = buildSceneContext(scene as any);
+    const charactersStr: string = buildCharactersContext(characters as any);
     const settingStr: string = setting
-        ? buildSettingContext(setting)
+        ? buildSettingContext(setting as any)
         : buildGenericSettingContext();
 
     console.log(
@@ -85,37 +89,62 @@ export async function generateSceneContent(
         system: systemPrompt,
         user: userPromptText,
     }: { system: string; user: string } = promptManager.getPrompt(
-        textGenerationClient.getProviderType(),
+        client.getProviderType(),
         "scene_content",
         promptParams,
+        promptVersion !== "v1.0" ? promptVersion : undefined,
     );
 
     console.log(
         "[scene-content-generator] Generating scene content using text generation",
     );
 
-    // 4. Generate scene content using direct text generation (no schema)
-    const response = await textGenerationClient.generate({
+    // 4. Calculate appropriate token limit based on scene cycle phase
+    // Token-to-word ratio: ~0.75 (1000 tokens ≈ 750 words)
+    // Phase-specific limits (with 20% buffer for flexibility):
+    // - setup/transition: 600 words max → 800 tokens (600/0.75 × 1.2)
+    // - adversity: 800 words max → 1067 tokens (800/0.75 × 1.2)
+    // - virtue: 1000 words max → 1333 tokens (1000/0.75 × 1.2)
+    // - consequence: 900 words max → 1200 tokens (900/0.75 × 1.2)
+    const maxTokensByPhase: Record<string, number> = {
+        setup: 800,
+        transition: 800,
+        adversity: 1067,
+        virtue: 1333,
+        consequence: 1200,
+    };
+
+    // Use phase-specific limit or default to 1333 (virtue scene limit)
+    const maxTokens: number = maxTokensByPhase[scene.cyclePhase || ""] || 1333;
+
+    console.log(
+        `[scene-content-generator] Token limit for ${scene.cyclePhase || "unknown"} phase: ${maxTokens}`,
+    );
+
+    // 5. Generate scene content using direct text generation (no schema)
+    const response = await client.generate({
         prompt: userPromptText,
         systemPrompt,
         temperature: 0.85,
-        maxTokens: 8192,
+        maxTokens,
     });
 
-    // 5. Extract and process generated content
+    // 6. Extract and process generated content
     const content: string = response.text.trim();
     const wordCount: number = content.split(/\s+/).length;
 
-    // 6. Calculate total generation time
+    // 7. Calculate total generation time
     const totalTime: number = Date.now() - startTime;
 
     console.log("[scene-content-generator] ✅ Generated scene content:", {
-        sceneId: scene.id,
+        sceneId: (scene as any).id || "unknown",
+        cyclePhase: scene.cyclePhase,
         wordCount,
+        tokenLimit: maxTokens,
         generationTime: totalTime,
     });
 
-    // 7. Return scene content result
+    // 8. Return scene content result
     return {
         content,
         wordCount,

@@ -1,7 +1,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React from "react";
 import {
     Badge,
     Button,
@@ -9,7 +8,6 @@ import {
     CardContent,
     CardHeader,
     CardTitle,
-    Progress,
     Skeleton,
     SkeletonLoader,
 } from "@/components/ui";
@@ -17,7 +15,7 @@ import {
     usePublishAnalysis,
     usePublishHistory,
     usePublishStatus,
-} from "@/lib/hooks/use-page-cache";
+} from "@/hooks/use-page-cache";
 
 // Skeleton components for loading states
 function PublishingScheduleSkeleton() {
@@ -177,13 +175,13 @@ export function PublishClient() {
         error: historyError,
     } = usePublishHistory();
     const {
-        data: publishAnalytics,
-        isLoading: analyticsLoading,
-        error: analyticsError,
+        data: publishAnalysis,
+        isLoading: analysisLoading,
+        error: analysisError,
     } = usePublishAnalysis();
 
-    const isLoading = statusLoading || historyLoading || analyticsLoading;
-    const hasError = statusError || historyError || analyticsError;
+    const isLoading = statusLoading || historyLoading || analysisLoading;
+    const hasError = statusError || historyError || analysisError;
 
     // Show loading state for unauthenticated users
     if (!session?.user?.id) {
@@ -215,7 +213,7 @@ export function PublishClient() {
         const errorMessage =
             statusError?.message ||
             historyError?.message ||
-            analyticsError?.message;
+            analysisError?.message;
         return (
             <div className="text-center py-12">
                 <div className="text-4xl mb-4">⚠️</div>
@@ -582,13 +580,13 @@ export function PublishClient() {
                     <CardContent className="space-y-4">
                         <div>
                             <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
-                                {publishAnalytics?.latestChapter?.title ||
+                                {publishAnalysis?.latestChapter?.title ||
                                     "Chapter 15"}{" "}
                                 Performance
                             </h4>
                             <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                                 Published:{" "}
-                                {publishAnalytics?.latestChapter
+                                {publishAnalysis?.latestChapter
                                     ?.publishedAgo || "3 days ago"}
                             </div>
 
@@ -596,28 +594,28 @@ export function PublishClient() {
                                 <div>
                                     👁️ Views:{" "}
                                     <span className="font-medium">
-                                        {publishAnalytics?.latestChapter?.views?.toLocaleString() ||
+                                        {publishAnalysis?.latestChapter?.views?.toLocaleString() ||
                                             "3,247"}
                                     </span>
                                 </div>
                                 <div>
                                     💬 Comments:{" "}
                                     <span className="font-medium">
-                                        {publishAnalytics?.latestChapter?.comments?.toLocaleString() ||
+                                        {publishAnalysis?.latestChapter?.comments?.toLocaleString() ||
                                             "126"}
                                     </span>
                                 </div>
                                 <div>
                                     ❤️ Reactions:{" "}
                                     <span className="font-medium">
-                                        {publishAnalytics?.latestChapter?.reactions?.toLocaleString() ||
+                                        {publishAnalysis?.latestChapter?.reactions?.toLocaleString() ||
                                             "456"}
                                     </span>
                                 </div>
                                 <div>
                                     ⭐ Rating:{" "}
                                     <span className="font-medium">
-                                        {publishAnalytics?.latestChapter
+                                        {publishAnalysis?.latestChapter
                                             ?.rating || "4.9"}
                                         /5
                                     </span>
@@ -628,17 +626,17 @@ export function PublishClient() {
                                 <div className="flex justify-between text-sm mb-1">
                                     <span>📈 Engagement Rate:</span>
                                     <span className="font-medium">
-                                        {publishAnalytics?.latestChapter
+                                        {publishAnalysis?.latestChapter
                                             ?.engagementRate || "87"}
                                         %
                                     </span>
                                 </div>
                                 <div className="text-sm text-green-600">
                                     🔥 Trending: #
-                                    {publishAnalytics?.latestChapter
+                                    {publishAnalysis?.latestChapter
                                         ?.trendingRank || "2"}{" "}
                                     in{" "}
-                                    {publishAnalytics?.latestChapter?.genre ||
+                                    {publishAnalysis?.latestChapter?.genre ||
                                         "Fantasy"}
                                 </div>
                             </div>
@@ -662,7 +660,7 @@ export function PublishClient() {
                                     </span>
                                     <span className="font-medium text-green-600">
                                         +
-                                        {publishAnalytics?.prepublishBuzz
+                                        {publishAnalysis?.prepublishBuzz
                                             ?.theories || "89"}{" "}
                                         new
                                     </span>
@@ -673,7 +671,7 @@ export function PublishClient() {
                                     </span>
                                     <span className="font-medium text-green-600">
                                         +
-                                        {publishAnalytics?.prepublishBuzz
+                                        {publishAnalysis?.prepublishBuzz
                                             ?.comments || "234"}
                                     </span>
                                 </div>
@@ -682,7 +680,7 @@ export function PublishClient() {
                                         Anticipation:
                                     </span>
                                     <span className="font-medium">
-                                        {publishAnalytics?.prepublishBuzz
+                                        {publishAnalysis?.prepublishBuzz
                                             ?.anticipation || "94"}
                                         %
                                     </span>
@@ -694,12 +692,12 @@ export function PublishClient() {
                                     📊 Optimal Time:
                                 </h5>
                                 <div className="text-sm text-gray-600 dark:text-gray-400">
-                                    {publishAnalytics?.optimalTime?.time ||
+                                    {publishAnalysis?.optimalTime?.time ||
                                         "Wed 2:00 PM PST"}
                                     <br />
                                     <span className="text-xs">
                                         (
-                                        {publishAnalytics?.optimalTime
+                                        {publishAnalysis?.optimalTime
                                             ?.activeReaderPercentage || "89"}
                                         % readers active)
                                     </span>

@@ -6,7 +6,6 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { getAuthHeaders } from "../helpers/auth";
 
 test.describe("Image API", () => {
     test.describe("Get Image", () => {

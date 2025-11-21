@@ -415,8 +415,8 @@ The following endpoints support both session and API key authentication:
 | Endpoint | Required Scope | Description |
 |----------|----------------|-------------|
 | `POST /studio/api/novels` | `stories:write` | Generate complete novel |
-| `POST /studio/api/stories` | `stories:write` | Create new story |
-| `GET /studio/api/stories` | `stories:read` | List user stories |
+| `POST /studio/api/story` | `stories:write` | Create new story |
+| `GET /studio/api/story` | `stories:read` | List user stories |
 | `POST /api/images/generate` | `stories:write` | Generate AI images |
 | `POST /api/admin/database` | `admin:all` | Execute admin database operations |
 
@@ -530,4 +530,4 @@ Authentication profiles are stored in `.auth/user.json`:
   - `src/lib/auth.ts` - NextAuth v5 configuration
   - `src/lib/auth/dual-auth.ts` - Dual authentication middleware
   - `src/lib/db/index.ts` - Database connection
-  - `src/lib/db/schema.ts` - Schema exports
+  - `src/lib/schemas/database/index.ts` - Schema exports

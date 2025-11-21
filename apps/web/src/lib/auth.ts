@@ -13,7 +13,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users } from "@/lib/schemas/database";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: DrizzleAdapter(db),
@@ -75,8 +75,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     callbacks: {
         async jwt({ token, user, account }) {
             if (user) {
-                token.id = user.id;
-                token.role = user.role;
+                token.id = user.id || "";
+                token.role = user.role || "reader";
             }
             return token;
         },

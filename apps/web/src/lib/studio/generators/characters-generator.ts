@@ -8,18 +8,18 @@
  * Database operations are handled by the caller (API route).
  */
 
-import { textGenerationClient } from "./ai-client";
-import { buildStoryContext } from "./context-builders";
-import { promptManager } from "./prompt-manager";
 import type {
     CharacterPromptParams,
-    GeneratorCharactersParams,
-    GeneratorCharactersResult,
-} from "./types";
+    GenerateCharactersParams,
+    GenerateCharactersResult,
+} from "@/lib/schemas/generators/types";
 import {
     type AiCharacterType,
     AiCharacterZodSchema,
-} from "./zod-schemas.generated";
+} from "@/lib/schemas/zod/ai";
+import { createTextGenerationClient } from "./ai-client";
+import { buildStoryContext } from "./context-builders";
+import { promptManager } from "./prompt-manager";
 
 /**
  * Generate character profiles for a story
@@ -28,8 +28,8 @@ import {
  * @returns Character data (caller responsible for database save)
  */
 export async function generateCharacters(
-    params: GeneratorCharactersParams,
-): Promise<GeneratorCharactersResult> {
+    params: GenerateCharactersParams,
+): Promise<GenerateCharactersResult> {
     const startTime: number = Date.now();
 
     // 1. Extract and set default parameters
@@ -38,12 +38,15 @@ export async function generateCharacters(
         characterCount,
         language = "English",
         onProgress,
-    }: GeneratorCharactersParams = params;
+    }: GenerateCharactersParams = params;
+
+    // 2. Create text generation client with API key
+    const client = createTextGenerationClient();
 
     const characters: AiCharacterType[] = [];
 
     // 2. Build story context once (used for all characters)
-    const storyContext: string = buildStoryContext(story);
+    const storyContext: string = buildStoryContext(story as any);
     console.log("[characters-generator] Story context prepared");
 
     // 3. Generate each character in sequence
@@ -75,7 +78,7 @@ export async function generateCharacters(
             system: systemPrompt,
             user: userPromptText,
         }: { system: string; user: string } = promptManager.getPrompt(
-            textGenerationClient.getProviderType(),
+            client.getProviderType(),
             "character",
             promptParams,
         );
@@ -85,16 +88,15 @@ export async function generateCharacters(
         );
 
         // 7. Generate character using structured output
-        const characterData: AiCharacterType =
-            await textGenerationClient.generateStructured(
-                userPromptText,
-                AiCharacterZodSchema,
-                {
-                    systemPrompt,
-                    temperature: 0.9,
-                    maxTokens: 4096,
-                },
-            );
+        const characterData: AiCharacterType = await client.generateStructured(
+            userPromptText,
+            AiCharacterZodSchema,
+            {
+                systemPrompt,
+                temperature: 0.3, // Low temperature for consistent JSON structure
+                maxTokens: 4096,
+            },
+        );
 
         characters.push(characterData);
 
@@ -122,7 +124,7 @@ export async function generateCharacters(
     );
 
     // 9. Build and return result with metadata
-    const result: GeneratorCharactersResult = {
+    const result: GenerateCharactersResult = {
         characters,
         metadata: {
             totalGenerated: characters.length,

@@ -6,7 +6,6 @@
  */
 
 import { expect, test } from "@playwright/test";
-import { getAuthHeaders } from "../helpers/auth";
 import {
     createTestPost,
     deleteTestPost,

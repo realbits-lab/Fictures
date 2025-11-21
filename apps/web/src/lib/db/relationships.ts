@@ -1,7 +1,7 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { db } from "@/lib/db";
-import { chapters, parts, scenes, stories } from "@/lib/db/schema";
+import { chapters, parts, scenes, stories } from "@/lib/schemas/database";
 
 /**
  * RelationshipManager handles database relationships using foreign keys
@@ -23,15 +23,19 @@ export class RelationshipManager {
                 id: partId,
                 storyId,
                 title: partData.title!,
-                summary: partData.summary,
+                summary: partData.summary || "",
                 // authorId removed - access via story JOIN
                 orderIndex: partData.orderIndex!,
-            });
+                characterArcs: [],
+                settingIds: [],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            } as any);
 
             // Update story timestamp
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, storyId));
 
             return partId;
@@ -53,24 +57,39 @@ export class RelationshipManager {
             await tx.insert(chapters).values({
                 id: chapterId,
                 storyId,
-                partId: partId || null,
+                partId: partId || "",
                 title: chapterData.title!,
                 // authorId removed - access via story JOIN
                 orderIndex: chapterData.orderIndex!,
-                status: chapterData.status,
-                summary: chapterData.summary,
-            });
+                status: (chapterData as any).status || "writing",
+                summary: chapterData.summary || "",
+                characterId: "",
+                arcPosition: "beginning",
+                contributesToMacroArc: "",
+                characterArc: {
+                    characterId: "",
+                    microAdversity: { internal: "", external: "" },
+                    microVirtue: "",
+                    microConsequence: "",
+                    microNewAdversity: "",
+                },
+                focusCharacters: [],
+                adversityType: "internal",
+                virtueType: "courage",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            } as any);
 
             // Update parent timestamps
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, storyId));
 
             if (partId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, partId));
             }
 
@@ -94,15 +113,23 @@ export class RelationshipManager {
                 chapterId,
                 title: sceneData.title!,
                 orderIndex: sceneData.orderIndex!,
-                content: sceneData.content,
+                content: sceneData.content || "",
+                summary: sceneData.summary || "",
+                cyclePhase: "setup",
+                emotionalBeat: "hope",
                 characterFocus: (sceneData as any).characterFocus || [],
-                settingId: (sceneData as any).settingId,
-            });
+                settingId: (sceneData as any).settingId || "",
+                sensoryAnchors: [],
+                dialogueVsDescription: "50% dialogue, 50% description",
+                suggestedLength: "medium",
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            } as any);
 
             // Update chapter timestamp
             await tx
                 .update(chapters)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(chapters.id, chapterId));
 
             return sceneId;
@@ -130,23 +157,23 @@ export class RelationshipManager {
             await tx
                 .update(chapters)
                 .set({
-                    partId: newPartId || null,
-                    updatedAt: new Date(),
-                })
+                    partId: newPartId || undefined,
+                    updatedAt: new Date().toISOString(),
+                } as any)
                 .where(eq(chapters.id, chapterId));
 
             // Update timestamps on affected parts
             if (chapter.partId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, chapter.partId));
             }
 
             if (newPartId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, newPartId));
             }
         });
@@ -175,13 +202,13 @@ export class RelationshipManager {
             // Update parent timestamps
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, chapter.storyId));
 
             if (chapter.partId) {
                 await tx
                     .update(parts)
-                    .set({ updatedAt: new Date() })
+                    .set({ updatedAt: new Date().toISOString() })
                     .where(eq(parts.id, chapter.partId));
             }
         });
@@ -218,7 +245,7 @@ export class RelationshipManager {
             // Update story timestamp
             await tx
                 .update(stories)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(stories.id, part.storyId));
         });
     }
@@ -243,7 +270,7 @@ export class RelationshipManager {
             // Update chapter timestamp
             await tx
                 .update(chapters)
-                .set({ updatedAt: new Date() })
+                .set({ updatedAt: new Date().toISOString() })
                 .where(eq(chapters.id, scene.chapterId));
         });
     }
@@ -258,7 +285,7 @@ export class RelationshipManager {
                     .update(chapters)
                     .set({
                         orderIndex: i + 1,
-                        updatedAt: new Date(),
+                        updatedAt: new Date().toISOString(),
                     })
                     .where(eq(chapters.id, chapterIds[i]));
             }
@@ -275,7 +302,7 @@ export class RelationshipManager {
                     .update(parts)
                     .set({
                         orderIndex: i + 1,
-                        updatedAt: new Date(),
+                        updatedAt: new Date().toISOString(),
                     })
                     .where(eq(parts.id, partIds[i]));
             }
@@ -292,7 +319,7 @@ export class RelationshipManager {
                     .update(scenes)
                     .set({
                         orderIndex: i + 1,
-                        updatedAt: new Date(),
+                        updatedAt: new Date().toISOString(),
                     })
                     .where(eq(scenes.id, sceneIds[i]));
             }
@@ -331,14 +358,17 @@ export class RelationshipManager {
 
         if (!includeScenes) {
             // For reading mode - don't load scenes, they'll be fetched on demand
+            // Chapters inherit status from story since they don't have their own status field
             return {
                 ...story,
+                userId: story.authorId, // Map authorId to userId for compatibility
                 parts: storyParts.map((part) => ({
                     ...part,
                     chapters: allChapters
                         .filter((chapter) => chapter.partId === part.id)
                         .map((chapter) => ({
                             ...chapter,
+                            status: story.status, // Chapters inherit story status
                             scenes: undefined, // Will be loaded on demand
                         })),
                 })),
@@ -346,6 +376,7 @@ export class RelationshipManager {
                     .filter((chapter) => !chapter.partId)
                     .map((chapter) => ({
                         ...chapter,
+                        status: story.status, // Chapters inherit story status
                         scenes: undefined, // Will be loaded on demand
                     })),
             };

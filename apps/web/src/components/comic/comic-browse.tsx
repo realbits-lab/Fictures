@@ -8,7 +8,6 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import React from "react";
 import { StoryGrid } from "@/components/browse/StoryGrid";
 import {
     BackgroundValidationIndicator,
@@ -16,13 +15,14 @@ import {
     StoryLoadingError,
 } from "@/components/common";
 import { SkeletonLoader } from "@/components/ui/skeleton-loader";
-import { usePublishedStories } from "@/lib/hooks/use-page-cache";
+import { usePublishedStories } from "@/hooks/use-page-cache";
 
 export function ComicBrowse() {
     const { data: session } = useSession();
-    const { data, isLoading, isValidating, error } = usePublishedStories();
+    const { stories, loading, error } = usePublishedStories();
 
-    const stories = data?.stories || [];
+    const isLoading = loading;
+    const isValidating = false; // usePublishedStories doesn't support validation
 
     // Loading state
     if (isLoading) {
@@ -45,7 +45,9 @@ export function ComicBrowse() {
                     <StoryLoadingError
                         title="Failed to load comics"
                         message={
-                            error.message ||
+                            (typeof error === "string" 
+                                ? error 
+                                : (error as any)?.message) ||
                             "Something went wrong while loading comics."
                         }
                         onRetry={() => window.location.reload()}

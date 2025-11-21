@@ -1,0 +1,313 @@
+{
+  "config": {
+    "controlVersion": "v1.0",
+    "experimentVersion": "v1.1",
+    "testPrompts": [
+      "last-garden"
+    ],
+    "sampleSize": 1,
+    "hypothesis": "Experiment version will improve chapter-level metrics (adversity connection, seed tracking, etc.)",
+    "expectedImprovement": "See hypothesis"
+  },
+  "control": [
+    {
+      "storyId": "story_GpydN_kKgKwDsrdl",
+      "chapterIds": [
+        "chapter_Hpn2N3JS1ShQmZLJ",
+        "chapter_Om-vMjzlhbX6tU6P",
+        "chapter_Edf-1a5gj8BrpCF0"
+      ],
+      "evaluations": [
+        {
+          "chapterId": "chapter_Hpn2N3JS1ShQmZLJ",
+          "evaluation": {
+            "evaluationId": "chapter_1763255319794_6ugxlp6",
+            "chapterId": "chapter_Hpn2N3JS1ShQmZLJ",
+            "timestamp": "2025-11-16T01:08:39.794Z",
+            "evaluationMode": "thorough",
+            "overallScore": 35.33,
+            "passed": false,
+            "metrics": {
+              "singleCycleFocus": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Complete micro-cycle with all components",
+                "method": "automated",
+                "cycleCount": 1,
+                "focusedCharacters": 3
+              },
+              "seedTrackingCompleteness": {
+                "score": 100,
+                "target": 80,
+                "threshold": 60,
+                "passed": true,
+                "feedback": "Excellent seed tracking: 100%",
+                "method": "automated",
+                "previousSeedsTracked": 0,
+                "totalPreviousSeeds": 0,
+                "trackingPercentage": 100
+              },
+              "adversityConnection": {
+                "score": 2,
+                "target": 4,
+                "threshold": 3,
+                "passed": false,
+                "feedback": "Weak connection",
+                "method": "automated",
+                "causalLinkExists": false,
+                "previousChapterReference": false
+              },
+              "stakesEscalation": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "First chapter - baseline stakes established",
+                "method": "automated",
+                "severityIncrease": true,
+                "severityScore": 4
+              },
+              "resolutionAdversityTransition": {
+                "score": 2,
+                "target": 3,
+                "threshold": 2.5,
+                "passed": false,
+                "feedback": "Acceptable transition",
+                "method": "automated",
+                "transitionQuality": 2
+              },
+              "narrativeMomentum": {
+                "score": 100,
+                "target": 80,
+                "threshold": 60,
+                "passed": true,
+                "feedback": "Strong narrative momentum",
+                "method": "automated",
+                "momentumRating": 4
+              }
+            }
+          }
+        },
+        {
+          "chapterId": "chapter_Om-vMjzlhbX6tU6P",
+          "evaluation": {
+            "evaluationId": "chapter_1763255319987_atb68rq",
+            "chapterId": "chapter_Om-vMjzlhbX6tU6P",
+            "timestamp": "2025-11-16T01:08:39.987Z",
+            "evaluationMode": "thorough",
+            "overallScore": 18.5,
+            "passed": false,
+            "metrics": {
+              "singleCycleFocus": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Complete micro-cycle with all components",
+                "method": "automated",
+                "cycleCount": 1,
+                "focusedCharacters": 3
+              },
+              "seedTrackingCompleteness": {
+                "score": 0,
+                "target": 80,
+                "threshold": 60,
+                "passed": false,
+                "feedback": "Low seed tracking: 0%",
+                "method": "automated",
+                "previousSeedsTracked": 0,
+                "totalPreviousSeeds": 2,
+                "trackingPercentage": 0
+              },
+              "adversityConnection": {
+                "score": 3,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Causal link present",
+                "method": "automated",
+                "causalLinkExists": true,
+                "previousChapterReference": false
+              },
+              "stakesEscalation": {
+                "score": 2,
+                "target": 4,
+                "threshold": 3,
+                "passed": false,
+                "feedback": "No clear stakes escalation",
+                "method": "automated",
+                "severityIncrease": false,
+                "severityScore": 2
+              },
+              "resolutionAdversityTransition": {
+                "score": 2,
+                "target": 3,
+                "threshold": 2.5,
+                "passed": false,
+                "feedback": "Acceptable transition",
+                "method": "automated",
+                "transitionQuality": 2
+              },
+              "narrativeMomentum": {
+                "score": 100,
+                "target": 80,
+                "threshold": 60,
+                "passed": true,
+                "feedback": "Strong narrative momentum",
+                "method": "automated",
+                "momentumRating": 4
+              }
+            }
+          }
+        },
+        {
+          "chapterId": "chapter_Edf-1a5gj8BrpCF0",
+          "evaluation": {
+            "evaluationId": "chapter_1763255320172_4hp2fmh",
+            "chapterId": "chapter_Edf-1a5gj8BrpCF0",
+            "timestamp": "2025-11-16T01:08:40.172Z",
+            "evaluationMode": "thorough",
+            "overallScore": 22.67,
+            "passed": false,
+            "metrics": {
+              "singleCycleFocus": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Complete micro-cycle with all components",
+                "method": "automated",
+                "cycleCount": 1,
+                "focusedCharacters": 3
+              },
+              "seedTrackingCompleteness": {
+                "score": 25,
+                "target": 80,
+                "threshold": 60,
+                "passed": false,
+                "feedback": "Low seed tracking: 25%",
+                "method": "automated",
+                "previousSeedsTracked": 1,
+                "totalPreviousSeeds": 4,
+                "trackingPercentage": 25
+              },
+              "adversityConnection": {
+                "score": 3,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Causal link present",
+                "method": "automated",
+                "causalLinkExists": true,
+                "previousChapterReference": false
+              },
+              "stakesEscalation": {
+                "score": 2,
+                "target": 4,
+                "threshold": 3,
+                "passed": false,
+                "feedback": "No clear stakes escalation",
+                "method": "automated",
+                "severityIncrease": false,
+                "severityScore": 2
+              },
+              "resolutionAdversityTransition": {
+                "score": 2,
+                "target": 3,
+                "threshold": 2.5,
+                "passed": false,
+                "feedback": "Acceptable transition",
+                "method": "automated",
+                "transitionQuality": 2
+              },
+              "narrativeMomentum": {
+                "score": 100,
+                "target": 80,
+                "threshold": 60,
+                "passed": true,
+                "feedback": "Strong narrative momentum",
+                "method": "automated",
+                "momentumRating": 4
+              }
+            }
+          }
+        }
+      ],
+      "metrics": {
+        "singleCycleFocus": 4,
+        "seedTrackingCompleteness": 41.666666666666664,
+        "adversityConnection": 2.6666666666666665,
+        "stakesEscalation": 2.6666666666666665,
+        "resolutionAdversityTransition": 2,
+        "narrativeMomentum": 100
+      }
+    }
+  ],
+  "experiment": [],
+  "comparison": {
+    "controlSnapshot": {
+      "singleCycleFocus": 4,
+      "seedTrackingCompleteness": 41.666666666666664,
+      "adversityConnection": 2.6666666666666665,
+      "stakesEscalation": 2.6666666666666665,
+      "resolutionAdversityTransition": 2,
+      "narrativeMomentum": 100
+    },
+    "experimentSnapshot": {},
+    "deltas": {
+      "singleCycleFocus": {
+        "metric": "singleCycleFocus",
+        "baseline": 4,
+        "experiment": 0,
+        "delta": -4,
+        "percentage": -100,
+        "improved": false
+      },
+      "seedTrackingCompleteness": {
+        "metric": "seedTrackingCompleteness",
+        "baseline": 41.666666666666664,
+        "experiment": 0,
+        "delta": -41.666666666666664,
+        "percentage": -100,
+        "improved": false
+      },
+      "adversityConnection": {
+        "metric": "adversityConnection",
+        "baseline": 2.6666666666666665,
+        "experiment": 0,
+        "delta": -2.6666666666666665,
+        "percentage": -100,
+        "improved": false
+      },
+      "stakesEscalation": {
+        "metric": "stakesEscalation",
+        "baseline": 2.6666666666666665,
+        "experiment": 0,
+        "delta": -2.6666666666666665,
+        "percentage": -100,
+        "improved": false
+      },
+      "resolutionAdversityTransition": {
+        "metric": "resolutionAdversityTransition",
+        "baseline": 2,
+        "experiment": 0,
+        "delta": -2,
+        "percentage": -100,
+        "improved": false
+      },
+      "narrativeMomentum": {
+        "metric": "narrativeMomentum",
+        "baseline": 100,
+        "experiment": 0,
+        "delta": -100,
+        "percentage": -100,
+        "improved": false
+      }
+    },
+    "pValue": 1,
+    "recommendation": "REVERT"
+  },
+  "testDate": "2025-11-16T01:15:48.257Z"
+}

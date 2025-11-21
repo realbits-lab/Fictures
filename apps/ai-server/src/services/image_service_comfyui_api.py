@@ -29,10 +29,10 @@ class QwenImageComfyUIAPIService:
         """Initialize the ComfyUI API service.
 
         Args:
-            comfyui_url: URL of the running ComfyUI server (defaults to config.settings.comfyui_url)
+            comfyui_url: URL of the running ComfyUI server (defaults to config.settings.ai_server_comfyui_url)
         """
         from src.config import settings
-        self.comfyui_url = comfyui_url or settings.comfyui_url
+        self.comfyui_url = comfyui_url or settings.ai_server_comfyui_url
         self._initialized = False
         self.device = "cuda"
 
@@ -165,6 +165,7 @@ class QwenImageComfyUIAPIService:
         num_inference_steps: int = 4,  # 4-step Lightning v2.0 LoRA
         guidance_scale: float = 1.0,
         seed: Optional[int] = None,
+        trace_id: Optional[str] = None,
     ) -> dict:
         """
         Generate image using ComfyUI API with scaled FP8 + 4-step v2.0 LoRA.
@@ -185,8 +186,14 @@ class QwenImageComfyUIAPIService:
             await self.initialize()
 
         try:
-            logger.info(f"Generating image via ComfyUI API")
-            logger.info(f"Prompt: {prompt[:100]}...")
+            log_prefix = f"[{trace_id}] " if trace_id else ""
+            logger.info(f"{log_prefix}Generating image via ComfyUI API")
+            logger.info(
+                "%sPrompt preview=%s negativePreview=%s",
+                log_prefix,
+                prompt[:200],
+                (negative_prompt or "")[:200],
+            )
 
             # Set random seed
             if seed is None:
@@ -203,22 +210,43 @@ class QwenImageComfyUIAPIService:
                 cfg=guidance_scale,
                 seed=seed
             )
+            logger.info(
+                "%sWorkflow parameters width=%s height=%s steps=%s cfg=%s seed=%s",
+                log_prefix,
+                width,
+                height,
+                num_inference_steps,
+                guidance_scale,
+                seed,
+            )
 
             # Submit workflow to ComfyUI
-            prompt_id = await self._queue_prompt(workflow)
-            logger.info(f"Workflow queued with ID: {prompt_id}")
+            prompt_id = await self._queue_prompt(workflow, trace_id=trace_id)
+            logger.info(f"{log_prefix}Workflow queued with ID: {prompt_id}")
 
             # Wait for completion and get result
-            image = await self._wait_for_completion(prompt_id)
+            image = await self._wait_for_completion(prompt_id, trace_id=trace_id)
 
             # Convert image to base64
             image_base64 = self._image_to_base64(image)
+            logger.info(
+                "%sBase64 payload length=%s characters",
+                log_prefix,
+                len(image_base64),
+            )
 
             # Get actual image dimensions
             actual_width, actual_height = image.size
 
-            logger.info(f"Image generated successfully")
-            logger.info(f"Size: {actual_width}x{actual_height}, Steps: {num_inference_steps}, Seed: {seed}")
+            logger.info(f"{log_prefix}Image generated successfully")
+            logger.info(
+                "%sSize: %sx%s, Steps: %s, Seed: %s",
+                log_prefix,
+                actual_width,
+                actual_height,
+                num_inference_steps,
+                seed,
+            )
 
             return {
                 "image_url": f"data:image/png;base64,{image_base64}",
@@ -230,7 +258,7 @@ class QwenImageComfyUIAPIService:
             }
 
         except Exception as e:
-            logger.error(f"ComfyUI API generation failed: {e}")
+            logger.error(f"{log_prefix}ComfyUI API generation failed: {e}")
             raise
 
     def _prepare_workflow(self, prompt: str, negative_prompt: str, width: int, height: int, num_steps: int, cfg: float, seed: int) -> dict:
@@ -252,27 +280,40 @@ class QwenImageComfyUIAPIService:
 
         return workflow
 
-    async def _queue_prompt(self, workflow: dict) -> str:
+    async def _queue_prompt(self, workflow: dict, trace_id: Optional[str] = None) -> str:
         """Queue a prompt workflow and return the prompt ID."""
+        log_prefix = f"[{trace_id}] " if trace_id else ""
         async with httpx.AsyncClient() as client:
             payload = {
                 "prompt": workflow,
                 "client_id": "fictures-ai-server"
             }
 
+            logger.info(f"{log_prefix}Submitting workflow to ComfyUI /prompt endpoint")
+            start_time = time.perf_counter()
             response = await client.post(
                 f"{self.comfyui_url}/prompt",
                 json=payload,
                 timeout=30.0
             )
+            elapsed = time.perf_counter() - start_time
             response.raise_for_status()
 
             result = response.json()
+            logger.info(
+                "%sWorkflow accepted status=%s elapsed=%.2fs promptId=%s",
+                log_prefix,
+                response.status_code,
+                elapsed,
+                result["prompt_id"],
+            )
             return result["prompt_id"]
 
-    async def _wait_for_completion(self, prompt_id: str, timeout: int = 600) -> Image.Image:
+    async def _wait_for_completion(self, prompt_id: str, timeout: int = 600, trace_id: Optional[str] = None) -> Image.Image:
         """Wait for workflow completion and retrieve the generated image."""
+        log_prefix = f"[{trace_id}] " if trace_id else ""
         start_time = time.time()
+        poll_count = 0
 
         async with httpx.AsyncClient() as client:
             while True:
@@ -283,9 +324,17 @@ class QwenImageComfyUIAPIService:
                 response = await client.get(f"{self.comfyui_url}/history/{prompt_id}", timeout=10.0)
                 response.raise_for_status()
                 history = response.json()
+                poll_count += 1
 
                 if prompt_id in history:
                     # Workflow completed
+                    logger.info(
+                        "%sWorkflow %s completed after %.2fs (polls=%s)",
+                        log_prefix,
+                        prompt_id,
+                        time.time() - start_time,
+                        poll_count,
+                    )
                     outputs = history[prompt_id]["outputs"]
 
                     # Find the SaveImage node output
@@ -295,6 +344,13 @@ class QwenImageComfyUIAPIService:
                             filename = image_info["filename"]
                             subfolder = image_info.get("subfolder", "")
                             folder_type = image_info.get("type", "output")
+                            logger.info(
+                                "%sDownloading image filename=%s subfolder=%s type=%s",
+                                log_prefix,
+                                filename,
+                                subfolder,
+                                folder_type,
+                            )
 
                             # Download the image
                             params = {
@@ -312,11 +368,24 @@ class QwenImageComfyUIAPIService:
 
                             # Convert to PIL Image
                             image = Image.open(io.BytesIO(img_response.content))
+                            logger.info(
+                                "%sImage downloaded bytes=%s",
+                                log_prefix,
+                                len(img_response.content),
+                            )
                             return image
 
                     raise RuntimeError("No images found in workflow output")
 
                 # Still processing
+                if poll_count % 5 == 0:
+                    logger.info(
+                        "%sWaiting for workflow %s (elapsed %.2fs, polls=%s)",
+                        log_prefix,
+                        prompt_id,
+                        time.time() - start_time,
+                        poll_count,
+                    )
                 await asyncio.sleep(1.0)
 
     def _image_to_base64(self, image: Image.Image) -> str:

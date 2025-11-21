@@ -4,9 +4,6 @@
  * Displays novel vs comic view distribution with visual bar chart
  */
 
-import React from "react";
-import { Progress } from "@/components/ui";
-
 interface FormatDistributionProps {
     novelViews: number;
     comicViews: number;

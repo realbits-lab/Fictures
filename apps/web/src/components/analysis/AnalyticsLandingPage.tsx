@@ -31,7 +31,7 @@ export function AnalyticsLandingPage() {
     const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d");
 
     const { data, isLoading, error } = useSWR<{ stories: Story[] }>(
-        session?.user?.id ? `/analysis/api/list?range=${timeRange}` : null,
+        session?.user?.id ? `/api/analysis/list?range=${timeRange}` : null,
         fetcher,
         {
             revalidateOnFocus: false,

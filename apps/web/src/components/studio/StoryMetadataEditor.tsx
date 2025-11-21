@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import {
     Button,
@@ -37,7 +37,7 @@ export function StoryMetadataEditor({
 
         setIsLoading(true);
         try {
-            const response = await fetch(`/studio/api/stories/${storyId}`, {
+            const response = await fetch(`/api/studio/story/${storyId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

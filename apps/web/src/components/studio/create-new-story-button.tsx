@@ -18,32 +18,12 @@ export function CreateNewStoryButton() {
 
         setIsCreating(true);
         try {
-            // Create empty story
-            const requestBody: {
-                userId: string;
-                title: string;
-            } = {
-                userId: session.user.id,
-                title: "Untitled Story",
-            };
-
-            const response = await fetch("/studio/api/stories/create-empty", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(requestBody),
-            });
-
-            if (!response.ok) {
-                throw new Error("Failed to create story");
-            }
-
-            const data = await response.json();
-
-            // Navigate to agent chat page with the new story
-            router.push(`/studio/agent/new?storyId=${data.storyId}`);
+            // Navigate directly to agent chat page
+            // The agent will handle story creation
+            router.push("/studio/agent/new");
         } catch (error) {
-            console.error("Error creating story:", error);
-            alert("Failed to create story. Please try again.");
+            console.error("Error navigating to story creation:", error);
+            alert("Failed to navigate to story creation. Please try again.");
         } finally {
             setIsCreating(false);
         }
@@ -51,6 +31,7 @@ export function CreateNewStoryButton() {
 
     return (
         <button
+            type="button"
             onClick={handleCreateNewStory}
             disabled={isCreating}
             className="inline-flex items-center justify-center rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm px-3 py-1.5 text-sm font-medium transition-all hover:bg-[rgb(var(--color-primary))]/90 disabled:opacity-50 disabled:cursor-not-allowed gap-2"

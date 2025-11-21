@@ -1,7 +1,7 @@
-import { asc, eq, inArray } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { invalidateCache, withCache } from "@/lib/cache/redis-cache";
+import { chapters, parts, scenes, stories } from "@/lib/schemas/database";
 import { db } from "./index";
-import { chapters, parts, scenes, stories } from "./schema";
 
 /**
  * ⚡ Strategy 3: Smart Data Reduction
@@ -83,7 +83,6 @@ async function fetchStoryForReading(storyId: string) {
                 partId: chapters.partId,
                 title: chapters.title,
                 summary: chapters.summary,
-                status: chapters.status,
                 orderIndex: chapters.orderIndex,
                 createdAt: chapters.createdAt,
                 updatedAt: chapters.updatedAt,
@@ -115,14 +114,17 @@ async function fetchStoryForReading(storyId: string) {
     );
 
     // For reading mode, scenes are loaded on demand (see getChapterScenesForReading)
+    // Chapters inherit status from story since they don't have their own status field
     return {
         ...story,
+        userId: story.authorId, // Map authorId to userId for compatibility
         parts: storyParts.map((part) => ({
             ...part,
             chapters: allChapters
                 .filter((chapter) => chapter.partId === part.id)
                 .map((chapter) => ({
                     ...chapter,
+                    status: story.status, // Chapters inherit story status
                     scenes: undefined, // Will be loaded on demand
                 })),
         })),
@@ -130,6 +132,7 @@ async function fetchStoryForReading(storyId: string) {
             .filter((chapter) => !chapter.partId)
             .map((chapter) => ({
                 ...chapter,
+                status: story.status, // Chapters inherit story status
                 scenes: undefined, // Will be loaded on demand
             })),
     };
@@ -167,7 +170,6 @@ async function fetchChapterScenesForReading(chapterId: string) {
             content: scenes.content,
             summary: scenes.summary,
             orderIndex: scenes.orderIndex,
-            visibility: scenes.visibility,
             publishedAt: scenes.publishedAt,
             imageUrl: scenes.imageUrl,
             imageVariants: scenes.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization

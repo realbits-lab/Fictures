@@ -11,8 +11,7 @@ import { AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { useSceneView } from "@/hooks/useSceneView";
-import { PanelRenderer, PanelRendererSkeleton } from "./panel-renderer";
+import { useSceneView } from "@/hooks/use-scene-view";
 import {
     getRecommendedInitialLoadCount,
     ProgressiveComicPanel,
@@ -96,7 +95,7 @@ export function ComicViewer({
                 setError(null);
                 setData(null); // Reset data when fetching new scene
 
-                const response = await fetch(`/comics/api/${sceneId}/panels`);
+                const response = await fetch(`/api/comics/${sceneId}/panels`);
 
                 if (!response.ok) {
                     throw new Error(

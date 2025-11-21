@@ -1,9 +1,9 @@
 import { asc, eq } from "drizzle-orm";
+import * as schema from "@/lib/schemas/database";
 import { measureAsync } from "../cache/performance-logger";
 import { getCache, invalidateCache, withCache } from "../cache/redis-cache";
 import { db } from "./index";
 import * as queries from "./queries";
-import * as schema from "./schema";
 
 const CACHE_TTL = {
     PUBLISHED_CONTENT: 3600, // 1 hour for published (shared by all users) - Extended from 10min for better performance
@@ -515,7 +515,7 @@ export async function updateStory(
         title: string;
         summary: string;
         genre: string;
-        status: "writing" | "published";
+        status: "draft" | "published";
     }>,
 ) {
     const result = await measureAsync(
@@ -543,14 +543,14 @@ export async function updateChapter(
     data: Partial<{
         title: string;
         content: string;
-        status: "writing" | "published";
+        status: "draft" | "published";
         publishedAt: Date;
         scheduledFor: Date;
     }>,
 ) {
     const result = await measureAsync(
         "updateChapter",
-        () => queries.updateChapter(chapterId, userId, data),
+        () => queries.updateChapter(chapterId, userId, data as any),
         { chapterId, userId },
     );
 

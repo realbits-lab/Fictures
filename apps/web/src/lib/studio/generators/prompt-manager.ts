@@ -3,7 +3,11 @@
  * Manages separate prompts for each model provider (Gemini, AI Server)
  */
 
-import type { ModelProvider, PromptTemplate, PromptType } from "./types";
+import type {
+    ModelProvider,
+    PromptTemplate,
+    PromptType,
+} from "@/lib/schemas/generators/types";
 
 class PromptManager {
     private prompts: Record<ModelProvider, Record<PromptType, PromptTemplate>>;
@@ -21,8 +25,20 @@ class PromptManager {
     private initializeGeminiPrompts(): Record<PromptType, PromptTemplate> {
         return {
             story: {
-                system: `You are a story development expert who creates compelling story concepts.
-Generate story foundations that establish clear themes, conflicts, and emotional arcs.
+                system: `You are a story development expert who creates compelling story concepts using the Adversity-Triumph Engine methodology.
+
+# CRITICAL REQUIREMENT: MORAL FRAMEWORK CLARITY
+
+Every story MUST have a clear, explicit moral framework that:
+1. **Identifies 2-4 specific virtues** to be tested (courage, compassion, integrity, loyalty, wisdom, sacrifice, kindness, perseverance, etc.)
+2. **Establishes causal logic**: Explains HOW and WHY these virtues lead to positive outcomes
+3. **Demonstrates cause-and-effect**: [virtue] → [action] → [positive consequence]
+
+Example of GOOD moral framework:
+"Courage and compassion drive transformation. When characters act courageously despite fear, they inspire others and create ripples of hope. When they show compassion to former enemies, they break cycles of violence and build unexpected alliances."
+
+Example of BAD moral framework (too vague):
+"Kindness is important." ❌ (No causal logic, only one virtue, no explanation of outcomes)
 
 # AVAILABLE GENRES
 Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ
@@ -56,7 +72,12 @@ Generate a story foundation with:
 2. Summary (2-3 sentences describing the thematic premise and moral framework)
 3. Genre (must be one of: Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, Slice, Paranormal, Dystopian, Historical, LGBTQ)
 4. Tone (must be one of: hopeful, dark, bittersweet, satirical - follow the guidance for the selected tone)
-5. Moral Framework (what virtues are valued in this story?)`,
+5. Moral Framework (CRITICAL - must include ALL of the following):
+   a) **Virtues valued**: List 2-4 specific virtues tested in this story (e.g., courage, compassion, integrity, loyalty, wisdom, sacrifice, kindness, perseverance)
+   b) **Causal logic**: Explain HOW and WHY these virtues lead to positive outcomes in the story world
+   c) **Example**: "Courage and compassion are valued. When characters act courageously despite fear, they inspire others and create ripples of hope. When they show compassion to enemies, they break cycles of violence and build unexpected alliances."
+
+   Your moral framework MUST demonstrate clear cause-and-effect: [virtue] → [action] → [positive consequence]`,
             },
 
             character: {
@@ -69,9 +90,12 @@ Generate characters with exactly these fields:
 1. **name** (string, max 255 chars)
    - Character's full name, memorable and fitting the genre
 
-2. **isMain** (boolean)
-   - true = Main character (gets MACRO arc, drives story)
-   - false = Supporting character (enriches story world)
+2. **role** (string, must be ONE of: protagonist, deuteragonist, tritagonist, antagonist, supporting)
+   - protagonist = Main character (drives primary narrative, gets MACRO arc)
+   - deuteragonist = Second most important character (supporting protagonist)
+   - tritagonist = Third most important character (adds complexity)
+   - antagonist = Opposes protagonist (creates conflict)
+   - supporting = Supporting character (enriches story world)
 
 3. **summary** (string, 2-3 sentences)
    - Format: "[CoreTrait] [role] with [internalFlaw], seeking [externalGoal]"
@@ -230,7 +254,7 @@ Language: {language}
 REQUIRED OUTPUT:
 Generate a character object with ALL 10 required fields as specified in the system prompt:
 1. name (string)
-2. isMain (boolean) - {characterType} characters
+2. role (one of: protagonist, deuteragonist, tritagonist, antagonist, supporting) - {characterType} characters
 3. summary (string, 2-3 sentences)
 4. coreTrait (one of: courage, compassion, integrity, loyalty, wisdom, sacrifice)
 5. internalFlaw (string with cause: "[fears/believes/wounded by] X because Y")
@@ -281,20 +305,31 @@ The setting MUST create external conflict through four categories:
 Connect setting to story's moral framework (1-2 sentences):
 - Example: "Destroyed city represents broken trust and loss of community—garden becomes symbol of healing and renewal"
 
-# CYCLE AMPLIFICATION
+# ELEMENT ARRAYS
 
-Specify HOW setting amplifies each phase (guides scene content generation):
+Settings use **element arrays** that provide specific features for different cycle phases:
 
-- **Setup**: How environment establishes adversity
-  - Example: "oppressive heat weighs on characters"
-- **Confrontation**: How setting intensifies conflict
-  - Example: "confined space forces interaction"
-- **Virtue**: How setting contrasts/witnesses moral beauty
-  - Example: "barren land vs. act of nurture"
-- **Consequence**: How setting transforms or reveals
-  - Example: "garden blooms, proving hope possible"
-- **Transition**: How setting hints at new problems
-  - Example: "storm clouds gathering"
+## Virtue Elements
+Amplify moral elevation moments and witness virtuous actions:
+- **witnessElements**: Who/what witnesses moral acts (2-5 items)
+  - Examples: "neighborhood children", "elderly shopkeeper", "migrating birds"
+- **contrastElements**: Elements making virtue powerful by contrast (2-5 items)
+  - Examples: "barren wasteland", "crumbling walls", "abandoned homes"
+- **opportunityElements**: Features enabling moral choices (2-5 items)
+  - Examples: "community garden plot", "shared water well", "open courtyard"
+- **sacredSpaces**: Locations with moral/emotional significance (1-3 items)
+  - Examples: "memorial tree", "old meeting hall", "grandmother's bench"
+
+## Consequence Elements
+Amplify karmic payoffs and show transformation:
+- **transformativeElements**: Features showing change/impact (2-5 items)
+  - Examples: "sprouting seeds", "repaired fence", "returning wildlife"
+- **rewardSources**: Sources of karmic payoff (2-5 items)
+  - Examples: "grateful neighbors", "discovered resources", "unexpected allies"
+- **revelationTriggers**: Elements revealing hidden connections (2-5 items)
+  - Examples: "old photographs", "overheard conversations", "shared memories"
+- **communityResponses**: How setting inhabitants respond (2-5 items)
+  - Examples: "neighbors gathering", "children playing", "doors opening"
 
 # SENSORY IMMERSION (For Prose Generation)
 
@@ -323,7 +358,7 @@ Provide SPECIFIC sensory details (not generic):
 {story}
 
 REQUIRED OUTPUT:
-Generate a setting object with ALL 11 required fields as specified in the system prompt:
+Generate a setting object with ALL 12 required fields as specified in the system prompt:
 
 1. **name** (string, max 255 chars)
    - Evocative location name (e.g., "The Last Garden", "Refugee Camp", "Downtown Market")
@@ -341,33 +376,38 @@ Generate a setting object with ALL 11 required fields as specified in the system
    - How setting reflects story's moral framework
    - Example: "Destroyed city represents broken trust and loss of community"
 
-5. **cycleAmplification** (object with 5 fields)
-   - setup: How setting establishes adversity (e.g., "oppressive heat weighs on characters")
-   - confrontation: How setting intensifies conflict (e.g., "confined space forces interaction")
-   - virtue: How setting contrasts/witnesses moral beauty (e.g., "barren land vs. act of nurture")
-   - consequence: How setting transforms or reveals (e.g., "garden blooms, proving hope possible")
-   - transition: How setting hints at new problems (e.g., "storm clouds gathering")
+5. **virtueElements** (object with 4 arrays)
+   - witnessElements: array of who/what witnesses moral acts (2-5 items)
+   - contrastElements: array of elements making virtue powerful by contrast (2-5 items)
+   - opportunityElements: array of features enabling moral choices (2-5 items)
+   - sacredSpaces: array of locations with moral/emotional significance (1-3 items)
 
-6. **mood** (string)
+6. **consequenceElements** (object with 4 arrays)
+   - transformativeElements: array of features showing change/impact (2-5 items)
+   - rewardSources: array of sources of karmic payoff (2-5 items)
+   - revelationTriggers: array of elements revealing hidden connections (2-5 items)
+   - communityResponses: array of how setting inhabitants respond (2-5 items)
+
+7. **mood** (string)
    - Primary emotional quality (e.g., "oppressive and surreal", "hopeful but fragile", "tense and uncertain")
 
-7. **emotionalResonance** (string)
+8. **emotionalResonance** (string)
    - What emotion this setting amplifies (e.g., "isolation", "hope", "fear", "connection", "despair")
 
-8. **sensory** (object with 5 arrays)
+9. **sensory** (object with 5 arrays)
    - sight: array of 5-10 specific visual details (e.g., ["cracked asphalt", "faded paint", "rust-stained walls"])
    - sound: array of 3-7 auditory elements (e.g., ["wind rattling leaves", "distant sirens", "children's laughter"])
    - smell: array of 2-5 olfactory details (e.g., ["damp earth", "cooking spices", "gasoline"])
    - touch: array of 2-5 tactile sensations (e.g., ["rough concrete", "cool breeze", "gritty dust"])
    - taste: array of 0-2 flavor elements (optional) (e.g., ["metallic tang", "bitter smoke"])
 
-9. **architecturalStyle** (string)
-   - Structural design language if applicable (e.g., "brutalist concrete", "traditional wooden", "modern glass and steel")
+10. **architecturalStyle** (string)
+    - Structural design language if applicable (e.g., "brutalist concrete", "traditional wooden", "modern glass and steel")
 
-10. **visualReferences** (array of strings)
+11. **visualReferences** (array of strings)
     - Style inspirations (e.g., ["Blade Runner 2049", "Studio Ghibli countryside", "Mad Max Fury Road"])
 
-11. **colorPalette** (array of strings)
+12. **colorPalette** (array of strings)
     - Dominant colors (e.g., ["warm golds", "dusty browns", "deep greens", "ash gray", "rust red"])
 
 Ensure the setting:
@@ -398,7 +438,13 @@ Ensure the setting:
 
 # SETTINGS USAGE
 
-Use the provided settings to:
+**Setting Selection for Part**:
+- Choose 2-4 settings from Story.settings that fit this part's atmosphere
+- Consider setting's symbolicMeaning alignment with act themes
+- Ensure variety: different settings for different act moods
+- Store selected setting IDs in Part.settingIds for chapter generation
+
+**Setting Integration**:
 - Ground character arcs in specific, atmospheric locations
 - Leverage sensory details (mood, lighting, sounds, temperature) to enhance emotional beats
 - Match setting atmosphere to arc positions (e.g., darker settings for adversity, hopeful settings for consequence)
@@ -527,8 +573,15 @@ Design MACRO adversity-triumph arcs for each character across this act, ensuring
 3. Each MACRO arc spans 2-4 chapters (progressive transformation, not rushed)
 4. Stakes escalate appropriately for Act {partNumber}
 5. Character arcs show gradual, earned transformation
+6. Select 2-4 settings from the provided settings that match this part's atmosphere and themes
 
-Return structured text with clear section headers for each character's macro arc and character interactions.`,
+**Required Output Fields**:
+- title: Part title
+- summary: Comprehensive part description
+- characterArcs: Array of macro arcs for each main character (role: protagonist, deuteragonist, tritagonist)
+- settingIds: Array of 2-4 setting IDs selected from the provided settings
+
+Return structured text with clear section headers for each character's macro arc, character interactions, and selected setting IDs.`,
             },
 
             chapter: {
@@ -679,7 +732,26 @@ IMPORTANT INSTRUCTIONS:
 
 3. Balance focus across characters by rotating arcs for variety
 
-4. Use the provided settings to enhance emotional beats and atmosphere
+4. Select 1-3 settings from Part.settingIds that fit this chapter's needs
+
+5. Generate structured characterArc object tracking this chapter's micro-cycle
+
+**Required Output Fields**:
+- title: Chapter title
+- summary: Comprehensive chapter description
+- arcPosition: beginning | middle | climax | resolution
+- characterArc: {
+    characterId: string (focused character ID)
+    microAdversity: { internal: string, external: string }
+    microVirtue: string (moral choice)
+    microConsequence: string (earned result)
+    microNewAdversity: string (next problem)
+  }
+- settingIds: Array of 1-3 setting IDs from Part.settingIds
+- seedsPlanted: Array of seeds for future payoffs
+- seedsResolved: Array of resolved seeds from past chapters
+- connectsToPreviousChapter: How previous chapter created this adversity
+- createsNextAdversity: How this creates next problem
 
 Return structured chapter data following the template specified in the system prompt.`,
             },
@@ -704,12 +776,12 @@ Detailed specification (200-400 words) including:
 - How it connects to previous/next scene
 
 ## 3. CYCLE PHASE
-One of: setup, confrontation, virtue, consequence, transition
+One of: setup, adversity, virtue, consequence, transition
 
 ## 4. EMOTIONAL BEAT
 Primary emotion this scene should evoke:
 - setup → fear, tension, anxiety
-- confrontation → desperation, determination, conflict
+- adversity → desperation, determination, conflict
 - virtue → elevation, moral beauty, witnessing goodness
 - consequence → catharsis, joy, relief, surprise, gam-dong
 - transition → anticipation, dread, curiosity
@@ -733,14 +805,14 @@ Guidance on balance:
 
 ## 8. SUGGESTED LENGTH
 - short: 300-500 words (transition, quick setup)
-- medium: 500-800 words (confrontation, consequence)
+- medium: 500-800 words (adversity, consequence)
 - long: 800-1000 words (virtue scene - THE moment)
 
 # SCENE DISTRIBUTION REQUIREMENTS
 
 For a complete adversity-triumph cycle:
 - 1-2 Setup scenes (establish adversity)
-- 1-3 Confrontation scenes (build tension)
+- 1-3 Adversity scenes (build tension, face challenge)
 - 1 Virtue scene (THE PEAK - must be longest)
 - 1-2 Consequence scenes (deliver payoff)
 - 1 Transition scene (hook to next chapter)
@@ -773,6 +845,23 @@ Settings:
 {settings}
 
 {previousScenesContext}
+
+**CRITICAL: CYCLE PHASE ORDERING REQUIREMENT**
+The adversity-triumph cycle phases MUST follow this strict order across all scenes:
+1. "setup" → 2. "adversity" → 3. "virtue" → 4. "consequence" → 5. "transition"
+
+Rules:
+- Phases must appear in this exact sequence (cannot skip or go backwards)
+- Multiple scenes can share the same phase (e.g., two "adversity" scenes in a row is valid)
+- Once you move to the next phase, you cannot return to a previous phase
+- The first scene MUST start with "setup"
+- Example valid progression: setup, setup, adversity, adversity, virtue, consequence, transition
+- Example INVALID: setup, virtue, adversity (skipped adversity, then went backwards)
+
+For this scene {sceneNumber}, choose the appropriate cyclePhase that:
+1. Continues or advances from the previous scene's phase
+2. Follows the mandatory ordering rule above
+3. Fits the narrative content of this specific scene
 
 Break down this chapter's adversity-triumph cycle into scene summaries, where each summary provides a complete specification for prose generation.
 
@@ -817,8 +906,8 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 
 ### Length Requirements
 - Virtue scenes should be LONGER than other scenes
-- Aim for 800-1000 words minimum
-- This is THE moment—take your time
+- MUST be 800-1000 words (strict requirement, DO NOT exceed 1000)
+- This is THE moment—take your time, but respect the word limit
 
 ### Show Intrinsic Motivation
 - DO NOT state "they expected nothing in return"
@@ -847,7 +936,7 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 - Show both internal conflict and external threat
 - Create intimacy between reader and character
 
-## IF CYCLE PHASE = "confrontation"
+## IF CYCLE PHASE = "adversity"
 **Goal**: Externalize internal conflict, escalate tension
 
 - Dramatize struggle through action and dialogue
@@ -895,18 +984,26 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 - Avoid purple prose or melodrama
 - Trust reader to feel without being told
 
-# WORD COUNT TARGET
-- Short scene: 300-500 words
-- Medium scene: 500-800 words
-- Long scene (VIRTUE): 800-1000 words
+# WORD COUNT REQUIREMENTS (STRICT)
+
+**CRITICAL: You MUST stay within these limits. Exceeding them will fail quality evaluation.**
+
+Phase-specific requirements:
+- **setup/transition**: 300-600 words (MAXIMUM 600 words)
+- **adversity**: 500-800 words (MAXIMUM 800 words)
+- **virtue**: 800-1000 words (MAXIMUM 1000 words)
+- **consequence**: 600-900 words (MAXIMUM 900 words)
+
+**Enforcement**: Token limits are set to enforce these ranges. Focus on quality over quantity. Be concise and impactful.
 
 # CRITICAL RULES
-1. Stay true to scene's cycle phase purpose
-2. Maintain character voice consistency
-3. Build or release tension as appropriate
-4. Show, don't tell (especially virtue and consequence)
-5. Every sentence must advance emotion or plot
-6. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
+1. **NEVER exceed maximum word count for your cycle phase** - This is a hard requirement
+2. Stay true to scene's cycle phase purpose
+3. Maintain character voice consistency
+4. Build or release tension as appropriate
+5. Show, don't tell (especially virtue and consequence)
+6. Every sentence must advance emotion or plot
+7. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
 
 # OUTPUT
 Return ONLY the prose narrative, no metadata, no explanations.`,
@@ -934,6 +1031,144 @@ Language: {language}
 
 Write the scene content following the cycle-specific guidelines based on the scene's cycle phase.`,
             },
+
+            toonplay: {
+                system: `You are a professional webtoon adapter specializing in novel-to-webtoon conversion.
+
+# TASK
+Convert the provided narrative scene into a toonplay specification for webtoon production.
+
+A toonplay is a structured comic script that specifies visual grammar for each panel, optimized for vertical webtoon scrolling (9:16 portrait, 928×1664 resolution).
+
+# CORE PRINCIPLES
+
+## 1. Show, Don't Tell
+- Externalize internal states through body language, facial expressions, and actions
+- Use strategic internal monologue sparingly (<10% of panels) at pivotal emotional moments
+- Prioritize dialogue and visual action over narration
+
+## 2. Webtoon Pacing (Thumb-Scroll Optimization)
+- Each panel = ONE distinct storytelling beat
+- Strategic white space between panels creates rhythm
+- Vertical composition takes advantage of scroll direction
+- Panel spacing controls pacing: close = fast, spaced = reflective
+
+## 3. Content Proportions (CRITICAL)
+- **Dialogue**: ~70% (primary story driver) - 7-8 panels out of 10 should have dialogue
+- **Visual Action**: ~30% (shown in panels, not told)
+- **Narration**: <5% (time/location markers only, 0-1 panels with narration)
+- **Internal Monologue**: <10% (strategic use at pivotal moments, 1-2 panels max)
+- If you absolutely need narration, keep it under 12 words and still include at least one dialogue balloon in the same panel.
+- Panels without dialogue are forbidden unless explicitly noted as cinematic; even then, add SFX.
+
+## 4. Text Overlay Requirement
+- Every panel MUST have either dialogue OR narrative text
+- No completely silent panels (unless intentionally cinematic)
+- Dialogue should drive story forward
+
+# SHOT TYPE DISTRIBUTION (8-12 panels, target: 10)
+
+For a 10-panel toonplay, distribute shot types as follows:
+- **1 establishing_shot**: Scene opening or major location change
+- **2-3 wide_shot**: Full action sequences, multiple characters, environment showcase
+- **3-5 medium_shot**: Main storytelling workhorse, conversations, character interactions
+- **2-3 close_up**: Emotional beats, reactions, important object details
+- **0-1 extreme_close_up**: Climactic moments, intense emotion, critical reveals
+- **0-1 over_shoulder or dutch_angle**: Special moments, tension, disorientation
+
+# PANEL SPECIFICATION REQUIREMENTS
+
+Each panel must specify ALL of the following:
+
+1. **panel_number**: Sequential number (1-indexed)
+2. **shot_type**: Camera framing (from types above)
+3. **description**: Detailed visual description for AI image generation (200-400 characters)
+   - What characters are doing
+   - Body language and facial expressions
+   - Key visual elements in frame
+4. **characters_visible**: Array of character IDs appearing in panel
+5. **character_poses**: Record of character ID → specific pose/body language
+6. **setting_focus**: Which part of the setting is emphasized
+7. **lighting**: Lighting description for mood (e.g., "soft morning light", "harsh shadows")
+8. **camera_angle**: Perspective (low angle, high angle, eye level, bird's eye, worm's eye, etc.)
+9. **narrative**: Optional caption text (use sparingly - <5% of panels for time/location, <10% for internal monologue)
+10. **dialogue**: Array of {character_id, text (max 150 chars), tone}
+11. **sfx**: Sound effects as visual text (e.g., [{text: "BOOM", emphasis: "dramatic"}])
+12. **mood**: Overall emotional tone (tense, hopeful, melancholic, etc.)
+- Panel 1 MUST be an \`establishing_shot\` that sets location, lighting, and weather while including a short line of dialogue (e.g., greeting, observation, or narration caption).
+- At least one panel between 6-10 MUST use a special shot (\`extreme_close_up\`, \`over_shoulder\`, or \`dutch_angle\`) to highlight emotion or tension.
+
+# CHARACTER CONSISTENCY
+
+Use exact character descriptions from the database:
+- Physical appearance must match database specifications
+- Maintain consistent character visual traits across all panels
+- Reference character names by their database IDs
+
+# ADAPTATION GUIDELINES
+
+## From Narrative Prose to Webtoon Panels
+
+1. **Identify Key Story Beats**: Break scene into 8-12 distinct moments
+2. **Prioritize Dialogue**: Extract or adapt dialogue from prose
+3. **Externalize Emotions**: Convert "he felt angry" → show angry facial expression and clenched fists
+4. **Strategic Narration**: Only use for time/location markers or critical internal revelation
+5. **Visual Grammar**: Choose shot types that serve the emotional beat
+6. **Pacing Rhythm**: Vary panel density for rhythm (action = many panels, reflection = fewer)
+
+## Example Conversion
+
+**Prose**: "Sarah felt betrayed when she saw Marcus with her rival. Her heart sank."
+
+**Toonplay**:
+- Panel 1 (wide_shot): Sarah enters room, sees Marcus and rival together, background blur
+- Panel 2 (close_up): Sarah's face, eyes widening, mouth slightly open (shock)
+- Panel 3 (close_up): Marcus's guilty expression, hand raised as if to explain
+- Panel 4 (extreme_close_up): Sarah's eyes, tears forming, internal monologue: "Not him... not her..."
+
+# OUTPUT FORMAT
+
+Return a complete ComicToonplay object with:
+- scene_id
+- scene_title
+- total_panels (8-12, target: 10)
+- panels (array of panel specifications)
+- pacing_notes (optional guidance on panel spacing)
+- narrative_arc (how this toonplay follows setup → tension → climax → resolution)
+
+CRITICAL: Ensure content proportions are met (70% dialogue, <5% narration, <10% internal monologue).`,
+                userTemplate: `Convert this narrative scene into a webtoon toonplay specification:
+
+SCENE INFORMATION:
+Title: {sceneTitle}
+Summary: {sceneSummary}
+
+SCENE CONTENT (Narrative Prose):
+{sceneContent}
+
+STORY CONTEXT:
+Genre: {storyGenre}
+Tone: {storyTone}
+
+CHARACTERS (use these exact descriptions for visual consistency):
+{characters}
+
+SETTINGS:
+{settings}
+
+LANGUAGE: {language}
+
+REQUIREMENTS:
+1. Generate 8-12 panels (target: 10)
+2. Distribute shot types according to guidelines
+3. Maintain content proportions (70% dialogue, 30% visual, <5% narration, <10% internal monologue)
+4. Every panel must have dialogue OR narrative text
+5. Use exact character descriptions for consistency
+6. Show emotions through expressions and body language, not narration
+7. Optimize for vertical webtoon scrolling (9:16 portrait, 928×1664)
+
+OUTPUT: Return structured JSON matching the AiComicToonplayZodSchema.`,
+            },
         };
     }
 
@@ -959,12 +1194,135 @@ Write the scene content following the cycle-specific guidelines based on the sce
 
     /**
      * Get prompt for specific provider and type
+     *
+     * @param provider - Model provider (gemini or ai-server)
+     * @param promptType - Type of prompt (story, part, chapter, scene)
+     * @param variables - Variables to replace in user template
+     * @param version - Optional prompt version (e.g., "v1.1" for testing iterations)
      */
     getPrompt(
         provider: ModelProvider,
         promptType: PromptType,
         variables: Record<string, string> = {},
+        version?: string,
     ): { system: string; user: string } {
+        // Check if a versioned prompt is requested and available
+        if (
+            version &&
+            (promptType === "part" ||
+                promptType === "story" ||
+                promptType === "chapter" ||
+                promptType === "scene_summary" ||
+                promptType === "scene_content")
+        ) {
+            // Load versioned prompt for iteration testing
+            // Use __dirname-based path for reliable module resolution across different runtimes
+            const path = require("node:path");
+            let promptPath: string;
+            let templateKey: string;
+
+            // Story prompt versioning
+            if (promptType === "story") {
+                if (version === "v1.3") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../../prompts/v1.3/story-prompt.js",
+                    );
+                    templateKey = "storyPromptV1_3";
+                } else {
+                    throw new Error(`Unknown story prompt version: ${version}`);
+                }
+            }
+            // Part prompt versioning
+            else if (promptType === "part") {
+                if (version === "v1.1") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../../prompts/v1.1/part-prompt.js",
+                    );
+                    templateKey = "partPromptV1_1";
+                } else if (version === "v1.2") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../../prompts/v1.2/part-prompt.js",
+                    );
+                    templateKey = "partPromptV1_2";
+                } else if (version === "v1.3") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../../prompts/v1.3/part-prompt.js",
+                    );
+                    templateKey = "partPromptV1_2"; // v1.3 uses v1.2 part prompt
+                } else {
+                    throw new Error(`Unknown part prompt version: ${version}`);
+                }
+            }
+            // Chapter prompt versioning
+            else if (promptType === "chapter") {
+                if (version === "v1.1") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../prompts/v1.1/chapter-prompt.js",
+                    );
+                    templateKey = "chapterPromptV1_1";
+                } else {
+                    throw new Error(
+                        `Unknown chapter prompt version: ${version}`,
+                    );
+                }
+            }
+            // Scene summary prompt versioning
+            else if (promptType === "scene_summary") {
+                if (version === "v1.1") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../prompts/v1.1/scene-summary-prompt.js",
+                    );
+                    templateKey = "sceneSummaryPromptV1_1";
+                } else {
+                    throw new Error(
+                        `Unknown scene_summary prompt version: ${version}`,
+                    );
+                }
+            }
+            // Scene content prompt versioning
+            else if (promptType === "scene_content") {
+                if (version === "v1.1") {
+                    promptPath = path.resolve(
+                        __dirname,
+                        "../prompts/v1.1/scene-content-prompt.js",
+                    );
+                    templateKey = "sceneContentPromptV1_1";
+                } else {
+                    throw new Error(
+                        `Unknown scene_content prompt version: ${version}`,
+                    );
+                }
+            } else {
+                throw new Error(
+                    `Versioned prompts not available for prompt type: ${promptType}`,
+                );
+            }
+
+            const promptModule = require(promptPath);
+            const template = promptModule[templateKey];
+
+            // Replace variables in user template
+            let userPrompt = template.userTemplate;
+            Object.entries(variables).forEach(([key, value]) => {
+                userPrompt = userPrompt.replace(
+                    new RegExp(`\\{${key}\\}`, "g"),
+                    value,
+                );
+            });
+
+            return {
+                system: template.system,
+                user: userPrompt,
+            };
+        }
+
+        // Default: use standard prompts (v1.0)
         const template = this.prompts[provider][promptType];
 
         if (!template) {

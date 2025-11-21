@@ -177,7 +177,8 @@ export function CreateStoryForm() {
 
         try {
             // Use fetch with streaming for Novel generation (Adversity-Triumph Engine)
-            const response = await fetch("/studio/api/novels", {
+            // TODO: Novel generation endpoint removed - needs reimplementation
+            const response = await fetch("/api/studio/story", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -721,9 +722,7 @@ export function CreateStoryForm() {
 
                                     // Track story creation
                                     if (completedStoryId) {
-                                        trackStoryEvent.create(
-                                            completedStoryId,
-                                        );
+                                        trackStoryEvent("create", completedStoryId);
                                     }
 
                                     // Mark all remaining steps as completed

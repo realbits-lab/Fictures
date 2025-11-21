@@ -1,0 +1,513 @@
+{
+  "cycle": 5,
+  "name": "Production-Ready Quality",
+  "results": [
+    {
+      "testId": "action-sequence-1",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16377,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16342,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32727,
+      "successRate": 1,
+      "averageGenerationTime": 16359.5
+    },
+    {
+      "testId": "action-sequence-2",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16355,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16335,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32697,
+      "successRate": 1,
+      "averageGenerationTime": 16345
+    },
+    {
+      "testId": "action-sequence-3",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16370,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16354,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32731,
+      "successRate": 1,
+      "averageGenerationTime": 16362
+    },
+    {
+      "testId": "action-sequence-4",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16359,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16336,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32704,
+      "successRate": 1,
+      "averageGenerationTime": 16347.5
+    },
+    {
+      "testId": "action-sequence-5",
+      "sceneId": "action-sequence",
+      "sceneName": "Action Sequence",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16327,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        },
+        {
+          "panelNumber": 2,
+          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16417,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 32752,
+      "successRate": 1,
+      "averageGenerationTime": 16372
+    },
+    {
+      "testId": "dialogue-heavy-1",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16345,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16348,
+      "successRate": 1,
+      "averageGenerationTime": 16345
+    },
+    {
+      "testId": "dialogue-heavy-2",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12330,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12333,
+      "successRate": 1,
+      "averageGenerationTime": 12330
+    },
+    {
+      "testId": "dialogue-heavy-3",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12360,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12364,
+      "successRate": 1,
+      "averageGenerationTime": 12360
+    },
+    {
+      "testId": "dialogue-heavy-4",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12344,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12347,
+      "successRate": 1,
+      "averageGenerationTime": 12344
+    },
+    {
+      "testId": "dialogue-heavy-5",
+      "sceneId": "dialogue-heavy",
+      "sceneName": "Dialogue Scene",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, medium_shot, Elena and David at coffee shop table, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12339,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12342,
+      "successRate": 1,
+      "averageGenerationTime": 12339
+    },
+    {
+      "testId": "emotional-beat-1",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16303,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16306,
+      "successRate": 1,
+      "averageGenerationTime": 16303
+    },
+    {
+      "testId": "emotional-beat-2",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12325,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12329,
+      "successRate": 1,
+      "averageGenerationTime": 12325
+    },
+    {
+      "testId": "emotional-beat-3",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12303,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12306,
+      "successRate": 1,
+      "averageGenerationTime": 12303
+    },
+    {
+      "testId": "emotional-beat-4",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12307,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12311,
+      "successRate": 1,
+      "averageGenerationTime": 12307
+    },
+    {
+      "testId": "emotional-beat-5",
+      "sceneId": "emotional-beat",
+      "sceneName": "Emotional Beat",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12294,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12297,
+      "successRate": 1,
+      "averageGenerationTime": 12294
+    },
+    {
+      "testId": "establishing-shot-1",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16363,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16367,
+      "successRate": 1,
+      "averageGenerationTime": 16363
+    },
+    {
+      "testId": "establishing-shot-2",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12336,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12342,
+      "successRate": 1,
+      "averageGenerationTime": 12336
+    },
+    {
+      "testId": "establishing-shot-3",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12356,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12360,
+      "successRate": 1,
+      "averageGenerationTime": 12356
+    },
+    {
+      "testId": "establishing-shot-4",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12387,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12391,
+      "successRate": 1,
+      "averageGenerationTime": 12387
+    },
+    {
+      "testId": "establishing-shot-5",
+      "sceneId": "establishing-shot",
+      "sceneName": "Establishing Shot",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12340,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12346,
+      "successRate": 1,
+      "averageGenerationTime": 12340
+    },
+    {
+      "testId": "climactic-moment-1",
+      "sceneId": "climactic-moment",
+      "sceneName": "Climactic Moment",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 16343,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 16345,
+      "successRate": 1,
+      "averageGenerationTime": 16343
+    },
+    {
+      "testId": "climactic-moment-2",
+      "sceneId": "climactic-moment",
+      "sceneName": "Climactic Moment",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12325,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12330,
+      "successRate": 1,
+      "averageGenerationTime": 12325
+    },
+    {
+      "testId": "climactic-moment-3",
+      "sceneId": "climactic-moment",
+      "sceneName": "Climactic Moment",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12323,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12326,
+      "successRate": 1,
+      "averageGenerationTime": 12323
+    },
+    {
+      "testId": "climactic-moment-4",
+      "sceneId": "climactic-moment",
+      "sceneName": "Climactic Moment",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12314,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12318,
+      "successRate": 1,
+      "averageGenerationTime": 12314
+    },
+    {
+      "testId": "climactic-moment-5",
+      "sceneId": "climactic-moment",
+      "sceneName": "Climactic Moment",
+      "panels": [
+        {
+          "panelNumber": 1,
+          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, professional webtoon comic panel, expressive character poses and facial details, cinematic mood lighting, clear visual hierarchy, emotional storytelling composition, mobile-optimized vertical format",
+          "generationTime": 12322,
+          "success": true,
+          "width": 928,
+          "height": 1664
+        }
+      ],
+      "totalTime": 12325,
+      "successRate": 1,
+      "averageGenerationTime": 12322
+    }
+  ],
+  "metrics": {
+    "totalTests": 25,
+    "totalPanels": 30,
+    "successfulPanels": 30,
+    "successRate": 1,
+    "averageGenerationTime": 14.2077,
+    "minGenerationTime": 12.294,
+    "maxGenerationTime": 16.417
+  },
+  "improvements": [
+    "Visual Transformation: Show don't tell (target <5% narration)",
+    "Webtoon Pacing: 8-12 panels with shot variety",
+    "Narrative Fidelity: Preserve emotional beats",
+    "Script Formatting: Production-ready detail level"
+  ],
+  "duration": 426.344,
+  "timestamp": "2025-11-18T10:05:36.137Z"
+}

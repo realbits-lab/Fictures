@@ -1,11 +1,5 @@
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
-import {
-    Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 
 export default function AppearancePage() {
     return (

@@ -2,22 +2,24 @@
  * Story Service
  *
  * Service layer for story generation and database persistence.
+ * Now uses authentication context instead of passing API keys as parameters.
  */
 
 import { nanoid } from "nanoid";
 import type { StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import { db } from "@/lib/db";
-import { stories } from "@/lib/db/schema";
+import { type InferSelectModel } from "drizzle-orm";
+import { stories } from "@/lib/schemas/database";
+
+// Database row types (for query results)
+type Story = InferSelectModel<typeof stories>;
+import { insertStorySchema } from "@/lib/schemas/zod/generated";
 import { generateStory } from "../generators/story-generator";
 import type {
-    GeneratorStoryParams,
-    GeneratorStoryResult,
-} from "../generators/types";
-import {
-    insertStorySchema,
-    type Story,
-} from "../generators/zod-schemas.generated";
+    GenerateStoryParams,
+    GenerateStoryResult,
+} from "@/lib/schemas/generators/types";
 
 export interface ServiceStoryParams {
     userPrompt: string;
@@ -25,6 +27,8 @@ export interface ServiceStoryParams {
     preferredGenre?: StoryGenre;
     preferredTone?: StoryTone;
     userId: string;
+    promptVersion?: string;
+    // apiKey removed - now retrieved from auth context
 }
 
 export interface ServiceStoryResult {
@@ -45,17 +49,19 @@ export class StoryService {
             preferredGenre,
             preferredTone,
             userId,
+            promptVersion,
         } = params;
 
         // 1. Generate story using pure generator
-        const generateParams: GeneratorStoryParams = {
+        // API key is automatically retrieved from auth context
+        const generateParams: GenerateStoryParams = {
             userPrompt,
             language,
             preferredGenre,
             preferredTone,
         };
 
-        const generationResult: GeneratorStoryResult =
+        const generationResult: GenerateStoryResult =
             await generateStory(generateParams);
 
         // 2. Prepare story data for database
@@ -70,7 +76,7 @@ export class StoryService {
             genre: generationResult.story.genre || null,
             tone: generationResult.story.tone || "hopeful",
             moralFramework: generationResult.story.moralFramework || null,
-            status: "writing",
+            status: "draft",
             viewCount: 0,
             rating: 0,
             ratingCount: 0,

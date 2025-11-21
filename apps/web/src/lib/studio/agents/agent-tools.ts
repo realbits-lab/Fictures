@@ -55,7 +55,7 @@ export type StudioAgentToolName = keyof typeof studioAgentTools;
  * - generateChapters (Phase 5)
  * - generateSceneSummaries (Phase 6)
  * - generateSceneContent (Phase 7)
- * - evaluateScene (Phase 8)
+ * - improveScene (Phase 8)
  * - generateImages (Phase 9)
  *
  * Advisory Tools (3):

@@ -1,0 +1,43 @@
+{
+  "cycle": 1,
+  "name": "Baseline",
+  "imageMetrics": {
+    "version": "v1.1",
+    "totalTests": 15,
+    "testDate": "2025-11-17T23:42:16.182Z",
+    "averageWeightedScore": 4.506063829787234,
+    "passRate": 1,
+    "firstPassSuccessRate": 0.6666666666666666,
+    "categoryAverages": {
+      "generationQuality": 4.874468085106385,
+      "optimizationQuality": 5,
+      "visualQuality": 3.5,
+      "performance": 5
+    },
+    "averageAspectRatioAccuracy": 1.276595744680846,
+    "resolutionComplianceRate": 1,
+    "averagePromptAdherence": 85,
+    "formatComplianceRate": 1,
+    "averageFileSize": 1000.7354166666667,
+    "averageAvifCompressionRatio": 97.67187062538456,
+    "averageAvif1xSize": 23.984700520833332,
+    "averageAvif2xSize": 0,
+    "averageTotalVariantSize": 23.984700520833332,
+    "averageStorageRatio": 2.328129374615451,
+    "averageVisualQualityScore": 3.5,
+    "averageArtifactCount": 0,
+    "aspectRatioPreservationRate": 1,
+    "variantCountComplianceRate": 1,
+    "averageGenerationTime": 7.887199999999999,
+    "averageOptimizationTime": 6.430333333333334,
+    "averageTotalTime": 18.5436,
+    "successRate": 1,
+    "failurePatterns": []
+  },
+  "improvements": [
+    "Baseline metrics established",
+    "No changes from v1.0"
+  ],
+  "duration": 318.01,
+  "timestamp": "2025-11-17T23:42:38.946Z"
+}

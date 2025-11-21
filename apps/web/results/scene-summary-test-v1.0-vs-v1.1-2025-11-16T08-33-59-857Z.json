@@ -1,0 +1,1602 @@
+{
+  "config": {
+    "controlVersion": "v1.0",
+    "experimentVersion": "v1.1",
+    "testPrompts": [
+      "last-garden"
+    ],
+    "sampleSize": 3,
+    "hypothesis": "Experiment version will improve scene summary metrics (phase distribution, emotional beat, pacing)",
+    "expectedImprovement": "See hypothesis"
+  },
+  "testDate": "2025-11-16T08:49:55.658Z",
+  "control": [
+    {
+      "storyId": "story_BjRT1S2OeUCdPN8v",
+      "chapterId": "chapter_0lckSDBC_mYbcSiP",
+      "sceneIds": [
+        "scene_Rf9U_d2Y8vjAuUXJ",
+        "scene_PjKjMcgPCSSnY9qr",
+        "scene_9SAApaSQM9ywjSia",
+        "scene_fAhYRjBVte9vktV4",
+        "scene_tg4vf7Nq2YQTsnGT"
+      ],
+      "evaluations": [
+        {
+          "sceneId": "scene_Rf9U_d2Y8vjAuUXJ",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282287146_mclp4ru",
+            "sceneId": "scene_Rf9U_d2Y8vjAuUXJ",
+            "timestamp": "2025-11-16T08:38:07.146Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_PjKjMcgPCSSnY9qr",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282287273_e5vpguu",
+            "sceneId": "scene_PjKjMcgPCSSnY9qr",
+            "timestamp": "2025-11-16T08:38:07.273Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_9SAApaSQM9ywjSia",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282287396_cbw1ze5",
+            "sceneId": "scene_9SAApaSQM9ywjSia",
+            "timestamp": "2025-11-16T08:38:07.397Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_fAhYRjBVte9vktV4",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282287520_w85qszz",
+            "sceneId": "scene_fAhYRjBVte9vktV4",
+            "timestamp": "2025-11-16T08:38:07.520Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_tg4vf7Nq2YQTsnGT",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282287645_63amo4p",
+            "sceneId": "scene_tg4vf7Nq2YQTsnGT",
+            "timestamp": "2025-11-16T08:38:07.645Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "storyId": "story_SAtTjKoehiI7yT8q",
+      "chapterId": "chapter_coW-alql0DCxx2Z7",
+      "sceneIds": [
+        "scene_cryQAWhSbQnaY0Qt",
+        "scene_2MCHqXZIEJgobVhj",
+        "scene_D28PBKHAA08m20-0",
+        "scene_-sbmU15ne4kr42cU",
+        "scene_jHtgIxYeMoY1Q2su"
+      ],
+      "evaluations": [
+        {
+          "sceneId": "scene_cryQAWhSbQnaY0Qt",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282597846_j6ht423",
+            "sceneId": "scene_cryQAWhSbQnaY0Qt",
+            "timestamp": "2025-11-16T08:43:17.846Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_2MCHqXZIEJgobVhj",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282597969_7xvvord",
+            "sceneId": "scene_2MCHqXZIEJgobVhj",
+            "timestamp": "2025-11-16T08:43:17.969Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_D28PBKHAA08m20-0",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282598091_zqzkorx",
+            "sceneId": "scene_D28PBKHAA08m20-0",
+            "timestamp": "2025-11-16T08:43:18.091Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_-sbmU15ne4kr42cU",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282598211_7cesaar",
+            "sceneId": "scene_-sbmU15ne4kr42cU",
+            "timestamp": "2025-11-16T08:43:18.211Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_jHtgIxYeMoY1Q2su",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282598331_xs8i1vx",
+            "sceneId": "scene_jHtgIxYeMoY1Q2su",
+            "timestamp": "2025-11-16T08:43:18.331Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "storyId": "story_t8Y55_23TCJs7pfE",
+      "chapterId": "chapter_25yyAfGx35HdjNwx",
+      "sceneIds": [
+        "scene_EWxVwzyO98g0XWtf",
+        "scene_GuF0Z1yl3uROwi37",
+        "scene_nyfVlJaTGJDsJJQ1",
+        "scene_TSs1pkgwYhszqY2f",
+        "scene_VryCk3ruNyVjYOhO"
+      ],
+      "evaluations": [
+        {
+          "sceneId": "scene_EWxVwzyO98g0XWtf",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282934179_f6fy03f",
+            "sceneId": "scene_EWxVwzyO98g0XWtf",
+            "timestamp": "2025-11-16T08:48:54.179Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_GuF0Z1yl3uROwi37",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282934292_y1fhrov",
+            "sceneId": "scene_GuF0Z1yl3uROwi37",
+            "timestamp": "2025-11-16T08:48:54.292Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_nyfVlJaTGJDsJJQ1",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282934400_pguxmu3",
+            "sceneId": "scene_nyfVlJaTGJDsJJQ1",
+            "timestamp": "2025-11-16T08:48:54.400Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_TSs1pkgwYhszqY2f",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282934512_ou2oac7",
+            "sceneId": "scene_TSs1pkgwYhszqY2f",
+            "timestamp": "2025-11-16T08:48:54.512Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_VryCk3ruNyVjYOhO",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282934620_mowo0x5",
+            "sceneId": "scene_VryCk3ruNyVjYOhO",
+            "timestamp": "2025-11-16T08:48:54.620Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "experiment": [
+    {
+      "storyId": "story_BjRT1S2OeUCdPN8v",
+      "chapterId": "chapter_0lckSDBC_mYbcSiP",
+      "sceneIds": [
+        "scene_KOasstYqF3s5o_f3",
+        "scene_x9xq4jUszTKpvLth",
+        "scene_Rv3sNpMdxe3iFPrh",
+        "scene_1AWN6lS9A1k2KJ7c",
+        "scene_MX4xclsTfLVincEL"
+      ],
+      "evaluations": [
+        {
+          "sceneId": "scene_KOasstYqF3s5o_f3",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282353363_1ubm6uf",
+            "sceneId": "scene_KOasstYqF3s5o_f3",
+            "timestamp": "2025-11-16T08:39:13.363Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_x9xq4jUszTKpvLth",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282353475_u49j18y",
+            "sceneId": "scene_x9xq4jUszTKpvLth",
+            "timestamp": "2025-11-16T08:39:13.475Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_Rv3sNpMdxe3iFPrh",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282353582_0yy1nk6",
+            "sceneId": "scene_Rv3sNpMdxe3iFPrh",
+            "timestamp": "2025-11-16T08:39:13.582Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_1AWN6lS9A1k2KJ7c",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282353690_tnqnciv",
+            "sceneId": "scene_1AWN6lS9A1k2KJ7c",
+            "timestamp": "2025-11-16T08:39:13.690Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_MX4xclsTfLVincEL",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282353795_e6bihj8",
+            "sceneId": "scene_MX4xclsTfLVincEL",
+            "timestamp": "2025-11-16T08:39:13.795Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "storyId": "story_SAtTjKoehiI7yT8q",
+      "chapterId": "chapter_coW-alql0DCxx2Z7",
+      "sceneIds": [
+        "scene_h_3ZQgVjAzBEck_a",
+        "scene_85v2wdLUpMyipxpH",
+        "scene_wPHpwPf04eF9JRV6",
+        "scene_K0u31mIffN71Z8CO",
+        "scene_Zs4crdQFiOY6au-_"
+      ],
+      "evaluations": [
+        {
+          "sceneId": "scene_h_3ZQgVjAzBEck_a",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282666066_cor42bu",
+            "sceneId": "scene_h_3ZQgVjAzBEck_a",
+            "timestamp": "2025-11-16T08:44:26.066Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_85v2wdLUpMyipxpH",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282666192_w3lb1yp",
+            "sceneId": "scene_85v2wdLUpMyipxpH",
+            "timestamp": "2025-11-16T08:44:26.192Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_wPHpwPf04eF9JRV6",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282666314_ycjm5fd",
+            "sceneId": "scene_wPHpwPf04eF9JRV6",
+            "timestamp": "2025-11-16T08:44:26.314Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_K0u31mIffN71Z8CO",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282666435_v7vq64j",
+            "sceneId": "scene_K0u31mIffN71Z8CO",
+            "timestamp": "2025-11-16T08:44:26.435Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_Zs4crdQFiOY6au-_",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282666557_lb8n8ti",
+            "sceneId": "scene_Zs4crdQFiOY6au-_",
+            "timestamp": "2025-11-16T08:44:26.557Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "storyId": "story_t8Y55_23TCJs7pfE",
+      "chapterId": "chapter_25yyAfGx35HdjNwx",
+      "sceneIds": [
+        "scene_jo6Z4-J5cZDmqLIm",
+        "scene_AUTwleNBelntIFXF",
+        "scene_AE8BzhNkFiypP006",
+        "scene_lLFqkLOywYxodFBy",
+        "scene_15EuaS0V9KVnU5Mi"
+      ],
+      "evaluations": [
+        {
+          "sceneId": "scene_jo6Z4-J5cZDmqLIm",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282995228_mw9gjih",
+            "sceneId": "scene_jo6Z4-J5cZDmqLIm",
+            "timestamp": "2025-11-16T08:49:55.228Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_AUTwleNBelntIFXF",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282995335_ga201bo",
+            "sceneId": "scene_AUTwleNBelntIFXF",
+            "timestamp": "2025-11-16T08:49:55.335Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_AE8BzhNkFiypP006",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282995444_ts6cfks",
+            "sceneId": "scene_AE8BzhNkFiypP006",
+            "timestamp": "2025-11-16T08:49:55.444Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_lLFqkLOywYxodFBy",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282995550_6h4iodl",
+            "sceneId": "scene_lLFqkLOywYxodFBy",
+            "timestamp": "2025-11-16T08:49:55.550Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        },
+        {
+          "sceneId": "scene_15EuaS0V9KVnU5Mi",
+          "evaluation": {
+            "evaluationId": "scene-summary_1763282995656_07fyvlt",
+            "sceneId": "scene_15EuaS0V9KVnU5Mi",
+            "timestamp": "2025-11-16T08:49:55.656Z",
+            "evaluationMode": "thorough",
+            "overallScore": 3.83,
+            "passed": true,
+            "metrics": {
+              "phaseDistributionBalance": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Phase Distribution Balance",
+                "method": "automated",
+                "phasesRepresented": [
+                  "setup",
+                  "adversity",
+                  "virtue",
+                  "consequence",
+                  "transition"
+                ],
+                "criticalPhasesPresent": true
+              },
+              "emotionalBeatAssignment": {
+                "score": 3.5,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Emotional Beat Assignment",
+                "method": "ai-evaluation",
+                "emotionalBeatClarity": 4,
+                "emotionalBeatVariety": 3
+              },
+              "pacingRhythm": {
+                "score": 4,
+                "target": 4,
+                "threshold": 3,
+                "passed": true,
+                "feedback": "Pacing Rhythm",
+                "method": "ai-evaluation",
+                "phaseSequenceCorrect": true,
+                "pacingFlow": "build → peak → release"
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "controlSnapshot": {
+      "phaseDistributionBalance": 4,
+      "emotionalBeatAssignment": 3.5,
+      "pacingRhythm": 4
+    },
+    "experimentSnapshot": {
+      "phaseDistributionBalance": 4,
+      "emotionalBeatAssignment": 3.5,
+      "pacingRhythm": 4
+    },
+    "deltas": {
+      "phaseDistributionBalance": {
+        "control": 4,
+        "experiment": 4,
+        "delta": 0,
+        "percentage": 0,
+        "improved": false
+      },
+      "emotionalBeatAssignment": {
+        "control": 3.5,
+        "experiment": 3.5,
+        "delta": 0,
+        "percentage": 0,
+        "improved": false
+      },
+      "pacingRhythm": {
+        "control": 4,
+        "experiment": 4,
+        "delta": 0,
+        "percentage": 0,
+        "improved": false
+      }
+    },
+    "pValue": null,
+    "recommendation": "REVERT"
+  }
+}

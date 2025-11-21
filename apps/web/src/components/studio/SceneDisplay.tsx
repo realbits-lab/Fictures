@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 
@@ -65,14 +65,14 @@ export function SceneDisplay({
 
     // Fetch scene data
     console.log(
-        `🔄 [CLIENT] SWR: Initiating scene data fetch from /studio/api/stories/${storyId}/scenes/${sceneId}`,
+        `🔄 [CLIENT] SWR: Initiating scene data fetch from /api/studio/story/${storyId}/scenes/${sceneId}`,
     );
     const swrSceneStart = Date.now();
     const { data: sceneData, isLoading: isLoadingScene } = useSWR(
-        `/studio/api/stories/${storyId}/scenes/${sceneId}`,
+        `/api/studio/story/${storyId}/scenes/${sceneId}`,
         fetcher,
         {
-            onSuccess: (data) => {
+            onSuccess: (_data) => {
                 const duration = Date.now() - swrSceneStart;
                 console.log(
                     `✅ [CLIENT] SWR: Scene data fetched in ${duration}ms`,
@@ -90,14 +90,14 @@ export function SceneDisplay({
 
     // Fetch characters data
     console.log(
-        `🔄 [CLIENT] SWR: Initiating characters fetch from /studio/api/stories/${storyId}/characters`,
+        `🔄 [CLIENT] SWR: Initiating characters fetch from /api/studio/story/${storyId}/characters`,
     );
     const swrCharactersStart = Date.now();
     const { data: charactersData } = useSWR(
-        `/studio/api/stories/${storyId}/characters`,
+        `/api/studio/story/${storyId}/characters`,
         fetcher,
         {
-            onSuccess: (data) => {
+            onSuccess: (_data) => {
                 const duration = Date.now() - swrCharactersStart;
                 console.log(
                     `✅ [CLIENT] SWR: Characters fetched in ${duration}ms`,
@@ -108,14 +108,14 @@ export function SceneDisplay({
 
     // Fetch settings data
     console.log(
-        `🔄 [CLIENT] SWR: Initiating settings fetch from /studio/api/stories/${storyId}/settings`,
+        `🔄 [CLIENT] SWR: Initiating settings fetch from /api/studio/story/${storyId}/settings`,
     );
     const swrSettingsStart = Date.now();
     const { data: settingsData } = useSWR(
-        `/studio/api/stories/${storyId}/settings`,
+        `/api/studio/story/${storyId}/settings`,
         fetcher,
         {
-            onSuccess: (data) => {
+            onSuccess: (_data) => {
                 const duration = Date.now() - swrSettingsStart;
                 console.log(
                     `✅ [CLIENT] SWR: Settings fetched in ${duration}ms`,

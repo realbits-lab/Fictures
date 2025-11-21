@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Badge, Button, Card, CardContent } from "@/components/ui";
-import { useProtectedAction } from "@/hooks/useProtectedAction";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 interface Post {
     id: string;
@@ -249,7 +249,7 @@ function CommunityPost({
                             className="flex items-center gap-2 text-gray-500 hover:text-green-500"
                             onClick={() => {
                                 navigator.clipboard.writeText(
-                                    window.location.href + "#post-" + post.id,
+                                    `${window.location.href}#post-${post.id}`,
                                 );
                                 alert("Link copied to clipboard!");
                             }}
@@ -261,48 +261,45 @@ function CommunityPost({
 
                     {/* Report/More Actions */}
                     <div className="flex items-center gap-2">
-                        {isAuthor && (
-                            <>
-                                {showDeleteConfirm ? (
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                                            Are you sure?
-                                        </span>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                            onClick={handleDelete}
-                                            disabled={isDeleting}
-                                        >
-                                            {isDeleting
-                                                ? "⏳ Deleting..."
-                                                : "✓ Yes, Delete"}
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-xs text-gray-400 hover:text-gray-600"
-                                            onClick={() =>
-                                                setShowDeleteConfirm(false)
-                                            }
-                                            disabled={isDeleting}
-                                        >
-                                            ✗ Cancel
-                                        </Button>
-                                    </div>
-                                ) : (
+                        {isAuthor &&
+                            (showDeleteConfirm ? (
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                                        Are you sure?
+                                    </span>
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        className="text-xs text-red-600 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/20"
                                         onClick={handleDelete}
+                                        disabled={isDeleting}
                                     >
-                                        🗑️ Delete
+                                        {isDeleting
+                                            ? "⏳ Deleting..."
+                                            : "✓ Yes, Delete"}
                                     </Button>
-                                )}
-                            </>
-                        )}
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-xs text-gray-400 hover:text-gray-600"
+                                        onClick={() =>
+                                            setShowDeleteConfirm(false)
+                                        }
+                                        disabled={isDeleting}
+                                    >
+                                        ✗ Cancel
+                                    </Button>
+                                </div>
+                            ) : (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    onClick={handleDelete}
+                                >
+                                    🗑️ Delete
+                                </Button>
+                            ))}
                         {session && !isAuthor && (
                             <Button
                                 variant="ghost"
@@ -362,7 +359,6 @@ export function CommunityPostsList({
                 return b.likes + b.views - (a.likes + a.views);
             case "replies":
                 return b.replies - a.replies;
-            case "recent":
             default:
                 return (
                     new Date(b.lastActivity).getTime() -

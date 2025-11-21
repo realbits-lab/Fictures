@@ -179,7 +179,7 @@ export function formatDialogueEnhanced(text: string): string {
     result = result.replace(/\n{4,}/g, "\n\n\n");
 
     // Ensure single newline at end
-    result = result.trimEnd() + "\n";
+    result = `${result.trimEnd()}\n`;
 
     return result;
 }

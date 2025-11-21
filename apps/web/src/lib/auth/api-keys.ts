@@ -1,4 +1,5 @@
-import { createHash, randomBytes } from "crypto";
+import { randomBytes } from "node:crypto";
+import bcrypt from "bcryptjs";
 import { nanoid } from "nanoid";
 
 // API key scopes - define what actions each scope allows
@@ -35,11 +36,11 @@ export const ALL_SCOPES = Object.keys(API_SCOPES) as ApiScope[];
  * Generate a cryptographically secure API key
  * Format: fic_[12_char_prefix]_[rest_of_key]
  */
-export function generateApiKey(): {
+export async function generateApiKey(): Promise<{
     fullKey: string;
     hash: string;
     prefix: string;
-} {
+}> {
     // Generate 32 random bytes and encode as base64url (URL-safe)
     const randomKey = randomBytes(32).toString("base64url");
 
@@ -51,7 +52,7 @@ export function generateApiKey(): {
     const fullKey = `${prefix}_${randomKey}`;
 
     // Hash the full key for secure storage
-    const hash = hashApiKey(fullKey);
+    const hash = await hashApiKey(fullKey);
 
     return {
         fullKey,
@@ -61,10 +62,13 @@ export function generateApiKey(): {
 }
 
 /**
- * Hash an API key using SHA-256
+ * Hash an API key using bcrypt for secure storage
+ * This matches the verification in dual-auth.ts
  */
-export function hashApiKey(key: string): string {
-    return createHash("sha256").update(key).digest("hex");
+export async function hashApiKey(key: string): Promise<string> {
+    // Use cost factor 10 for reasonable security/performance balance
+    const saltRounds = 10;
+    return await bcrypt.hash(key, saltRounds);
 }
 
 /**

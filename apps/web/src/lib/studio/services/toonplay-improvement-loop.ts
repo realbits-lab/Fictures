@@ -1,0 +1,437 @@
+/**
+ * Toonplay Iterative Improvement Loop
+ *
+ * Generates toonplay with automatic quality evaluation and improvement.
+ * Implements the iterative refinement process described in docs/comics/comics-toonplay.md
+ *
+ * Process:
+ * 1. Generate initial toonplay
+ * 2. Evaluate quality using rubric
+ * 3. If score < 3.0/5.0, improve and re-evaluate (max 2 improvement cycles)
+ * 4. Return best version with evaluation report
+ */
+
+import type { characters, scenes, settings } from "@/lib/schemas/database";
+
+// Type aliases
+type StoryScene = typeof scenes.$inferSelect;
+type StoryCharacter = typeof characters.$inferSelect;
+type StorySetting = typeof settings.$inferSelect;
+
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
+import { AiComicToonplayZodSchema } from "@/lib/schemas/ai/ai-toonplay";
+import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
+import { createTextGenerationClient } from "@/lib/studio/generators/ai-client";
+import {
+    evaluateToonplay,
+    formatEvaluationReport,
+    type ToonplayEvaluationResult,
+} from "./toonplay-evaluator";
+import type { GeneratorToonplayParams } from "@/lib/schemas/generators/types";
+
+// ============================================
+// TYPES
+// ============================================
+
+export interface ToonplayGenerationResult {
+    toonplay: AiComicToonplayType;
+    evaluation: ToonplayEvaluationResult;
+    iterations: number;
+    improvement_history: {
+        iteration: number;
+        score: number;
+        passed: boolean;
+    }[];
+    final_report: string;
+}
+
+export interface GenerateToonplayWithEvaluationOptions {
+    scene: typeof scenes.$inferSelect;
+    characters: (typeof characters.$inferSelect)[];
+    setting: typeof settings.$inferSelect;
+    storyGenre: string | null;
+    targetPanelCount?: number;
+    maxIterations?: number;
+    passingScore?: number;
+}
+
+// ============================================
+// MAIN GENERATION FUNCTION WITH EVALUATION
+// ============================================
+
+export async function generateToonplayWithEvaluation(
+    options: GenerateToonplayWithEvaluationOptions,
+): Promise<ToonplayGenerationResult> {
+    const {
+        scene,
+        characters,
+        setting,
+        storyGenre,
+        targetPanelCount = 10,
+        maxIterations = 2,
+        passingScore = 3.0,
+    } = options;
+
+    const sceneTitle = scene.title;
+    console.log(
+        `\n🎬 ═══════════════════════════════════════════════════════════`,
+    );
+    console.log(`   TOONPLAY GENERATION WITH EVALUATION`);
+    console.log(`   Scene: "${sceneTitle}"`);
+    console.log(`   Characters: ${characters.length}`);
+    console.log(`   Setting: ${setting.id}`);
+    console.log(`   Max Iterations: ${maxIterations}`);
+    console.log(`   Passing Score: ${passingScore}/5.0`);
+    console.log(
+        `   ═══════════════════════════════════════════════════════════\n`,
+    );
+
+    let currentToonplay: AiComicToonplayType | null = null;
+    let currentEvaluation: ToonplayEvaluationResult | null = null;
+    let bestToonplay: AiComicToonplayType | null = null;
+    let bestEvaluation: ToonplayEvaluationResult | null = null;
+    let bestScore = 0;
+
+    const improvementHistory: {
+        iteration: number;
+        score: number;
+        passed: boolean;
+    }[] = [];
+
+    // ========================================
+    // ITERATION 0: Initial Generation
+    // ========================================
+
+    console.log(`\n📝 Iteration 0: Initial Toonplay Generation`);
+
+    const safeStoryGenre = storyGenre || "Unknown";
+
+    console.log("[toonplay-loop] ⚙️ convertSceneToToonplay input:", {
+        sceneId: scene.id,
+        characterIds: characters.map((c) => c.id),
+        settingId: setting.id,
+        targetPanelCount,
+    });
+    const generatorStory = {
+        id: "temp",
+        genre: safeStoryGenre,
+        tone: "hopeful",
+        title: scene.title,
+        summary: scene.summary || "",
+        moralFramework:
+            "Courage and compassion guide the transformation of this story.",
+    } as unknown as GeneratorToonplayParams["story"];
+
+    const generatorParams: GeneratorToonplayParams = {
+        scene: scene as unknown as GeneratorToonplayParams["scene"],
+        story: generatorStory,
+        characters: characters as unknown as GeneratorToonplayParams["characters"],
+        settings: [setting] as unknown as GeneratorToonplayParams["settings"],
+    };
+
+    const generatorResult = await convertSceneToToonplay(generatorParams);
+
+    currentToonplay = generatorResult.toonplay;
+
+    console.log(`   ✅ Generated ${currentToonplay.total_panels} panels`);
+
+    // Evaluate initial toonplay
+    console.log(`\n📊 Evaluating initial toonplay...`);
+
+    currentEvaluation = await evaluateToonplay({
+        toonplay: currentToonplay,
+        sourceScene: scene,
+        characters,
+        setting,
+        storyGenre: safeStoryGenre,
+    });
+
+    improvementHistory.push({
+        iteration: 0,
+        score: currentEvaluation.weighted_score,
+        passed: currentEvaluation.passes,
+    });
+
+    bestToonplay = currentToonplay;
+    bestEvaluation = currentEvaluation;
+    bestScore = currentEvaluation.weighted_score;
+
+    console.log(
+        `\n   Score: ${currentEvaluation.weighted_score.toFixed(2)}/5.0`,
+    );
+    console.log(
+        `   Status: ${currentEvaluation.passes ? "✅ PASSES" : "❌ NEEDS IMPROVEMENT"}`,
+    );
+
+    // If passing, return immediately
+    if (currentEvaluation.passes) {
+        console.log(
+            `\n✅ Toonplay passes on first attempt! No improvement needed.`,
+        );
+        const finalReport = formatEvaluationReport(currentEvaluation);
+        return {
+            toonplay: currentToonplay,
+            evaluation: currentEvaluation,
+            iterations: 0,
+            improvement_history: improvementHistory,
+            final_report: finalReport,
+        };
+    }
+
+    // ========================================
+    // IMPROVEMENT ITERATIONS
+    // ========================================
+
+    for (let iteration = 1; iteration <= maxIterations; iteration++) {
+        console.log(
+            `\n🔄 ─────────────────────────────────────────────────────────────`,
+        );
+        console.log(`   Iteration ${iteration}: Improving Toonplay`);
+        console.log(
+            `   ─────────────────────────────────────────────────────────────\n`,
+        );
+
+        if (!currentToonplay || !currentEvaluation) {
+            throw new Error(
+                "Current toonplay or evaluation missing before improvement iteration",
+            );
+        }
+
+        // Generate improved toonplay based on evaluation feedback
+        const improvedToonplay = await improveToonplay({
+            currentToonplay,
+            evaluation: currentEvaluation,
+            scene,
+            characters,
+            setting,
+            storyGenre: safeStoryGenre,
+            targetPanelCount,
+        });
+
+        console.log(
+            `   ✅ Improved toonplay generated: ${improvedToonplay.total_panels} panels`,
+        );
+
+        // Evaluate improved version
+        console.log(`\n📊 Evaluating improved toonplay...`);
+
+        const improvedEvaluation = await evaluateToonplay({
+            toonplay: improvedToonplay,
+            sourceScene: scene,
+            characters,
+            setting,
+            storyGenre: safeStoryGenre,
+        });
+
+        improvementHistory.push({
+            iteration,
+            score: improvedEvaluation.weighted_score,
+            passed: improvedEvaluation.passes,
+        });
+
+        console.log(
+            `\n   Score: ${improvedEvaluation.weighted_score.toFixed(2)}/5.0 (previous: ${currentEvaluation?.weighted_score.toFixed(2)})`,
+        );
+        console.log(
+            `   Improvement: ${improvedEvaluation.weighted_score > currentEvaluation?.weighted_score ? "📈 Better" : "📉 Worse"}`,
+        );
+        console.log(
+            `   Status: ${improvedEvaluation.passes ? "✅ PASSES" : "❌ STILL NEEDS WORK"}`,
+        );
+
+        // Update current version
+        currentToonplay = improvedToonplay;
+        currentEvaluation = improvedEvaluation;
+
+        // Track best version
+        if (improvedEvaluation.weighted_score > bestScore) {
+            bestToonplay = improvedToonplay;
+            bestEvaluation = improvedEvaluation;
+            bestScore = improvedEvaluation.weighted_score;
+            console.log(`   🏆 New best score!`);
+        }
+
+        // If passing, stop iterations
+        if (improvedEvaluation.passes) {
+            console.log(
+                `\n✅ Toonplay now passes after ${iteration} improvement iteration(s)!`,
+            );
+            break;
+        }
+    }
+
+    // ========================================
+    // FINAL RESULTS
+    // ========================================
+
+    console.log(
+        `\n═══════════════════════════════════════════════════════════`,
+    );
+    console.log(`   FINAL RESULTS`);
+    console.log(
+        `   ═══════════════════════════════════════════════════════════`,
+    );
+    console.log(
+        `   Best Score: ${bestScore.toFixed(2)}/5.0 (iteration ${improvementHistory.findIndex((h) => h.score === bestScore)})`,
+    );
+    console.log(
+        `   Status: ${bestEvaluation?.passes ? "✅ PASSES" : "⚠️  DOES NOT PASS (using best available)"}`,
+    );
+    console.log(`   Total Iterations: ${improvementHistory.length - 1}`);
+    console.log(
+        `   ═══════════════════════════════════════════════════════════\n`,
+    );
+
+    if (!bestToonplay || !bestEvaluation) {
+        throw new Error("Toonplay generation failed - no best result available");
+    }
+
+    const finalReport = formatEvaluationReport(bestEvaluation);
+
+    return {
+        toonplay: bestToonplay,
+        evaluation: bestEvaluation,
+        iterations: improvementHistory.length - 1,
+        improvement_history: improvementHistory,
+        final_report: finalReport,
+    };
+}
+
+// ============================================
+// IMPROVEMENT FUNCTION
+// ============================================
+
+interface ImproveToonplayOptions {
+    currentToonplay: AiComicToonplayType;
+    evaluation: ToonplayEvaluationResult;
+    scene: StoryScene;
+    characters: StoryCharacter[];
+    setting: StorySetting;
+    storyGenre: string;
+    targetPanelCount: number;
+}
+
+async function improveToonplay(
+    options: ImproveToonplayOptions,
+): Promise<AiComicToonplayType> {
+    const {
+        currentToonplay,
+        evaluation,
+        scene,
+        characters,
+        setting,
+        storyGenre,
+        targetPanelCount,
+    } = options;
+
+    const sceneTitle = scene.title;
+    const sceneContent = scene.content;
+    const characterDescriptions = characters
+        .map(
+            (c) =>
+                `${c.name}: ${c.summary || c.internalFlaw || c.externalGoal || "pursuing their goals"}`,
+        )
+        .join("\n");
+
+    // Build improvement prompt based on evaluation feedback
+    const improvementSystemPrompt = `You are an expert comic storyboard artist who specializes in repairing webtoon toonplays.
+
+REQUIREMENTS:
+- Obey all structural rules (dialogue ≥ 70%, narration < 5%, internal monologue < 10%, no silent panels)
+- Panel 1 must be an establishing shot with a short dialogue/narration line
+- Include at least one special shot (extreme_close_up, over_shoulder, or dutch_angle) in panels 6-10
+- Preserve character voices and story canon
+- Never invent new characters or settings beyond the provided context
+- Return only JSON matching AiComicToonplay schema (no commentary)`;
+
+    const improvementPrompt = `IMPROVE the toonplay below based on the evaluation feedback.
+
+SCENE INFORMATION:
+Title: ${sceneTitle}
+Genre: ${storyGenre}
+
+NARRATIVE CONTENT:
+${sceneContent}
+
+CHARACTERS PRESENT:
+${characterDescriptions}
+
+SETTING:
+${setting.name}: ${setting.summary || setting.mood || "A scene setting"}
+
+CURRENT TOONPLAY (TO BE IMPROVED):
+Total Panels: ${currentToonplay.total_panels}
+${JSON.stringify(currentToonplay, null, 2)}
+
+EVALUATION RESULTS:
+Overall Score: ${evaluation.weighted_score}/5.0 (NEEDS IMPROVEMENT - Target: ≥3.0)
+
+Category Scores:
+1. Narrative Fidelity: ${evaluation.category1_narrative_fidelity.score}/5
+2. Visual Transformation: ${evaluation.category2_visual_transformation.score}/5
+3. Webtoon Pacing: ${evaluation.category3_webtoon_pacing.score}/5
+4. Script Formatting: ${evaluation.category4_script_formatting.score}/5
+
+KEY WEAKNESSES TO ADDRESS:
+${[
+    ...evaluation.category1_narrative_fidelity.weaknesses,
+    ...evaluation.category2_visual_transformation.weaknesses,
+    ...evaluation.category3_webtoon_pacing.weaknesses,
+    ...evaluation.category4_script_formatting.weaknesses,
+]
+    .map((w, i) => `${i + 1}. ${w}`)
+    .join("\n")}
+
+SPECIFIC IMPROVEMENT SUGGESTIONS:
+${evaluation.improvement_suggestions.map((s, i) => `${i + 1}. ${s}`).join("\n")}
+
+METRICS TO IMPROVE:
+- Narration percentage: ${evaluation.metrics.narration_percentage.toFixed(1)}% (TARGET: <5%)
+- Dialogue/Visual balance: ${evaluation.dialogue_to_visual_ratio}
+- Panels without text: ${evaluation.metrics.panels_with_neither} (MUST BE 0)
+
+QUALITY GATE ISSUES:
+${evaluation.quality_gate_issues && evaluation.quality_gate_issues.length > 0 ? evaluation.quality_gate_issues.map((issue, index) => `${index + 1}. ${issue}`).join("\n") : "None detected. Maintain compliance with all structural rules."}
+
+IMPROVEMENT INSTRUCTIONS:
+1. Address ALL weaknesses identified in the evaluation
+2. Implement ALL improvement suggestions
+3. Maintain panel count around ${targetPanelCount} panels (can vary 8-12)
+4. CRITICAL: Reduce narration to <5% of panels - externalize through visual action and dialogue
+5. CRITICAL: Every panel MUST have either dialogue OR narrative (no exceptions)
+6. Improve shot type variety and distribution
+7. Enhance visual descriptions for better image generation
+8. Maintain character consistency across all panels
+9. Improve pacing and flow for vertical scroll
+10. Focus especially on low-scoring categories
+
+SHOT TYPE DISTRIBUTION (for ${targetPanelCount} panels):
+- 1 establishing_shot (scene opening)
+- 2-3 wide_shot (full action, multiple characters)
+- 3-5 medium_shot (main storytelling, conversations)
+- 2-3 close_up (emotional beats, reactions)
+- 0-1 extreme_close_up (climactic moments)
+- 0-1 over_shoulder or dutch_angle (special moments)
+
+CONTENT PROPORTION TARGET:
+- Dialogue: ~70% (Primary story driver)
+- Visual Action: ~30% (Shown in panels, not told)
+- Narration: <5% (Only when absolutely necessary)
+
+Return the IMPROVED toonplay as a valid JSON object matching the ComicToonplay schema.`;
+
+    console.log(`   Sending improvement request to AI...`);
+
+    const textClient = createTextGenerationClient();
+    const improvedToonplay = (await textClient.generateStructured(
+        improvementPrompt,
+        AiComicToonplayZodSchema,
+        {
+            systemPrompt: improvementSystemPrompt,
+            temperature: 0.6,
+            maxTokens: 16384,
+        },
+    )) as AiComicToonplayType;
+
+    return improvedToonplay;
+}
