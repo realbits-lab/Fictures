@@ -16,6 +16,9 @@ import {
 } from "./testcontainers.setup";
 
 async function globalSetup(config: FullConfig) {
+	console.log("[GLOBAL-SETUP] Function called - Starting execution");
+	console.log("[GLOBAL-SETUP] Current directory:", process.cwd());
+	console.log("[GLOBAL-SETUP] Node version:", process.version);
 	console.log("\n🚀 Global Setup: Starting test environment...\n");
 
 	// Start PostgreSQL container
@@ -31,10 +34,13 @@ async function globalSetup(config: FullConfig) {
 	console.log(`📝 Wrote DATABASE_URL to .testcontainers-db-url`);
 
 	// Run migrations
+	console.log("[GLOBAL-SETUP] About to run migrations");
 	await runMigrations(connectionString);
+	console.log("[GLOBAL-SETUP] Migrations completed successfully");
 
-	// Setup authentication users using the existing script
+	// Setup authentication users in testcontainers database
 	console.log("🔐 Setting up authentication users...");
+	console.log("[GLOBAL-SETUP] About to run auth setup");
 	try {
 		execSync(
 			`pnpm exec tsx scripts/setup-auth-users.ts`,
@@ -49,13 +55,16 @@ async function globalSetup(config: FullConfig) {
 			}
 		);
 		console.log("✅ Authentication users created\n");
+		console.log("[GLOBAL-SETUP] Auth setup completed successfully");
 	} catch (error) {
 		console.error("❌ Failed to setup auth users:", error);
 		throw error;
 	}
 
 	// Seed additional test data (stories, chapters, scenes)
+	console.log("[GLOBAL-SETUP] About to seed test data");
 	await seedTestData(connectionString);
+	console.log("[GLOBAL-SETUP] Test data seeded successfully");
 
 	console.log("\n✅ Global Setup: Test environment ready\n");
 	console.log(`📝 DATABASE_URL: ${connectionString}\n`);
