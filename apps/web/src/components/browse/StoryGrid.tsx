@@ -21,7 +21,10 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { trackEngagement, trackStoryView } from "@/lib/analysis/google-analytics";
+import {
+    trackEngagement,
+    trackStoryView,
+} from "@/lib/analysis/google-analytics";
 import { STORY_GENRES } from "@/lib/constants/genres";
 import { ReadingHistoryManager } from "@/lib/storage/reading-history-manager";
 import type { ReadingFormat } from "@/types/reading-history";
@@ -104,7 +107,8 @@ export function StoryGrid({
                     setReadingHistory(storyIds);
                 } else {
                     // API failed, fallback to localStorage
-                    const localHistory = ReadingHistoryManager.getHistory(format);
+                    const localHistory =
+                        ReadingHistoryManager.getHistory(format);
                     const storyIds = new Set<string>(
                         localHistory.map((h) => h.storyId),
                     );
@@ -364,7 +368,10 @@ export function StoryGrid({
                                     setSelectedGenre(genre);
                                     // Track genre filter
                                     if (genre !== "All") {
-                                        trackEngagement("search", "filter_genre_" + genre);
+                                        trackEngagement(
+                                            "search",
+                                            "filter_genre_" + genre,
+                                        );
                                     }
                                 }}
                             >
@@ -438,7 +445,7 @@ export function StoryGrid({
                                                 : "story-card"
                                         }
                                         key={story.id}
-                                        onClick={async () => {
+                                        onClick={() => {
                                             // For studio page, navigate to edit page instead of reading page
                                             if (pageType === "studio") {
                                                 router.push(
@@ -447,7 +454,8 @@ export function StoryGrid({
                                             } else if (
                                                 pageType === "community"
                                             ) {
-                                                await recordStoryView(
+                                                // Fire-and-forget: record view without blocking navigation
+                                                recordStoryView(
                                                     story.id,
                                                     story.title,
                                                 );
@@ -455,7 +463,8 @@ export function StoryGrid({
                                                     `/community/story/${story.id}`,
                                                 );
                                             } else {
-                                                await recordStoryView(
+                                                // Fire-and-forget: record view without blocking navigation
+                                                recordStoryView(
                                                     story.id,
                                                     story.title,
                                                 );
@@ -611,7 +620,7 @@ export function StoryGrid({
                                     return (
                                         <TableRow
                                             key={story.id}
-                                            onClick={async () => {
+                                            onClick={() => {
                                                 // For studio page, navigate to edit page instead of reading page
                                                 if (pageType === "studio") {
                                                     router.push(
@@ -620,7 +629,8 @@ export function StoryGrid({
                                                 } else if (
                                                     pageType === "community"
                                                 ) {
-                                                    await recordStoryView(
+                                                    // Fire-and-forget: record view without blocking navigation
+                                                    recordStoryView(
                                                         story.id,
                                                         story.title,
                                                     );
@@ -628,7 +638,8 @@ export function StoryGrid({
                                                         `/community/story/${story.id}`,
                                                     );
                                                 } else {
-                                                    await recordStoryView(
+                                                    // Fire-and-forget: record view without blocking navigation
+                                                    recordStoryView(
                                                         story.id,
                                                         story.title,
                                                     );
