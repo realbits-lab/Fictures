@@ -24,6 +24,7 @@ type Setting = InferSelectModel<typeof settings>;
 type Scene = InferSelectModel<typeof scenes>;
 
 import { generateSceneContent } from "../generators/scene-content-generator";
+import { formatDialogue } from "../utils/dialogue-formatter";
 import type {
     GeneratorSceneContentParams,
     GeneratorSceneContentResult,
@@ -132,13 +133,16 @@ export class SceneContentService {
         const generationResult: GeneratorSceneContentResult =
             await generateSceneContent(generateParams);
 
+        // 8.1. Apply dialogue formatting (separate dialogue from tags with blank lines)
+        const formattedContent = formatDialogue(generationResult.content);
+
         // 9. Update scene with generated content
         const now: string = new Date().toISOString();
 
         const updatedSceneArray: Scene[] = (await db
             .update(scenes)
             .set({
-                content: generationResult.content,
+                content: formattedContent,
                 updatedAt: now,
             })
             .where(eq(scenes.id, sceneId))

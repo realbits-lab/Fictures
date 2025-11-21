@@ -121,6 +121,60 @@ function isResponseTruncated(response: TextGenerationResponse): boolean {
 | Speaker Format | New speaker = New paragraph | Always maintain clarity |
 | Action Tags | Every 2-3 dialogue lines | Ground characters in scene |
 | Action Separation | Action on new line | NEVER combine dialogue + action in same line |
+| **Blank Line Spacing** | **Two blank lines around dialogue** | **MANDATORY for mobile readability** |
+
+### Dialogue Blank Line Spacing Discipline (MANDATORY)
+
+**CRITICAL**: Every dialogue line MUST be surrounded by blank lines (two newlines before and after).
+
+This spacing discipline ensures:
+- **Visual breathing room** on mobile screens
+- **Clear dialogue/action separation** for rapid scanning
+- **Enhanced reading flow** with natural pauses
+- **Reduced cognitive load** during dialogue-heavy scenes
+
+**Format Rules:**
+1. **Before dialogue**: Always add a blank line after narration/action
+2. **After dialogue**: Always add a blank line before next narration/action
+3. **Between dialogue lines**: Blank line between each dialogue line
+4. **Action tags**: Standalone on separate lines with blank line spacing
+
+**CORRECT Example:**
+```
+Sarah crossed her arms.
+
+"Dead serious."
+
+Marcus didn't look up from the map.
+
+"We leave at dawn."
+
+"That's suicide."
+
+"That's our only chance."
+
+He finally met her gaze.
+
+"Unless you have a better idea?"
+
+She didn't.
+```
+
+**INCORRECT Example (NO blank lines):**
+```
+Sarah crossed her arms.
+"Dead serious."
+Marcus didn't look up from the map.
+"We leave at dawn."
+"That's suicide."
+"That's our only chance."
+```
+
+**Why This Matters:**
+- Mobile screens show 15-20 lines at a time
+- Dense text creates visual fatigue
+- Blank lines create natural reading rhythm
+- Dialogue becomes instantly distinguishable from narration
 
 ## Scene Type Protocols
 

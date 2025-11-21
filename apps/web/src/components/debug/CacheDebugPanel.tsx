@@ -10,29 +10,38 @@
  *   <CacheDebugPanel />
  *
  * Note: Only available in development mode (NODE_ENV=development)
+ *
+ * Keyboard shortcut: Ctrl+Shift+D to toggle visibility
  */
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { cacheMetrics } from "@/lib/cache/cache-metrics";
 import { useCacheInvalidation } from "@/hooks/use-cache-invalidation";
+import { cacheMetrics } from "@/lib/cache/cache-metrics";
 
 export function CacheDebugPanel() {
     const [stats, setStats] = useState(() => cacheMetrics.getStats());
     const [isVisible, setIsVisible] = useState(false);
     const { invalidateAll } = useCacheInvalidation();
 
+    // Only render in development mode
+    const isDevelopment = process.env.NODE_ENV === "development";
+
     // Update stats every 2 seconds
     useEffect(() => {
+        if (!isDevelopment) return;
+
         const interval = setInterval(() => {
             setStats(cacheMetrics.getStats());
         }, 2000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [isDevelopment]);
 
     // Keyboard shortcut: Ctrl+Shift+D to toggle
     useEffect(() => {
+        if (!isDevelopment) return;
+
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.ctrlKey && e.shiftKey && e.key === "D") {
                 e.preventDefault();
@@ -42,18 +51,15 @@ export function CacheDebugPanel() {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, []);
+    }, [isDevelopment]);
+
+    // Don't render anything in production
+    if (!isDevelopment) {
+        return null;
+    }
 
     if (!isVisible) {
-        return (
-            <button
-                onClick={() => setIsVisible(true)}
-                className="fixed bottom-4 right-4 z-50 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg shadow-lg hover:bg-gray-700"
-                title="Show Cache Debug Panel (Ctrl+Shift+D)"
-            >
-                Cache Debug
-            </button>
-        );
+        return null; // Hidden by default, toggle with Cmd+R
     }
 
     return (
@@ -65,6 +71,7 @@ export function CacheDebugPanel() {
                     </CardTitle>
                     <div className="flex gap-2">
                         <button
+                            type="button"
                             onClick={() => {
                                 cacheMetrics.clear();
                                 setStats(cacheMetrics.getStats());
@@ -74,6 +81,7 @@ export function CacheDebugPanel() {
                             Clear Metrics
                         </button>
                         <button
+                            type="button"
                             onClick={() => {
                                 invalidateAll();
                                 alert("All caches cleared!");
@@ -83,6 +91,7 @@ export function CacheDebugPanel() {
                             Clear Caches
                         </button>
                         <button
+                            type="button"
                             onClick={() => setIsVisible(false)}
                             className="text-xs px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded hover:bg-gray-300 dark:hover:bg-gray-600"
                         >
@@ -123,61 +132,25 @@ export function CacheDebugPanel() {
                     {/* By Cache Type */}
                     {/* By Cache Type section removed - byType not available in stats */}
 
-                    {/* Recent Operations */}
+                    {/* Cache Keys */}
                     <div>
-                        <h3 className="font-semibold mb-2">
-                            Recent Operations
-                        </h3>
+                        <h3 className="font-semibold mb-2">Cache Keys</h3>
                         <div className="space-y-1 max-h-40 overflow-auto">
-                            {stats.metrics
-                                .slice(-10)
-                                .reverse()
-                                .map((metric: any, index: number) => (
-                                    <div
-                                        key={index}
-                                        className={`p-2 rounded text-xs ${
-                                            metric.operation === "hit"
-                                                ? "bg-green-50 dark:bg-green-900/20"
-                                                : metric.operation === "miss"
-                                                  ? "bg-yellow-50 dark:bg-yellow-900/20"
-                                                  : metric.operation ===
-                                                      "invalidate"
-                                                    ? "bg-red-50 dark:bg-red-900/20"
-                                                    : "bg-blue-50 dark:bg-blue-900/20"
-                                        }`}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <span className="font-mono">
-                                                <span
-                                                    className={`inline-block px-1 rounded mr-1 ${
-                                                        metric.operation ===
-                                                        "hit"
-                                                            ? "bg-green-200 dark:bg-green-800"
-                                                            : metric.operation ===
-                                                                "miss"
-                                                              ? "bg-yellow-200 dark:bg-yellow-800"
-                                                              : metric.operation ===
-                                                                  "invalidate"
-                                                                ? "bg-red-200 dark:bg-red-800"
-                                                                : "bg-blue-200 dark:bg-blue-800"
-                                                    }`}
-                                                >
-                                                    {metric.operation.toUpperCase()}
-                                                </span>
-                                                {metric.cacheType}
-                                            </span>
-                                            {metric.duration && (
-                                                <span className="text-gray-500">
-                                                    {metric.duration.toFixed(0)}
-                                                    ms
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="text-gray-600 dark:text-gray-400 truncate mt-1">
+                            {stats.metrics.slice(-10).map((metric) => (
+                                <div
+                                    key={metric.key}
+                                    className="p-2 rounded text-xs bg-gray-50 dark:bg-gray-800"
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <span className="font-mono truncate max-w-[200px]">
                                             {metric.key}
-                                        </div>
+                                        </span>
+                                        <span className="text-gray-500 whitespace-nowrap ml-2">
+                                            {metric.hits}h / {metric.misses}m
+                                        </span>
                                     </div>
-                                ))}
+                                </div>
+                            ))}
                         </div>
                     </div>
 

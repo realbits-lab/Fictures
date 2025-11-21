@@ -1,5 +1,5 @@
 /**
- * Scene Content Generation Prompt v1.1
+ * Scene Content Generation Prompt v1.3
  *
  * IMPROVEMENTS TARGETING:
  * - Word Count Compliance: Better adherence to phase-specific ranges (target: 90%+ within range)
@@ -7,6 +7,8 @@
  * - Emotional Resonance: Enhanced emotional impact (target: 3.0+/4.0 emotion score)
  * - Mobile-First Readability: Optimized for smartphone consumption
  * - Truncation Prevention: Must end with complete sentences
+ * - DIALOGUE RATIO: MANDATORY 40-60% dialogue in ALL scenes (v1.2)
+ * - DIALOGUE BLANK LINE SPACING: Blank lines before and after ALL dialogue (v1.3)
  *
  * KEY CHANGES FROM V1.0:
  * 1. Added explicit "WORD COUNT ENFORCEMENT" section with strict limits
@@ -17,6 +19,9 @@
  * 6. Added "EMOTIONAL RESONANCE TECHNIQUES" section
  * 7. Added "MOBILE-FIRST FORMATTING" section (v1.1.1)
  * 8. Added "COMPLETION REQUIREMENT" to prevent truncation (v1.1.1)
+ * 9. MANDATORY 40-60% dialogue ratio with SOLO CHARACTER SCENES guidance (v1.2)
+ * 10. Added dialogue ratio to CRITICAL RULES as rule #3 (v1.2)
+ * 11. MANDATORY DIALOGUE BLANK LINE SPACING for mobile readability (v1.3)
  */
 
 exports.sceneContentPromptV1_1 = {
@@ -46,9 +51,10 @@ The scene summary provides the specification for what this scene should accompli
 | Formatting | Block style | NO indentation, blank line between |
 | White Space | Maximum | Short paragraphs create visual breathing room |
 
-## Dialogue Format (CRITICAL - 40-60% RULE)
+## Dialogue Format (CRITICAL - 40-60% RULE - MANDATORY)
 
-**MANDATORY DIALOGUE RATIO: 40-60% of total word count MUST be dialogue.**
+**⚠️ MANDATORY DIALOGUE RATIO: 40-60% of total word count MUST be dialogue.**
+**⚠️ THIS IS NON-NEGOTIABLE. Scenes without dialogue WILL BE REJECTED.**
 
 This ratio is FIXED for ALL scenes regardless of type. It ensures:
 - Reader engagement through character voice
@@ -61,19 +67,130 @@ This ratio is FIXED for ALL scenes regardless of type. It ensures:
 | Speaker Format | New speaker = New paragraph | Always maintain clarity |
 | Action Tags | Every 2-3 dialogue lines | Ground characters in scene |
 | Action Separation | Action on new line | NEVER combine dialogue + action in same line |
+| **Blank Line Spacing** | **Blank line around ALL dialogue** | **MANDATORY (v1.3)** |
+
+## DIALOGUE BLANK LINE SPACING (CRITICAL - v1.3)
+
+**⚠️ MANDATORY: Every dialogue line MUST be surrounded by blank lines.**
+**⚠️ DIALOGUE AND ATTRIBUTION TAGS MUST BE ON SEPARATE LINES.**
+
+This spacing ensures:
+- Visual breathing room on mobile screens
+- Clear dialogue/action separation for rapid scanning
+- Enhanced reading flow with natural pauses
+- Reduced cognitive load during dialogue-heavy scenes
+
+**Format Rules:**
+1. ALWAYS add a blank line BEFORE every dialogue line
+2. ALWAYS add a blank line AFTER every dialogue line
+3. Blank line BETWEEN consecutive dialogue lines from different speakers
+4. **DIALOGUE ATTRIBUTION TAGS ("she said", "he whispered") GO ON THEIR OWN LINE**
+5. NEVER write dialogue and its tag on the same line
+
+**CORRECT Example (v1.3 Format):**
+\`\`\`
+Sarah crossed her arms.
+
+"Dead serious."
+
+Marcus didn't look up from the map.
+
+"We leave at dawn."
+
+"That's suicide."
+
+"That's our only chance."
+
+He finally met her gaze.
+
+"Unless you have a better idea?"
+
+She didn't.
+\`\`\`
+
+**ALSO CORRECT (Attribution tag on separate line):**
+\`\`\`
+"Just a routine audit,"
+
+she murmured, the words swallowed by the vastness.
+
+A faint tremor ran through her hand.
+
+"Nothing out of the ordinary."
+
+She scrolled through the data.
+\`\`\`
+
+**INCORRECT Example (dialogue + tag on same line - WILL BE REFORMATTED):**
+\`\`\`
+"Just a routine audit," she murmured, the words swallowed by the vastness.
+\`\`\`
+
+**INCORRECT Example (NO blank lines - REJECTED):**
+\`\`\`
+Sarah crossed her arms.
+"Dead serious."
+Marcus didn't look up from the map.
+\`\`\`
+
+**Why This Matters:**
+- Mobile screens show 15-20 lines at a time
+- Dense text creates visual fatigue
+- Blank lines create natural reading rhythm
+- Dialogue becomes instantly distinguishable from narration
+- Separating dialogue from tags improves scanning speed
 
 **How to Achieve 40-60% Dialogue:**
 1. For every 100 words of narration, write 65-150 words of dialogue
 2. If scene feels narration-heavy, ADD dialogue exchanges
 3. If scene feels dialogue-heavy, ADD action beats and descriptions
-4. Internal monologue counts as narration, NOT dialogue
-5. Dialogue tags ("she said") count toward dialogue word count
+4. Dialogue tags ("she said") count toward dialogue word count
 
 **Self-Check Formula:**
 - Count total words in scene
 - Count words inside quotation marks (dialogue)
 - Dialogue % = (dialogue words / total words) × 100
 - Target: 40% ≤ result ≤ 60%
+
+## SOLO CHARACTER SCENES (CRITICAL - How to Add Dialogue When Alone)
+
+**If a character is ALONE in a scene, you MUST still achieve 40-60% dialogue using these techniques:**
+
+1. **Self-Talk / Thinking Aloud**
+   - Characters verbalize thoughts: "What the hell is this?" she muttered.
+   - Frustrated exclamations: "No, no, no," he whispered.
+   - Rhetorical questions spoken aloud: "How did I miss this?"
+
+2. **AI/Computer/Device Interaction**
+   - Talking to screens, systems: "Computer, run diagnostic on sector seven."
+   - Voice assistants, smart devices: "Show me the last access log," she commanded.
+   - Reading text aloud: "Access denied. Unauthorized signature detected."
+
+3. **Phone Calls / Communications**
+   - One-sided phone conversations work perfectly
+   - Leaving voice messages
+   - Receiving recorded messages
+
+4. **Memory Flashbacks WITH Dialogue**
+   - Brief flashback scenes with past conversations
+   - Remembered words echoing: "You'll never escape," his father's voice echoed.
+   - Internal replay of significant conversations
+
+5. **Environmental Voices**
+   - Announcements, intercoms, broadcasts
+   - Background conversations the character overhears
+   - System alerts and warnings
+
+**EXAMPLE - Converting Narration-Heavy to Dialogue-Rich:**
+
+❌ WRONG (Pure narration):
+"She noticed the anomaly in her records. The timestamp was wrong. Fear crept in."
+
+✅ CORRECT (With dialogue):
+"What..." she breathed, leaning closer to the screen. The timestamp blinked back at her, mocking.
+"That's not possible." Her fingers flew across the console. "Computer, verify timestamp on entry 7749."
+"Timestamp verified. Original entry: 03:47:22. Current display: 03:47:23."
+"One second. Someone altered it by one second." She pushed back from the console. "Why?"
 
 ## Dynamic Style by Scene Type
 
@@ -359,16 +476,24 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
 # CRITICAL RULES
 1. **NEVER exceed maximum word count for your cycle phase** - This is a hard requirement (v1.1)
 2. **ALWAYS end with complete sentences** - NEVER end mid-sentence (v1.1.1)
-3. **Complete the cycle alignment checklist for your phase** - All items must be present (v1.1)
-4. **Achieve emotional resonance** - Use Gam-dong principles (v1.1)
-5. **Follow mobile-first formatting** - Maximum 3 sentences per paragraph (v1.1.1)
-6. Stay true to scene's cycle phase purpose
-7. Maintain character voice consistency
-8. Build or release tension as appropriate
-9. Show, don't tell (especially virtue and consequence)
-10. Every sentence must advance emotion or plot
-11. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
-12. **Count words as you write** - stay within range (v1.1)
+3. **⚠️ DIALOGUE RATIO 40-60% IS MANDATORY** - Scenes without dialogue WILL BE REJECTED (v1.2)
+   - Even solo characters MUST have dialogue (self-talk, device interaction, memory flashbacks)
+   - Count dialogue words vs total words - target 40-60%
+   - See "SOLO CHARACTER SCENES" section for techniques
+4. **⚠️ DIALOGUE BLANK LINE SPACING IS MANDATORY (v1.3)** - Blank line before and after ALL dialogue
+   - Every dialogue line must have a blank line above and below
+   - No exceptions - this is critical for mobile readability
+   - Dense dialogue without spacing will be REJECTED
+5. **Complete the cycle alignment checklist for your phase** - All items must be present (v1.1)
+6. **Achieve emotional resonance** - Use Gam-dong principles (v1.1)
+7. **Follow mobile-first formatting** - Maximum 3 sentences per paragraph (v1.1.1)
+8. Stay true to scene's cycle phase purpose
+9. Maintain character voice consistency
+10. Build or release tension as appropriate
+11. Show, don't tell (especially virtue and consequence)
+12. Every sentence must advance emotion or plot
+13. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
+14. **Count words as you write** - stay within range (v1.1)
 
 # OUTPUT
 Return ONLY the prose narrative, no metadata, no explanations.
@@ -402,9 +527,11 @@ Language: {language}
 3. What are the cycle alignment checklist items for this phase?
 4. What emotional resonance techniques should be used?
 
-**V1.1.1 MOBILE-FIRST CHECKLIST:**
+**V1.3 MANDATORY CHECKLIST:**
 - [ ] Hook within first 30 words
-- [ ] 40-60% dialogue ratio
+- [ ] **⚠️ 40-60% DIALOGUE RATIO (MANDATORY - scenes without dialogue rejected)**
+- [ ] **⚠️ DIALOGUE BLANK LINE SPACING (MANDATORY - blank line before and after ALL dialogue)**
+- [ ] If character alone: used self-talk, device interaction, or memory flashbacks for dialogue
 - [ ] No paragraph exceeds 3 sentences
 - [ ] Active voice >90%
 - [ ] White space maximized

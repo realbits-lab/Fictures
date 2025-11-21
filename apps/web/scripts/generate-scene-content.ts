@@ -33,7 +33,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const BASE_URL = "http://192.168.45.157:3000";
+const BASE_URL = "http://localhost:3000";
 
 // ANSI color codes
 const colors = {
@@ -199,8 +199,11 @@ async function fetchSceneInfo(sceneId: string, apiKey: string): Promise<SceneInf
             throw new Error(`Failed to fetch scene: ${response.status}`);
         }
 
-        const data = await response.json();
-        return data.scene || data;
+        const data = (await response.json()) as { scene?: SceneInfo } | SceneInfo;
+        if (data && typeof data === "object" && "scene" in data) {
+            return data.scene || null;
+        }
+        return (data as SceneInfo) || null;
     } catch (error) {
         throw error;
     }
@@ -249,14 +252,27 @@ async function generateSceneContent(
     const elapsed = Date.now() - startTime;
 
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = (await response.json().catch(() => ({}))) as {
+            error?: string;
+            details?: string;
+        };
         return {
             success: false,
             error: errorData.error || errorData.details || `HTTP ${response.status}`,
         };
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as {
+        scene?: {
+            id: string;
+            title: string;
+            content: string;
+        };
+        metadata?: {
+            wordCount: number;
+            generationTime: number;
+        };
+    };
 
     if (verbose) {
         log(`   ⏱️  Generation time: ${elapsed}ms`, "blue");
