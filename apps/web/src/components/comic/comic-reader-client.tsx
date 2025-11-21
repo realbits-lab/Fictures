@@ -23,6 +23,7 @@ export function ComicReaderClient({
     initialData,
 }: ComicReaderClientProps) {
     const componentId = useRef(Math.random().toString(36).substring(7));
+    const mainContentRef = useRef<HTMLDivElement>(null);
     const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
         null,
     );
@@ -100,6 +101,112 @@ export function ComicReaderClient({
         setSelectedSceneId(sceneId);
         setIsSidebarOpen(false);
     };
+
+    // Keyboard shortcuts for scene navigation and scrolling
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Don't handle shortcuts if user is typing in an input field
+            const target = e.target as HTMLElement;
+            const isInputField =
+                target.tagName === "INPUT" ||
+                target.tagName === "TEXTAREA" ||
+                target.isContentEditable;
+            
+            if (isInputField) {
+                return;
+            }
+
+            const currentSceneIndex = allScenes.findIndex(
+                (item) => item.scene.id === selectedSceneId,
+            );
+            const prevSceneItem =
+                currentSceneIndex > 0
+                    ? allScenes[currentSceneIndex - 1]
+                    : null;
+            const nextSceneItem =
+                currentSceneIndex < allScenes.length - 1
+                    ? allScenes[currentSceneIndex + 1]
+                    : null;
+
+            // Navigation shortcuts: n/N or right arrow for next, p/P or left arrow for previous
+            if (
+                (e.key === "n" || e.key === "N" || e.key === "ArrowRight") &&
+                nextSceneItem
+            ) {
+                e.preventDefault();
+                handleSceneSelect(
+                    nextSceneItem.scene.id,
+                    nextSceneItem.chapterId,
+                );
+                return;
+            }
+
+            if (
+                (e.key === "p" || e.key === "P" || e.key === "ArrowLeft") &&
+                prevSceneItem
+            ) {
+                e.preventDefault();
+                handleSceneSelect(
+                    prevSceneItem.scene.id,
+                    prevSceneItem.chapterId,
+                );
+                return;
+            }
+
+            // Scroll shortcuts: j/J/k/K for scrolling
+            const scrollContainer = mainContentRef.current;
+            if (!scrollContainer) return;
+
+            if (e.key === "j") {
+                // Half page down
+                e.preventDefault();
+                const scrollAmount = scrollContainer.clientHeight / 2;
+                scrollContainer.scrollBy({
+                    top: scrollAmount,
+                    behavior: "smooth",
+                });
+                return;
+            }
+
+            if (e.key === "J") {
+                // One page down
+                e.preventDefault();
+                const scrollAmount = scrollContainer.clientHeight;
+                scrollContainer.scrollBy({
+                    top: scrollAmount,
+                    behavior: "smooth",
+                });
+                return;
+            }
+
+            if (e.key === "k") {
+                // Half page up
+                e.preventDefault();
+                const scrollAmount = scrollContainer.clientHeight / 2;
+                scrollContainer.scrollBy({
+                    top: -scrollAmount,
+                    behavior: "smooth",
+                });
+                return;
+            }
+
+            if (e.key === "K") {
+                // One page up
+                e.preventDefault();
+                const scrollAmount = scrollContainer.clientHeight;
+                scrollContainer.scrollBy({
+                    top: -scrollAmount,
+                    behavior: "smooth",
+                });
+                return;
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [allScenes, selectedSceneId, handleSceneSelect]);
 
     const selectedScene = chapterScenes.find(
         (scene) => scene.id === selectedSceneId,
@@ -440,7 +547,7 @@ export function ComicReaderClient({
                 )}
 
                 {/* Comic Content */}
-                <div className="flex-1 overflow-y-auto bg-white">
+                <div ref={mainContentRef} className="flex-1 overflow-y-auto bg-white">
                     {selectedScene ? (
                         <div className="w-full max-w-md md:max-w-4xl mx-auto pb-24 md:pb-8">
                             {/* Comic Viewer */}

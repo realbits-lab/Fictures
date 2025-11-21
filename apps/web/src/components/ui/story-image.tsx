@@ -51,9 +51,9 @@ export function StoryImage({
                 <Image
                     src={placeholderSrc}
                     alt={`${alt} (placeholder)`}
-                    fill={fill}
-                    width={width}
-                    height={height}
+                    {...(fill
+                        ? { fill: true }
+                        : { width, height })}
                     className={className}
                     sizes={sizes}
                     priority={priority}
@@ -157,9 +157,9 @@ export function StoryImage({
             <Image
                 src={src}
                 alt={alt}
-                fill={fill}
-                width={width}
-                height={height}
+                {...(fill
+                    ? { fill: true }
+                    : { width, height })}
                 className={`${className} ${isLoading ? "opacity-0" : "opacity-100"} transition-opacity duration-300`}
                 sizes={sizes}
                 priority={priority}

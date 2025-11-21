@@ -64,7 +64,7 @@ export function GlobalNavigation() {
     });
 
     return (
-        <header className="sticky top-0 z-[60] w-full border-b border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))]">
+        <header className="sticky top-0 z-[60] w-full border-b border-[rgb(var(--color-border))] bg-white">
             <nav className="container mx-auto flex h-16 max-w-screen-2xl items-center justify-between px-4">
                 {/* Logo */}
                 <Link
@@ -137,7 +137,7 @@ export function GlobalNavigation() {
                     />
 
                     {/* Menu Panel */}
-                    <div className="fixed top-16 right-0 left-0 bg-[rgb(var(--color-background))] border-b border-[rgb(var(--color-border))] shadow-lg z-[75] md:hidden">
+                    <div className="fixed top-16 right-0 left-0 bg-white border-b border-[rgb(var(--color-border))] shadow-lg z-[75] md:hidden">
                         <div className="container mx-auto px-4 py-4 space-y-2">
                             {/* Navigation Items */}
                             {visibleGnbItems.map((item) => (

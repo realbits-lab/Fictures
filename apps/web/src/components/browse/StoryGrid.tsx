@@ -219,7 +219,7 @@ export function StoryGrid({
                                     onClick={() => setFilterMode("all")}
                                     className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                         filterMode === "all"
-                                            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                                            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
                                             : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
                                     }`}
                                 >
@@ -249,7 +249,7 @@ export function StoryGrid({
                                     onClick={() => setFilterMode("history")}
                                     className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                         filterMode === "history"
-                                            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                                            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
                                             : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
                                     }`}
                                 >
@@ -282,7 +282,7 @@ export function StoryGrid({
                                 onClick={() => setViewMode("card")}
                                 className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                     viewMode === "card"
-                                        ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                                        ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
                                         : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
                                 }`}
                             >
@@ -333,7 +333,7 @@ export function StoryGrid({
                                 onClick={() => setViewMode("table")}
                                 className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                     viewMode === "table"
-                                        ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-sm"
+                                        ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
                                         : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
                                 }`}
                             >
