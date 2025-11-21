@@ -44,6 +44,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Pool } from "@neondatabase/serverless";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -68,6 +69,17 @@ const db = drizzle(pool, { schema });
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const OUTPUT_DIR = "test-output";
+
+// Initialize Gemini for prompt summarization
+if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    throw new Error(
+        "GOOGLE_GENERATIVE_AI_API_KEY environment variable is required",
+    );
+}
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+const summarizeModel = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash-lite",
+});
 
 /**
  * Image specifications from docs/image/image-specification.md
@@ -306,17 +318,89 @@ async function downloadImage(url: string, filepath: string): Promise<Buffer> {
 }
 
 /**
- * Build prompt for image generation based on image type and target data
+ * Summarize prompt using Gemini to preserve essential visual information
+ * API limit is 1000 characters, we target 950 for safety buffer
  */
-function buildImagePrompt(
+const MAX_PROMPT_LENGTH = 950;
+
+async function summarizePromptWithAI(
+    prompt: string,
+    imageType: string,
+    maxLength: number = MAX_PROMPT_LENGTH,
+): Promise<string> {
+    if (prompt.length <= maxLength) return prompt;
+
+    console.log(
+        `   📝 Prompt too long (${prompt.length} chars), summarizing with AI...`,
+    );
+
+    const summarizePrompt = `You are an expert at condensing text for image generation prompts.
+
+TASK: Summarize the following ${imageType} description into a concise image prompt.
+
+REQUIREMENTS:
+- Output MUST be under ${maxLength} characters (critical limit)
+- Preserve ALL visual details: colors, appearances, clothing, physical features, expressions
+- Preserve atmosphere, mood, and setting descriptions
+- Remove narrative text, dialogue, and non-visual elements
+- Keep character names and distinctive visual traits
+- Focus on what can be SEEN in an image
+- Write as a direct image prompt, not a story summary
+
+ORIGINAL TEXT (${prompt.length} characters):
+${prompt}
+
+OUTPUT (under ${maxLength} characters):`;
+
+    try {
+        const result = await summarizeModel.generateContent(summarizePrompt);
+        const summarized = result.response.text().trim();
+
+        // Final safety check - if still too long, truncate intelligently at sentence boundary
+        if (summarized.length > maxLength) {
+            const truncated = summarized.substring(0, maxLength - 3);
+            const lastPeriod = truncated.lastIndexOf(".");
+            const lastComma = truncated.lastIndexOf(",");
+            const cutPoint = Math.max(lastPeriod, lastComma);
+            if (cutPoint > maxLength * 0.7) {
+                return truncated.substring(0, cutPoint + 1);
+            }
+            return `${truncated}...`;
+        }
+
+        console.log(`   ✅ Summarized to ${summarized.length} chars`);
+        return summarized;
+    } catch (_error) {
+        console.error(
+            `   ⚠️ AI summarization failed, using fallback truncation`,
+        );
+        // Fallback: truncate at sentence boundary
+        const truncated = prompt.substring(0, maxLength - 3);
+        const lastPeriod = truncated.lastIndexOf(".");
+        if (lastPeriod > maxLength * 0.7) {
+            return truncated.substring(0, lastPeriod + 1);
+        }
+        return `${truncated}...`;
+    }
+}
+
+/**
+ * Build prompt for image generation based on image type and target data
+ * Uses AI summarization to intelligently condense prompts while preserving visual context
+ * All prompts are limited to 950 characters (API limit is 1000)
+ */
+async function buildImagePrompt(
     imageType: "story" | "character" | "setting" | "scene",
     targetData: Record<string, unknown>,
-): string {
+): Promise<string> {
+    let prompt: string;
+
     switch (imageType) {
         case "story":
-            return `Story cover for "${targetData.title}": ${targetData.summary || targetData.genre || "An engaging story"}`;
+            prompt = `Story cover for "${targetData.title}": ${targetData.summary || targetData.genre || "An engaging story"}`;
+            break;
         case "character":
-            return `Character portrait of ${targetData.name}: ${
+            prompt = `Character portrait of ${targetData.name}: ${
                 typeof targetData.physicalDescription === "object"
                     ? (
                           targetData.physicalDescription as Record<
@@ -326,13 +410,26 @@ function buildImagePrompt(
                       ).appearance || ""
                     : targetData.physicalDescription || targetData.summary || ""
             }`;
+            break;
         case "setting":
-            return `Setting visualization of ${targetData.name}: ${targetData.description || ""}. Mood: ${targetData.mood || "atmospheric"}`;
-        case "scene":
-            return `Scene illustration for "${targetData.title}": ${targetData.summary || targetData.content?.toString().substring(0, 200) || ""}`;
+            prompt = `Setting visualization of ${targetData.name}: ${targetData.description || ""}. Mood: ${targetData.mood || "atmospheric"}`;
+            break;
+        case "scene": {
+            // For scenes, include full content for AI to extract visual details
+            const sceneDescription =
+                targetData.summary ||
+                (targetData.content
+                    ? targetData.content.toString()
+                    : "A dramatic scene");
+            prompt = `Scene illustration for "${targetData.title}": ${sceneDescription}`;
+            break;
+        }
         default:
-            return `Image for ${imageType}`;
+            prompt = `Image for ${imageType}`;
     }
+
+    // Use AI to intelligently summarize while preserving visual context
+    return summarizePromptWithAI(prompt, imageType);
 }
 
 /**
@@ -351,8 +448,8 @@ async function generateImage(params: {
 }): Promise<string> {
     console.log(`   🎨 Generating ${params.imageType} image...`);
 
-    // Build prompt from target data
-    const prompt = buildImagePrompt(params.imageType, params.targetData);
+    // Build prompt from target data (uses AI summarization for long prompts)
+    const prompt = await buildImagePrompt(params.imageType, params.targetData);
 
     const response = await fetch(`${BASE_URL}/api/studio/images`, {
         method: "POST",
