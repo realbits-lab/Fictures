@@ -4,6 +4,8 @@ const config = {
     testEnvironment: "node",
     moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/src/$1",
+        // Mock nanoid for Jest (ESM compatibility issue)
+        "^nanoid$": "<rootDir>/__mocks__/nanoid.js",
     },
     testMatch: ["**/__tests__/**/*.test.ts", "**/__tests__/**/*.test.tsx"],
     collectCoverageFrom: ["src/**/*.{js,jsx,ts,tsx}", "!src/**/*.d.ts"],

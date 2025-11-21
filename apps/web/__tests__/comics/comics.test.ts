@@ -349,10 +349,11 @@ describe("Comic Panel Image Generation Integration", () => {
         );
 
         for (const panel of result.panels) {
-            expect(panel.imageUrl).toContain("data:image/png;base64,");
-            const dims = extractDimensionsFromDataUrl(panel.imageUrl);
-            expect(dims?.width ?? 0).toBeGreaterThan(0);
-            expect(dims?.height ?? 0).toBeGreaterThan(0);
+            // Images are now uploaded to Vercel Blob, expect HTTPS URL
+            expect(panel.imageUrl).toMatch(/^https:\/\/.+\.blob\.vercel-storage\.com\/.+\.png$/);
+            // Dimensions are stored in panel.width/height, not extractable from URL
+            expect(panel.width).toBeGreaterThan(0);
+            expect(panel.height).toBeGreaterThan(0);
         }
     }, 120000);
 
@@ -361,15 +362,10 @@ describe("Comic Panel Image Generation Integration", () => {
         const result = await generatePanels();
 
         for (const panel of result.panels) {
-            const dims = extractDimensionsFromDataUrl(panel.imageUrl);
-            if (!dims) {
-                logComicsTest(
-                    "aspect-ratio",
-                    `Panel ${panel.panel_number} skipped (no dimensions found)`,
-                );
-                continue;
-            }
-            const { width, height } = dims;
+            // Dimensions are now stored directly in panel object (not extractable from URL)
+            const width = panel.width;
+            const height = panel.height;
+
             logComicsTest(
                 "aspect-ratio",
                 `Panel ${panel.panel_number} raw ratio=${width}/${height}`,

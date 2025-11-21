@@ -179,7 +179,8 @@ describe("Comic Panel Generator (single panel image)", () => {
         expect(result.panels).toHaveLength(1);
         const panel = result.panels[0];
         expect(panel.panel_number).toBe(1);
-        expect(panel.imageUrl).toContain("data:image");
+        // Images are now uploaded to Vercel Blob, expect HTTPS URL
+        expect(panel.imageUrl).toMatch(/^https:\/\/.+\.blob\.vercel-storage\.com\/.+\.png$/);
         expect(panel.width).toBeGreaterThan(0);
         expect(panel.height).toBeGreaterThan(0);
         expect(result.metadata.totalPanels).toBe(1);

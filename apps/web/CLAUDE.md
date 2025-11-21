@@ -49,6 +49,7 @@ const path = getBlobPath('stories/123/image.png');
 **Running Development Server:**
 - **ALWAYS use port 3000** - The development server MUST run on port 3000
 - **ALWAYS kill any process using port 3000 first** before starting the server
+- **ALWAYS use local public IP address** (e.g., `192.168.x.x:3000`) instead of `localhost:3000` when connecting to the server via browser or Chrome DevTools MCP. This is because `localhost` may resolve to a remote server in SSH/remote development environments.
 - Always run as background process with output redirected to logs directory
 - Standard command sequence:
   ```bash
