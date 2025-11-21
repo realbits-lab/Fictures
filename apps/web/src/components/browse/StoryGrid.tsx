@@ -214,13 +214,13 @@ export function StoryGrid({
                             <CreateNewStoryButton />
                         ) : (
                             /* History/All Toggle - For novels, comics, community pages */
-                            <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
+                            <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
                                 <button
                                     onClick={() => setFilterMode("all")}
                                     className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                         filterMode === "all"
-                                            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
-                                            : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
+                                            ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-md ring-2 ring-[rgb(var(--primary))] ring-offset-1 font-semibold"
+                                            : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
                                     }`}
                                 >
                                     <svg
@@ -249,8 +249,8 @@ export function StoryGrid({
                                     onClick={() => setFilterMode("history")}
                                     className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                         filterMode === "history"
-                                            ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
-                                            : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
+                                            ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-md ring-2 ring-[rgb(var(--primary))] ring-offset-1 font-semibold"
+                                            : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
                                     }`}
                                 >
                                     <svg
@@ -277,13 +277,13 @@ export function StoryGrid({
                         )}
 
                         {/* View Toggle */}
-                        <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] p-1 flex-1 md:flex-initial">
+                        <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] p-1 flex-1 md:flex-initial">
                             <button
                                 onClick={() => setViewMode("card")}
                                 className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                     viewMode === "card"
-                                        ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
-                                        : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
+                                        ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-md ring-2 ring-[rgb(var(--primary))] ring-offset-1 font-semibold"
+                                        : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
                                 }`}
                             >
                                 <svg
@@ -333,8 +333,8 @@ export function StoryGrid({
                                 onClick={() => setViewMode("table")}
                                 className={`inline-flex items-center justify-center rounded-md px-2 md:px-3 py-1.5 text-sm font-medium transition-all flex-1 md:flex-initial ${
                                     viewMode === "table"
-                                        ? "bg-[rgb(var(--color-primary))] text-[rgb(var(--color-primary-foreground))] shadow-md ring-2 ring-[rgb(var(--color-primary))] ring-offset-1 font-semibold"
-                                        : "text-[rgb(var(--color-muted-foreground))] hover:bg-[rgb(var(--color-muted))] hover:text-[rgb(var(--color-foreground))]"
+                                        ? "bg-[rgb(var(--primary))] text-[rgb(var(--primary-foreground))] shadow-md ring-2 ring-[rgb(var(--primary))] ring-offset-1 font-semibold"
+                                        : "text-[rgb(var(--muted-foreground))] hover:bg-[rgb(var(--muted))] hover:text-[rgb(var(--foreground))]"
                                 }`}
                             >
                                 <svg
@@ -361,7 +361,7 @@ export function StoryGrid({
                     {/* Second row on mobile: Genre + Sort selects */}
                     <div className="flex items-center justify-between md:justify-end gap-3">
                         {/* Genre Select */}
-                        <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] flex-1 md:flex-initial">
+                        <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
                             <Select
                                 value={selectedGenre}
                                 onValueChange={(genre) => {
@@ -375,7 +375,7 @@ export function StoryGrid({
                                     }
                                 }}
                             >
-                                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--color-muted))] focus:ring-0 focus:ring-offset-0 w-full">
+                                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--muted))] focus:ring-0 focus:ring-offset-0 w-full">
                                     <SelectValue placeholder="Select genre" />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -389,7 +389,7 @@ export function StoryGrid({
                         </div>
 
                         {/* Sort By Select */}
-                        <div className="inline-flex rounded-lg border border-[rgb(var(--color-border))] bg-[rgb(var(--color-background))] flex-1 md:flex-initial">
+                        <div className="inline-flex rounded-lg border border-[rgb(var(--border))] bg-[rgb(var(--background))] flex-1 md:flex-initial">
                             <Select
                                 value={sortBy}
                                 onValueChange={(value) =>
@@ -401,7 +401,7 @@ export function StoryGrid({
                                     )
                                 }
                             >
-                                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--color-muted))] focus:ring-0 focus:ring-offset-0 w-full">
+                                <SelectTrigger className="border-0 bg-transparent hover:bg-[rgb(var(--muted))] focus:ring-0 focus:ring-offset-0 w-full">
                                     <SelectValue placeholder="Select sort order" />
                                 </SelectTrigger>
                                 <SelectContent>

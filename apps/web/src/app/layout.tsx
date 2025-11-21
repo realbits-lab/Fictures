@@ -8,8 +8,9 @@ import { PageViewTracker } from "@/components/analysis/PageViewTracker";
 import { ReadingHistorySync } from "@/components/analysis/ReadingHistorySync";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { SessionProvider } from "@/components/auth/SessionProvider";
-import { AdvancedCacheMetricsDashboard } from "@/components/debug/AdvancedCacheMetricsDashboard";
-import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
+// Debug tools - uncomment to enable
+// import { AdvancedCacheMetricsDashboard } from "@/components/debug/AdvancedCacheMetricsDashboard";
+// import { CacheDebugPanel } from "@/components/debug/CacheDebugPanel";
 import { GlobalNavigation } from "@/components/layout/GlobalNavigation";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { AuthModalProvider } from "@/contexts/AuthModalContext";
@@ -64,14 +65,14 @@ export default async function RootLayout({
                                 closeButton
                                 duration={5000}
                             />
-                            {/* Cache Debug Tools - Only available in development mode */}
-                            {/* Ctrl+Shift+D for Debug Panel, Ctrl+Shift+M for Metrics Dashboard */}
+                            {/* Cache Debug Tools - Hidden by default
                             {process.env.NODE_ENV === "development" && (
                                 <>
                                     <CacheDebugPanel />
                                     <AdvancedCacheMetricsDashboard />
                                 </>
                             )}
+                            */}
                         </AuthModalProvider>
                     </SessionProvider>
                 </ThemeProvider>

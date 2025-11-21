@@ -1,12 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
 import { invalidateCache, withCache } from "@/lib/cache/redis-cache";
-import {
-    chapters,
-    comicPanels,
-    parts,
-    scenes,
-    stories,
-} from "@/lib/schemas/database";
+import { chapters, parts, scenes, stories } from "@/lib/schemas/database";
 import { db } from "./index";
 
 /**
@@ -95,7 +89,7 @@ async function fetchStoryWithComicPanels(storyId: string) {
                 .where(eq(chapters.storyId, storyId))
                 .orderBy(asc(chapters.orderIndex)),
 
-            // Query 4: Published comic scenes only (with comicPanelCount for quick filtering)
+            // Query 4: Published comic scenes only for THIS story (join with chapters to filter by storyId)
             db
                 .select({
                     id: scenes.id,
@@ -107,12 +101,22 @@ async function fetchStoryWithComicPanels(storyId: string) {
                     comicPanelCount: scenes.comicPanelCount,
                     comicGeneratedAt: scenes.comicGeneratedAt,
                     comicUniqueViewCount: scenes.comicUniqueViewCount,
+                    // ⚡ CRITICAL: Include comicToonplay for rendering panels
+                    comicToonplay: scenes.comicToonplay,
+                    imageUrl: scenes.imageUrl,
+                    imageVariants: scenes.imageVariants,
                     // ❌ SKIPPED: content (text content not needed for comics)
                     // ❌ SKIPPED: characterFocus, sensoryAnchors, voiceStyle (studio planning fields)
                     // ❌ SKIPPED: cyclePhase, emotionalBeat (studio analysis fields)
                 })
                 .from(scenes)
-                .where(eq(scenes.comicStatus, "published"))
+                .innerJoin(chapters, eq(scenes.chapterId, chapters.id))
+                .where(
+                    and(
+                        eq(chapters.storyId, storyId),
+                        eq(scenes.comicStatus, "published"),
+                    ),
+                )
                 .orderBy(asc(scenes.orderIndex)),
         ]);
     } catch (error) {
@@ -137,90 +141,50 @@ async function fetchStoryWithComicPanels(storyId: string) {
         return null;
     }
 
-    // Fetch comic panels for all scenes (batched for performance)
+    // Extract panels from comicToonplay JSON field (panels are stored inline, not in separate table)
     console.log(
-        `[PERF-QUERY] 🎨 Fetching comic panels for ${allScenes.length} scenes...`,
+        `[PERF-QUERY] 🎨 Extracting comic panels from comicToonplay for ${allScenes.length} scenes...`,
     );
-    const panelsFetchStart = performance.now();
+    const panelsExtractStart = performance.now();
 
-    const sceneIds = allScenes.map((s) => s.id);
-    const allPanels =
-        sceneIds.length > 0
-            ? await db
-                  .select({
-                      id: comicPanels.id,
-                      sceneId: comicPanels.sceneId,
-                      panelNumber: comicPanels.panelNumber,
-                      shotType: comicPanels.shotType,
-                      imageUrl: comicPanels.imageUrl,
-                      imageVariants: comicPanels.imageVariants,
-                      narrative: comicPanels.narrative,
-                      dialogue: comicPanels.dialogue,
-                      sfx: comicPanels.sfx,
-                      summary:
-                          (comicPanels as any).summary ||
-                          (comicPanels as any).description,
-                  })
-                  .from(comicPanels)
-                  .where(eq(comicPanels.sceneId, sceneIds[0])) // Start with first scene
-                  .orderBy(asc(comicPanels.panelNumber))
-                  .then(async (firstBatch) => {
-                      // Fetch remaining scenes in parallel if there are more
-                      if (sceneIds.length > 1) {
-                          const remainingPanels = await Promise.all(
-                              sceneIds.slice(1).map((sceneId) =>
-                                  db
-                                      .select({
-                                          id: comicPanels.id,
-                                          sceneId: comicPanels.sceneId,
-                                          panelNumber: comicPanels.panelNumber,
-                                          shotType: comicPanels.shotType,
-                                          imageUrl: comicPanels.imageUrl,
-                                          imageVariants:
-                                              comicPanels.imageVariants,
-                                          narrative: comicPanels.narrative,
-                                          dialogue: comicPanels.dialogue,
-                                          sfx: comicPanels.sfx,
-                                          summary:
-                                              (comicPanels as any).summary ||
-                                              (comicPanels as any).description,
-                                      })
-                                      .from(comicPanels)
-                                      .where(eq(comicPanels.sceneId, sceneId))
-                                      .orderBy(asc(comicPanels.panelNumber)),
-                              ),
-                          );
-                          return [...firstBatch, ...remainingPanels.flat()];
-                      }
-                      return firstBatch;
-                  })
-            : [];
-
-    const panelsFetchDuration = performance.now() - panelsFetchStart;
-    console.log(
-        `[PERF-QUERY]   - Panels: ${allPanels.length} results (${panelsFetchDuration.toFixed(2)}ms)`,
-    );
-
-    // Group panels by scene
-    const panelsByScene = new Map<string, typeof allPanels>();
-    for (const panel of allPanels) {
-        if (!panelsByScene.has(panel.sceneId)) {
-            panelsByScene.set(panel.sceneId, []);
-        }
-        panelsByScene.get(panel.sceneId)?.push(panel);
-    }
-
-    // Filter scenes by chapter and attach panels
+    // Group scenes by chapter and extract panels from comicToonplay
     const scenesByChapter = new Map<string, any[]>();
+    let totalPanels = 0;
+
     for (const scene of allScenes) {
         if (!scenesByChapter.has(scene.chapterId)) {
             scenesByChapter.set(scene.chapterId, []);
         }
+
+        // Extract panels from comicToonplay JSON field
+        const toonplay = scene.comicToonplay as any;
+        const panels = toonplay?.panels || [];
+        totalPanels += panels.length;
+
+        // Transform panels to expected format
+        const transformedPanels = panels.map((panel: any, index: number) => ({
+            id: panel.id || `panel_${scene.id}_${index + 1}`,
+            sceneId: scene.id,
+            panelNumber: panel.panel_number || index + 1,
+            shotType: panel.shot_type || "medium",
+            imageUrl: panel.image_url || scene.imageUrl,
+            imageVariants: panel.image_variants || null,
+            narrative: panel.narrative || null,
+            dialogue: panel.dialogue || [],
+            sfx: panel.sfx || [],
+            summary: panel.description || panel.summary || null,
+        }));
+
         scenesByChapter.get(scene.chapterId)?.push({
             ...scene,
-            comicPanels: panelsByScene.get(scene.id) || [],
+            comicPanels: transformedPanels,
         });
     }
+
+    const panelsExtractDuration = performance.now() - panelsExtractStart;
+    console.log(
+        `[PERF-QUERY]   - Panels: ${totalPanels} extracted from comicToonplay (${panelsExtractDuration.toFixed(2)}ms)`,
+    );
 
     // Build hierarchical structure
     const result = {
@@ -272,7 +236,7 @@ export async function getStoryWithComicPanels(storyId: string) {
 
 /**
  * Get comic panels for a specific scene
- * Loads panels on demand to reduce initial payload
+ * Loads panels on demand from comicToonplay JSON field
  *
  * ⚡ PROGRESSIVE LOADING STRATEGY:
  * - Initial load: First 3 panels (above fold)
@@ -284,28 +248,42 @@ async function fetchSceneComicPanels(sceneId: string, limit?: number) {
         `[PERF-QUERY] 🎨 getSceneComicPanels START for scene: ${sceneId}${limit ? ` (limit: ${limit})` : ""}`,
     );
 
-    const query = db
+    // Fetch scene with comicToonplay to extract panels
+    const [scene] = await db
         .select({
-            id: comicPanels.id,
-            sceneId: comicPanels.sceneId,
-            panelNumber: comicPanels.panelNumber,
-            shotType: comicPanels.shotType,
-            imageUrl: comicPanels.imageUrl,
-            imageVariants: comicPanels.imageVariants, // ⚡ CRITICAL: Needed for AVIF optimization
-            narrative: comicPanels.narrative,
-            dialogue: comicPanels.dialogue,
-            sfx: comicPanels.sfx,
-            summary:
-                (comicPanels as any).summary ||
-                (comicPanels as any).description,
-            // ❌ SKIPPED: metadata (detailed generation info not needed for display)
+            id: scenes.id,
+            comicToonplay: scenes.comicToonplay,
+            imageUrl: scenes.imageUrl,
         })
-        .from(comicPanels)
-        .where(eq(comicPanels.sceneId, sceneId))
-        .orderBy(asc(comicPanels.panelNumber));
+        .from(scenes)
+        .where(eq(scenes.id, sceneId))
+        .limit(1);
+
+    if (!scene) {
+        console.log(`[PERF-QUERY] ❌ Scene not found: ${sceneId}`);
+        return [];
+    }
+
+    // Extract panels from comicToonplay JSON field
+    const toonplay = scene.comicToonplay as any;
+    const rawPanels = toonplay?.panels || [];
+
+    // Transform panels to expected format
+    const allPanels = rawPanels.map((panel: any, index: number) => ({
+        id: panel.id || `panel_${scene.id}_${index + 1}`,
+        sceneId: scene.id,
+        panelNumber: panel.panel_number || index + 1,
+        shotType: panel.shot_type || "medium",
+        imageUrl: panel.image_url || scene.imageUrl,
+        imageVariants: panel.image_variants || null,
+        narrative: panel.narrative || null,
+        dialogue: panel.dialogue || [],
+        sfx: panel.sfx || [],
+        summary: panel.description || panel.summary || null,
+    }));
 
     // Apply limit if specified (for progressive loading)
-    const panelList = limit ? await query.limit(limit) : await query;
+    const panelList = limit ? allPanels.slice(0, limit) : allPanels;
 
     const totalDuration = performance.now() - queryStartTime;
     console.log(

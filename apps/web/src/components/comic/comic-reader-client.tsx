@@ -8,10 +8,73 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ComicViewer } from "@/components/comic/comic-viewer";
 import { useChapterScenes } from "@/hooks/use-chapter-scenes";
 import { useStoryReader } from "@/hooks/use-story-reader";
+
+/**
+ * Extract scenes from initialData during render (not in useEffect)
+ * This enables SSR to include scenes in the initial HTML
+ */
+function extractScenesFromData(data: any): Array<{
+    scene: any;
+    chapterId: string;
+    chapterTitle: string;
+    partTitle?: string;
+}> {
+    if (!data) return [];
+
+    const flatScenes: Array<{
+        scene: any;
+        chapterId: string;
+        chapterTitle: string;
+        partTitle?: string;
+    }> = [];
+
+    // Extract scenes from parts -> chapters -> scenes
+    if (data.parts && Array.isArray(data.parts)) {
+        for (const part of data.parts) {
+            if (part.chapters && Array.isArray(part.chapters)) {
+                for (const chapter of part.chapters) {
+                    if (chapter.scenes && Array.isArray(chapter.scenes)) {
+                        for (const scene of chapter.scenes) {
+                            // Only include published comic scenes
+                            if (scene.comicStatus === "published") {
+                                flatScenes.push({
+                                    scene,
+                                    chapterId: chapter.id,
+                                    chapterTitle: chapter.title,
+                                    partTitle: part.title,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Extract scenes from chapters without parts
+    if (data.chapters && Array.isArray(data.chapters)) {
+        for (const chapter of data.chapters) {
+            if (chapter.scenes && Array.isArray(chapter.scenes)) {
+                for (const scene of chapter.scenes) {
+                    // Only include published comic scenes
+                    if (scene.comicStatus === "published") {
+                        flatScenes.push({
+                            scene,
+                            chapterId: chapter.id,
+                            chapterTitle: chapter.title,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    return flatScenes;
+}
 
 interface ComicReaderClientProps {
     storyId: string;
@@ -24,22 +87,27 @@ export function ComicReaderClient({
 }: ComicReaderClientProps) {
     const componentId = useRef(Math.random().toString(36).substring(7));
     const mainContentRef = useRef<HTMLDivElement>(null);
-    const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
-        null,
+
+    // Extract scenes from initialData during render (enables SSR)
+    const extractedScenes = useMemo(
+        () => extractScenesFromData(initialData),
+        [initialData],
     );
-    const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null);
+
+    // Initialize state with extracted scenes for SSR
+    const [selectedChapterId, setSelectedChapterId] = useState<string | null>(
+        () => (extractedScenes.length > 0 ? extractedScenes[0].chapterId : null),
+    );
+    const [selectedSceneId, setSelectedSceneId] = useState<string | null>(
+        () => (extractedScenes.length > 0 ? extractedScenes[0].scene.id : null),
+    );
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [allScenes, setAllScenes] = useState<
-        Array<{
-            scene: any;
-            chapterId: string;
-            chapterTitle: string;
-            partTitle?: string;
-        }>
-    >([]);
+
+    // Use extracted scenes directly (no separate state needed)
+    const allScenes = extractedScenes;
 
     console.log(
-        `[${componentId.current}] 🎨 ComicReaderClient MOUNT - Story: ${storyId}`,
+        `[${componentId.current}] 🎨 ComicReaderClient MOUNT - Story: ${storyId}, Scenes: ${allScenes.length}`,
     );
 
     // Fetch story data
@@ -52,48 +120,8 @@ export function ComicReaderClient({
     const { scenes: chapterScenes, isLoading: scenesLoading } =
         useChapterScenes(selectedChapterId);
 
-    // Fetch all scenes from all chapters
-    useEffect(() => {
-        const fetchAllScenes = async () => {
-            if (!story || availableChapters.length === 0) return;
-
-            const scenesPromises = availableChapters.map(async (chapter) => {
-                try {
-                    const response = await fetch(
-                        `/api/studio/chapters/${chapter.id}/scenes`,
-                    );
-                    if (!response.ok) return [];
-                    const data = await response.json();
-
-                    return data.scenes.map((scene: any) => ({
-                        scene,
-                        chapterId: chapter.id,
-                        chapterTitle: chapter.title,
-                        partTitle: (chapter as any).partTitle,
-                    }));
-                } catch (error) {
-                    console.error(
-                        `Failed to fetch scenes for chapter ${chapter.id}:`,
-                        error,
-                    );
-                    return [];
-                }
-            });
-
-            const scenesArrays = await Promise.all(scenesPromises);
-            const flatScenes = scenesArrays.flat();
-            setAllScenes(flatScenes);
-
-            // Auto-select first scene
-            if (!selectedSceneId && flatScenes.length > 0) {
-                const firstScene = flatScenes[0];
-                setSelectedChapterId(firstScene.chapterId);
-                setSelectedSceneId(firstScene.scene.id);
-            }
-        };
-
-        fetchAllScenes();
-    }, [story, availableChapters, selectedSceneId]);
+    // Note: Scene extraction is now done via useMemo (extractedScenes) for SSR support
+    // The useStoryReader hook data is NOT used for scenes because the API doesn't include comic panel data
 
     // Handle scene selection
     const handleSceneSelect = (sceneId: string, chapterId: string) => {
@@ -208,9 +236,11 @@ export function ComicReaderClient({
         };
     }, [allScenes, selectedSceneId, handleSceneSelect]);
 
-    const selectedScene = chapterScenes.find(
-        (scene) => scene.id === selectedSceneId,
+    // Find selected scene from allScenes (loaded from initialData)
+    const selectedSceneItem = allScenes.find(
+        (item) => item.scene.id === selectedSceneId,
     );
+    const selectedScene = selectedSceneItem?.scene;
     const currentSceneIndex = allScenes.findIndex(
         (item) => item.scene.id === selectedSceneId,
     );
