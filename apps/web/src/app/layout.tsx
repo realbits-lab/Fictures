@@ -64,7 +64,7 @@ export default async function RootLayout({
                                 closeButton
                                 duration={5000}
                             />
-                            {/* Cache Debug Panel - Toggle with Cmd+R (Mac) / Ctrl+R (Win) in development */}
+                            {/* Debug Panel: Ctrl+Shift+D (development only) */}
                             <CacheDebugPanel />
                         </AuthModalProvider>
                     </SessionProvider>

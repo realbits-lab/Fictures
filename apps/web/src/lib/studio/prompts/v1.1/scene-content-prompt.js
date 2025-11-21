@@ -484,16 +484,21 @@ Write: "She uncapped the bottle. Tilted it. The first drop caught the light. Fel
    - Every dialogue line must have a blank line above and below
    - No exceptions - this is critical for mobile readability
    - Dense dialogue without spacing will be REJECTED
-5. **Complete the cycle alignment checklist for your phase** - All items must be present (v1.1)
-6. **Achieve emotional resonance** - Use Gam-dong principles (v1.1)
-7. **Follow mobile-first formatting** - Maximum 3 sentences per paragraph (v1.1.1)
-8. Stay true to scene's cycle phase purpose
-9. Maintain character voice consistency
-10. Build or release tension as appropriate
-11. Show, don't tell (especially virtue and consequence)
-12. Every sentence must advance emotion or plot
-13. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
-14. **Count words as you write** - stay within range (v1.1)
+5. **⚠️ NO MARKDOWN FORMATTING (v1.3)** - Plain prose text only
+   - NEVER use asterisks for emphasis (*word* or **word** is FORBIDDEN)
+   - NEVER use underscores for emphasis (_word_ is FORBIDDEN)
+   - Use word choice and sentence structure to convey emphasis, not markdown
+   - Example: Write "my record" NOT "*my* record"
+6. **Complete the cycle alignment checklist for your phase** - All items must be present (v1.1)
+7. **Achieve emotional resonance** - Use Gam-dong principles (v1.1)
+8. **Follow mobile-first formatting** - Maximum 3 sentences per paragraph (v1.1.1)
+9. Stay true to scene's cycle phase purpose
+10. Maintain character voice consistency
+11. Build or release tension as appropriate
+12. Show, don't tell (especially virtue and consequence)
+13. Every sentence must advance emotion or plot
+14. If virtue scene: THIS IS MOST IMPORTANT - make it memorable
+15. **Count words as you write** - stay within range (v1.1)
 
 # OUTPUT
 Return ONLY the prose narrative, no metadata, no explanations.

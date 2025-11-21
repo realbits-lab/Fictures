@@ -458,37 +458,56 @@ export function ChapterReaderClient({
         fetchAllScenes();
     }, [story, availableChapters, isOwner]);
 
-    // Auto-select first scene on load
+    // Auto-select scene on load (restore saved position or first scene)
     useEffect(() => {
         if (!selectedSceneId && allScenes.length > 0) {
             const autoSelectStartTime = performance.now();
             const selectId = Math.random().toString(36).substring(7);
 
-            console.log(
-                `[${selectId}] 🎯 AUTO-SELECT first scene - ${allScenes.length} scenes available`,
-            );
+            // Try to restore saved reading position
+            const savedPosition = readingProgress.getPosition();
+            let targetScene = allScenes[0];
+            let isRestoredPosition = false;
 
-            const firstScene = allScenes[0];
-            if (firstScene) {
-                setSelectedChapterId(firstScene.chapterId);
-                setSelectedSceneId(firstScene.scene.id);
+            if (savedPosition?.sceneId) {
+                const savedScene = allScenes.find(
+                    (item) => item.scene.id === savedPosition.sceneId,
+                );
+                if (savedScene) {
+                    targetScene = savedScene;
+                    isRestoredPosition = true;
+                    console.log(
+                        `[${selectId}] 🔄 RESTORE saved scene position - ${savedPosition.sceneId}`,
+                    );
+                }
+            }
+
+            if (!isRestoredPosition) {
+                console.log(
+                    `[${selectId}] 🎯 AUTO-SELECT first scene - ${allScenes.length} scenes available`,
+                );
+            }
+
+            if (targetScene) {
+                setSelectedChapterId(targetScene.chapterId);
+                setSelectedSceneId(targetScene.scene.id);
 
                 // Track reading start
-                trackReading(storyId, firstScene.chapterId);
+                trackReading(storyId, targetScene.chapterId);
 
                 const autoSelectDuration =
                     performance.now() - autoSelectStartTime;
                 const timeSinceMount =
                     performance.now() - componentMountTime.current;
                 console.log(
-                    `[${selectId}] ✅ First scene selected: ${autoSelectDuration.toFixed(2)}ms`,
+                    `[${selectId}] ✅ Scene selected: ${autoSelectDuration.toFixed(2)}ms`,
                 );
                 console.log(
-                    `[${selectId}] ⏱️  Time from mount to first scene: ${timeSinceMount.toFixed(2)}ms`,
+                    `[${selectId}] ⏱️  Time from mount to scene: ${timeSinceMount.toFixed(2)}ms`,
                 );
             }
         }
-    }, [selectedSceneId, allScenes, storyId]);
+    }, [selectedSceneId, allScenes, storyId, readingProgress]);
 
     // ⚡ OPTIMIZED: Async scroll restoration (non-blocking, happens in background)
     useEffect(() => {
@@ -791,12 +810,29 @@ export function ChapterReaderClient({
         handleSceneSelect,
     ]);
 
-    // Save reading position on chapter change
+    // Save reading position on scene change
     useEffect(() => {
-        if (selectedChapterId) {
-            readingProgress.savePosition(selectedChapterId, 0);
+        if (selectedSceneId && selectedChapterId) {
+            readingProgress.savePosition(selectedSceneId, 0, selectedChapterId);
         }
-    }, [selectedChapterId, readingProgress]);
+    }, [selectedSceneId, selectedChapterId, readingProgress]);
+
+    // Scroll sidebar to show selected scene when it changes
+    useEffect(() => {
+        if (!selectedSceneId) return;
+
+        // Find the button element with the matching data-scene-id
+        const selectedButton = document.querySelector(
+            `button[data-scene-id="${selectedSceneId}"]`,
+        );
+
+        if (selectedButton) {
+            selectedButton.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+            });
+        }
+    }, [selectedSceneId]);
 
     const selectedChapter = availableChapters.find(
         (ch) => ch.id === selectedChapterId,
@@ -1154,6 +1190,7 @@ export function ChapterReaderClient({
                                         return (
                                             <button
                                                 key={item.scene.id}
+                                                data-scene-id={item.scene.id}
                                                 onClick={() =>
                                                     handleSceneSelect(
                                                         item.scene.id,

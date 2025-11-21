@@ -8,27 +8,37 @@ Complete API reference for the Fictures AI Server.
 http://localhost:8000
 ```
 
+## Generation Mode
+
+The AI server operates in one of three modes based on the `AI_SERVER_GENERATION_MODE` environment variable:
+
+| Mode | Endpoints Available | VRAM Usage | Use Case |
+|------|---------------------|------------|----------|
+| `text` | `/api/v1/text/*` only | ~10GB | Story writing, dialogue generation |
+| `image` | `/api/v1/images/*` only | ~8GB | **Default** - Cover art, illustrations |
+| `both` | All endpoints | 24GB+ | High-end GPUs only |
+
+**Note**: Endpoints not available in the current mode will return 404.
+
+---
+
 ## Authentication
 
 **All API endpoints require authentication using API keys.**
 
-The AI server validates API keys against the web application's PostgreSQL database, ensuring consistent authentication across all services. This simple database-only approach uses just **2 database queries per request** for efficient authentication (~15-30ms overhead).
+The AI server validates API keys against the web application's PostgreSQL database, ensuring consistent authentication across all services. This simple database-only approach uses **2 database queries per request** for efficient authentication (~15-30ms overhead).
 
 For complete authentication documentation, see [Authentication Guide](../general/authentication.md).
 
-### Authentication Methods
+### Authentication Method
 
-API keys can be provided in two ways:
+API keys must be provided via the `x-api-key` header:
 
-1. **Authorization Header (Recommended)**:
-   ```
-   Authorization: Bearer YOUR_API_KEY
-   ```
+```
+x-api-key: YOUR_API_KEY
+```
 
-2. **x-api-key Header (Alternative)**:
-   ```
-   x-api-key: YOUR_API_KEY
-   ```
+**Important**: The AI server ONLY accepts the `x-api-key` header. Do NOT use `Authorization: Bearer` for API keys.
 
 ### Required Scopes
 
@@ -38,6 +48,7 @@ Different endpoints require different permission scopes:
 |----------|----------------|-------------|
 | `POST /api/v1/text/generate` | `stories:write` | Generate text |
 | `POST /api/v1/text/stream` | `stories:write` | Stream text generation |
+| `POST /api/v1/text/structured` | `stories:write` | Structured output generation |
 | `GET /api/v1/text/models` | Any valid API key | List text models |
 | `POST /api/v1/images/generate` | `stories:write` | Generate images |
 | `GET /api/v1/images/models` | Any valid API key | List image models |
@@ -53,7 +64,7 @@ Different endpoints require different permission scopes:
 **401 Unauthorized** - Missing or invalid API key:
 ```json
 {
-  "detail": "API key required. Provide via 'Authorization: Bearer YOUR_API_KEY' or 'x-api-key: YOUR_API_KEY' header"
+  "detail": "API key required. Provide via 'x-api-key: YOUR_API_KEY' header"
 }
 ```
 
@@ -74,7 +85,7 @@ API keys are managed through the web application at `/settings/api-keys`:
 4. Store securely (keys are hashed with bcrypt in the database)
 5. Use the key in your requests to the AI server
 
-The AI server queries the same `api_keys` table, validating keys by prefix matching and bcrypt hash verification.
+**API Key Format**: `fic_<base64url>` (~47 characters total)
 
 ### Storing API Keys Locally
 
@@ -83,47 +94,39 @@ For local development and testing, store your API key in the `.auth/user.json` f
 **File Structure (.auth/user.json):**
 ```json
 {
-  "apiKey": "sk_test_your_actual_api_key_here",
-  "email": "user@example.com"
+  "profiles": {
+    "manager": {
+      "email": "manager@example.com",
+      "apiKey": "fic_your_manager_api_key_here"
+    },
+    "writer": {
+      "email": "writer@example.com",
+      "apiKey": "fic_your_writer_api_key_here"
+    }
+  }
 }
 ```
 
 **Important:**
 - Create the `.auth` directory if it doesn't exist
-- The `.auth` directory should be in your `.gitignore` to prevent committing credentials
-- The `apiKey` field contains your API key from the web app
+- The `.auth` directory should be in `.gitignore` to prevent committing credentials
 - All code examples in this documentation use `.auth/user.json` for API key storage
 
 ### Example Request
 
 ```bash
 # Load API key from .auth/user.json
-API_KEY=$(cat .auth/user.json | jq -r '.apiKey')
+API_KEY=$(cat .auth/user.json | jq -r '.profiles.writer.apiKey')
 
 curl -X POST "http://localhost:8000/api/v1/images/generate" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $API_KEY" \
+  -H "x-api-key: $API_KEY" \
   -d '{
     "prompt": "A beautiful sunset over mountains",
-    "width": 1024,
-    "height": 1024
+    "width": 1664,
+    "height": 928
   }'
 ```
-
-### Disabling Authentication (Development Only)
-
-For development purposes, authentication can be disabled by setting:
-
-```bash
-REQUIRE_API_KEY=false
-```
-
-When disabled, all requests are authorized as a mock user with `admin:all` scope. No database connection is required in this mode.
-
-**⚠️ WARNING**:
-- Never use in production
-- Bypasses all security checks
-- Only for local debugging
 
 ---
 
@@ -157,18 +160,12 @@ Health check endpoint with model status.
 {
   "status": "healthy",
   "version": "1.0.0",
+  "generation_mode": "image",
   "models": {
-    "text": {
-      "name": "google/gemma-2b-it",
-      "type": "text-generation",
-      "framework": "vLLM",
-      "max_tokens": 4096,
-      "initialized": true
-    },
     "image": {
-      "name": "stabilityai/stable-diffusion-xl-base-1.0",
+      "name": "Qwen-Image FP8 + Lightning v2.0 4-step",
       "type": "image-generation",
-      "framework": "diffusers",
+      "framework": "ComfyUI",
       "device": "cuda",
       "initialized": true
     }
@@ -178,26 +175,34 @@ Health check endpoint with model status.
 
 ### GET /api/v1/models
 
-List all available models.
+List all available models (based on current generation mode).
 
-**Response:**
+**Response (image mode):**
 ```json
 {
-  "text_generation": [
-    {
-      "name": "google/gemma-2b-it",
-      "type": "text-generation",
-      "framework": "vLLM",
-      "max_tokens": 4096,
-      "initialized": true
-    }
-  ],
+  "generation_mode": "image",
   "image_generation": [
     {
-      "name": "stabilityai/stable-diffusion-xl-base-1.0",
+      "name": "Qwen-Image FP8 + Lightning v2.0 4-step",
       "type": "image-generation",
-      "framework": "diffusers",
+      "framework": "ComfyUI",
       "device": "cuda",
+      "initialized": true
+    }
+  ]
+}
+```
+
+**Response (text mode):**
+```json
+{
+  "generation_mode": "text",
+  "text_generation": [
+    {
+      "name": "Qwen/Qwen3-14B-AWQ",
+      "type": "text-generation",
+      "framework": "vLLM",
+      "max_tokens": 40960,
       "initialized": true
     }
   ]
@@ -208,9 +213,11 @@ List all available models.
 
 ## Text Generation Endpoints
 
+**Available when**: `AI_SERVER_GENERATION_MODE=text`
+
 ### POST /api/v1/text/generate
 
-Generate text using vLLM with Gemma model.
+Generate text using vLLM with Qwen3 model.
 
 **Request Body:**
 ```json
@@ -226,8 +233,8 @@ Generate text using vLLM with Gemma model.
 **Parameters:**
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
-| `prompt` | string | Yes | - | Text prompt for generation |
-| `max_tokens` | integer | No | 2048 | Maximum tokens to generate (1-8192) |
+| `prompt` | string | Yes | - | Text prompt for generation (max 50,000 chars) |
+| `max_tokens` | integer | No | 2048 | Maximum tokens to generate (1-40,960) |
 | `temperature` | float | No | 0.7 | Sampling temperature (0.0-2.0) |
 | `top_p` | float | No | 0.9 | Nucleus sampling parameter (0.0-1.0) |
 | `stop_sequences` | array | No | null | List of stop sequences |
@@ -236,7 +243,7 @@ Generate text using vLLM with Gemma model.
 ```json
 {
   "text": "Once upon a time, in a magical forest...",
-  "model": "google/gemma-2b-it",
+  "model": "Qwen/Qwen3-14B-AWQ",
   "tokens_used": 512,
   "finish_reason": "stop"
 }
@@ -253,11 +260,11 @@ Generate text using vLLM with Gemma model.
 **cURL Example:**
 ```bash
 # Load API key from .auth/user.json
-API_KEY=$(cat .auth/user.json | jq -r '.apiKey')
+API_KEY=$(cat .auth/user.json | jq -r '.profiles.writer.apiKey')
 
 curl -X POST "http://localhost:8000/api/v1/text/generate" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $API_KEY" \
+  -H "x-api-key: $API_KEY" \
   -d '{
     "prompt": "Write a haiku about programming",
     "max_tokens": 50,
@@ -277,7 +284,7 @@ async def generate_text():
     auth_path = Path(".auth/user.json")
     with open(auth_path) as f:
         auth_data = json.load(f)
-        api_key = auth_data.get("apiKey")
+        api_key = auth_data["profiles"]["writer"]["apiKey"]
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
@@ -287,7 +294,7 @@ async def generate_text():
                 "max_tokens": 50,
                 "temperature": 0.7,
             },
-            headers={"Authorization": f"Bearer {api_key}"},
+            headers={"x-api-key": api_key},
             timeout=300.0,
         )
         result = response.json()
@@ -306,11 +313,11 @@ Generate text with streaming response (Server-Sent Events).
 
 **Event Format:**
 ```
-data: {"text": "Once upon", "model": "google/gemma-2b-it", "tokens_used": 3, "finish_reason": null, "done": false}
+data: {"text": "Once upon", "model": "Qwen/Qwen3-14B-AWQ", "tokens_used": 3, "finish_reason": null, "done": false}
 
-data: {"text": "Once upon a time", "model": "google/gemma-2b-it", "tokens_used": 5, "finish_reason": null, "done": false}
+data: {"text": "Once upon a time", "model": "Qwen/Qwen3-14B-AWQ", "tokens_used": 5, "finish_reason": null, "done": false}
 
-data: {"text": "Once upon a time, in a magical forest...", "model": "google/gemma-2b-it", "tokens_used": 512, "finish_reason": "stop", "done": true}
+data: {"text": "Once upon a time, in a magical forest...", "model": "Qwen/Qwen3-14B-AWQ", "tokens_used": 512, "finish_reason": "stop", "done": true}
 ```
 
 **Python Streaming Example:**
@@ -325,7 +332,7 @@ async def stream_text():
     auth_path = Path(".auth/user.json")
     with open(auth_path) as f:
         auth_data = json.load(f)
-        api_key = auth_data.get("apiKey")
+        api_key = auth_data["profiles"]["writer"]["apiKey"]
 
     async with httpx.AsyncClient() as client:
         async with client.stream(
@@ -336,7 +343,7 @@ async def stream_text():
                 "max_tokens": 200,
                 "temperature": 0.8,
             },
-            headers={"Authorization": f"Bearer {api_key}"},
+            headers={"x-api-key": api_key},
             timeout=300.0,
         ) as response:
             async for line in response.aiter_lines():
@@ -358,13 +365,13 @@ async function streamText() {
   // Load API key from .auth/user.json
   const authPath = path.join(process.cwd(), '.auth', 'user.json');
   const authData = JSON.parse(await fs.readFile(authPath, 'utf-8'));
-  const apiKey = authData.apiKey;
+  const apiKey = authData.profiles.writer.apiKey;
 
   const response = await fetch('http://localhost:8000/api/v1/text/stream', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'x-api-key': apiKey
     },
     body: JSON.stringify({
       prompt: 'Write a story about a robot',
@@ -396,6 +403,101 @@ async function streamText() {
 streamText();
 ```
 
+### POST /api/v1/text/structured
+
+Generate structured output using vLLM guided decoding.
+
+This endpoint generates text that conforms to a specific structure (JSON schema, regex, etc.) using vLLM's guided decoding feature.
+
+**Supported guided decoding types:**
+- **json**: Generate output conforming to a JSON schema
+- **regex**: Generate output matching a regular expression
+- **choice**: Generate output that is one of the specified choices
+- **grammar**: Generate output conforming to a context-free grammar
+
+**Request Body:**
+```json
+{
+  "prompt": "Generate a character profile for a fantasy wizard",
+  "guided_decoding": {
+    "type": "json",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "name": {"type": "string"},
+        "age": {"type": "integer"},
+        "specialty": {"type": "string"}
+      },
+      "required": ["name", "age", "specialty"]
+    }
+  },
+  "max_tokens": 500,
+  "temperature": 0.7
+}
+```
+
+**Parameters:**
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `prompt` | string | Yes | - | Text prompt for generation |
+| `guided_decoding` | object | Yes | - | Guided decoding configuration |
+| `guided_decoding.type` | string | Yes | - | Type: `json`, `regex`, `choice`, `grammar` |
+| `guided_decoding.schema` | object | Conditional | - | JSON schema (required for type `json`) |
+| `guided_decoding.pattern` | string | Conditional | - | Regex pattern (required for type `regex`) |
+| `guided_decoding.choices` | array | Conditional | - | Valid choices (required for type `choice`) |
+| `guided_decoding.grammar` | string | Conditional | - | CFG grammar (required for type `grammar`) |
+| `max_tokens` | integer | No | 2048 | Maximum tokens to generate |
+| `temperature` | float | No | 0.7 | Sampling temperature |
+| `top_p` | float | No | 0.9 | Nucleus sampling parameter |
+
+**Response:**
+```json
+{
+  "output": "{\"name\": \"Gandalf\", \"age\": 2019, \"specialty\": \"Fire magic\"}",
+  "parsed_output": {
+    "name": "Gandalf",
+    "age": 2019,
+    "specialty": "Fire magic"
+  },
+  "model": "Qwen/Qwen3-14B-AWQ",
+  "tokens_used": 45,
+  "finish_reason": "stop",
+  "is_valid": true
+}
+```
+
+**Response Fields:**
+| Field | Type | Description |
+|-------|------|-------------|
+| `output` | string | Raw generated output |
+| `parsed_output` | object | Parsed JSON output (only for JSON type) |
+| `model` | string | Model used for generation |
+| `tokens_used` | integer | Number of tokens used |
+| `finish_reason` | string | Reason for completion |
+| `is_valid` | boolean | Whether output conforms to schema/pattern |
+
+**Choice Example:**
+```json
+{
+  "prompt": "Classify this text sentiment: 'I love this product!'",
+  "guided_decoding": {
+    "type": "choice",
+    "choices": ["positive", "negative", "neutral"]
+  }
+}
+```
+
+**Regex Example:**
+```json
+{
+  "prompt": "Generate a US phone number:",
+  "guided_decoding": {
+    "type": "regex",
+    "pattern": "\\d{3}-\\d{3}-\\d{4}"
+  }
+}
+```
+
 ### GET /api/v1/text/models
 
 List available text generation models.
@@ -405,11 +507,11 @@ List available text generation models.
 {
   "models": [
     {
-      "id": "google/gemma-2b-it",
-      "name": "google/gemma-2b-it",
+      "id": "Qwen/Qwen3-14B-AWQ",
+      "name": "Qwen/Qwen3-14B-AWQ",
       "type": "text-generation",
       "framework": "vLLM",
-      "max_tokens": 4096,
+      "max_tokens": 40960,
       "status": "initialized"
     }
   ]
@@ -420,41 +522,52 @@ List available text generation models.
 
 ## Image Generation Endpoints
 
+**Available when**: `AI_SERVER_GENERATION_MODE=image`
+
 ### POST /api/v1/images/generate
 
-Generate image using Stable Diffusion XL.
+Generate image using Qwen-Image-Lightning via ComfyUI.
 
 **Request Body:**
 ```json
 {
   "prompt": "A serene mountain landscape at sunset, digital art",
   "negative_prompt": "blurry, low quality, distorted",
-  "width": 1344,
-  "height": 768,
-  "num_inference_steps": 30,
-  "guidance_scale": 7.5,
+  "width": 1664,
+  "height": 928,
+  "num_inference_steps": 4,
+  "guidance_scale": 1.0,
   "seed": 42
 }
 ```
+
+**Qwen-Image-Lightning Supported Resolutions:**
+| Aspect Ratio | Dimensions | Description |
+|--------------|------------|-------------|
+| 1:1 | 1328×1328 | Square |
+| 16:9 | 1664×928 | Widescreen (default) |
+| 9:16 | 928×1664 | Portrait |
+| 4:3 | 1472×1140 | Classic |
+| 3:4 | 1140×1472 | Portrait classic |
 
 **Parameters:**
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
 | `prompt` | string | Yes | - | Text prompt for image generation |
 | `negative_prompt` | string | No | null | Features to avoid in the image |
-| `width` | integer | No | 1344 | Image width in pixels (256-2048) |
-| `height` | integer | No | 768 | Image height in pixels (256-2048) |
-| `num_inference_steps` | integer | No | 30 | Denoising steps (1-100) |
-| `guidance_scale` | float | No | 7.5 | Prompt adherence (1.0-20.0) |
+| `width` | integer | No | 1664 | Image width in pixels (256-2048) |
+| `height` | integer | No | 928 | Image height in pixels (256-2048) |
+| `num_inference_steps` | integer | No | 4 | Denoising steps (Lightning v2.0: 4 steps optimal) |
+| `guidance_scale` | float | No | 1.0 | Prompt adherence (Lightning: 1.0) |
 | `seed` | integer | No | random | Random seed for reproducibility |
 
 **Response:**
 ```json
 {
   "image_url": "data:image/png;base64,iVBORw0KGgoAAAANS...",
-  "model": "stabilityai/stable-diffusion-xl-base-1.0",
-  "width": 1344,
-  "height": 768,
+  "model": "Qwen-Image FP8 + Lightning v2.0 4-step",
+  "width": 1664,
+  "height": 928,
   "seed": 42
 }
 ```
@@ -471,16 +584,16 @@ Generate image using Stable Diffusion XL.
 **cURL Example:**
 ```bash
 # Load API key from .auth/user.json
-API_KEY=$(cat .auth/user.json | jq -r '.apiKey')
+API_KEY=$(cat .auth/user.json | jq -r '.profiles.writer.apiKey')
 
 curl -X POST "http://localhost:8000/api/v1/images/generate" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $API_KEY" \
+  -H "x-api-key: $API_KEY" \
   -d '{
     "prompt": "A beautiful sunset over mountains",
-    "width": 1024,
-    "height": 1024,
-    "num_inference_steps": 25,
+    "width": 1664,
+    "height": 928,
+    "num_inference_steps": 4,
     "seed": 42
   }' > response.json
 
@@ -501,7 +614,7 @@ async def generate_image():
     auth_path = Path(".auth/user.json")
     with open(auth_path) as f:
         auth_data = json.load(f)
-        api_key = auth_data.get("apiKey")
+        api_key = auth_data["profiles"]["writer"]["apiKey"]
 
     async with httpx.AsyncClient(timeout=300.0) as client:
         response = await client.post(
@@ -509,13 +622,13 @@ async def generate_image():
             json={
                 "prompt": "A beautiful sunset over mountains, digital art",
                 "negative_prompt": "blurry, low quality",
-                "width": 1024,
-                "height": 1024,
-                "num_inference_steps": 25,
-                "guidance_scale": 7.5,
+                "width": 1664,
+                "height": 928,
+                "num_inference_steps": 4,
+                "guidance_scale": 1.0,
                 "seed": 42,
             },
-            headers={"Authorization": f"Bearer {api_key}"},
+            headers={"x-api-key": api_key},
         )
 
         result = response.json()
@@ -539,21 +652,21 @@ async function generateImage() {
   // Load API key from .auth/user.json
   const authPath = path.join(process.cwd(), '.auth', 'user.json');
   const authData = JSON.parse(await fs.readFile(authPath, 'utf-8'));
-  const apiKey = authData.apiKey;
+  const apiKey = authData.profiles.writer.apiKey;
 
   const response = await fetch('http://localhost:8000/api/v1/images/generate', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
+      'x-api-key': apiKey
     },
     body: JSON.stringify({
       prompt: 'A beautiful sunset over mountains, digital art',
       negative_prompt: 'blurry, low quality',
-      width: 1024,
-      height: 1024,
-      num_inference_steps: 25,
-      guidance_scale: 7.5,
+      width: 1664,
+      height: 928,
+      num_inference_steps: 4,
+      guidance_scale: 1.0,
       seed: 42,
     }),
   });
@@ -561,7 +674,6 @@ async function generateImage() {
   const result = await response.json();
 
   // For Node.js: Save image to file
-  // Extract base64 data and save
   const imageData = result.image_url.split(',')[1];
   const imageBuffer = Buffer.from(imageData, 'base64');
   await fs.writeFile('output.png', imageBuffer);
@@ -581,10 +693,10 @@ List available image generation models.
 {
   "models": [
     {
-      "id": "stabilityai/stable-diffusion-xl-base-1.0",
-      "name": "stabilityai/stable-diffusion-xl-base-1.0",
+      "id": "Qwen-Image FP8 + Lightning v2.0 4-step",
+      "name": "Qwen-Image FP8 + Lightning v2.0 4-step",
       "type": "image-generation",
-      "framework": "diffusers",
+      "framework": "ComfyUI",
       "device": "cuda",
       "status": "initialized"
     }
@@ -609,17 +721,31 @@ All endpoints return standard HTTP error codes with JSON error messages.
 
 | Code | Meaning | Description |
 |------|---------|-------------|
-| 400 | Bad Request | Invalid parameters (e.g., prompt too long) |
+| 400 | Bad Request | Invalid parameters (e.g., prompt too long, width > 2048) |
 | 401 | Unauthorized | Missing or invalid API key |
 | 403 | Forbidden | Valid API key but insufficient permissions |
+| 404 | Not Found | Endpoint not available in current generation mode |
 | 422 | Unprocessable Entity | Validation error (e.g., wrong type) |
 | 500 | Internal Server Error | Server error during generation |
 | 503 | Service Unavailable | Model not loaded or GPU error |
 
-**Example Error Response:**
+**Example Error Responses:**
+
 ```json
 {
-  "detail": "Prompt too long (max 8000 characters)"
+  "detail": "Prompt too long (max 50000 characters)"
+}
+```
+
+```json
+{
+  "detail": "Width too large (max 2048 pixels)"
+}
+```
+
+```json
+{
+  "detail": "JSON schema required for type 'json'"
 }
 ```
 
@@ -655,6 +781,6 @@ npx openapi-typescript http://localhost:8000/openapi.json -o src/types/ai-server
 
 ## Next Steps
 
-- See [Testing Guide](./testing.md) for API testing examples
-- See [Performance Optimization](./performance.md) for tuning tips
-- See [Troubleshooting](./troubleshooting.md) for common issues
+- See [Quick Start Guide](../general/quick-start.md) for setup instructions
+- See [Authentication Guide](../general/authentication.md) for detailed auth documentation
+- See [Architecture Guide](../general/architecture.md) for system design overview

@@ -33,7 +33,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "http://192.168.45.157:3000";
 
 // ANSI color codes
 const colors = {

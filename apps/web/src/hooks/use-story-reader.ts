@@ -293,16 +293,21 @@ export function usePrefetchStory() {
 }
 
 /**
- * Hook for managing reading position/progress (future enhancement)
+ * Hook for managing reading position/progress per scene
  */
 export function useReadingProgress(storyId: string, _chapterId: string | null) {
     return useMemo(
         () => ({
-            // Placeholder for reading progress tracking
-            savePosition: (chapterId: string, scrollPosition: number) => {
+            // Save reading position per scene
+            savePosition: (
+                sceneId: string,
+                scrollPosition: number,
+                chapterId?: string,
+            ) => {
                 if (typeof window !== "undefined") {
                     const key = `reading-position-${storyId}`;
                     const data = {
+                        sceneId,
                         chapterId,
                         scrollPosition,
                         timestamp: Date.now(),
@@ -310,7 +315,12 @@ export function useReadingProgress(storyId: string, _chapterId: string | null) {
                     localStorage.setItem(key, JSON.stringify(data));
                 }
             },
-            getPosition: () => {
+            getPosition: (): {
+                sceneId: string;
+                chapterId?: string;
+                scrollPosition: number;
+                timestamp: number;
+            } | null => {
                 if (typeof window !== "undefined") {
                     const key = `reading-position-${storyId}`;
                     const data = localStorage.getItem(key);
