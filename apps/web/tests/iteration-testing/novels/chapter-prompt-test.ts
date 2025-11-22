@@ -2,9 +2,9 @@
 
 /**
  * Chapter Prompt Iteration Test
- * 
+ *
  * Tests different versions of chapter generation prompts to improve chapter quality metrics.
- * 
+ *
  * Usage:
  *   dotenv --file .env.local run pnpm tsx tests/iteration-testing/novels/chapter-prompt-test.ts \
  *     --control v1.0 \
@@ -13,9 +13,10 @@
  *     --prompts "last-garden"
  */
 
+import { resolve } from "node:path";
 // Load environment variables from .env.local
 import { config } from "dotenv";
-import { resolve } from "node:path";
+
 config({ path: resolve(process.cwd(), ".env.local") });
 
 import * as fs from "node:fs/promises";
@@ -93,8 +94,10 @@ const HYPOTHESIS =
 // Configure to use AI server instead of Gemini
 // This must be done before any AI client imports
 process.env.TEXT_GENERATION_PROVIDER = "ai-server";
-process.env.AI_SERVER_TEXT_URL = process.env.AI_SERVER_TEXT_URL || "http://localhost:8000";
-process.env.AI_SERVER_TEXT_TIMEOUT = process.env.AI_SERVER_TEXT_TIMEOUT || "120000";
+process.env.AI_SERVER_TEXT_URL =
+    process.env.AI_SERVER_TEXT_URL || "http://localhost:8000";
+process.env.AI_SERVER_TEXT_TIMEOUT =
+    process.env.AI_SERVER_TEXT_TIMEOUT || "120000";
 
 // Output configuration
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -149,7 +152,9 @@ function getAuthContext() {
 async function generatePreData(
     prompt: string,
 ): Promise<{ storyId: string; partId: string; generationTime: number }> {
-    console.log(`  → Generating pre-data (story, characters, settings, part)...`);
+    console.log(
+        `  → Generating pre-data (story, characters, settings, part)...`,
+    );
 
     const startTime = Date.now();
     const authContext = getAuthContext();
@@ -311,7 +316,10 @@ async function evaluateChapters(
                 );
             }
         } catch (error) {
-            console.error(`    ✗ Evaluation error for chapter ${chapterId}:`, error);
+            console.error(
+                `    ✗ Evaluation error for chapter ${chapterId}:`,
+                error,
+            );
         }
     }
 
@@ -337,8 +345,10 @@ function extractChapterMetrics(
             )) {
                 if (typeof metric === "object" && "score" in metric) {
                     const score = (metric as { score: number }).score;
-                    metricSums[metricName] = (metricSums[metricName] || 0) + score;
-                    metricCounts[metricName] = (metricCounts[metricName] || 0) + 1;
+                    metricSums[metricName] =
+                        (metricSums[metricName] || 0) + score;
+                    metricCounts[metricName] =
+                        (metricCounts[metricName] || 0) + 1;
                 }
             }
         }
@@ -465,7 +475,10 @@ async function deleteChapters(chapterIds: string[]): Promise<void> {
             try {
                 await db.delete(chapters).where(eq(chapters.id, chapterId));
             } catch (error) {
-                console.warn(`    ⚠ Failed to delete chapter ${chapterId}:`, error);
+                console.warn(
+                    `    ⚠ Failed to delete chapter ${chapterId}:`,
+                    error,
+                );
             }
         }
     });
@@ -500,12 +513,17 @@ async function main() {
         }
 
         for (let i = 0; i < ITERATIONS; i++) {
-            console.log(`\n  Iteration ${i + 1}/${ITERATIONS} (${testPrompt.name}):`);
+            console.log(
+                `\n  Iteration ${i + 1}/${ITERATIONS} (${testPrompt.name}):`,
+            );
 
             try {
                 // Step 1: Generate pre-data once (shared for both versions)
-                const { storyId, partId, generationTime: preDataTime } =
-                    await generatePreData(testPrompt.prompt);
+                const {
+                    storyId,
+                    partId,
+                    generationTime: preDataTime,
+                } = await generatePreData(testPrompt.prompt);
 
                 // Step 2: Generate chapters with CONTROL version
                 console.log(`\n  Testing ${CONTROL_VERSION}...`);
@@ -518,7 +536,8 @@ async function main() {
                 const controlEvaluations = await evaluateChapters(
                     controlChapters.chapterIds,
                 );
-                const controlMetrics = extractChapterMetrics(controlEvaluations);
+                const controlMetrics =
+                    extractChapterMetrics(controlEvaluations);
 
                 controlResults.push({
                     storyId,
@@ -813,4 +832,3 @@ function generateChapterTestReport(result: any): string {
 
 // Run the test
 main().catch(console.error);
-

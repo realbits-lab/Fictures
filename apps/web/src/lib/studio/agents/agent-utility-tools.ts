@@ -2,6 +2,7 @@ import { tool } from "ai";
 
 // Type helper for tool definitions to work around TypeScript overload issues
 const createTool = tool as any;
+
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";
@@ -143,9 +144,10 @@ export const updatePhaseProgress = createTool({
                 "images",
             ];
 
-            const completedPhases = ((chat.context as any)?.completedPhases as string[]) || [];
+            const completedPhases =
+                ((chat.context as any)?.completedPhases as string[]) || [];
             const currentPhaseIndex = phaseOrder.indexOf(
-                ((chat.context as any)?.currentPhase) || "story-summary",
+                (chat.context as any)?.currentPhase || "story-summary",
             );
             const totalPhases = phaseOrder.length;
             const overallProgress = Math.floor(
@@ -157,7 +159,8 @@ export const updatePhaseProgress = createTool({
                 message: completed
                     ? `Phase ${phase} completed`
                     : `Phase ${phase} in progress`,
-                currentPhase: ((chat.context as any)?.currentPhase) || "story-summary",
+                currentPhase:
+                    (chat.context as any)?.currentPhase || "story-summary",
                 completedPhases: completedPhases,
                 overallProgress,
                 nextPhase:
@@ -208,8 +211,10 @@ export const getGenerationProgress = createTool({
             "images",
         ];
 
-        const completedPhases = ((chat.context as any)?.completedPhases as string[]) || [];
-        const currentPhase = ((chat.context as any)?.currentPhase) || "story-summary";
+        const completedPhases =
+            ((chat.context as any)?.completedPhases as string[]) || [];
+        const currentPhase =
+            (chat.context as any)?.currentPhase || "story-summary";
         const currentPhaseIndex = phaseOrder.indexOf(currentPhase);
         const totalPhases = phaseOrder.length;
         const overallProgress = Math.floor(

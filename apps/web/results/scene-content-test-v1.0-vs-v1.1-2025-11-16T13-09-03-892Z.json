@@ -1,1662 +1,1660 @@
 {
-  "config": {
-    "controlVersion": "v1.0",
-    "experimentVersion": "v1.1",
-    "testPrompts": [
-      "last-garden"
+    "config": {
+        "controlVersion": "v1.0",
+        "experimentVersion": "v1.1",
+        "testPrompts": ["last-garden"],
+        "sampleSize": 3,
+        "hypothesis": "Experiment version will improve scene content metrics (word count compliance, cycle alignment, emotional resonance)",
+        "expectedImprovement": "See hypothesis"
+    },
+    "testDate": "2025-11-16T13:30:47.916Z",
+    "control": [
+        {
+            "storyId": "story_M2dHHwjr9yxCHQ3Q",
+            "chapterId": "chapter_ioQP_q7fmNUDTb72",
+            "sceneIds": [
+                "scene_e46JxNf_8C2gRJnO",
+                "scene_tgN7BnDntJTQmC09",
+                "scene_dgBqTI0L433mXzwL",
+                "scene_VbJ1kMfubYcmeZ4Q",
+                "scene_nFzfrR8M5hnQOcfk"
+            ],
+            "evaluations": [
+                {
+                    "sceneId": "scene_e46JxNf_8C2gRJnO",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298843043_elq5aso",
+                        "sceneId": "scene_e46JxNf_8C2gRJnO",
+                        "timestamp": "2025-11-16T13:14:03.043Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 612,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_tgN7BnDntJTQmC09",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298843165_pao4szn",
+                        "sceneId": "scene_tgN7BnDntJTQmC09",
+                        "timestamp": "2025-11-16T13:14:03.165Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 586,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_dgBqTI0L433mXzwL",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298843286_bt7pnjb",
+                        "sceneId": "scene_dgBqTI0L433mXzwL",
+                        "timestamp": "2025-11-16T13:14:03.286Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 604,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298843404_77nsbgv",
+                        "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
+                        "timestamp": "2025-11-16T13:14:03.404Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 2.9,
+                        "passed": false,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 2,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": false,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 665,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": false
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_nFzfrR8M5hnQOcfk",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298843521_zodlqfm",
+                        "sceneId": "scene_nFzfrR8M5hnQOcfk",
+                        "timestamp": "2025-11-16T13:14:03.521Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 602,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "storyId": "story_iL-I1FbYyXzf6eFu",
+            "chapterId": "chapter_5-qPX9RvxN763vB4",
+            "sceneIds": [
+                "scene_z3E3NNJuPR9D8hml",
+                "scene_szIjkjF7Z0GU7UZn",
+                "scene_qb2Au86vBopv41Df",
+                "scene_aa4QQd72iyEzVMmn",
+                "scene_GePFiHf3beZOF8KN"
+            ],
+            "evaluations": [
+                {
+                    "sceneId": "scene_z3E3NNJuPR9D8hml",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299297438_bssrbt0",
+                        "sceneId": "scene_z3E3NNJuPR9D8hml",
+                        "timestamp": "2025-11-16T13:21:37.438Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 630,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_szIjkjF7Z0GU7UZn",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299297546_rniwbgp",
+                        "sceneId": "scene_szIjkjF7Z0GU7UZn",
+                        "timestamp": "2025-11-16T13:21:37.546Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 2.9,
+                        "passed": false,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 2,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": false,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 662,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": false
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_qb2Au86vBopv41Df",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299297650_u9g2xbj",
+                        "sceneId": "scene_qb2Au86vBopv41Df",
+                        "timestamp": "2025-11-16T13:21:37.650Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 643,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_aa4QQd72iyEzVMmn",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299297753_gnldbm4",
+                        "sceneId": "scene_aa4QQd72iyEzVMmn",
+                        "timestamp": "2025-11-16T13:21:37.753Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 644,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_GePFiHf3beZOF8KN",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299297861_jog06q9",
+                        "sceneId": "scene_GePFiHf3beZOF8KN",
+                        "timestamp": "2025-11-16T13:21:37.861Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 629,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "storyId": "story_k69TORZ32974Q539",
+            "chapterId": "chapter_scc0-0duCIs0yfAX",
+            "sceneIds": [
+                "scene_HslJw_VQ7HkqlCHK",
+                "scene_WufGcPZeh3h1fifL",
+                "scene_LRZr3bNzreTH4Hiz",
+                "scene_1OI0sQWhHKrSK-51",
+                "scene_baxNQp2dDulohmso"
+            ],
+            "evaluations": [
+                {
+                    "sceneId": "scene_HslJw_VQ7HkqlCHK",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299729963_9wzx1j9",
+                        "sceneId": "scene_HslJw_VQ7HkqlCHK",
+                        "timestamp": "2025-11-16T13:28:49.963Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 639,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_WufGcPZeh3h1fifL",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299730076_jwdjmt3",
+                        "sceneId": "scene_WufGcPZeh3h1fifL",
+                        "timestamp": "2025-11-16T13:28:50.076Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 625,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_LRZr3bNzreTH4Hiz",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299730209_d6t6ye5",
+                        "sceneId": "scene_LRZr3bNzreTH4Hiz",
+                        "timestamp": "2025-11-16T13:28:50.210Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 634,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_1OI0sQWhHKrSK-51",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299730392_utyg28r",
+                        "sceneId": "scene_1OI0sQWhHKrSK-51",
+                        "timestamp": "2025-11-16T13:28:50.392Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 631,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_baxNQp2dDulohmso",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299730502_hhsaddu",
+                        "sceneId": "scene_baxNQp2dDulohmso",
+                        "timestamp": "2025-11-16T13:28:50.502Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 625,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                }
+            ]
+        }
     ],
-    "sampleSize": 3,
-    "hypothesis": "Experiment version will improve scene content metrics (word count compliance, cycle alignment, emotional resonance)",
-    "expectedImprovement": "See hypothesis"
-  },
-  "testDate": "2025-11-16T13:30:47.916Z",
-  "control": [
-    {
-      "storyId": "story_M2dHHwjr9yxCHQ3Q",
-      "chapterId": "chapter_ioQP_q7fmNUDTb72",
-      "sceneIds": [
-        "scene_e46JxNf_8C2gRJnO",
-        "scene_tgN7BnDntJTQmC09",
-        "scene_dgBqTI0L433mXzwL",
-        "scene_VbJ1kMfubYcmeZ4Q",
-        "scene_nFzfrR8M5hnQOcfk"
-      ],
-      "evaluations": [
+    "experiment": [
         {
-          "sceneId": "scene_e46JxNf_8C2gRJnO",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298843043_elq5aso",
-            "sceneId": "scene_e46JxNf_8C2gRJnO",
-            "timestamp": "2025-11-16T13:14:03.043Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 612,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
+            "storyId": "story_M2dHHwjr9yxCHQ3Q",
+            "chapterId": "chapter_ioQP_q7fmNUDTb72",
+            "sceneIds": [
+                "scene_e46JxNf_8C2gRJnO",
+                "scene_tgN7BnDntJTQmC09",
+                "scene_dgBqTI0L433mXzwL",
+                "scene_VbJ1kMfubYcmeZ4Q",
+                "scene_nFzfrR8M5hnQOcfk"
+            ],
+            "evaluations": [
+                {
+                    "sceneId": "scene_e46JxNf_8C2gRJnO",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298956371_ynig62i",
+                        "sceneId": "scene_e46JxNf_8C2gRJnO",
+                        "timestamp": "2025-11-16T13:15:56.371Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 620,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
                 },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
+                {
+                    "sceneId": "scene_tgN7BnDntJTQmC09",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298956498_a49hppf",
+                        "sceneId": "scene_tgN7BnDntJTQmC09",
+                        "timestamp": "2025-11-16T13:15:56.498Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 607,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_dgBqTI0L433mXzwL",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298956619_4r1sc9r",
+                        "sceneId": "scene_dgBqTI0L433mXzwL",
+                        "timestamp": "2025-11-16T13:15:56.619Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 607,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298956740_igzo7r1",
+                        "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
+                        "timestamp": "2025-11-16T13:15:56.740Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 608,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_nFzfrR8M5hnQOcfk",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763298956862_8wxg18p",
+                        "sceneId": "scene_nFzfrR8M5hnQOcfk",
+                        "timestamp": "2025-11-16T13:15:56.862Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 627,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                }
+            ]
         },
         {
-          "sceneId": "scene_tgN7BnDntJTQmC09",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298843165_pao4szn",
-            "sceneId": "scene_tgN7BnDntJTQmC09",
-            "timestamp": "2025-11-16T13:14:03.165Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 586,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
+            "storyId": "story_iL-I1FbYyXzf6eFu",
+            "chapterId": "chapter_5-qPX9RvxN763vB4",
+            "sceneIds": [
+                "scene_z3E3NNJuPR9D8hml",
+                "scene_szIjkjF7Z0GU7UZn",
+                "scene_qb2Au86vBopv41Df",
+                "scene_aa4QQd72iyEzVMmn",
+                "scene_GePFiHf3beZOF8KN"
+            ],
+            "evaluations": [
+                {
+                    "sceneId": "scene_z3E3NNJuPR9D8hml",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299410341_ijcfryf",
+                        "sceneId": "scene_z3E3NNJuPR9D8hml",
+                        "timestamp": "2025-11-16T13:23:30.341Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 619,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
                 },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
+                {
+                    "sceneId": "scene_szIjkjF7Z0GU7UZn",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299410447_fvtw5kz",
+                        "sceneId": "scene_szIjkjF7Z0GU7UZn",
+                        "timestamp": "2025-11-16T13:23:30.447Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 618,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_qb2Au86vBopv41Df",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299410557_5q3n19u",
+                        "sceneId": "scene_qb2Au86vBopv41Df",
+                        "timestamp": "2025-11-16T13:23:30.557Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 615,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_aa4QQd72iyEzVMmn",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299410661_wr4lpao",
+                        "sceneId": "scene_aa4QQd72iyEzVMmn",
+                        "timestamp": "2025-11-16T13:23:30.661Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 620,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_GePFiHf3beZOF8KN",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299410763_n7u78y7",
+                        "sceneId": "scene_GePFiHf3beZOF8KN",
+                        "timestamp": "2025-11-16T13:23:30.763Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 615,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                }
+            ]
         },
         {
-          "sceneId": "scene_dgBqTI0L433mXzwL",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298843286_bt7pnjb",
-            "sceneId": "scene_dgBqTI0L433mXzwL",
-            "timestamp": "2025-11-16T13:14:03.286Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 604,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
+            "storyId": "story_k69TORZ32974Q539",
+            "chapterId": "chapter_scc0-0duCIs0yfAX",
+            "sceneIds": [
+                "scene_HslJw_VQ7HkqlCHK",
+                "scene_WufGcPZeh3h1fifL",
+                "scene_LRZr3bNzreTH4Hiz",
+                "scene_1OI0sQWhHKrSK-51",
+                "scene_baxNQp2dDulohmso"
+            ],
+            "evaluations": [
+                {
+                    "sceneId": "scene_HslJw_VQ7HkqlCHK",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299847477_zdyw9p6",
+                        "sceneId": "scene_HslJw_VQ7HkqlCHK",
+                        "timestamp": "2025-11-16T13:30:47.477Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 629,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
                 },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298843404_77nsbgv",
-            "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
-            "timestamp": "2025-11-16T13:14:03.404Z",
-            "evaluationMode": "thorough",
-            "overallScore": 2.9,
-            "passed": false,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 2,
-                "target": 4,
-                "threshold": 3,
-                "passed": false,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 665,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
+                {
+                    "sceneId": "scene_WufGcPZeh3h1fifL",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299847582_cm2n3t1",
+                        "sceneId": "scene_WufGcPZeh3h1fifL",
+                        "timestamp": "2025-11-16T13:30:47.582Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 627,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
                 },
-                "withinRange": false
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_nFzfrR8M5hnQOcfk",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298843521_zodlqfm",
-            "sceneId": "scene_nFzfrR8M5hnQOcfk",
-            "timestamp": "2025-11-16T13:14:03.521Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 602,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
+                {
+                    "sceneId": "scene_LRZr3bNzreTH4Hiz",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299847695_z16a5yr",
+                        "sceneId": "scene_LRZr3bNzreTH4Hiz",
+                        "timestamp": "2025-11-16T13:30:47.695Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 625,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
                 },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
+                {
+                    "sceneId": "scene_1OI0sQWhHKrSK-51",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299847804_m9ve61z",
+                        "sceneId": "scene_1OI0sQWhHKrSK-51",
+                        "timestamp": "2025-11-16T13:30:47.805Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 650,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                },
+                {
+                    "sceneId": "scene_baxNQp2dDulohmso",
+                    "evaluation": {
+                        "evaluationId": "scene-content_1763299847914_xr9sbd5",
+                        "sceneId": "scene_baxNQp2dDulohmso",
+                        "timestamp": "2025-11-16T13:30:47.914Z",
+                        "evaluationMode": "thorough",
+                        "overallScore": 3.57,
+                        "passed": true,
+                        "metrics": {
+                            "wordCountCompliance": {
+                                "score": 4,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Word Count Compliance",
+                                "method": "automated",
+                                "wordCount": 629,
+                                "targetRange": {
+                                    "min": 300,
+                                    "max": 600
+                                },
+                                "withinRange": true
+                            },
+                            "cycleAlignment": {
+                                "score": 3.5,
+                                "target": 4,
+                                "threshold": 3,
+                                "passed": true,
+                                "feedback": "Cycle Alignment",
+                                "method": "ai-evaluation",
+                                "phaseElementsPresent": [
+                                    "conflict",
+                                    "virtue",
+                                    "consequence"
+                                ],
+                                "alignmentQuality": 3.5
+                            },
+                            "emotionalResonance": {
+                                "score": 3.2,
+                                "target": 3,
+                                "threshold": 2.5,
+                                "passed": true,
+                                "feedback": "Emotional Resonance",
+                                "method": "ai-evaluation",
+                                "emotionIntensity": 3.2,
+                                "emotionAlignment": true
+                            }
+                        }
+                    }
+                }
+            ]
         }
-      ]
-    },
-    {
-      "storyId": "story_iL-I1FbYyXzf6eFu",
-      "chapterId": "chapter_5-qPX9RvxN763vB4",
-      "sceneIds": [
-        "scene_z3E3NNJuPR9D8hml",
-        "scene_szIjkjF7Z0GU7UZn",
-        "scene_qb2Au86vBopv41Df",
-        "scene_aa4QQd72iyEzVMmn",
-        "scene_GePFiHf3beZOF8KN"
-      ],
-      "evaluations": [
-        {
-          "sceneId": "scene_z3E3NNJuPR9D8hml",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299297438_bssrbt0",
-            "sceneId": "scene_z3E3NNJuPR9D8hml",
-            "timestamp": "2025-11-16T13:21:37.438Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 630,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
+    ],
+    "comparison": {
+        "controlSnapshot": {
+            "wordCountCompliance": 3.733333333333333,
+            "cycleAlignment": 3.5,
+            "emotionalResonance": 3.2000000000000006
         },
-        {
-          "sceneId": "scene_szIjkjF7Z0GU7UZn",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299297546_rniwbgp",
-            "sceneId": "scene_szIjkjF7Z0GU7UZn",
-            "timestamp": "2025-11-16T13:21:37.546Z",
-            "evaluationMode": "thorough",
-            "overallScore": 2.9,
-            "passed": false,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 2,
-                "target": 4,
-                "threshold": 3,
-                "passed": false,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 662,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": false
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
+        "experimentSnapshot": {
+            "wordCountCompliance": 4,
+            "cycleAlignment": 3.5,
+            "emotionalResonance": 3.2000000000000006
         },
-        {
-          "sceneId": "scene_qb2Au86vBopv41Df",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299297650_u9g2xbj",
-            "sceneId": "scene_qb2Au86vBopv41Df",
-            "timestamp": "2025-11-16T13:21:37.650Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 643,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
+        "deltas": {
+            "wordCountCompliance": {
+                "control": 3.733333333333333,
+                "experiment": 4,
+                "delta": 0.26666666666666705,
+                "percentage": 7.142857142857154,
+                "improved": true
+            },
+            "cycleAlignment": {
+                "control": 3.5,
+                "experiment": 3.5,
+                "delta": 0,
+                "percentage": 0,
+                "improved": false
+            },
+            "emotionalResonance": {
+                "control": 3.2000000000000006,
+                "experiment": 3.2000000000000006,
+                "delta": 0,
+                "percentage": 0,
+                "improved": false
             }
-          }
         },
-        {
-          "sceneId": "scene_aa4QQd72iyEzVMmn",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299297753_gnldbm4",
-            "sceneId": "scene_aa4QQd72iyEzVMmn",
-            "timestamp": "2025-11-16T13:21:37.753Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 644,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_GePFiHf3beZOF8KN",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299297861_jog06q9",
-            "sceneId": "scene_GePFiHf3beZOF8KN",
-            "timestamp": "2025-11-16T13:21:37.861Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 629,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "storyId": "story_k69TORZ32974Q539",
-      "chapterId": "chapter_scc0-0duCIs0yfAX",
-      "sceneIds": [
-        "scene_HslJw_VQ7HkqlCHK",
-        "scene_WufGcPZeh3h1fifL",
-        "scene_LRZr3bNzreTH4Hiz",
-        "scene_1OI0sQWhHKrSK-51",
-        "scene_baxNQp2dDulohmso"
-      ],
-      "evaluations": [
-        {
-          "sceneId": "scene_HslJw_VQ7HkqlCHK",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299729963_9wzx1j9",
-            "sceneId": "scene_HslJw_VQ7HkqlCHK",
-            "timestamp": "2025-11-16T13:28:49.963Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 639,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_WufGcPZeh3h1fifL",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299730076_jwdjmt3",
-            "sceneId": "scene_WufGcPZeh3h1fifL",
-            "timestamp": "2025-11-16T13:28:50.076Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 625,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_LRZr3bNzreTH4Hiz",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299730209_d6t6ye5",
-            "sceneId": "scene_LRZr3bNzreTH4Hiz",
-            "timestamp": "2025-11-16T13:28:50.210Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 634,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_1OI0sQWhHKrSK-51",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299730392_utyg28r",
-            "sceneId": "scene_1OI0sQWhHKrSK-51",
-            "timestamp": "2025-11-16T13:28:50.392Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 631,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_baxNQp2dDulohmso",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299730502_hhsaddu",
-            "sceneId": "scene_baxNQp2dDulohmso",
-            "timestamp": "2025-11-16T13:28:50.502Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 625,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        }
-      ]
+        "pValue": 0.014305884399731683,
+        "recommendation": "ADOPT"
     }
-  ],
-  "experiment": [
-    {
-      "storyId": "story_M2dHHwjr9yxCHQ3Q",
-      "chapterId": "chapter_ioQP_q7fmNUDTb72",
-      "sceneIds": [
-        "scene_e46JxNf_8C2gRJnO",
-        "scene_tgN7BnDntJTQmC09",
-        "scene_dgBqTI0L433mXzwL",
-        "scene_VbJ1kMfubYcmeZ4Q",
-        "scene_nFzfrR8M5hnQOcfk"
-      ],
-      "evaluations": [
-        {
-          "sceneId": "scene_e46JxNf_8C2gRJnO",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298956371_ynig62i",
-            "sceneId": "scene_e46JxNf_8C2gRJnO",
-            "timestamp": "2025-11-16T13:15:56.371Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 620,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_tgN7BnDntJTQmC09",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298956498_a49hppf",
-            "sceneId": "scene_tgN7BnDntJTQmC09",
-            "timestamp": "2025-11-16T13:15:56.498Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 607,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_dgBqTI0L433mXzwL",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298956619_4r1sc9r",
-            "sceneId": "scene_dgBqTI0L433mXzwL",
-            "timestamp": "2025-11-16T13:15:56.619Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 607,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298956740_igzo7r1",
-            "sceneId": "scene_VbJ1kMfubYcmeZ4Q",
-            "timestamp": "2025-11-16T13:15:56.740Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 608,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_nFzfrR8M5hnQOcfk",
-          "evaluation": {
-            "evaluationId": "scene-content_1763298956862_8wxg18p",
-            "sceneId": "scene_nFzfrR8M5hnQOcfk",
-            "timestamp": "2025-11-16T13:15:56.862Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 627,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "storyId": "story_iL-I1FbYyXzf6eFu",
-      "chapterId": "chapter_5-qPX9RvxN763vB4",
-      "sceneIds": [
-        "scene_z3E3NNJuPR9D8hml",
-        "scene_szIjkjF7Z0GU7UZn",
-        "scene_qb2Au86vBopv41Df",
-        "scene_aa4QQd72iyEzVMmn",
-        "scene_GePFiHf3beZOF8KN"
-      ],
-      "evaluations": [
-        {
-          "sceneId": "scene_z3E3NNJuPR9D8hml",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299410341_ijcfryf",
-            "sceneId": "scene_z3E3NNJuPR9D8hml",
-            "timestamp": "2025-11-16T13:23:30.341Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 619,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_szIjkjF7Z0GU7UZn",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299410447_fvtw5kz",
-            "sceneId": "scene_szIjkjF7Z0GU7UZn",
-            "timestamp": "2025-11-16T13:23:30.447Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 618,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_qb2Au86vBopv41Df",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299410557_5q3n19u",
-            "sceneId": "scene_qb2Au86vBopv41Df",
-            "timestamp": "2025-11-16T13:23:30.557Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 615,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_aa4QQd72iyEzVMmn",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299410661_wr4lpao",
-            "sceneId": "scene_aa4QQd72iyEzVMmn",
-            "timestamp": "2025-11-16T13:23:30.661Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 620,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_GePFiHf3beZOF8KN",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299410763_n7u78y7",
-            "sceneId": "scene_GePFiHf3beZOF8KN",
-            "timestamp": "2025-11-16T13:23:30.763Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 615,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        }
-      ]
-    },
-    {
-      "storyId": "story_k69TORZ32974Q539",
-      "chapterId": "chapter_scc0-0duCIs0yfAX",
-      "sceneIds": [
-        "scene_HslJw_VQ7HkqlCHK",
-        "scene_WufGcPZeh3h1fifL",
-        "scene_LRZr3bNzreTH4Hiz",
-        "scene_1OI0sQWhHKrSK-51",
-        "scene_baxNQp2dDulohmso"
-      ],
-      "evaluations": [
-        {
-          "sceneId": "scene_HslJw_VQ7HkqlCHK",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299847477_zdyw9p6",
-            "sceneId": "scene_HslJw_VQ7HkqlCHK",
-            "timestamp": "2025-11-16T13:30:47.477Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 629,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_WufGcPZeh3h1fifL",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299847582_cm2n3t1",
-            "sceneId": "scene_WufGcPZeh3h1fifL",
-            "timestamp": "2025-11-16T13:30:47.582Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 627,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_LRZr3bNzreTH4Hiz",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299847695_z16a5yr",
-            "sceneId": "scene_LRZr3bNzreTH4Hiz",
-            "timestamp": "2025-11-16T13:30:47.695Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 625,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_1OI0sQWhHKrSK-51",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299847804_m9ve61z",
-            "sceneId": "scene_1OI0sQWhHKrSK-51",
-            "timestamp": "2025-11-16T13:30:47.805Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 650,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        },
-        {
-          "sceneId": "scene_baxNQp2dDulohmso",
-          "evaluation": {
-            "evaluationId": "scene-content_1763299847914_xr9sbd5",
-            "sceneId": "scene_baxNQp2dDulohmso",
-            "timestamp": "2025-11-16T13:30:47.914Z",
-            "evaluationMode": "thorough",
-            "overallScore": 3.57,
-            "passed": true,
-            "metrics": {
-              "wordCountCompliance": {
-                "score": 4,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Word Count Compliance",
-                "method": "automated",
-                "wordCount": 629,
-                "targetRange": {
-                  "min": 300,
-                  "max": 600
-                },
-                "withinRange": true
-              },
-              "cycleAlignment": {
-                "score": 3.5,
-                "target": 4,
-                "threshold": 3,
-                "passed": true,
-                "feedback": "Cycle Alignment",
-                "method": "ai-evaluation",
-                "phaseElementsPresent": [
-                  "conflict",
-                  "virtue",
-                  "consequence"
-                ],
-                "alignmentQuality": 3.5
-              },
-              "emotionalResonance": {
-                "score": 3.2,
-                "target": 3,
-                "threshold": 2.5,
-                "passed": true,
-                "feedback": "Emotional Resonance",
-                "method": "ai-evaluation",
-                "emotionIntensity": 3.2,
-                "emotionAlignment": true
-              }
-            }
-          }
-        }
-      ]
-    }
-  ],
-  "comparison": {
-    "controlSnapshot": {
-      "wordCountCompliance": 3.733333333333333,
-      "cycleAlignment": 3.5,
-      "emotionalResonance": 3.2000000000000006
-    },
-    "experimentSnapshot": {
-      "wordCountCompliance": 4,
-      "cycleAlignment": 3.5,
-      "emotionalResonance": 3.2000000000000006
-    },
-    "deltas": {
-      "wordCountCompliance": {
-        "control": 3.733333333333333,
-        "experiment": 4,
-        "delta": 0.26666666666666705,
-        "percentage": 7.142857142857154,
-        "improved": true
-      },
-      "cycleAlignment": {
-        "control": 3.5,
-        "experiment": 3.5,
-        "delta": 0,
-        "percentage": 0,
-        "improved": false
-      },
-      "emotionalResonance": {
-        "control": 3.2000000000000006,
-        "experiment": 3.2000000000000006,
-        "delta": 0,
-        "percentage": 0,
-        "improved": false
-      }
-    },
-    "pValue": 0.014305884399731683,
-    "recommendation": "ADOPT"
-  }
 }

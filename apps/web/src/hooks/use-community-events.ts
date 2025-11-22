@@ -3,7 +3,7 @@
  * Provides event tracking for community features
  */
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
     PostCreatedEvent,
     StoryPublishedEvent,
@@ -18,9 +18,7 @@ export interface UseCommunityEventsOptions {
     enabled?: boolean;
 }
 
-export function useCommunityEvents(
-    options: UseCommunityEventsOptions = {},
-) {
+export function useCommunityEvents(options: UseCommunityEventsOptions = {}) {
     const {
         onStoryPublished,
         onStoryUpdated,

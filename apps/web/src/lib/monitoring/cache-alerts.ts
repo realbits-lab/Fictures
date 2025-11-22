@@ -360,7 +360,7 @@ class CacheMonitor {
     /**
      * Calculate invalidation rate
      */
-    private     calculateInvalidationRate(
+    private calculateInvalidationRate(
         stats: ReturnType<typeof cacheMetrics.getStats>,
     ): number {
         const totalOps = stats.totalHits + stats.totalMisses;

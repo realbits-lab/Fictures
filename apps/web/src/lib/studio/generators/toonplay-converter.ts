@@ -57,7 +57,10 @@ export async function convertSceneToToonplay(
 
     // 5. Build settings descriptions string
     const settingsStr: string = settings
-        .map((s) => `- ${s.name}: ${s.summary || (s as any).description || "N/A"}`)
+        .map(
+            (s) =>
+                `- ${s.name}: ${s.summary || (s as any).description || "N/A"}`,
+        )
         .join("\n");
 
     console.log(

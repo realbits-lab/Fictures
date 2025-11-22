@@ -586,8 +586,8 @@ export function PublishClient() {
                             </h4>
                             <div className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                                 Published:{" "}
-                                {publishAnalysis?.latestChapter
-                                    ?.publishedAgo || "3 days ago"}
+                                {publishAnalysis?.latestChapter?.publishedAgo ||
+                                    "3 days ago"}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4 text-sm">

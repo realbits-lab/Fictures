@@ -60,7 +60,8 @@ export async function GET(request: NextRequest) {
 
         // Filter metrics by time range (using available metrics property)
         const filteredMetrics = stats.metrics.filter(
-            (metric: { lastUpdated: Date }) => metric.lastUpdated.getTime() >= cutoffTime,
+            (metric: { lastUpdated: Date }) =>
+                metric.lastUpdated.getTime() >= cutoffTime,
         );
 
         // Build response based on groupBy parameter

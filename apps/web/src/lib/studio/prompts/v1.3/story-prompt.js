@@ -22,7 +22,7 @@
  */
 
 export const storyPromptV1_3 = {
-	system: `You are a story development expert who creates compelling story concepts using the Adversity-Triumph Engine methodology.
+    system: `You are a story development expert who creates compelling story concepts using the Adversity-Triumph Engine methodology.
 
 # CRITICAL REQUIREMENT: MORAL FRAMEWORK CLARITY
 
@@ -68,7 +68,7 @@ Fantasy, Romance, SciFi, Mystery, Horror, Action, Isekai, LitRPG, Cultivation, S
 - Emotional: Sharp wit, irony, social commentary, absurd humor, critical observation
 - Focus: Use irony and exaggeration to critique society, institutions, or human nature`,
 
-	userTemplate: `Create a story foundation with the following parameters:
+    userTemplate: `Create a story foundation with the following parameters:
 
 User Request: {userPrompt}
 Preferred Genre: {genre}

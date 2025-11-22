@@ -6,9 +6,9 @@
 
 import type {
     AggregatedComicMetrics,
-    FailurePattern,
     ComicEvaluation,
     ComicTestResult,
+    FailurePattern,
 } from "./types";
 
 export class ComicMetricsTracker {
@@ -66,10 +66,8 @@ export class ComicMetricsTracker {
 
         // Calculate panel quality metrics
         const averageVisualClarity =
-            evaluations.reduce(
-                (sum, e) => sum + e.metrics.visualClarity,
-                0,
-            ) / totalTests;
+            evaluations.reduce((sum, e) => sum + e.metrics.visualClarity, 0) /
+            totalTests;
         const averageCompositionQuality =
             evaluations.reduce(
                 (sum, e) => sum + e.metrics.compositionQuality,
@@ -126,10 +124,8 @@ export class ComicMetricsTracker {
                 0,
             ) / totalTests;
         const averageTotalGenerationTime =
-            this.results.reduce(
-                (sum, r) => sum + r.metadata.totalTime,
-                0,
-            ) / totalTests;
+            this.results.reduce((sum, r) => sum + r.metadata.totalTime, 0) /
+            totalTests;
         const successRate =
             this.results.filter((r) => r.evaluation.metrics.success).length /
             totalTests;
@@ -274,4 +270,3 @@ export class ComicMetricsTracker {
         });
     }
 }
-

@@ -2,6 +2,7 @@ import { tool } from "ai";
 
 // Type helper for tool definitions to work around TypeScript overload issues
 const createTool = tool as any;
+
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { STORY_TONES } from "@/lib/constants/tones";
@@ -184,7 +185,7 @@ export const createPart = createTool({
                 updatedAt: new Date().toISOString(),
             } as any)
             .returning();
-        
+
         const part = partResult[0];
 
         return {
@@ -320,7 +321,7 @@ export const createChapter = createTool({
                 error: "partId is required for chapter creation",
             };
         }
-        
+
         const chapterResult = await db
             .insert(chapters)
             .values({
@@ -348,7 +349,7 @@ export const createChapter = createTool({
                 updatedAt: new Date().toISOString(),
             } as any)
             .returning();
-        
+
         const chapter = chapterResult[0];
 
         return {
@@ -519,7 +520,7 @@ export const createScene = createTool({
                 updatedAt: new Date().toISOString(),
             } as any)
             .returning();
-        
+
         const scene = sceneResult[0];
 
         return {
@@ -686,7 +687,7 @@ export const createCharacter = createTool({
                 updatedAt: new Date().toISOString(),
             } as any)
             .returning();
-        
+
         const character = characterResult[0];
 
         return {
@@ -861,7 +862,7 @@ export const createSetting = createTool({
                 updatedAt: new Date().toISOString(),
             } as any)
             .returning();
-        
+
         const setting = settingResult[0];
 
         return {

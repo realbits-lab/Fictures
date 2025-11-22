@@ -106,13 +106,7 @@ export function BrowseClient() {
                 },
             );
         }
-    }, [
-        isLoading,
-        isValidating,
-        stories.length,
-        error,
-        count,
-    ]);
+    }, [isLoading, isValidating, stories.length, error, count]);
 
     // Track validation cycles
     useEffect(() => {

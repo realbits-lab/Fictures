@@ -16,12 +16,12 @@ import { CommunityStorySidebar } from "@/components/community/CommunityStorySide
 import { CreatePostForm } from "@/components/community/CreatePostForm";
 // import { useSession } from "next/auth/react";
 import { Badge, Button, Card, CardContent } from "@/components/ui";
-import { useProtectedAction } from "@/hooks/use-protected-action";
 import {
     useCommunityPosts,
     useCommunityStory,
     useRevalidateCommunityPosts,
 } from "@/hooks/use-community-cache";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 interface Character {
     id: string;
@@ -128,7 +128,9 @@ export function CommunityStoryDetailClient({
 
     // Use SSR data as fallback
     const story = storyData?.story || initialStory;
-    const posts = Array.isArray(postsData) ? postsData : (postsData as any)?.posts || initialPosts;
+    const posts = Array.isArray(postsData)
+        ? postsData
+        : (postsData as any)?.posts || initialPosts;
 
     return (
         <div className="flex gap-6">

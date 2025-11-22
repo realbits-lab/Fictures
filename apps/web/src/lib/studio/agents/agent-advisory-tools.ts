@@ -2,6 +2,7 @@ import { tool } from "ai";
 
 // Type helper for tool definitions to work around TypeScript overload issues
 const createTool = tool as any;
+
 import { count, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/lib/db";

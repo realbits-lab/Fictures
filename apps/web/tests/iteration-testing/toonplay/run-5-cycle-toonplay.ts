@@ -83,16 +83,12 @@ const CYCLE_CONFIGS: CycleConfig[] = [
         name: "Optimized Dialogue-Narration Balance",
         hypothesis:
             "Improve content proportions by reducing narration and increasing dialogue presence",
-        testScenes: [
-            "emotional-moment",
-            "dialogue-heavy",
-            "mixed-elements",
-        ],
+        testScenes: ["emotional-moment", "dialogue-heavy", "mixed-elements"],
         iterations: 3,
         customParams: {
             narrationCap: 0.05, // 5% max narration
-            dialogueTarget: 0.70, // 70% dialogue target
-            internalMonologueCap: 0.10, // 10% max internal monologue
+            dialogueTarget: 0.7, // 70% dialogue target
+            internalMonologueCap: 0.1, // 10% max internal monologue
         },
         improvements: [
             "Enforce strict 5% narration cap with fallback to dialogue",
@@ -105,17 +101,14 @@ const CYCLE_CONFIGS: CycleConfig[] = [
         name: "Genre-Specific Visual Patterns",
         hypothesis:
             "Improve quality through specialized visual patterns for different scene types",
-        testScenes: [
-            "action-sequence",
-            "dialogue-heavy",
-            "setting-atmosphere",
-        ],
+        testScenes: ["action-sequence", "dialogue-heavy", "setting-atmosphere"],
         iterations: 3,
         customParams: {
             genrePatterns: {
                 action: "dynamic motion lines, impact panels, speed emphasis",
                 dialogue: "reaction shots, eye contact, gesture emphasis",
-                atmosphere: "wide establishing, environmental details, mood lighting",
+                atmosphere:
+                    "wide establishing, environmental details, mood lighting",
             },
         },
         improvements: [
@@ -140,7 +133,7 @@ const CYCLE_CONFIGS: CycleConfig[] = [
         customParams: {
             shotVarietyEnhancements: "all",
             narrationCap: 0.05,
-            dialogueTarget: 0.70,
+            dialogueTarget: 0.7,
             genrePatterns: "all",
         },
         improvements: [
@@ -191,7 +184,9 @@ const cycleResults: CycleResult[] = [];
 /**
  * Run toonplay tests for a cycle
  */
-async function runToonplayTests(config: CycleConfig): Promise<CycleMetrics | null> {
+async function runToonplayTests(
+    config: CycleConfig,
+): Promise<CycleMetrics | null> {
     console.log(`\n🎨 Running toonplay tests for Cycle ${config.cycle}...`);
     console.log(`   Scenes: ${config.testScenes.join(", ")}`);
     console.log(`   Iterations: ${config.iterations}`);
@@ -220,7 +215,8 @@ async function runToonplayTests(config: CycleConfig): Promise<CycleMetrics | nul
         const results = JSON.parse(resultsData);
         return results.aggregatedMetrics || null;
     } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+            error instanceof Error ? error.message : String(error);
         console.error(
             `   ✗ Toonplay tests failed for Cycle ${config.cycle}:`,
             errorMessage,
@@ -268,9 +264,12 @@ function analyzeCycleResults(
     // Comparison with previous cycle
     if (previousCycle?.metrics) {
         const prevMetrics = previousCycle.metrics;
-        const scoreDelta = metrics.averageWeightedScore - prevMetrics.averageWeightedScore;
+        const scoreDelta =
+            metrics.averageWeightedScore - prevMetrics.averageWeightedScore;
         const passRateDelta = (metrics.passRate - prevMetrics.passRate) * 100;
-        const narrationDelta = metrics.averageNarrationPercentage - prevMetrics.averageNarrationPercentage;
+        const narrationDelta =
+            metrics.averageNarrationPercentage -
+            prevMetrics.averageNarrationPercentage;
 
         analysis += `### Changes from Previous Cycle\n\n`;
         analysis += `- Weighted Score: ${scoreDelta > 0 ? "+" : ""}${scoreDelta.toFixed(2)} (${scoreDelta > 0 ? "✅ Improved" : scoreDelta < 0 ? "❌ Degraded" : "➖ No change"})\n`;
@@ -318,9 +317,11 @@ async function generateFinalReport(): Promise<void> {
 
         if (firstCycle.metrics && lastCycle.metrics) {
             const scoreImprovement =
-                lastCycle.metrics.averageWeightedScore - firstCycle.metrics.averageWeightedScore;
+                lastCycle.metrics.averageWeightedScore -
+                firstCycle.metrics.averageWeightedScore;
             const passRateImprovement =
-                (lastCycle.metrics.passRate - firstCycle.metrics.passRate) * 100;
+                (lastCycle.metrics.passRate - firstCycle.metrics.passRate) *
+                100;
 
             report += `### Overall Improvement\n\n`;
             report += `- **Baseline** (Cycle 1): ${firstCycle.metrics.averageWeightedScore.toFixed(2)}/5.0\n`;
@@ -354,7 +355,8 @@ async function generateFinalReport(): Promise<void> {
 
         if (current.metrics && previous.metrics) {
             const improvement =
-                current.metrics.averageWeightedScore - previous.metrics.averageWeightedScore;
+                current.metrics.averageWeightedScore -
+                previous.metrics.averageWeightedScore;
             if (improvement > maxImprovement) {
                 maxImprovement = improvement;
                 maxImprovementCycle = i + 1;

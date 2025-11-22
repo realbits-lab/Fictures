@@ -21,12 +21,12 @@ import { eq } from "drizzle-orm";
 import { GENRE } from "@/lib/constants/genres";
 import { db } from "@/lib/db";
 import { chapters, scenes, stories } from "@/lib/schemas/database";
-import { improveScene } from "../generators/scene-improvement-generator";
 import type {
     GeneratorSceneImprovementParams,
     GeneratorSceneImprovementResult,
     SceneImprovementStoryContext,
 } from "@/lib/schemas/services/generators";
+import { improveScene } from "../generators/scene-improvement-generator";
 
 /**
  * Service parameters for scene improvement

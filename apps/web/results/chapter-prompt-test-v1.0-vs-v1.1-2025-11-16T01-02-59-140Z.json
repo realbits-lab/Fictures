@@ -1,22 +1,20 @@
 {
-  "config": {
-    "controlVersion": "v1.0",
-    "experimentVersion": "v1.1",
-    "testPrompts": [
-      "last-garden"
-    ],
-    "sampleSize": 2,
-    "hypothesis": "Experiment version will improve chapter-level metrics (adversity connection, seed tracking, etc.)",
-    "expectedImprovement": "See hypothesis"
-  },
-  "control": [],
-  "experiment": [],
-  "comparison": {
-    "controlSnapshot": {},
-    "experimentSnapshot": {},
-    "deltas": {},
-    "pValue": 1,
-    "recommendation": "REVERT"
-  },
-  "testDate": "2025-11-16T01:04:05.868Z"
+    "config": {
+        "controlVersion": "v1.0",
+        "experimentVersion": "v1.1",
+        "testPrompts": ["last-garden"],
+        "sampleSize": 2,
+        "hypothesis": "Experiment version will improve chapter-level metrics (adversity connection, seed tracking, etc.)",
+        "expectedImprovement": "See hypothesis"
+    },
+    "control": [],
+    "experiment": [],
+    "comparison": {
+        "controlSnapshot": {},
+        "experimentSnapshot": {},
+        "deltas": {},
+        "pValue": 1,
+        "recommendation": "REVERT"
+    },
+    "testDate": "2025-11-16T01:04:05.868Z"
 }

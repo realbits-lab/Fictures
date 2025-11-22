@@ -241,4 +241,3 @@ Break down this chapter's adversity-triumph cycle into scene summaries, where ea
 
 Return structured data for scenes with clear sections following the template above.`,
 };
-

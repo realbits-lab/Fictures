@@ -2,9 +2,9 @@
 
 /**
  * Scene Content Prompt Iteration Test
- * 
+ *
  * Tests different versions of scene content generation prompts to improve scene prose quality metrics.
- * 
+ *
  * Usage:
  *   pnpm tsx tests/iteration-testing/novels/scene-content-test.ts \
  *     --control v1.0 \
@@ -13,9 +13,10 @@
  *     --prompts "last-garden"
  */
 
+import { resolve } from "node:path";
 // Load environment variables from .env.local
 import { config } from "dotenv";
-import { resolve } from "node:path";
+
 config({ path: resolve(process.cwd(), ".env.local") });
 
 import * as fs from "node:fs/promises";
@@ -82,8 +83,10 @@ const HYPOTHESIS =
 
 // Configure to use AI server instead of Gemini
 process.env.TEXT_GENERATION_PROVIDER = "ai-server";
-process.env.AI_SERVER_TEXT_URL = process.env.AI_SERVER_TEXT_URL || "http://localhost:8000";
-process.env.AI_SERVER_TEXT_TIMEOUT = process.env.AI_SERVER_TEXT_TIMEOUT || "120000";
+process.env.AI_SERVER_TEXT_URL =
+    process.env.AI_SERVER_TEXT_URL || "http://localhost:8000";
+process.env.AI_SERVER_TEXT_TIMEOUT =
+    process.env.AI_SERVER_TEXT_TIMEOUT || "120000";
 
 // Output configuration
 const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -161,8 +164,15 @@ async function retryWithBackoff<T>(
  */
 async function generatePreData(
     prompt: string,
-): Promise<{ storyId: string; chapterId: string; sceneIds: string[]; generationTime: number }> {
-    console.log(`  → Generating pre-data (story, characters, settings, part, chapter, scene summaries)...`);
+): Promise<{
+    storyId: string;
+    chapterId: string;
+    sceneIds: string[];
+    generationTime: number;
+}> {
+    console.log(
+        `  → Generating pre-data (story, characters, settings, part, chapter, scene summaries)...`,
+    );
 
     const startTime = Date.now();
     const authContext = getAuthContext();
@@ -353,13 +363,8 @@ async function cloneStoryFromExistingData(): Promise<{
     for (const character of baseCharacters) {
         const newCharacterId = `char_${nanoid(16)}`;
         characterIdMap.set(character.id, newCharacterId);
-        const {
-            id,
-            storyId,
-            createdAt,
-            updatedAt,
-            ...characterRest
-        } = character;
+        const { id, storyId, createdAt, updatedAt, ...characterRest } =
+            character;
         await db.insert(charactersTable).values({
             ...characterRest,
             id: newCharacterId,
@@ -555,7 +560,9 @@ async function generateSceneContentWithVersion(
                             ? sceneContentPromptVersion
                             : undefined,
                 });
-                console.log(`      ✓ Scene content generated for ${sceneId.substring(0, 8)}...`);
+                console.log(
+                    `      ✓ Scene content generated for ${sceneId.substring(0, 8)}...`,
+                );
             }
 
             const generationTime = Date.now() - startTime;
@@ -593,7 +600,10 @@ async function clearSceneContent(sceneIds: string[]): Promise<void> {
                     })
                     .where(eq(scenes.id, sceneId));
             } catch (error) {
-                console.warn(`    ⚠ Failed to clear content for scene ${sceneId}:`, error);
+                console.warn(
+                    `    ⚠ Failed to clear content for scene ${sceneId}:`,
+                    error,
+                );
             }
         }
     });
@@ -635,7 +645,10 @@ async function evaluateSceneContent(
                 );
             }
         } catch (error) {
-            console.error(`    ✗ Evaluation error for scene ${sceneId}:`, error);
+            console.error(
+                `    ✗ Evaluation error for scene ${sceneId}:`,
+                error,
+            );
         }
     }
 
@@ -697,8 +710,10 @@ function extractSceneContentMetrics(
             )) {
                 if (typeof metric === "object" && "score" in metric) {
                     const score = (metric as { score: number }).score;
-                    metricSums[metricName] = (metricSums[metricName] || 0) + score;
-                    metricCounts[metricName] = (metricCounts[metricName] || 0) + 1;
+                    metricSums[metricName] =
+                        (metricSums[metricName] || 0) + score;
+                    metricCounts[metricName] =
+                        (metricCounts[metricName] || 0) + 1;
                 }
             }
         }
@@ -745,16 +760,22 @@ async function main() {
         }
 
         for (let i = 0; i < ITERATIONS; i++) {
-            console.log(`\n  Iteration ${i + 1}/${ITERATIONS} (${testPrompt.name}):`);
+            console.log(
+                `\n  Iteration ${i + 1}/${ITERATIONS} (${testPrompt.name}):`,
+            );
 
             try {
                 // Step 1: Generate pre-data once (shared for both versions)
-                const { storyId, chapterId, sceneIds, generationTime: preDataTime } =
-                    await retryWithBackoff(
-                        () => generatePreData(testPrompt.prompt),
-                        3,
-                        2000,
-                    );
+                const {
+                    storyId,
+                    chapterId,
+                    sceneIds,
+                    generationTime: preDataTime,
+                } = await retryWithBackoff(
+                    () => generatePreData(testPrompt.prompt),
+                    3,
+                    2000,
+                );
 
                 // Step 2: Generate scene content with CONTROL version
                 console.log(`\n  Testing ${CONTROL_VERSION}...`);
@@ -771,7 +792,8 @@ async function main() {
                 const controlEvaluations = await evaluateSceneContent(
                     controlContent.sceneIds,
                 );
-                const controlMetrics = extractSceneContentMetrics(controlEvaluations);
+                const controlMetrics =
+                    extractSceneContentMetrics(controlEvaluations);
 
                 controlResults.push({
                     storyId,
@@ -841,17 +863,20 @@ async function main() {
     }
 
     for (const [metric] of Object.entries(controlSnapshot)) {
-        controlSnapshot[metric] = controlSnapshot[metric] / controlResults.length;
+        controlSnapshot[metric] =
+            controlSnapshot[metric] / controlResults.length;
     }
 
     for (const result of experimentResults) {
         for (const [metric, value] of Object.entries(result.metrics)) {
-            experimentSnapshot[metric] = (experimentSnapshot[metric] || 0) + value;
+            experimentSnapshot[metric] =
+                (experimentSnapshot[metric] || 0) + value;
         }
     }
 
     for (const [metric] of Object.entries(experimentSnapshot)) {
-        experimentSnapshot[metric] = experimentSnapshot[metric] / experimentResults.length;
+        experimentSnapshot[metric] =
+            experimentSnapshot[metric] / experimentResults.length;
     }
 
     // Calculate deltas and statistics
@@ -874,22 +899,34 @@ async function main() {
     // Calculate p-value using t-test
     let pValue: number = 1.0;
     let recommendation = "REVERT";
-    
-    if (controlResults.length > 0 && experimentResults.length > 0 && Object.keys(deltas).length > 0) {
+
+    if (
+        controlResults.length > 0 &&
+        experimentResults.length > 0 &&
+        Object.keys(deltas).length > 0
+    ) {
         try {
             // Extract metric values for t-test (use first available metric)
             const metricName = Object.keys(deltas)[0];
-            const controlValues = controlResults.map((r) => r.metrics[metricName] || 0).filter(v => v > 0);
-            const experimentValues = experimentResults.map((r) => r.metrics[metricName] || 0).filter(v => v > 0);
-            
+            const controlValues = controlResults
+                .map((r) => r.metrics[metricName] || 0)
+                .filter((v) => v > 0);
+            const experimentValues = experimentResults
+                .map((r) => r.metrics[metricName] || 0)
+                .filter((v) => v > 0);
+
             if (controlValues.length > 0 && experimentValues.length > 0) {
                 pValue = calculateTTest(controlValues, experimentValues);
             }
 
             // Determine recommendation
             if (pValue < 0.05) {
-                const improvements = Object.values(deltas).filter((d) => d.improved).length;
-                const regressions = Object.values(deltas).filter((d) => !d.improved && d.percentage < -5).length;
+                const improvements = Object.values(deltas).filter(
+                    (d) => d.improved,
+                ).length;
+                const regressions = Object.values(deltas).filter(
+                    (d) => !d.improved && d.percentage < -5,
+                ).length;
                 if (improvements > regressions * 2) {
                     recommendation = "ADOPT";
                 } else if (improvements > regressions) {
@@ -988,7 +1025,7 @@ function generateReport(result: ABTestResult): string {
 **Date**: ${date}
 **Hypothesis**: ${result.config.hypothesis}
 **Sample Size**: ${result.config.sampleSize} stories per version
-**Statistical Significance**: p=${typeof comparison.pValue === 'number' ? comparison.pValue.toFixed(4) : 'N/A'} ${typeof comparison.pValue === 'number' && comparison.pValue < 0.05 ? "✅ Significant" : "❌ Not Significant"}
+**Statistical Significance**: p=${typeof comparison.pValue === "number" ? comparison.pValue.toFixed(4) : "N/A"} ${typeof comparison.pValue === "number" && comparison.pValue < 0.05 ? "✅ Significant" : "❌ Not Significant"}
 
 ## Recommendation: ${comparison.recommendation}
 
@@ -1007,21 +1044,31 @@ ${Object.entries(comparison.deltas)
 
 ## Top Improvements
 
-${Object.entries(comparison.deltas)
-    .filter(([, delta]) => delta.improved && delta.percentage > 5)
-    .sort(([, a], [, b]) => b.percentage - a.percentage)
-    .slice(0, 5)
-    .map(([metric, delta]) => `- **${metric}**: +${delta.percentage.toFixed(1)}% (${delta.control.toFixed(2)} → ${delta.experiment.toFixed(2)})`)
-    .join("\n") || "No significant improvements detected."}
+${
+    Object.entries(comparison.deltas)
+        .filter(([, delta]) => delta.improved && delta.percentage > 5)
+        .sort(([, a], [, b]) => b.percentage - a.percentage)
+        .slice(0, 5)
+        .map(
+            ([metric, delta]) =>
+                `- **${metric}**: +${delta.percentage.toFixed(1)}% (${delta.control.toFixed(2)} → ${delta.experiment.toFixed(2)})`,
+        )
+        .join("\n") || "No significant improvements detected."
+}
 
 ## Regressions
 
-${Object.entries(comparison.deltas)
-    .filter(([, delta]) => !delta.improved && delta.percentage < -5)
-    .sort(([, a], [, b]) => a.percentage - b.percentage)
-    .slice(0, 5)
-    .map(([metric, delta]) => `- **${metric}**: ${delta.percentage.toFixed(1)}% (${delta.control.toFixed(2)} → ${delta.experiment.toFixed(2)})`)
-    .join("\n") || "No significant regressions detected."}
+${
+    Object.entries(comparison.deltas)
+        .filter(([, delta]) => !delta.improved && delta.percentage < -5)
+        .sort(([, a], [, b]) => a.percentage - b.percentage)
+        .slice(0, 5)
+        .map(
+            ([metric, delta]) =>
+                `- **${metric}**: ${delta.percentage.toFixed(1)}% (${delta.control.toFixed(2)} → ${delta.experiment.toFixed(2)})`,
+        )
+        .join("\n") || "No significant regressions detected."
+}
 `;
 }
 
@@ -1029,4 +1076,3 @@ main().catch((error) => {
     console.error("Fatal error:", error);
     process.exit(1);
 });
-

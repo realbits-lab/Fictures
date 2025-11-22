@@ -85,15 +85,15 @@ export function CommunityContentClient({
 
     // Use SSR data as fallback if SWR data not ready
     // data is an array, not an object with success/stories
-    const stories = (Array.isArray(data) && data.length > 0 ? data : initialStories).map(
-        (story: any) => ({
-            ...story,
-            author: story.author?.name || story.author || "Unknown Author",
-            summary: story.summary || "No summary available",
-            coverImage: story.imageUrl || story.coverImage || "",
-            lastActivity: formatRelativeTime(story.lastActivity),
-        }),
-    );
+    const stories = (
+        Array.isArray(data) && data.length > 0 ? data : initialStories
+    ).map((story: any) => ({
+        ...story,
+        author: story.author?.name || story.author || "Unknown Author",
+        summary: story.summary || "No summary available",
+        coverImage: story.imageUrl || story.coverImage || "",
+        lastActivity: formatRelativeTime(story.lastActivity),
+    }));
 
     // Handle real-time story published events
     const handleStoryPublished = useCallback((event: StoryPublishedEvent) => {
@@ -368,10 +368,22 @@ export function CommunityContentClient({
                                         story={{
                                             ...story,
                                             genre: story.genre || "",
-                                            author: typeof story.author === "string" ? story.author : story.author?.name || "Unknown Author",
-                                            isActive: typeof story.isActive === "boolean" 
-                                                ? story.isActive 
-                                                : (typeof story.isActive === "string" && story.isActive === "true") || (story.isActive as any) === true || false,
+                                            author:
+                                                typeof story.author === "string"
+                                                    ? story.author
+                                                    : story.author?.name ||
+                                                      "Unknown Author",
+                                            isActive:
+                                                typeof story.isActive ===
+                                                "boolean"
+                                                    ? story.isActive
+                                                    : (typeof story.isActive ===
+                                                          "string" &&
+                                                          story.isActive ===
+                                                              "true") ||
+                                                      (story.isActive as any) ===
+                                                          true ||
+                                                      false,
                                             coverImage: story.coverImage || "",
                                         }}
                                         priority={index === 0}

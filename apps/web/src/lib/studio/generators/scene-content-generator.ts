@@ -62,7 +62,10 @@ export async function generateSceneContent(
 
     // 3. Build context strings using common builders
     const storyContext: string = buildStoryContext(story as any);
-    const partContext: string = buildPartContext(part as any, characters as any);
+    const partContext: string = buildPartContext(
+        part as any,
+        characters as any,
+    );
     const chapterContext: string = buildChapterContext(chapter as any);
     const sceneContext: string = buildSceneContext(scene as any);
     const charactersStr: string = buildCharactersContext(characters as any);

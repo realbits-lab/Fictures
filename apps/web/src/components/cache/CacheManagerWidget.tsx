@@ -259,8 +259,8 @@ export function CacheManagerWidget() {
                     </h4>
                     <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                         <p>
-                            • <strong>Studio:</strong> 30min TTL (story
-                            creation and editing)
+                            • <strong>Studio:</strong> 30min TTL (story creation
+                            and editing)
                         </p>
                         <p>
                             • <strong>Novels:</strong> 5min TTL (text-based

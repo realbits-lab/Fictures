@@ -56,7 +56,8 @@ const OUTPUT_FILE =
     values.output || `results/v1.0/image-test-${timestamp}.json`;
 
 // AI Server configuration
-const AI_SERVER_URL = process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
+const AI_SERVER_URL =
+    process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
 
 // Load API key
 let apiKey: string | undefined;
@@ -141,7 +142,9 @@ async function generatePanelImage(
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Image generation failed: ${response.status} - ${errorText}`);
+        throw new Error(
+            `Image generation failed: ${response.status} - ${errorText}`,
+        );
     }
 
     const result = await response.json();
@@ -195,9 +198,12 @@ async function runSceneTest(
                 success: !!result.imageUrl,
             });
 
-            console.log(`      ✓ Generated in ${(result.generationTime / 1000).toFixed(1)}s`);
+            console.log(
+                `      ✓ Generated in ${(result.generationTime / 1000).toFixed(1)}s`,
+            );
         } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : String(error);
+            const errorMessage =
+                error instanceof Error ? error.message : String(error);
             console.error(`      ✗ Failed: ${errorMessage}`);
 
             images.push({
@@ -221,7 +227,8 @@ async function runSceneTest(
     const successRate = images.length > 0 ? successCount / images.length : 0;
     const avgTime =
         images.length > 0
-            ? images.reduce((sum, img) => sum + img.generationTime, 0) / images.length
+            ? images.reduce((sum, img) => sum + img.generationTime, 0) /
+              images.length
             : 0;
 
     return {
@@ -259,13 +266,16 @@ async function main() {
 
         for (let i = 0; i < ITERATIONS; i++) {
             totalTests++;
-            console.log(`\n[${totalTests}/${totalExpected}] Test ${i + 1}/${ITERATIONS}`);
+            console.log(
+                `\n[${totalTests}/${totalExpected}] Test ${i + 1}/${ITERATIONS}`,
+            );
 
             try {
                 const result = await runSceneTest(scene, i + 1);
                 results.push(result);
 
-                const status = result.successRate === 1 ? "✓ PASS" : "✗ PARTIAL";
+                const status =
+                    result.successRate === 1 ? "✓ PASS" : "✗ PARTIAL";
                 console.log(
                     `  ${status} - ${(result.successRate * 100).toFixed(0)}% success, ${(result.totalTime / 1000).toFixed(1)}s total`,
                 );
@@ -281,10 +291,12 @@ async function main() {
         (sum, r) => sum + r.images.filter((img) => img.success).length,
         0,
     );
-    const overallSuccessRate = totalImages > 0 ? successfulImages / totalImages : 0;
+    const overallSuccessRate =
+        totalImages > 0 ? successfulImages / totalImages : 0;
     const avgGenerationTime =
         results.length > 0
-            ? results.reduce((sum, r) => sum + r.averageGenerationTime, 0) / results.length
+            ? results.reduce((sum, r) => sum + r.averageGenerationTime, 0) /
+              results.length
             : 0;
 
     // Save results
@@ -303,7 +315,11 @@ async function main() {
         },
     };
 
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(finalResult, null, 2), "utf-8");
+    fs.writeFileSync(
+        OUTPUT_FILE,
+        JSON.stringify(finalResult, null, 2),
+        "utf-8",
+    );
 
     // Print summary
     console.log(`

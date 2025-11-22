@@ -6,11 +6,16 @@
  */
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { Agent as UndiciAgent, setGlobalDispatcher as setUndiciDispatcher } from "undici";
+import {
+    setGlobalDispatcher as setUndiciDispatcher,
+    Agent as UndiciAgent,
+} from "undici";
 import { z } from "zod";
+
 // Note: undici is a Node.js built-in module (Node 18+)
 // Using global fetch instead for compatibility
 const undiciFetch = globalThis.fetch;
+
 import { getApiKey } from "@/lib/auth/server-context";
 import type {
     GenerationOptions,
@@ -154,13 +159,14 @@ class GeminiProvider extends TextGenerationProvider {
                 console.log(
                     "[GeminiProvider] Converting Zod schema to JSON Schema (native)",
                 );
-                jsonSchema = (z as any).toJSONSchema?.(
-                    request.responseSchema as z.ZodType<any>,
-                    {
-                        target: "openapi-3.0",
-                        $refStrategy: "none",
-                    } as any,
-                ) || {};
+                jsonSchema =
+                    (z as any).toJSONSchema?.(
+                        request.responseSchema as z.ZodType<any>,
+                        {
+                            target: "openapi-3.0",
+                            $refStrategy: "none",
+                        } as any,
+                    ) || {};
                 console.log(
                     "[GeminiProvider] Converted schema keys:",
                     Object.keys(jsonSchema),
@@ -275,13 +281,11 @@ class GeminiProvider extends TextGenerationProvider {
             "[GeminiProvider] generateStructured - Converting Zod to JSON Schema (native)",
         );
 
-        const jsonSchema = (z as any).toJSONSchema?.(
-            zodSchema,
-            {
+        const jsonSchema =
+            (z as any).toJSONSchema?.(zodSchema, {
                 target: "openapi-3.0",
                 $refStrategy: "none",
-            } as any,
-        ) || {};
+            } as any) || {};
 
         console.log(
             "[GeminiProvider] Full JSON Schema:",
@@ -440,13 +444,14 @@ class AIServerProvider extends TextGenerationProvider {
             let jsonSchema: any;
             if (request.responseSchema && "_def" in request.responseSchema) {
                 // It's a Zod schema - use native z.toJSONSchema()
-                jsonSchema = (z as any).toJSONSchema?.(
-                    request.responseSchema as z.ZodType<any>,
-                    {
-                        target: "openapi-3.0",
-                        $refStrategy: "none",
-                    } as any,
-                ) || {};
+                jsonSchema =
+                    (z as any).toJSONSchema?.(
+                        request.responseSchema as z.ZodType<any>,
+                        {
+                            target: "openapi-3.0",
+                            $refStrategy: "none",
+                        } as any,
+                    ) || {};
             } else {
                 // It's already a JSON Schema object
                 jsonSchema = request.responseSchema;
@@ -583,13 +588,11 @@ class AIServerProvider extends TextGenerationProvider {
             "[AIServerProvider] generateStructured - Converting Zod to JSON Schema (native)",
         );
 
-        const jsonSchema = (z as any).toJSONSchema?.(
-            zodSchema,
-            {
+        const jsonSchema =
+            (z as any).toJSONSchema?.(zodSchema, {
                 target: "openapi-3.0",
                 $refStrategy: "none",
-            } as any,
-        ) || {};
+            } as any) || {};
 
         console.log(
             "[AIServerProvider] Full JSON Schema:",

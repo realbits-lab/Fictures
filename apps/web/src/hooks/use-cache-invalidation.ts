@@ -36,23 +36,30 @@ export function useCacheInvalidation() {
         }
     }, []);
 
-    const handleCacheInvalidation = useCallback((headers: Headers | Record<string, string> | undefined) => {
-        if (!headers) return;
+    const handleCacheInvalidation = useCallback(
+        (headers: Headers | Record<string, string> | undefined) => {
+            if (!headers) return;
 
-        // Extract cache keys from headers (e.g., x-cache-keys header)
-        const cacheKeysHeader = headers instanceof Headers
-            ? headers.get("x-cache-keys")
-            : headers["x-cache-keys"];
+            // Extract cache keys from headers (e.g., x-cache-keys header)
+            const cacheKeysHeader =
+                headers instanceof Headers
+                    ? headers.get("x-cache-keys")
+                    : headers["x-cache-keys"];
 
-        if (cacheKeysHeader) {
-            try {
-                const keys = JSON.parse(cacheKeysHeader) as string[];
-                keys.forEach((key) => invalidate(key));
-            } catch (error) {
-                console.error("Failed to parse cache keys from headers:", error);
+            if (cacheKeysHeader) {
+                try {
+                    const keys = JSON.parse(cacheKeysHeader) as string[];
+                    keys.forEach((key) => invalidate(key));
+                } catch (error) {
+                    console.error(
+                        "Failed to parse cache keys from headers:",
+                        error,
+                    );
+                }
             }
-        }
-    }, [invalidate]);
+        },
+        [invalidate],
+    );
 
     return { invalidate, invalidateAll, handleCacheInvalidation };
 }

@@ -183,4 +183,3 @@ export interface ComicPromptVersion {
     decision: "ADOPTED" | "REJECTED" | "TESTING";
     notes: string;
 }
-

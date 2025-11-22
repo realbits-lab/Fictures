@@ -20,14 +20,14 @@ type StorySetting = typeof settings.$inferSelect;
 
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import { AiComicToonplayZodSchema } from "@/lib/schemas/ai/ai-toonplay";
-import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
+import type { GeneratorToonplayParams } from "@/lib/schemas/generators/types";
 import { createTextGenerationClient } from "@/lib/studio/generators/ai-client";
+import { convertSceneToToonplay } from "@/lib/studio/generators/toonplay-converter";
 import {
     evaluateToonplay,
     formatEvaluationReport,
     type ToonplayEvaluationResult,
 } from "./toonplay-evaluator";
-import type { GeneratorToonplayParams } from "@/lib/schemas/generators/types";
 
 // ============================================
 // TYPES
@@ -125,7 +125,8 @@ export async function generateToonplayWithEvaluation(
     const generatorParams: GeneratorToonplayParams = {
         scene: scene as unknown as GeneratorToonplayParams["scene"],
         story: generatorStory,
-        characters: characters as unknown as GeneratorToonplayParams["characters"],
+        characters:
+            characters as unknown as GeneratorToonplayParams["characters"],
         settings: [setting] as unknown as GeneratorToonplayParams["settings"],
     };
 
@@ -283,7 +284,9 @@ export async function generateToonplayWithEvaluation(
     );
 
     if (!bestToonplay || !bestEvaluation) {
-        throw new Error("Toonplay generation failed - no best result available");
+        throw new Error(
+            "Toonplay generation failed - no best result available",
+        );
     }
 
     const finalReport = formatEvaluationReport(bestEvaluation);

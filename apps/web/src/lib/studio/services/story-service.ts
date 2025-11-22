@@ -5,21 +5,22 @@
  * Now uses authentication context instead of passing API keys as parameters.
  */
 
+import type { InferSelectModel } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import type { StoryGenre } from "@/lib/constants/genres";
 import type { StoryTone } from "@/lib/constants/tones";
 import { db } from "@/lib/db";
-import { type InferSelectModel } from "drizzle-orm";
 import { stories } from "@/lib/schemas/database";
 
 // Database row types (for query results)
 type Story = InferSelectModel<typeof stories>;
-import { insertStorySchema } from "@/lib/schemas/zod/generated";
-import { generateStory } from "../generators/story-generator";
+
 import type {
     GenerateStoryParams,
     GenerateStoryResult,
 } from "@/lib/schemas/generators/types";
+import { insertStorySchema } from "@/lib/schemas/zod/generated";
+import { generateStory } from "../generators/story-generator";
 
 export interface ServiceStoryParams {
     userPrompt: string;

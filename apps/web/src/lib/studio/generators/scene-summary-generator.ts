@@ -64,7 +64,10 @@ export async function generateSceneSummary(
 
     // 3. Build context strings using common builders
     const storyContext: string = buildStoryContext(story as any);
-    const partContext: string = buildPartContext(part as any, characters as any);
+    const partContext: string = buildPartContext(
+        part as any,
+        characters as any,
+    );
     const chapterContext: string = `Title: ${chapter.title || "Untitled Chapter"}
 Summary: ${chapter.summary || "N/A"}
 Arc Position: ${chapter.arcPosition || "N/A"}
@@ -78,7 +81,9 @@ Virtue Type: ${chapter.virtueType || "N/A"}`;
     );
 
     // 8. Build previous scenes context string using builder function
-    const previousScenesContext: string = buildScenesContext(previousScenes as any);
+    const previousScenesContext: string = buildScenesContext(
+        previousScenes as any,
+    );
 
     console.log(
         `[scene-summary-generator] Previous scenes context prepared (${previousScenesContext.length} characters)`,

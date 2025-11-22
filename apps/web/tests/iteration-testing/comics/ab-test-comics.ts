@@ -189,7 +189,8 @@ function calculateMetricDeltas(
     deltas.averageVisualClarity =
         experiment.averageVisualClarity - control.averageVisualClarity;
     deltas.averageCompositionQuality =
-        experiment.averageCompositionQuality - control.averageCompositionQuality;
+        experiment.averageCompositionQuality -
+        control.averageCompositionQuality;
     deltas.averageCharacterAccuracy =
         experiment.averageCharacterAccuracy - control.averageCharacterAccuracy;
 
@@ -238,16 +239,13 @@ function calculateStatisticalSignificance(
         return { pValue: 1.0, confidenceLevel: 0, sampleSize: n1 + n2 };
     }
 
-    const mean1 =
-        controlScores.reduce((a, b) => a + b, 0) / n1;
-    const mean2 =
-        experimentScores.reduce((a, b) => a + b, 0) / n2;
+    const mean1 = controlScores.reduce((a, b) => a + b, 0) / n1;
+    const mean2 = experimentScores.reduce((a, b) => a + b, 0) / n2;
 
     const variance1 =
-        controlScores.reduce((sum, x) => sum + Math.pow(x - mean1, 2), 0) /
-        (n1 - 1);
+        controlScores.reduce((sum, x) => sum + (x - mean1) ** 2, 0) / (n1 - 1);
     const variance2 =
-        experimentScores.reduce((sum, x) => sum + Math.pow(x - mean2, 2), 0) /
+        experimentScores.reduce((sum, x) => sum + (x - mean2) ** 2, 0) /
         (n2 - 1);
 
     const pooledStd = Math.sqrt(
@@ -263,8 +261,11 @@ function calculateStatisticalSignificance(
     const degreesOfFreedom = n1 + n2 - 2;
 
     // Simplified p-value calculation (two-tailed)
-    const pValue = Math.min(1.0, Math.max(0.0, 2 * (1 - Math.abs(tStatistic) / 2)));
-    const confidenceLevel = pValue < 0.05 ? 0.95 : pValue < 0.1 ? 0.90 : 0.0;
+    const pValue = Math.min(
+        1.0,
+        Math.max(0.0, 2 * (1 - Math.abs(tStatistic) / 2)),
+    );
+    const confidenceLevel = pValue < 0.05 ? 0.95 : pValue < 0.1 ? 0.9 : 0.0;
 
     return { pValue, confidenceLevel, sampleSize: n1 + n2 };
 }
@@ -314,7 +315,10 @@ async function main() {
         SAMPLE_SIZE,
     );
 
-    if (controlData.results.length === 0 || experimentData.results.length === 0) {
+    if (
+        controlData.results.length === 0 ||
+        experimentData.results.length === 0
+    ) {
         console.error("  ✗ Insufficient results for comparison");
         process.exit(1);
     }
@@ -409,8 +413,7 @@ async function main() {
 ${improvements
     .slice(0, 5)
     .map(
-        (m) =>
-            `    + ${m}: ${deltas[m] > 0 ? "+" : ""}${deltas[m].toFixed(2)}`,
+        (m) => `    + ${m}: ${deltas[m] > 0 ? "+" : ""}${deltas[m].toFixed(2)}`,
     )
     .join("\n")}
 
@@ -418,8 +421,7 @@ ${improvements
 ${regressions
     .slice(0, 5)
     .map(
-        (m) =>
-            `    - ${m}: ${deltas[m] > 0 ? "+" : ""}${deltas[m].toFixed(2)}`,
+        (m) => `    - ${m}: ${deltas[m] > 0 ? "+" : ""}${deltas[m].toFixed(2)}`,
     )
     .join("\n")}
 
@@ -435,4 +437,3 @@ main().catch((error) => {
     console.error("Fatal error:", error);
     process.exit(1);
 });
-

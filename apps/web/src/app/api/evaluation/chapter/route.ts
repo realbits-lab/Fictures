@@ -25,7 +25,10 @@ export async function POST(request: Request) {
     try {
         const body: ChapterEvaluationRequest = await request.json();
 
-        const validation = validateRequiredFields(body as unknown as Record<string, unknown>, ["chapterId"]);
+        const validation = validateRequiredFields(
+            body as unknown as Record<string, unknown>,
+            ["chapterId"],
+        );
         if (!validation.valid) {
             return NextResponse.json(
                 createErrorResponse(

@@ -122,7 +122,7 @@ test.describe("Accessibility", () => {
         //     page,
         // }).analyze();
         // expect(accessibilityScanResults.violations).toEqual([]);
-        
+
         // Basic accessibility check instead
         const h1Count = await page.locator("h1").count();
         expect(h1Count).toBeGreaterThan(0);

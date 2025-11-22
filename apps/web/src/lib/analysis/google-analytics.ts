@@ -106,7 +106,11 @@ export function trackEngagement(action: string, target: string): void {
 /**
  * Track reading progress events
  */
-export function trackReading(storyId: string, chapterId?: string, sceneId?: string): void {
+export function trackReading(
+    storyId: string,
+    chapterId?: string,
+    sceneId?: string,
+): void {
     event({
         action: "reading_progress",
         category: "Reading",
@@ -128,7 +132,11 @@ export function trackCommunity(action: string, target: string): void {
 /**
  * Track story-related events (creation, update, etc.)
  */
-export function trackStoryEvent(action: string, storyId: string, metadata?: string): void {
+export function trackStoryEvent(
+    action: string,
+    storyId: string,
+    metadata?: string,
+): void {
     event({
         action,
         category: "Story",

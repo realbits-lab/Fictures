@@ -16,9 +16,7 @@ export function useScenePrefetch() {
         const prefetchId = Math.random().toString(36).substring(7);
         const url = `/api/studio/chapters/${chapterId}/scenes`;
 
-        console.log(
-            `[${prefetchId}] PREFETCH START for chapter: ${chapterId}`,
-        );
+        console.log(`[${prefetchId}] PREFETCH START for chapter: ${chapterId}`);
 
         try {
             // Check if already in cache (check BOTH localStorage and SWR in-memory cache)

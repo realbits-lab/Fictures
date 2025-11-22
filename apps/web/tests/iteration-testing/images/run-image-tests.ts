@@ -453,10 +453,12 @@ async function generateImage(
 
         const optimizedVariants = result.optimizedSet?.variants ?? [];
         const avif1x = optimizedVariants.find(
-            (variant: { resolution: string; size: number }) => variant.resolution === "1x",
+            (variant: { resolution: string; size: number }) =>
+                variant.resolution === "1x",
         );
         const avif2x = optimizedVariants.find(
-            (variant: { resolution: string; size: number }) => variant.resolution === "2x",
+            (variant: { resolution: string; size: number }) =>
+                variant.resolution === "2x",
         );
 
         // Extract metadata

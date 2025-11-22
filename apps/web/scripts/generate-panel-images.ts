@@ -223,7 +223,8 @@ async function generateImagesForScene(
             let errorMessage = errorText;
             try {
                 const errorJson = JSON.parse(errorText);
-                errorMessage = errorJson.error || errorJson.message || errorText;
+                errorMessage =
+                    errorJson.error || errorJson.message || errorText;
             } catch {
                 // Keep as text
             }
@@ -256,14 +257,17 @@ async function generateImagesForScene(
                         const event = JSON.parse(data);
 
                         if (event.type === "start") {
-                            if (isVerbose) console.log(`   📝 ${event.message}`);
+                            if (isVerbose)
+                                console.log(`   📝 ${event.message}`);
                         } else if (event.type === "progress") {
                             console.log(
                                 `   [${event.current}/${event.total}] ${event.status}`,
                             );
                         } else if (event.type === "complete") {
                             panelCount = event.result?.panels?.length || 0;
-                            console.log(`   ✅ Complete: ${panelCount} panels with images`);
+                            console.log(
+                                `   ✅ Complete: ${panelCount} panels with images`,
+                            );
                         } else if (event.type === "error") {
                             throw new Error(event.error);
                         }

@@ -106,13 +106,16 @@ export async function generateChapter(
     );
 
     // 4. Build comprehensive part context string using context builder
-    const partContext: string = buildPartContext(part as any, characters as any);
+    const partContext: string = buildPartContext(
+        part as any,
+        characters as any,
+    );
 
     // 5. Build previous chapters context string using context builder
     const previousChaptersContext: string =
         previousChapters.length > 0
             ? previousChapters
-                  .map((ch: typeof previousChapters[0], idx: number) => {
+                  .map((ch: (typeof previousChapters)[0], idx: number) => {
                       return `Chapter ${idx + 1}:\n${buildChapterContext(ch as any)}`;
                   })
                   .join("\n\n")

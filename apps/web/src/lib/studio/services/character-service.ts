@@ -13,12 +13,13 @@ import { characters, stories } from "@/lib/schemas/database";
 // Database row types (for query results)
 type Story = InferSelectModel<typeof stories>;
 type Character = InferSelectModel<typeof characters>;
-import { insertCharacterSchema } from "@/lib/schemas/zod/generated";
-import { generateCharacters } from "../generators/characters-generator";
+
 import type {
     GenerateCharactersParams,
     GenerateCharactersResult,
 } from "@/lib/schemas/generators/types";
+import { insertCharacterSchema } from "@/lib/schemas/zod/generated";
+import { generateCharacters } from "../generators/characters-generator";
 
 export interface ServiceCharactersParams {
     storyId: string;

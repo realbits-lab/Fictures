@@ -274,4 +274,3 @@ Write the scene content following the cycle-specific guidelines based on the sce
 
 Return ONLY the prose narrative.`,
 };
-

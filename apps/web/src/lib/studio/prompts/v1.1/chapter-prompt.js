@@ -236,5 +236,5 @@ B. **createsNextAdversity** field must:
 - **connectsToPreviousChapter**: EXPLICIT causal mechanism from previous chapter → this adversity (v1.1)
 - **createsNextAdversity**: How THIS resolution organically creates next problem (v1.1)
 
-Return structured chapter data following the template specified in the system prompt.`
+Return structured chapter data following the template specified in the system prompt.`,
 };

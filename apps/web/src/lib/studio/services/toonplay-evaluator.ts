@@ -166,7 +166,9 @@ export async function evaluateToonplay(
     }
 
     if (establishingShots < 1) {
-        qualityGateIssues.push("Panel 1 must be an establishing_shot that sets location and tone.");
+        qualityGateIssues.push(
+            "Panel 1 must be an establishing_shot that sets location and tone.",
+        );
     }
 
     if (shotVariety < 5) {

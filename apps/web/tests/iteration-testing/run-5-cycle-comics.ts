@@ -20,7 +20,8 @@ const TIMESTAMP = new Date().toISOString().replace(/[:.]/g, "-");
 const REPORT_FILE = `${OUTPUT_DIR}/comics-eval-report-${TIMESTAMP}.md`;
 
 // AI Server configuration
-const AI_SERVER_URL = process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
+const AI_SERVER_URL =
+    process.env.AI_SERVER_IMAGE_URL || "http://localhost:8000";
 
 // Load API key
 let apiKey: string | undefined;
@@ -60,7 +61,8 @@ const CYCLE_CONFIGS: CycleConfig[] = [
     {
         cycle: 2,
         name: "Visual Transformation Focus",
-        hypothesis: "Improve visual storytelling - show emotions through visual cues instead of narration",
+        hypothesis:
+            "Improve visual storytelling - show emotions through visual cues instead of narration",
         scenes: ["action-sequence", "emotional-beat", "establishing-shot"],
         iterations: 3,
         promptEnhancements: [
@@ -79,7 +81,8 @@ const CYCLE_CONFIGS: CycleConfig[] = [
     {
         cycle: 3,
         name: "Webtoon Pacing Optimization",
-        hypothesis: "Optimize for mobile vertical-scroll thumb reading with shot variety",
+        hypothesis:
+            "Optimize for mobile vertical-scroll thumb reading with shot variety",
         scenes: ["action-sequence", "dialogue-heavy", "climactic-moment"],
         iterations: 3,
         promptEnhancements: [
@@ -98,8 +101,14 @@ const CYCLE_CONFIGS: CycleConfig[] = [
     {
         cycle: 4,
         name: "Narrative Fidelity Enhancement",
-        hypothesis: "Preserve emotional beats and character expressions accurately",
-        scenes: ["action-sequence", "emotional-beat", "establishing-shot", "climactic-moment"],
+        hypothesis:
+            "Preserve emotional beats and character expressions accurately",
+        scenes: [
+            "action-sequence",
+            "emotional-beat",
+            "establishing-shot",
+            "climactic-moment",
+        ],
         iterations: 3,
         promptEnhancements: [
             "detailed facial expressions",
@@ -117,7 +126,8 @@ const CYCLE_CONFIGS: CycleConfig[] = [
     {
         cycle: 5,
         name: "Production-Ready Quality",
-        hypothesis: "Combine all evaluation criteria for professional webtoon quality",
+        hypothesis:
+            "Combine all evaluation criteria for professional webtoon quality",
         scenes: [
             "action-sequence",
             "dialogue-heavy",
@@ -203,9 +213,7 @@ function buildPrompt(
 /**
  * Generate a single comic panel image via AI server
  */
-async function generatePanelImage(
-    prompt: string,
-): Promise<{
+async function generatePanelImage(prompt: string): Promise<{
     generationTime: number;
     success: boolean;
     width: number;
@@ -223,14 +231,17 @@ async function generatePanelImage(
     };
 
     try {
-        const response = await fetch(`${AI_SERVER_URL}/api/v1/images/generate`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-api-key": apiKey!,
+        const response = await fetch(
+            `${AI_SERVER_URL}/api/v1/images/generate`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-api-key": apiKey!,
+                },
+                body: JSON.stringify(requestBody),
             },
-            body: JSON.stringify(requestBody),
-        });
+        );
 
         const generationTime = Date.now() - startTime;
 
@@ -280,7 +291,11 @@ async function runSceneTest(
     const panelsToTest = scene.toonplay.panels.slice(0, 2);
 
     for (const panel of panelsToTest) {
-        const prompt = buildPrompt(panel.description, panel.shotType, enhancements);
+        const prompt = buildPrompt(
+            panel.description,
+            panel.shotType,
+            enhancements,
+        );
 
         console.log(`      Panel ${panel.panelNumber}: ${panel.shotType}`);
 
@@ -297,7 +312,9 @@ async function runSceneTest(
         });
 
         if (result.success) {
-            console.log(`        ✓ ${(result.generationTime / 1000).toFixed(1)}s`);
+            console.log(
+                `        ✓ ${(result.generationTime / 1000).toFixed(1)}s`,
+            );
         } else {
             console.log(`        ✗ ${result.error}`);
         }
@@ -306,9 +323,11 @@ async function runSceneTest(
     const totalTime = Date.now() - startTime;
     const successCount = panels.filter((p) => p.success).length;
     const successRate = panels.length > 0 ? successCount / panels.length : 0;
-    const avgTime = panels.length > 0
-        ? panels.reduce((sum, p) => sum + p.generationTime, 0) / panels.length
-        : 0;
+    const avgTime =
+        panels.length > 0
+            ? panels.reduce((sum, p) => sum + p.generationTime, 0) /
+              panels.length
+            : 0;
 
     return {
         testId,
@@ -334,7 +353,9 @@ async function runCycle(config: CycleConfig): Promise<CycleResult> {
     console.log(`  Hypothesis: ${config.hypothesis}`);
     console.log(`  Scenes: ${config.scenes.join(", ")}`);
     console.log(`  Iterations: ${config.iterations}`);
-    console.log(`  Enhancements: ${config.promptEnhancements.join(", ") || "None"}\n`);
+    console.log(
+        `  Enhancements: ${config.promptEnhancements.join(", ") || "None"}\n`,
+    );
 
     let totalTests = 0;
     const totalExpected = config.scenes.length * config.iterations;
@@ -350,9 +371,15 @@ async function runCycle(config: CycleConfig): Promise<CycleResult> {
 
         for (let i = 0; i < config.iterations; i++) {
             totalTests++;
-            console.log(`    [${totalTests}/${totalExpected}] Test ${i + 1}/${config.iterations}`);
+            console.log(
+                `    [${totalTests}/${totalExpected}] Test ${i + 1}/${config.iterations}`,
+            );
 
-            const result = await runSceneTest(scene, i + 1, config.promptEnhancements);
+            const result = await runSceneTest(
+                scene,
+                i + 1,
+                config.promptEnhancements,
+            );
             results.push(result);
         }
     }
@@ -368,24 +395,36 @@ async function runCycle(config: CycleConfig): Promise<CycleResult> {
         totalTests: results.length,
         totalPanels: allPanels.length,
         successfulPanels: successfulPanels.length,
-        successRate: allPanels.length > 0 ? successfulPanels.length / allPanels.length : 0,
-        averageGenerationTime: generationTimes.length > 0
-            ? generationTimes.reduce((a, b) => a + b, 0) / generationTimes.length / 1000
-            : 0,
-        minGenerationTime: generationTimes.length > 0
-            ? Math.min(...generationTimes) / 1000
-            : 0,
-        maxGenerationTime: generationTimes.length > 0
-            ? Math.max(...generationTimes) / 1000
-            : 0,
+        successRate:
+            allPanels.length > 0
+                ? successfulPanels.length / allPanels.length
+                : 0,
+        averageGenerationTime:
+            generationTimes.length > 0
+                ? generationTimes.reduce((a, b) => a + b, 0) /
+                  generationTimes.length /
+                  1000
+                : 0,
+        minGenerationTime:
+            generationTimes.length > 0
+                ? Math.min(...generationTimes) / 1000
+                : 0,
+        maxGenerationTime:
+            generationTimes.length > 0
+                ? Math.max(...generationTimes) / 1000
+                : 0,
     };
 
     const duration = (Date.now() - cycleStartTime) / 1000;
 
     console.log(`\n  ✅ Cycle ${config.cycle} Complete`);
     console.log(`     Duration: ${duration.toFixed(1)}s`);
-    console.log(`     Success Rate: ${(metrics.successRate * 100).toFixed(1)}%`);
-    console.log(`     Avg Generation: ${metrics.averageGenerationTime.toFixed(1)}s`);
+    console.log(
+        `     Success Rate: ${(metrics.successRate * 100).toFixed(1)}%`,
+    );
+    console.log(
+        `     Avg Generation: ${metrics.averageGenerationTime.toFixed(1)}s`,
+    );
 
     return {
         cycle: config.cycle,

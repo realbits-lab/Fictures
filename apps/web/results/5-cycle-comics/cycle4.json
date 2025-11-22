@@ -1,262 +1,262 @@
 {
-  "cycle": 4,
-  "name": "Webtoon Style Consistency",
-  "results": [
-    {
-      "testId": "action-sequence-1",
-      "sceneId": "action-sequence",
-      "sceneName": "Action Sequence",
-      "panels": [
+    "cycle": 4,
+    "name": "Webtoon Style Consistency",
+    "results": [
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16354,
-          "success": true,
-          "width": 928,
-          "height": 1664
+            "testId": "action-sequence-1",
+            "sceneId": "action-sequence",
+            "sceneName": "Action Sequence",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16354,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                },
+                {
+                    "panelNumber": 2,
+                    "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16342,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 32704,
+            "successRate": 1,
+            "averageGenerationTime": 16348
         },
         {
-          "panelNumber": 2,
-          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16342,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 32704,
-      "successRate": 1,
-      "averageGenerationTime": 16348
-    },
-    {
-      "testId": "action-sequence-2",
-      "sceneId": "action-sequence",
-      "sceneName": "Action Sequence",
-      "panels": [
-        {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16330,
-          "success": true,
-          "width": 928,
-          "height": 1664
+            "testId": "action-sequence-2",
+            "sceneId": "action-sequence",
+            "sceneName": "Action Sequence",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16330,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                },
+                {
+                    "panelNumber": 2,
+                    "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16301,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 32640,
+            "successRate": 1,
+            "averageGenerationTime": 16315.5
         },
         {
-          "panelNumber": 2,
-          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16301,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 32640,
-      "successRate": 1,
-      "averageGenerationTime": 16315.5
-    },
-    {
-      "testId": "action-sequence-3",
-      "sceneId": "action-sequence",
-      "sceneName": "Action Sequence",
-      "panels": [
-        {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16419,
-          "success": true,
-          "width": 928,
-          "height": 1664
+            "testId": "action-sequence-3",
+            "sceneId": "action-sequence",
+            "sceneName": "Action Sequence",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, wide_shot, Marcus running through crowded market, guards in pursuit, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16419,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                },
+                {
+                    "panelNumber": 2,
+                    "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16337,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 32763,
+            "successRate": 1,
+            "averageGenerationTime": 16378
         },
         {
-          "panelNumber": 2,
-          "prompt": "Webtoon comic panel, medium_shot, Marcus vaulting over fruit cart, dynamic motion, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16337,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 32763,
-      "successRate": 1,
-      "averageGenerationTime": 16378
-    },
-    {
-      "testId": "emotional-beat-1",
-      "sceneId": "emotional-beat",
-      "sceneName": "Emotional Beat",
-      "panels": [
+            "testId": "emotional-beat-1",
+            "sceneId": "emotional-beat",
+            "sceneName": "Emotional Beat",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16318,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 16322,
+            "successRate": 1,
+            "averageGenerationTime": 16318
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16318,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 16322,
-      "successRate": 1,
-      "averageGenerationTime": 16318
-    },
-    {
-      "testId": "emotional-beat-2",
-      "sceneId": "emotional-beat",
-      "sceneName": "Emotional Beat",
-      "panels": [
+            "testId": "emotional-beat-2",
+            "sceneId": "emotional-beat",
+            "sceneName": "Emotional Beat",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 12294,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 12298,
+            "successRate": 1,
+            "averageGenerationTime": 12294
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 12294,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 12298,
-      "successRate": 1,
-      "averageGenerationTime": 12294
-    },
-    {
-      "testId": "emotional-beat-3",
-      "sceneId": "emotional-beat",
-      "sceneName": "Emotional Beat",
-      "panels": [
+            "testId": "emotional-beat-3",
+            "sceneId": "emotional-beat",
+            "sceneName": "Emotional Beat",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 12306,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 12309,
+            "successRate": 1,
+            "averageGenerationTime": 12306
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, close_up, Sarah's hands holding letter, slight tremor visible, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 12306,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 12309,
-      "successRate": 1,
-      "averageGenerationTime": 12306
-    },
-    {
-      "testId": "establishing-shot-1",
-      "sceneId": "establishing-shot",
-      "sceneName": "Establishing Shot",
-      "panels": [
+            "testId": "establishing-shot-1",
+            "sceneId": "establishing-shot",
+            "sceneName": "Establishing Shot",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16378,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 16383,
+            "successRate": 1,
+            "averageGenerationTime": 16378
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16378,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 16383,
-      "successRate": 1,
-      "averageGenerationTime": 16378
-    },
-    {
-      "testId": "establishing-shot-2",
-      "sceneId": "establishing-shot",
-      "sceneName": "Establishing Shot",
-      "panels": [
+            "testId": "establishing-shot-2",
+            "sceneId": "establishing-shot",
+            "sceneName": "Establishing Shot",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 12393,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 12398,
+            "successRate": 1,
+            "averageGenerationTime": 12393
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 12393,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 12398,
-      "successRate": 1,
-      "averageGenerationTime": 12393
-    },
-    {
-      "testId": "establishing-shot-3",
-      "sceneId": "establishing-shot",
-      "sceneName": "Establishing Shot",
-      "panels": [
+            "testId": "establishing-shot-3",
+            "sceneId": "establishing-shot",
+            "sceneName": "Establishing Shot",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 12401,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 12405,
+            "successRate": 1,
+            "averageGenerationTime": 12401
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, establishing_shot, Vast abandoned library, dust motes in sunlight, decaying grandeur, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 12401,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 12405,
-      "successRate": 1,
-      "averageGenerationTime": 12401
-    },
-    {
-      "testId": "climactic-moment-1",
-      "sceneId": "climactic-moment",
-      "sceneName": "Climactic Moment",
-      "panels": [
+            "testId": "climactic-moment-1",
+            "sceneId": "climactic-moment",
+            "sceneName": "Climactic Moment",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 16355,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 16358,
+            "successRate": 1,
+            "averageGenerationTime": 16355
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 16355,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 16358,
-      "successRate": 1,
-      "averageGenerationTime": 16355
-    },
-    {
-      "testId": "climactic-moment-2",
-      "sceneId": "climactic-moment",
-      "sceneName": "Climactic Moment",
-      "panels": [
+            "testId": "climactic-moment-2",
+            "sceneId": "climactic-moment",
+            "sceneName": "Climactic Moment",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 12349,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 12352,
+            "successRate": 1,
+            "averageGenerationTime": 12349
+        },
         {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 12349,
-          "success": true,
-          "width": 928,
-          "height": 1664
+            "testId": "climactic-moment-3",
+            "sceneId": "climactic-moment",
+            "sceneName": "Climactic Moment",
+            "panels": [
+                {
+                    "panelNumber": 1,
+                    "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, webtoon style, clean linework, vibrant colors, vertical composition",
+                    "generationTime": 12306,
+                    "success": true,
+                    "width": 928,
+                    "height": 1664
+                }
+            ],
+            "totalTime": 12309,
+            "successRate": 1,
+            "averageGenerationTime": 12306
         }
-      ],
-      "totalTime": 12352,
-      "successRate": 1,
-      "averageGenerationTime": 12349
+    ],
+    "metrics": {
+        "totalTests": 12,
+        "totalPanels": 15,
+        "successfulPanels": 15,
+        "successRate": 1,
+        "averageGenerationTime": 14.745533333333332,
+        "minGenerationTime": 12.294,
+        "maxGenerationTime": 16.419
     },
-    {
-      "testId": "climactic-moment-3",
-      "sceneId": "climactic-moment",
-      "sceneName": "Climactic Moment",
-      "panels": [
-        {
-          "panelNumber": 1,
-          "prompt": "Webtoon comic panel, wide_shot, Courtroom, judge at bench, tense atmosphere, webtoon style, clean linework, vibrant colors, vertical composition",
-          "generationTime": 12306,
-          "success": true,
-          "width": 928,
-          "height": 1664
-        }
-      ],
-      "totalTime": 12309,
-      "successRate": 1,
-      "averageGenerationTime": 12306
-    }
-  ],
-  "metrics": {
-    "totalTests": 12,
-    "totalPanels": 15,
-    "successfulPanels": 15,
-    "successRate": 1,
-    "averageGenerationTime": 14.745533333333332,
-    "minGenerationTime": 12.294,
-    "maxGenerationTime": 16.419
-  },
-  "improvements": [
-    "Apply webtoon-specific style markers",
-    "Ensure vertical composition optimization",
-    "Add color vibrancy descriptors"
-  ],
-  "duration": 221.242,
-  "timestamp": "2025-11-18T09:11:43.709Z"
+    "improvements": [
+        "Apply webtoon-specific style markers",
+        "Ensure vertical composition optimization",
+        "Add color vibrancy descriptors"
+    ],
+    "duration": 221.242,
+    "timestamp": "2025-11-18T09:11:43.709Z"
 }

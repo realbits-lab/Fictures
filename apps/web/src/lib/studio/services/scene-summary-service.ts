@@ -25,12 +25,13 @@ type Part = InferSelectModel<typeof parts>;
 type Character = InferSelectModel<typeof characters>;
 type Setting = InferSelectModel<typeof settings>;
 type Scene = InferSelectModel<typeof scenes>;
-import { insertSceneSchema } from "@/lib/schemas/zod/generated";
-import { generateSceneSummary } from "../generators/scene-summary-generator";
+
 import type {
     GenerateSceneSummaryParams,
     GenerateSceneSummaryResult,
 } from "@/lib/schemas/generators/types";
+import { insertSceneSchema } from "@/lib/schemas/zod/generated";
+import { generateSceneSummary } from "../generators/scene-summary-generator";
 
 export interface ServiceSceneSummaryParams {
     storyId: string;
@@ -229,7 +230,9 @@ export class SceneSummaryService {
             .insert(scenes)
             .values({
                 ...validatedScene,
-                dialogueVsDescription: validatedScene.dialogueVsDescription || "50% dialogue, 50% description",
+                dialogueVsDescription:
+                    validatedScene.dialogueVsDescription ||
+                    "50% dialogue, 50% description",
                 suggestedLength: validatedScene.suggestedLength || "medium",
             } as any)
             .returning()) as Scene[];
