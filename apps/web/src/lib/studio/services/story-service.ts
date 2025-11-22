@@ -20,6 +20,10 @@ import type {
     GenerateStoryParams,
     GenerateStoryResult,
 } from "@/lib/schemas/generators/types";
+import {
+    selectOrCreateWriter,
+    selectOrCreateDesigner,
+} from "@/lib/services/ai-creators";
 
 export interface ServiceStoryParams {
     userPrompt: string;
@@ -64,7 +68,18 @@ export class StoryService {
         const generationResult: GenerateStoryResult =
             await generateStory(generateParams);
 
-        // 2. Prepare story data for database
+        // 2. Select or create AI writer and designer
+        const [writer, designer] = await Promise.all([
+            selectOrCreateWriter(),
+            selectOrCreateDesigner(),
+        ]);
+
+        console.log("[story-service] Selected AI creators:", {
+            writer: { id: writer.id, name: writer.name, style: writer.writingStyle },
+            designer: { id: designer.id, name: designer.name, style: designer.designStyle },
+        });
+
+        // 3. Prepare story data for database
         const storyId: string = `story_${nanoid(16)}`;
         const now: string = new Date().toISOString();
 
@@ -76,6 +91,8 @@ export class StoryService {
             genre: generationResult.story.genre || null,
             tone: generationResult.story.tone || "hopeful",
             moralFramework: generationResult.story.moralFramework || null,
+            writerId: writer.id,
+            designerId: designer.id,
             status: "draft",
             viewCount: 0,
             rating: 0,
