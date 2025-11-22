@@ -16,6 +16,7 @@ import { useSession } from "next-auth/react";
 import { useState } from "react";
 import useSWR from "swr";
 import { Button, SkeletonLoader } from "@/components/ui";
+import { AIInsightsPanel } from "./AIInsightsPanel";
 import { BarChart } from "./bar-chart";
 import { LineChart } from "./line-chart";
 import { MetricCard } from "./metric-card";
@@ -354,6 +355,14 @@ export function StoryAnalyticsDashboard({
                     ]}
                     height={300}
                 />
+            </div>
+
+            {/* AI Insights Panel */}
+            <div className="mb-8">
+                <h2 className="text-xl font-semibold text-[rgb(var(--color-foreground))] mb-4">
+                    AI-Powered Insights
+                </h2>
+                <AIInsightsPanel storyId={storyId} />
             </div>
 
             {/* Engagement Details */}
