@@ -26,7 +26,8 @@
         "db:push": "drizzle-kit push",
         "db:pull": "drizzle-kit pull",
         "migrate:chapters-dry": "dotenv --file .env.local run tsx scripts/migrate-chapter-content-to-scenes.ts --dry-run",
-        "migrate:chapters": "dotenv --file .env.local run tsx scripts/migrate-chapter-content-to-scenes.ts --execute"
+        "migrate:chapters": "dotenv --file .env.local run tsx scripts/migrate-chapter-content-to-scenes.ts --execute",
+        "pwa:icons": "node scripts/generate-pwa-icons.mjs"
     },
     "dependencies": {
         "@ai-sdk/gateway": "^1.0.18",
@@ -34,6 +35,7 @@
         "@ai-sdk/google-vertex": "^3.0.53",
         "@ai-sdk/react": "^2.0.86",
         "@auth/drizzle-adapter": "^1.10.0",
+        "@ducanh2912/next-pwa": "^10.2.9",
         "@google/generative-ai": "^0.24.1",
         "@hookform/resolvers": "^5.2.2",
         "@neondatabase/serverless": "^1.0.1",

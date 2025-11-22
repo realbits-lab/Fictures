@@ -32,6 +32,28 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
     title: "Fictures",
     description: "AI-powered content creation platform",
+    manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "Fictures",
+    },
+    formatDetection: {
+        telephone: false,
+    },
+    openGraph: {
+        type: "website",
+        siteName: "Fictures",
+        title: "Fictures - AI-Powered Story Creation",
+        description:
+            "AI-powered content creation platform for writing stories, novels, and comics",
+    },
+    twitter: {
+        card: "summary",
+        title: "Fictures - AI-Powered Story Creation",
+        description:
+            "AI-powered content creation platform for writing stories, novels, and comics",
+    },
 };
 
 export default async function RootLayout({
@@ -44,6 +66,22 @@ export default async function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
+                />
+                <meta name="theme-color" content="#000000" />
+                <meta name="mobile-web-app-capable" content="yes" />
+                <link
+                    rel="apple-touch-icon"
+                    href="/icons/apple-touch-icon.png"
+                />
+                <link
+                    rel="icon"
+                    type="image/png"
+                    sizes="32x32"
+                    href="/favicon.ico"
+                />
                 <AdSenseScript />
                 <GoogleAnalytics />
             </head>

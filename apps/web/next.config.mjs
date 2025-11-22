@@ -1,3 +1,5 @@
+import withPWA from "@ducanh2912/next-pwa";
+
 const config = {
     experimental: {
         staleTimes: {
@@ -57,4 +59,11 @@ const config = {
     },
 };
 
-export default config;
+export default withPWA({
+    dest: "public",
+    register: true,
+    skipWaiting: true,
+    disable: process.env.NODE_ENV === "development",
+    sw: "sw.js",
+    cacheOnNavigation: true,
+})(config);

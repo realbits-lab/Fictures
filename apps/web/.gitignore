@@ -101,3 +101,9 @@ downloads/
 # Source of truth: src/lib/db/schema.ts
 drizzle/schema.ts
 drizzle/relations.ts
+
+# PWA service worker files (auto-generated)
+public/sw.js
+public/sw.js.map
+public/workbox-*.js
+public/workbox-*.js.map
