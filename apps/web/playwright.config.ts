@@ -83,6 +83,14 @@ export default defineConfig({
             },
             testMatch: /cache.*\.spec\.ts/,
         },
+        {
+            name: "pwa-tests",
+            use: {
+                ...devices["Desktop Chrome"],
+            },
+            testDir: "./__tests__/pwa",
+            testMatch: /.*\.spec\.ts/,
+        },
     ],
 
     // webServer: {

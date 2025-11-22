@@ -71,7 +71,6 @@ export default async function RootLayout({
                     content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
                 />
                 <meta name="theme-color" content="#000000" />
-                <meta name="mobile-web-app-capable" content="yes" />
                 <link
                     rel="apple-touch-icon"
                     href="/icons/apple-touch-icon.png"
