@@ -343,12 +343,13 @@ async function executeDeletion() {
             cursor = undefined;
 
             do {
-                const listResult: Awaited<ReturnType<typeof list>> =
-                    await list({
+                const listResult: Awaited<ReturnType<typeof list>> = await list(
+                    {
                         prefix,
                         cursor,
                         limit: 100,
-                    });
+                    },
+                );
 
                 if (listResult.blobs.length > 0) {
                     const urls = listResult.blobs.map(

@@ -12,12 +12,13 @@ import { settings, stories } from "@/lib/schemas/database";
 // Database row types (for query results)
 type Story = InferSelectModel<typeof stories>;
 type Setting = InferSelectModel<typeof settings>;
-import { insertSettingSchema } from "@/lib/schemas/zod/generated";
-import { generateSettings } from "../generators/settings-generator";
+
 import type {
     GenerateSettingsParams,
     GenerateSettingsResult,
 } from "@/lib/schemas/generators/types";
+import { insertSettingSchema } from "@/lib/schemas/zod/generated";
+import { generateSettings } from "../generators/settings-generator";
 
 export interface ServiceSettingsParams {
     storyId: string;
@@ -84,7 +85,8 @@ export class SettingService {
                 virtueElements: settingData.virtueElements || null,
                 consequenceElements: settingData.consequenceElements || null,
                 symbolicMeaning: settingData.symbolicMeaning || null,
-                cycleAmplification: (settingData as any).cycleAmplification || null,
+                cycleAmplification:
+                    (settingData as any).cycleAmplification || null,
                 mood: settingData.mood || null,
                 emotionalResonance: settingData.emotionalResonance || null,
                 sensory: settingData.sensory || null,

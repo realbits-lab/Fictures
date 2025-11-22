@@ -1,44 +1,44 @@
 {
-  "cycle": 4,
-  "name": "Genre-Specific Prompt Patterns",
-  "imageMetrics": {
-    "version": "v1.4",
-    "totalTests": 9,
-    "testDate": "2025-11-17T23:52:46.477Z",
-    "averageWeightedScore": 4.525591016548463,
-    "passRate": 1,
-    "firstPassSuccessRate": 0.7777777777777778,
-    "categoryAverages": {
-      "generationQuality": 4.930260047281325,
-      "optimizationQuality": 5,
-      "visualQuality": 3.5,
-      "performance": 5
+    "cycle": 4,
+    "name": "Genre-Specific Prompt Patterns",
+    "imageMetrics": {
+        "version": "v1.4",
+        "totalTests": 9,
+        "testDate": "2025-11-17T23:52:46.477Z",
+        "averageWeightedScore": 4.525591016548463,
+        "passRate": 1,
+        "firstPassSuccessRate": 0.7777777777777778,
+        "categoryAverages": {
+            "generationQuality": 4.930260047281325,
+            "optimizationQuality": 5,
+            "visualQuality": 3.5,
+            "performance": 5
+        },
+        "averageAspectRatioAccuracy": 0.7092198581560257,
+        "resolutionComplianceRate": 1,
+        "averagePromptAdherence": 85,
+        "formatComplianceRate": 1,
+        "averageFileSize": 972.7625868055555,
+        "averageAvifCompressionRatio": 97.54936186328514,
+        "averageAvif1xSize": 23.65483940972222,
+        "averageAvif2xSize": 0,
+        "averageTotalVariantSize": 23.65483940972222,
+        "averageStorageRatio": 2.4506381367148644,
+        "averageVisualQualityScore": 3.5,
+        "averageArtifactCount": 0,
+        "aspectRatioPreservationRate": 1,
+        "variantCountComplianceRate": 1,
+        "averageGenerationTime": 7.929333333333334,
+        "averageOptimizationTime": 5.936222222222224,
+        "averageTotalTime": 18.44588888888889,
+        "successRate": 1,
+        "failurePatterns": []
     },
-    "averageAspectRatioAccuracy": 0.7092198581560257,
-    "resolutionComplianceRate": 1,
-    "averagePromptAdherence": 85,
-    "formatComplianceRate": 1,
-    "averageFileSize": 972.7625868055555,
-    "averageAvifCompressionRatio": 97.54936186328514,
-    "averageAvif1xSize": 23.65483940972222,
-    "averageAvif2xSize": 0,
-    "averageTotalVariantSize": 23.65483940972222,
-    "averageStorageRatio": 2.4506381367148644,
-    "averageVisualQualityScore": 3.5,
-    "averageArtifactCount": 0,
-    "aspectRatioPreservationRate": 1,
-    "variantCountComplianceRate": 1,
-    "averageGenerationTime": 7.929333333333334,
-    "averageOptimizationTime": 5.936222222222224,
-    "averageTotalTime": 18.44588888888889,
-    "successRate": 1,
-    "failurePatterns": []
-  },
-  "improvements": [
-    "Implement genre-specific prompt templates",
-    "Add style consistency markers",
-    "Include professional quality benchmarks"
-  ],
-  "duration": 198.796,
-  "timestamp": "2025-11-17T23:53:08.173Z"
+    "improvements": [
+        "Implement genre-specific prompt templates",
+        "Add style consistency markers",
+        "Include professional quality benchmarks"
+    ],
+    "duration": 198.796,
+    "timestamp": "2025-11-17T23:53:08.173Z"
 }

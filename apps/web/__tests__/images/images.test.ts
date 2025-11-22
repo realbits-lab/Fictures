@@ -380,214 +380,234 @@ async function generateImage(
 // ============================================================================
 
 describe("Images System Integration", () => {
-    it("should generate story cover image with 16:9 aspect ratio", async () => {
-        logImageTest("story-cover", "Starting story cover generation test");
-        // Arrange
-        const requestBody: ApiImagesRequest = {
-            prompt: "A mysterious ancient library filled with glowing books",
-            contentId: testStoryId,
-            imageType: "story",
-        };
+    it(
+        "should generate story cover image with 16:9 aspect ratio",
+        async () => {
+            logImageTest("story-cover", "Starting story cover generation test");
+            // Arrange
+            const requestBody: ApiImagesRequest = {
+                prompt: "A mysterious ancient library filled with glowing books",
+                contentId: testStoryId,
+                imageType: "story",
+            };
 
-        // Act
-        const result: ApiImagesResponse = await generateImage(requestBody);
+            // Act
+            const result: ApiImagesResponse = await generateImage(requestBody);
 
-        logImageTest(
-            "story-cover",
-            `Received story cover imageId=${result.imageId} (${result.dimensions.width}x${result.dimensions.height})`,
-        );
-
-        // Assert - Basic properties
-        expect(result.imageId).toBeDefined();
-        expect(result.originalUrl).toContain("blob.vercel-storage.com");
-        expect(result.blobUrl).toBe(result.originalUrl);
-        expect(result.aspectRatio).toBe("16:9");
-        expect(result.isPlaceholder).toBe(false);
-
-        // Assert - Dimensions (16:9 = 1664x928 or 1344x768)
-        expect(result.dimensions.width).toBeGreaterThan(1000);
-        expect(result.dimensions.height).toBeGreaterThan(500);
-        const aspectRatioValue: number =
-            result.dimensions.width / result.dimensions.height;
-        expect(aspectRatioValue).toBeGreaterThan(1.7);
-        expect(aspectRatioValue).toBeLessThan(1.8);
-
-        // Assert - Image size
-        expect(result.size).toBeGreaterThan(0);
-
-        // Assert - AI provider metadata
-        expect(result.model).toBeDefined();
-        expect(result.provider).toBeDefined();
-
-        // Assert - Response data completeness (API doesn't return timing metadata)
-        expect(result.model).toBeDefined();
-        expect(result.provider).toBeDefined();
-        expect(result.size).toBeGreaterThan(0);
-
-        // Assert - Optimized variants
-        expect(result.optimizedSet).toBeDefined();
-        expect(result.optimizedSet.imageId).toBeDefined();
-        expect(result.optimizedSet.originalUrl).toContain(
-            "blob.vercel-storage.com",
-        );
-        expect(Array.isArray(result.optimizedSet.variants)).toBe(true);
-        expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
-
-        // Assert - Variant structure (AVIF format only)
-        const avifVariants: ImageVariant[] =
-            result.optimizedSet.variants.filter(
-                (v: ImageVariant) => v.format === "avif",
+            logImageTest(
+                "story-cover",
+                `Received story cover imageId=${result.imageId} (${result.dimensions.width}x${result.dimensions.height})`,
             );
-        expect(avifVariants.length).toBeGreaterThan(0);
 
-        // Assert - Multiple resolutions (1x, 2x)
-        const has1x: boolean = result.optimizedSet.variants.some(
-            (v: ImageVariant) => v.resolution === "1x",
-        );
-        const has2x: boolean = result.optimizedSet.variants.some(
-            (v: ImageVariant) => v.resolution === "2x",
-        );
-        expect(has1x).toBe(true);
-        expect(has2x).toBe(true);
-    }, IMAGE_GENERATION_TIMEOUT_MS); // allow up to 3 minutes for ComfyUI render
+            // Assert - Basic properties
+            expect(result.imageId).toBeDefined();
+            expect(result.originalUrl).toContain("blob.vercel-storage.com");
+            expect(result.blobUrl).toBe(result.originalUrl);
+            expect(result.aspectRatio).toBe("16:9");
+            expect(result.isPlaceholder).toBe(false);
 
-    it("should generate character portrait with 1:1 aspect ratio", async () => {
-        logImageTest("character", "Generating character portrait");
-        // Arrange
-        const requestBody: ApiImagesRequest = {
-            prompt: "A wise elderly wizard with a long white beard and piercing blue eyes",
-            contentId: testCharacterId,
-            imageType: "character",
-        };
+            // Assert - Dimensions (16:9 = 1664x928 or 1344x768)
+            expect(result.dimensions.width).toBeGreaterThan(1000);
+            expect(result.dimensions.height).toBeGreaterThan(500);
+            const aspectRatioValue: number =
+                result.dimensions.width / result.dimensions.height;
+            expect(aspectRatioValue).toBeGreaterThan(1.7);
+            expect(aspectRatioValue).toBeLessThan(1.8);
 
-        // Act
-        const result: ApiImagesResponse = await generateImage(requestBody);
+            // Assert - Image size
+            expect(result.size).toBeGreaterThan(0);
 
-        logImageTest(
-            "character",
-            `Character portrait imageId=${result.imageId} (${result.dimensions.width}x${result.dimensions.height})`,
-        );
+            // Assert - AI provider metadata
+            expect(result.model).toBeDefined();
+            expect(result.provider).toBeDefined();
 
-        // Assert - Aspect ratio
-        expect(result.aspectRatio).toBe("1:1");
+            // Assert - Response data completeness (API doesn't return timing metadata)
+            expect(result.model).toBeDefined();
+            expect(result.provider).toBeDefined();
+            expect(result.size).toBeGreaterThan(0);
 
-        // Assert - Dimensions (1:1 = 1024x1024)
-        expect(result.dimensions.width).toBeGreaterThan(900);
-        expect(result.dimensions.height).toBeGreaterThan(900);
-        const aspectRatioValue: number =
-            result.dimensions.width / result.dimensions.height;
-        expect(aspectRatioValue).toBeGreaterThan(0.95);
-        expect(aspectRatioValue).toBeLessThan(1.05);
+            // Assert - Optimized variants
+            expect(result.optimizedSet).toBeDefined();
+            expect(result.optimizedSet.imageId).toBeDefined();
+            expect(result.optimizedSet.originalUrl).toContain(
+                "blob.vercel-storage.com",
+            );
+            expect(Array.isArray(result.optimizedSet.variants)).toBe(true);
+            expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
 
-        // Assert - All other standard checks
-        expect(result.originalUrl).toContain("blob.vercel-storage.com");
-        expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
-    }, IMAGE_GENERATION_TIMEOUT_MS);
+            // Assert - Variant structure (AVIF format only)
+            const avifVariants: ImageVariant[] =
+                result.optimizedSet.variants.filter(
+                    (v: ImageVariant) => v.format === "avif",
+                );
+            expect(avifVariants.length).toBeGreaterThan(0);
 
-    it("should generate setting image with 1:1 aspect ratio", async () => {
-        logImageTest("setting", "Generating setting illustration");
-        // Arrange
-        const requestBody: ApiImagesRequest = {
-            prompt: "A bustling medieval marketplace with colorful tents and merchants",
-            contentId: testSettingId,
-            imageType: "setting",
-        };
+            // Assert - Multiple resolutions (1x, 2x)
+            const has1x: boolean = result.optimizedSet.variants.some(
+                (v: ImageVariant) => v.resolution === "1x",
+            );
+            const has2x: boolean = result.optimizedSet.variants.some(
+                (v: ImageVariant) => v.resolution === "2x",
+            );
+            expect(has1x).toBe(true);
+            expect(has2x).toBe(true);
+        },
+        IMAGE_GENERATION_TIMEOUT_MS,
+    ); // allow up to 3 minutes for ComfyUI render
 
-        // Act
-        const result: ApiImagesResponse = await generateImage(requestBody);
+    it(
+        "should generate character portrait with 1:1 aspect ratio",
+        async () => {
+            logImageTest("character", "Generating character portrait");
+            // Arrange
+            const requestBody: ApiImagesRequest = {
+                prompt: "A wise elderly wizard with a long white beard and piercing blue eyes",
+                contentId: testCharacterId,
+                imageType: "character",
+            };
 
-        logImageTest(
-            "setting",
-            `Setting image created width=${result.dimensions.width} height=${result.dimensions.height}`,
-        );
+            // Act
+            const result: ApiImagesResponse = await generateImage(requestBody);
 
-        // Assert - Aspect ratio
-        expect(result.aspectRatio).toBe("1:1");
+            logImageTest(
+                "character",
+                `Character portrait imageId=${result.imageId} (${result.dimensions.width}x${result.dimensions.height})`,
+            );
 
-        // Assert - Square dimensions
-        const aspectRatioValue: number =
-            result.dimensions.width / result.dimensions.height;
-        expect(aspectRatioValue).toBeGreaterThan(0.95);
-        expect(aspectRatioValue).toBeLessThan(1.05);
-    }, IMAGE_GENERATION_TIMEOUT_MS);
+            // Assert - Aspect ratio
+            expect(result.aspectRatio).toBe("1:1");
 
-    it("should generate scene image with 16:9 aspect ratio", async () => {
-        logImageTest("scene", "Generating scene image");
-        // Arrange
-        const requestBody: ApiImagesRequest = {
-            prompt: "A dramatic sunset over a vast desert with ancient ruins",
-            contentId: testScene1Id,
-            imageType: "scene",
-        };
+            // Assert - Dimensions (1:1 = 1024x1024)
+            expect(result.dimensions.width).toBeGreaterThan(900);
+            expect(result.dimensions.height).toBeGreaterThan(900);
+            const aspectRatioValue: number =
+                result.dimensions.width / result.dimensions.height;
+            expect(aspectRatioValue).toBeGreaterThan(0.95);
+            expect(aspectRatioValue).toBeLessThan(1.05);
 
-        // Act
-        const result: ApiImagesResponse = await generateImage(requestBody);
+            // Assert - All other standard checks
+            expect(result.originalUrl).toContain("blob.vercel-storage.com");
+            expect(result.optimizedSet.variants.length).toBeGreaterThan(0);
+        },
+        IMAGE_GENERATION_TIMEOUT_MS,
+    );
 
-        logImageTest(
-            "scene",
-            `Scene image produced width=${result.dimensions.width} height=${result.dimensions.height}`,
-        );
+    it(
+        "should generate setting image with 1:1 aspect ratio",
+        async () => {
+            logImageTest("setting", "Generating setting illustration");
+            // Arrange
+            const requestBody: ApiImagesRequest = {
+                prompt: "A bustling medieval marketplace with colorful tents and merchants",
+                contentId: testSettingId,
+                imageType: "setting",
+            };
 
-        // Assert - Aspect ratio
-        expect(result.aspectRatio).toBe("16:9");
+            // Act
+            const result: ApiImagesResponse = await generateImage(requestBody);
 
-        // Assert - Widescreen dimensions
-        const aspectRatioValue: number =
-            result.dimensions.width / result.dimensions.height;
-        expect(aspectRatioValue).toBeGreaterThan(1.7);
-        expect(aspectRatioValue).toBeLessThan(1.8);
-    }, IMAGE_GENERATION_TIMEOUT_MS);
+            logImageTest(
+                "setting",
+                `Setting image created width=${result.dimensions.width} height=${result.dimensions.height}`,
+            );
 
-    it("should include comprehensive metadata in results", async () => {
-        logImageTest("metadata", "Validating metadata response");
-        // Arrange
-        const requestBody: ApiImagesRequest = {
-            prompt: "A serene Japanese garden with cherry blossoms and a koi pond",
-            contentId: testScene3Id,
-            imageType: "scene",
-        };
+            // Assert - Aspect ratio
+            expect(result.aspectRatio).toBe("1:1");
 
-        // Act
-        const result: ApiImagesResponse = await generateImage(requestBody);
+            // Assert - Square dimensions
+            const aspectRatioValue: number =
+                result.dimensions.width / result.dimensions.height;
+            expect(aspectRatioValue).toBeGreaterThan(0.95);
+            expect(aspectRatioValue).toBeLessThan(1.05);
+        },
+        IMAGE_GENERATION_TIMEOUT_MS,
+    );
 
-        logImageTest(
-            "metadata",
-            `Metadata: model=${result.model} provider=${result.provider} variants=${result.optimizedSet.variants.length}`,
-        );
+    it(
+        "should generate scene image with 16:9 aspect ratio",
+        async () => {
+            logImageTest("scene", "Generating scene image");
+            // Arrange
+            const requestBody: ApiImagesRequest = {
+                prompt: "A dramatic sunset over a vast desert with ancient ruins",
+                contentId: testScene1Id,
+                imageType: "scene",
+            };
 
-        // Assert - Response completeness (API doesn't return metadata, only service layer has it)
-        expect(result.success).toBe(true);
-        expect(result.model).toBeDefined();
-        expect(result.provider).toBeDefined();
-        expect(result.size).toBeGreaterThan(0);
-        expect(result.dimensions).toBeDefined();
-        expect(result.dimensions.width).toBeGreaterThan(0);
-        expect(result.dimensions.height).toBeGreaterThan(0);
+            // Act
+            const result: ApiImagesResponse = await generateImage(requestBody);
 
-        // Assert - Optimized set structure
-        expect(result.optimizedSet).toMatchObject({
-            imageId: expect.any(String),
-            originalUrl: expect.any(String),
-            variants: expect.any(Array),
-            generatedAt: expect.any(String),
-        });
+            logImageTest(
+                "scene",
+                `Scene image produced width=${result.dimensions.width} height=${result.dimensions.height}`,
+            );
 
-        // Assert - Variant properties
-        for (const variant of result.optimizedSet.variants) {
-            expect(variant).toMatchObject({
-                format: expect.stringMatching(/^(avif)$/),
-                device: expect.stringMatching(/^mobile$/),
-                resolution: expect.stringMatching(/^(1x|2x)$/),
-                width: expect.any(Number),
-                height: expect.any(Number),
-                url: expect.stringContaining("blob.vercel-storage.com"),
-                size: expect.any(Number),
+            // Assert - Aspect ratio
+            expect(result.aspectRatio).toBe("16:9");
+
+            // Assert - Widescreen dimensions
+            const aspectRatioValue: number =
+                result.dimensions.width / result.dimensions.height;
+            expect(aspectRatioValue).toBeGreaterThan(1.7);
+            expect(aspectRatioValue).toBeLessThan(1.8);
+        },
+        IMAGE_GENERATION_TIMEOUT_MS,
+    );
+
+    it(
+        "should include comprehensive metadata in results",
+        async () => {
+            logImageTest("metadata", "Validating metadata response");
+            // Arrange
+            const requestBody: ApiImagesRequest = {
+                prompt: "A serene Japanese garden with cherry blossoms and a koi pond",
+                contentId: testScene3Id,
+                imageType: "scene",
+            };
+
+            // Act
+            const result: ApiImagesResponse = await generateImage(requestBody);
+
+            logImageTest(
+                "metadata",
+                `Metadata: model=${result.model} provider=${result.provider} variants=${result.optimizedSet.variants.length}`,
+            );
+
+            // Assert - Response completeness (API doesn't return metadata, only service layer has it)
+            expect(result.success).toBe(true);
+            expect(result.model).toBeDefined();
+            expect(result.provider).toBeDefined();
+            expect(result.size).toBeGreaterThan(0);
+            expect(result.dimensions).toBeDefined();
+            expect(result.dimensions.width).toBeGreaterThan(0);
+            expect(result.dimensions.height).toBeGreaterThan(0);
+
+            // Assert - Optimized set structure
+            expect(result.optimizedSet).toMatchObject({
+                imageId: expect.any(String),
+                originalUrl: expect.any(String),
+                variants: expect.any(Array),
+                generatedAt: expect.any(String),
             });
 
-            // Assert - Variant dimensions are positive
-            expect(variant.width).toBeGreaterThan(0);
-            expect(variant.height).toBeGreaterThan(0);
-            expect(variant.size).toBeGreaterThan(0);
-        }
-    }, IMAGE_GENERATION_TIMEOUT_MS);
+            // Assert - Variant properties
+            for (const variant of result.optimizedSet.variants) {
+                expect(variant).toMatchObject({
+                    format: expect.stringMatching(/^(avif)$/),
+                    device: expect.stringMatching(/^mobile$/),
+                    resolution: expect.stringMatching(/^(1x|2x)$/),
+                    width: expect.any(Number),
+                    height: expect.any(Number),
+                    url: expect.stringContaining("blob.vercel-storage.com"),
+                    size: expect.any(Number),
+                });
+
+                // Assert - Variant dimensions are positive
+                expect(variant.width).toBeGreaterThan(0);
+                expect(variant.height).toBeGreaterThan(0);
+                expect(variant.size).toBeGreaterThan(0);
+            }
+        },
+        IMAGE_GENERATION_TIMEOUT_MS,
+    );
 });

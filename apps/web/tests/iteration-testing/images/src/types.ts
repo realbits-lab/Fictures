@@ -189,4 +189,3 @@ export interface ImagePromptVersion {
     decision: "ADOPTED" | "REJECTED" | "TESTING";
     notes: string;
 }
-

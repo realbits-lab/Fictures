@@ -17,12 +17,12 @@ type Part = InferSelectModel<typeof parts>;
 type Character = InferSelectModel<typeof characters>;
 type Setting = InferSelectModel<typeof settings>;
 
-import { insertPartSchema } from "@/lib/schemas/zod/generated";
-import { generatePart } from "../generators/part-generator";
 import type {
     GeneratePartParams,
     GeneratePartResult,
 } from "@/lib/schemas/generators/types";
+import { insertPartSchema } from "@/lib/schemas/zod/generated";
+import { generatePart } from "../generators/part-generator";
 
 export interface ServicePartParams {
     storyId: string;

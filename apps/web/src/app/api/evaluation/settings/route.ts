@@ -26,10 +26,10 @@ export async function POST(request: Request) {
     try {
         const body: SettingEvaluationRequest = await request.json();
 
-        const validation = validateRequiredFields(body as unknown as Record<string, unknown>, [
-            "settingIds",
-            "storyId",
-        ]);
+        const validation = validateRequiredFields(
+            body as unknown as Record<string, unknown>,
+            ["settingIds", "storyId"],
+        );
         if (!validation.valid) {
             return NextResponse.json(
                 createErrorResponse(

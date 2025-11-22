@@ -50,7 +50,7 @@ export async function createUser(data: {
             updatedAt: new Date(),
         } as any)
         .returning();
-    
+
     const user = userResult[0];
 
     return user;
@@ -110,7 +110,7 @@ export async function createStory(
             status: "writing",
         } as any)
         .returning();
-    
+
     const story = storyResult[0];
 
     return story;
@@ -857,7 +857,7 @@ export async function createApiKey(data: {
             updatedAt: new Date(),
         } as any)
         .returning();
-    
+
     const apiKey = apiKeyResult[0];
 
     return apiKey;

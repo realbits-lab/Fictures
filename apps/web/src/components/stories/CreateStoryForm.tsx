@@ -722,7 +722,10 @@ export function CreateStoryForm() {
 
                                     // Track story creation
                                     if (completedStoryId) {
-                                        trackStoryEvent("create", completedStoryId);
+                                        trackStoryEvent(
+                                            "create",
+                                            completedStoryId,
+                                        );
                                     }
 
                                     // Mark all remaining steps as completed

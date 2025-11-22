@@ -1,4 +1,10 @@
-import { and, desc, eq, type InferInsertModel, type InferSelectModel } from "drizzle-orm";
+import {
+    and,
+    desc,
+    eq,
+    type InferInsertModel,
+    type InferSelectModel,
+} from "drizzle-orm";
 import {
     studioAgentChats,
     studioAgentMessages,
@@ -11,8 +17,12 @@ type StudioAgentChat = InferSelectModel<typeof studioAgentChats>;
 type NewStudioAgentChat = InferInsertModel<typeof studioAgentChats>;
 type StudioAgentMessage = InferSelectModel<typeof studioAgentMessages>;
 type NewStudioAgentMessage = InferInsertModel<typeof studioAgentMessages>;
-type StudioAgentToolExecution = InferSelectModel<typeof studioAgentToolExecutions>;
-type NewStudioAgentToolExecution = InferInsertModel<typeof studioAgentToolExecutions>;
+type StudioAgentToolExecution = InferSelectModel<
+    typeof studioAgentToolExecutions
+>;
+type NewStudioAgentToolExecution = InferInsertModel<
+    typeof studioAgentToolExecutions
+>;
 
 // ==============================================================================
 // STUDIO AGENT CHAT OPERATIONS
@@ -173,10 +183,7 @@ export async function getStudioAgentMessagesPaginated(
 
     return {
         messages: messages.reverse(),
-        nextCursor:
-            messages.length === limit
-                ? messages[0]?.createdAt
-                : null,
+        nextCursor: messages.length === limit ? messages[0]?.createdAt : null,
         hasMore: messages.length === limit,
     };
 }

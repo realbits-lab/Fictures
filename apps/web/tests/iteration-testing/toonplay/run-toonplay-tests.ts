@@ -15,17 +15,17 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
-import { getTestScene, TEST_SCENES } from "./config/test-scenes";
-import type { TestScene } from "./config/test-scenes";
-import { ToonplayMetricsTracker } from "./src/metrics-tracker";
-import type { ToonplayTestResult, ToonplayEvaluation } from "./src/types";
 import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
-import type { ToonplayEvaluationResult } from "@/lib/studio/services/toonplay-evaluator";
 import type {
-    scenes,
     characters as charactersTable,
+    scenes,
     settings as settingsTable,
 } from "@/lib/schemas/database";
+import type { ToonplayEvaluationResult } from "@/lib/studio/services/toonplay-evaluator";
+import type { TestScene } from "./config/test-scenes";
+import { getTestScene, TEST_SCENES } from "./config/test-scenes";
+import { ToonplayMetricsTracker } from "./src/metrics-tracker";
+import type { ToonplayEvaluation, ToonplayTestResult } from "./src/types";
 
 // Parse command-line arguments
 const { values } = parseArgs({
@@ -133,8 +133,7 @@ async function getApiCredentials(): Promise<ApiCredentials> {
     const authRaw = await fs.readFile(authFile, "utf8");
     const authData = JSON.parse(authRaw);
     const writerProfile =
-        authData.develop?.profiles?.writer ||
-        authData.main?.profiles?.writer;
+        authData.develop?.profiles?.writer || authData.main?.profiles?.writer;
 
     if (!writerProfile?.apiKey || !writerProfile.email) {
         throw new Error(
@@ -144,9 +143,7 @@ async function getApiCredentials(): Promise<ApiCredentials> {
 
     const writerEmail = writerProfile.email as string;
     const writerUserId =
-        writerProfile.userId ||
-        writerProfile.id ||
-        "usr_static_writer";
+        writerProfile.userId || writerProfile.id || "usr_static_writer";
 
     cachedCredentials = {
         apiKey: writerProfile.apiKey as string,
@@ -273,24 +270,16 @@ const CHARACTER_ARCHETYPES = [
 ];
 
 function deriveStoryGenre(testScene: TestScene): string {
-    if (
-        testScene.focusAreas.some(
-            (area: string) => area.includes("action"),
-        )
-    ) {
+    if (testScene.focusAreas.some((area: string) => area.includes("action"))) {
         return "Action";
     }
     if (
-        testScene.focusAreas.some(
-            (area: string) => area.includes("dialogue"),
-        )
+        testScene.focusAreas.some((area: string) => area.includes("dialogue"))
     ) {
         return "Romance";
     }
     if (
-        testScene.focusAreas.some(
-            (area: string) => area.includes("atmosphere"),
-        )
+        testScene.focusAreas.some((area: string) => area.includes("atmosphere"))
     ) {
         return "Mystery";
     }
@@ -304,7 +293,8 @@ function buildStaticTestResources(
     const iterationLabel = iterationIndex + 1;
     const baseId = `${testScene.id}-${Date.now()}-${iterationLabel}`;
     const targetPanelCount = Math.round(
-        (testScene.expectedPanelCount.min + testScene.expectedPanelCount.max) / 2,
+        (testScene.expectedPanelCount.min + testScene.expectedPanelCount.max) /
+            2,
     );
 
     const charactersNeeded = Math.max(testScene.expectedCharacters, 2);
@@ -420,8 +410,7 @@ function convertEvaluationResult(
             visualTransformation:
                 evaluation.category2_visual_transformation.score || 0,
             webtoonPacing: evaluation.category3_webtoon_pacing.score || 0,
-            scriptFormatting:
-                evaluation.category4_script_formatting.score || 0,
+            scriptFormatting: evaluation.category4_script_formatting.score || 0,
         },
         metrics: {
             narrationPercentage,
@@ -457,7 +446,9 @@ function applyNarrationGuard(toonplay: AiComicToonplayType) {
         const hasDialogue =
             Array.isArray(panel.dialogue) &&
             panel.dialogue.some(
-                (line) => typeof line.text === "string" && line.text.trim().length > 0,
+                (line) =>
+                    typeof line.text === "string" &&
+                    line.text.trim().length > 0,
             );
         let hasNarration =
             typeof panel.narrative === "string" &&
@@ -474,8 +465,7 @@ function applyNarrationGuard(toonplay: AiComicToonplayType) {
 
         const fallbackText =
             panel.description?.slice(0, 140)?.trim() || "Describe visually.";
-        const fallbackCharacter =
-            panel.characters_visible?.[0] || "Narrator";
+        const fallbackCharacter = panel.characters_visible?.[0] || "Narrator";
 
         if (!hasDialogue && !hasNarration) {
             if (narrationUsed < narrationCap) {
@@ -522,9 +512,7 @@ function applyShotVarietyBoost(toonplay: AiComicToonplayType) {
         }
     });
 
-    const missingTypes = REQUIRED_SHOT_TYPES.filter(
-        (type) => !seen.has(type),
-    );
+    const missingTypes = REQUIRED_SHOT_TYPES.filter((type) => !seen.has(type));
 
     let cursor = 1;
     for (const shotType of missingTypes) {

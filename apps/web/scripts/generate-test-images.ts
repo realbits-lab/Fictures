@@ -62,9 +62,10 @@ function loadWriterApiKey(): string {
     const authData = JSON.parse(fs.readFileSync(authPath, "utf-8"));
 
     // Try environment-specific structure first (develop/main)
-    let apiKey = authData.develop?.profiles?.writer?.apiKey
-        || authData.main?.profiles?.writer?.apiKey
-        || authData.profiles?.writer?.apiKey;
+    const apiKey =
+        authData.develop?.profiles?.writer?.apiKey ||
+        authData.main?.profiles?.writer?.apiKey ||
+        authData.profiles?.writer?.apiKey;
 
     if (!apiKey) {
         throw new Error("Writer API key not found in .auth/user.json");

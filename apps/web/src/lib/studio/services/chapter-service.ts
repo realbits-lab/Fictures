@@ -169,7 +169,8 @@ export class ChapterService {
             story: story as any,
             part: part as any,
             characters: storyCharacters as any,
-            settings: storySettings.length > 0 ? (storySettings as any) : undefined,
+            settings:
+                storySettings.length > 0 ? (storySettings as any) : undefined,
             previousChapters: allPreviousChapters as any,
             chapterIndex: nextChapterIndex,
             promptVersion,

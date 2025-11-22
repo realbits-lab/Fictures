@@ -25,10 +25,10 @@ export async function POST(request: Request) {
     try {
         const body: SceneSummaryEvaluationRequest = await request.json();
 
-        const validation = validateRequiredFields(body as unknown as Record<string, unknown>, [
-            "sceneId",
-            "chapterId",
-        ]);
+        const validation = validateRequiredFields(
+            body as unknown as Record<string, unknown>,
+            ["sceneId", "chapterId"],
+        );
         if (!validation.valid) {
             return NextResponse.json(
                 createErrorResponse(

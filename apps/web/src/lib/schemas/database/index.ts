@@ -821,6 +821,7 @@ export const users = pgTable(
         password: varchar({ length: 255 }),
         bio: text(),
         role: userRole().default("reader").notNull(),
+        isAnonymous: boolean("is_anonymous").default(false).notNull(), // Better Auth: Anonymous user flag
         createdAt: timestamp("created_at", { mode: "string" })
             .defaultNow()
             .notNull(),
@@ -830,6 +831,91 @@ export const users = pgTable(
     },
     (table) => [unique("users_username_unique").on(table.username)],
 );
+
+// =============================================================================
+// Better Auth Tables
+// =============================================================================
+
+export const accounts = pgTable(
+    "accounts",
+    {
+        id: text().primaryKey().notNull(),
+        userId: text("user_id").notNull(),
+        accountId: text("account_id").notNull(), // Provider's account ID (NextAuth: providerAccountId)
+        providerId: text("provider_id").notNull(), // Provider type: "google", "credentials" (NextAuth: provider)
+        accessToken: text("access_token"),
+        refreshToken: text("refresh_token"),
+        accessTokenExpiresAt: timestamp("access_token_expires_at", {
+            mode: "string",
+        }),
+        refreshTokenExpiresAt: timestamp("refresh_token_expires_at", {
+            mode: "string",
+        }),
+        scope: text(),
+        idToken: text("id_token"),
+        password: text(), // For credentials provider
+        createdAt: timestamp("created_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp("updated_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [users.id],
+            name: "accounts_user_id_users_id_fk",
+        }).onDelete("cascade"),
+        index("idx_accounts_user_id").using(
+            "btree",
+            table.userId.asc().nullsLast().op("text_ops"),
+        ),
+    ],
+);
+
+export const sessions = pgTable(
+    "sessions",
+    {
+        id: text().primaryKey().notNull(),
+        userId: text("user_id").notNull(),
+        token: text().unique().notNull(), // Session token (NextAuth: sessionToken)
+        expiresAt: timestamp("expires_at", { mode: "string" }).notNull(), // (NextAuth: expires)
+        ipAddress: text("ip_address"),
+        userAgent: text("user_agent"),
+        createdAt: timestamp("created_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp("updated_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        foreignKey({
+            columns: [table.userId],
+            foreignColumns: [users.id],
+            name: "sessions_user_id_users_id_fk",
+        }).onDelete("cascade"),
+        index("idx_sessions_user_id").using(
+            "btree",
+            table.userId.asc().nullsLast().op("text_ops"),
+        ),
+        unique("sessions_token_unique").on(table.token),
+    ],
+);
+
+export const verifications = pgTable("verifications", {
+    id: text().primaryKey().notNull(),
+    identifier: text().notNull(), // Verification request identifier
+    value: text().notNull(), // Data being verified (e.g., email, phone)
+    expiresAt: timestamp("expires_at", { mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { mode: "string" })
+        .defaultNow()
+        .notNull(),
+    updatedAt: timestamp("updated_at", { mode: "string" })
+        .defaultNow()
+        .notNull(),
+});
 
 export const apiKeys = pgTable(
     "api_keys",
@@ -1915,12 +2001,29 @@ export const usersRelations = relations(users, ({ many }) => ({
     stories: many(stories),
     apiKeys: many(apiKeys),
     comments: many(comments),
+    accounts: many(accounts),
+    sessions: many(sessions),
 }));
 
 // API Keys Relations
 export const apiKeysRelations = relations(apiKeys, ({ one }) => ({
     user: one(users, {
         fields: [apiKeys.userId],
+        references: [users.id],
+    }),
+}));
+
+// Better Auth Relations
+export const accountsRelations = relations(accounts, ({ one }) => ({
+    user: one(users, {
+        fields: [accounts.userId],
+        references: [users.id],
+    }),
+}));
+
+export const sessionsRelations = relations(sessions, ({ one }) => ({
+    user: one(users, {
+        fields: [sessions.userId],
         references: [users.id],
     }),
 }));

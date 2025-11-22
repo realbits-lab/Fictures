@@ -15,9 +15,13 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import { parseArgs } from "node:util";
-import { getTestScene, TEST_SCENES, type TestScene } from "./config/test-scenes";
+import {
+    getTestScene,
+    TEST_SCENES,
+    type TestScene,
+} from "./config/test-scenes";
 import { ComicMetricsTracker } from "./src/metrics-tracker";
-import type { ComicTestResult, ComicEvaluation } from "./src/types";
+import type { ComicEvaluation, ComicTestResult } from "./src/types";
 
 // Parse command-line arguments
 const { values } = parseArgs({
@@ -164,8 +168,7 @@ async function generateComicPanels(
         const metadata = result.result?.metadata || {};
         const totalTime = metadata.generationTime ?? Date.now() - startTime;
         const panelGenerationTime =
-            metadata.panelGenerationTime ??
-            totalTime / (apiPanels.length || 1);
+            metadata.panelGenerationTime ?? totalTime / (apiPanels.length || 1);
 
         const panels = apiPanels.map((panel: any) => ({
             panelNumber: panel.panelNumber || panel.panel_number || 0,
@@ -439,4 +442,3 @@ main().catch((error) => {
     console.error("Fatal error:", error);
     process.exit(1);
 });
-

@@ -3,12 +3,12 @@
  */
 
 import type {
+    CharacterTransformationMetrics,
     CorePrincipleMetrics,
     CyclicStructureMetrics,
-    IntrinsicMotivationMetrics,
     EarnedConsequenceMetrics,
-    CharacterTransformationMetrics,
     EmotionalResonanceMetrics,
+    IntrinsicMotivationMetrics,
     MetricDelta,
     MetricSnapshot,
     TestStoryResult,
@@ -86,11 +86,21 @@ export function aggregateMetrics(
     stories: TestStoryResult[],
 ): CorePrincipleMetrics {
     const aggregated: CorePrincipleMetrics = {
-        cyclicStructure: createEmptyMetrics("cyclicStructure") as CyclicStructureMetrics,
-        intrinsicMotivation: createEmptyMetrics("intrinsicMotivation") as IntrinsicMotivationMetrics,
-        earnedConsequence: createEmptyMetrics("earnedConsequence") as EarnedConsequenceMetrics,
-        characterTransformation: createEmptyMetrics("characterTransformation") as CharacterTransformationMetrics,
-        emotionalResonance: createEmptyMetrics("emotionalResonance") as EmotionalResonanceMetrics,
+        cyclicStructure: createEmptyMetrics(
+            "cyclicStructure",
+        ) as CyclicStructureMetrics,
+        intrinsicMotivation: createEmptyMetrics(
+            "intrinsicMotivation",
+        ) as IntrinsicMotivationMetrics,
+        earnedConsequence: createEmptyMetrics(
+            "earnedConsequence",
+        ) as EarnedConsequenceMetrics,
+        characterTransformation: createEmptyMetrics(
+            "characterTransformation",
+        ) as CharacterTransformationMetrics,
+        emotionalResonance: createEmptyMetrics(
+            "emotionalResonance",
+        ) as EmotionalResonanceMetrics,
     };
 
     if (stories.length === 0) return aggregated;
@@ -111,7 +121,12 @@ export function aggregateMetrics(
  */
 function createEmptyMetrics(
     principle: keyof CorePrincipleMetrics,
-): CyclicStructureMetrics | IntrinsicMotivationMetrics | EarnedConsequenceMetrics | CharacterTransformationMetrics | EmotionalResonanceMetrics {
+):
+    | CyclicStructureMetrics
+    | IntrinsicMotivationMetrics
+    | EarnedConsequenceMetrics
+    | CharacterTransformationMetrics
+    | EmotionalResonanceMetrics {
     switch (principle) {
         case "cyclicStructure":
             return {
@@ -290,7 +305,10 @@ function normalizeMetrics(
     >) {
         for (const metric of Object.keys(aggregated[principle]) as string[]) {
             // Type-safe access to metric values
-            const principleMetrics = aggregated[principle] as unknown as Record<string, number>;
+            const principleMetrics = aggregated[principle] as unknown as Record<
+                string,
+                number
+            >;
             principleMetrics[metric] /= storyCount;
         }
     }

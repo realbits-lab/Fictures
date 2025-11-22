@@ -1,11 +1,11 @@
 import fs from "node:fs";
 import path from "node:path";
-import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
-import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import type { InferSelectModel } from "drizzle-orm";
-import { characters, settings } from "@/lib/schemas/database";
 import { generateRequestId } from "@/lib/auth/context";
 import { withAuth } from "@/lib/auth/server-context";
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
+import type { characters, settings } from "@/lib/schemas/database";
+import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
 
 jest.setTimeout(180_000);
 
@@ -39,8 +39,11 @@ function buildStubToonplay(): AiComicToonplayType {
                 shot_type: "close_up",
                 description: longText.slice(0, 260),
                 characters_visible: ["char_single"],
-                character_poses: { char_single: "Heroic stance with confident gaze" },
-                setting_focus: "Ancient floating library with shimmering glyphs",
+                character_poses: {
+                    char_single: "Heroic stance with confident gaze",
+                },
+                setting_focus:
+                    "Ancient floating library with shimmering glyphs",
                 lighting: "Golden rim light with deep blue ambient glow",
                 camera_angle: "eye level dramatic framing",
                 mood: "hopeful",
@@ -154,4 +157,3 @@ describe("Comic Panel Generator (single panel image)", () => {
         expect(result.metadata.totalPanels).toBe(1);
     });
 });
-

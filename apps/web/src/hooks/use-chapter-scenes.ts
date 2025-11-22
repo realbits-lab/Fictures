@@ -1,7 +1,11 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { CACHE_CONFIGS, usePersistedSWR, type CacheConfig } from "@/hooks/use-persisted-swr";
+import {
+    CACHE_CONFIGS,
+    type CacheConfig,
+    usePersistedSWR,
+} from "@/hooks/use-persisted-swr";
 
 export interface Scene {
     id: string;

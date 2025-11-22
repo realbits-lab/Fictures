@@ -23,11 +23,11 @@ type Character = InferSelectModel<typeof characters>;
 type Setting = InferSelectModel<typeof settings>;
 type Scene = InferSelectModel<typeof scenes>;
 
-import { generateSceneContent } from "../generators/scene-content-generator";
 import type {
     GeneratorSceneContentParams,
     GeneratorSceneContentResult,
 } from "@/lib/schemas/generators/types";
+import { generateSceneContent } from "../generators/scene-content-generator";
 
 export interface ServiceSceneContentParams {
     sceneId: string;

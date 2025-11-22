@@ -1,22 +1,20 @@
 {
-  "config": {
-    "controlVersion": "v1.0",
-    "experimentVersion": "v1.1",
-    "testPrompts": [
-      "last-garden"
-    ],
-    "sampleSize": 3,
-    "hypothesis": "Experiment version will improve scene content metrics (word count compliance, cycle alignment, emotional resonance)",
-    "expectedImprovement": "See hypothesis"
-  },
-  "testDate": "2025-11-16T09:16:37.670Z",
-  "control": [],
-  "experiment": [],
-  "comparison": {
-    "controlSnapshot": {},
-    "experimentSnapshot": {},
-    "deltas": {},
-    "pValue": 1,
-    "recommendation": "REVERT"
-  }
+    "config": {
+        "controlVersion": "v1.0",
+        "experimentVersion": "v1.1",
+        "testPrompts": ["last-garden"],
+        "sampleSize": 3,
+        "hypothesis": "Experiment version will improve scene content metrics (word count compliance, cycle alignment, emotional resonance)",
+        "expectedImprovement": "See hypothesis"
+    },
+    "testDate": "2025-11-16T09:16:37.670Z",
+    "control": [],
+    "experiment": [],
+    "comparison": {
+        "controlSnapshot": {},
+        "experimentSnapshot": {},
+        "deltas": {},
+        "pValue": 1,
+        "recommendation": "REVERT"
+    }
 }

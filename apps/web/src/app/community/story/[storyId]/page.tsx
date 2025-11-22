@@ -9,12 +9,12 @@ import { CommunityStorySidebar } from "@/components/community/CommunityStorySide
 import { CreatePostForm } from "@/components/community/CreatePostForm";
 import { MainLayout } from "@/components/layout";
 import { Badge, Button, Card, CardContent } from "@/components/ui";
-import { useProtectedAction } from "@/hooks/use-protected-action";
 import {
     useCommunityPosts,
     useCommunityStory,
     useRevalidateCommunityPosts,
 } from "@/hooks/use-community-cache";
+import { useProtectedAction } from "@/hooks/use-protected-action";
 
 interface Character {
     id: string;

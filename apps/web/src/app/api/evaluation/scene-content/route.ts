@@ -28,7 +28,10 @@ export async function POST(request: Request) {
     try {
         const body: SceneContentEvaluationRequest = await request.json();
 
-        const validation = validateRequiredFields(body as unknown as Record<string, unknown>, ["sceneId"]);
+        const validation = validateRequiredFields(
+            body as unknown as Record<string, unknown>,
+            ["sceneId"],
+        );
         if (!validation.valid) {
             return NextResponse.json(
                 createErrorResponse(

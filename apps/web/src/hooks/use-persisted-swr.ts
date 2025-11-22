@@ -79,7 +79,11 @@ export function usePersistedSWR<T>(
     fetcher: ((key: string) => Promise<T>) | null,
     config?: CacheConfig,
 ) {
-    const { data, error, mutate, isValidating } = useSWR<T>(key, fetcher, config);
+    const { data, error, mutate, isValidating } = useSWR<T>(
+        key,
+        fetcher,
+        config,
+    );
 
     useEffect(() => {
         if (data && key && typeof window !== "undefined") {
@@ -91,5 +95,11 @@ export function usePersistedSWR<T>(
         }
     }, [data, key]);
 
-    return { data, error, mutate, isLoading: !data && !error, isValidating: isValidating ?? false };
+    return {
+        data,
+        error,
+        mutate,
+        isLoading: !data && !error,
+        isValidating: isValidating ?? false,
+    };
 }

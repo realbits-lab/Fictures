@@ -56,14 +56,16 @@ export const TEST_SCENES: TestScene[] = [
                 {
                     panelNumber: 1,
                     shotType: "wide_shot",
-                    description: "Marcus running through crowded market, guards in pursuit",
+                    description:
+                        "Marcus running through crowded market, guards in pursuit",
                     charactersVisible: ["marcus"],
                     dialogue: [],
                 },
                 {
                     panelNumber: 2,
                     shotType: "medium_shot",
-                    description: "Marcus vaulting over fruit cart, dynamic motion",
+                    description:
+                        "Marcus vaulting over fruit cart, dynamic motion",
                     charactersVisible: ["marcus"],
                     dialogue: [],
                 },
@@ -92,10 +94,14 @@ export const TEST_SCENES: TestScene[] = [
                 {
                     panelNumber: 1,
                     shotType: "medium_shot",
-                    description: "Elena and David at coffee shop table, tense atmosphere",
+                    description:
+                        "Elena and David at coffee shop table, tense atmosphere",
                     charactersVisible: ["elena", "david"],
                     dialogue: [
-                        { characterId: "elena", text: "I can't do this anymore." },
+                        {
+                            characterId: "elena",
+                            text: "I can't do this anymore.",
+                        },
                     ],
                 },
             ],
@@ -105,8 +111,7 @@ export const TEST_SCENES: TestScene[] = [
             "dialogue-layout",
             "emotional-beats",
         ],
-        description:
-            "Tests dialogue-heavy scene with character expressions",
+        description: "Tests dialogue-heavy scene with character expressions",
         expectedPanelCount: { min: 8, max: 11 },
         expectedCharacters: 2,
         challengeAreas: [
@@ -127,19 +132,15 @@ export const TEST_SCENES: TestScene[] = [
                 {
                     panelNumber: 1,
                     shotType: "close_up",
-                    description: "Sarah's hands holding letter, slight tremor visible",
+                    description:
+                        "Sarah's hands holding letter, slight tremor visible",
                     charactersVisible: ["sarah"],
                     dialogue: [],
                 },
             ],
         },
-        focusAreas: [
-            "expression-accuracy",
-            "mood-capture",
-            "emotional-nuance",
-        ],
-        description:
-            "Tests emotional moment requiring nuanced expression",
+        focusAreas: ["expression-accuracy", "mood-capture", "emotional-nuance"],
+        description: "Tests emotional moment requiring nuanced expression",
         expectedPanelCount: { min: 7, max: 10 },
         expectedCharacters: 1,
         challengeAreas: [
@@ -160,7 +161,8 @@ export const TEST_SCENES: TestScene[] = [
                 {
                     panelNumber: 1,
                     shotType: "establishing_shot",
-                    description: "Vast abandoned library, dust motes in sunlight, decaying grandeur",
+                    description:
+                        "Vast abandoned library, dust motes in sunlight, decaying grandeur",
                     charactersVisible: [],
                     dialogue: [],
                 },
@@ -171,8 +173,7 @@ export const TEST_SCENES: TestScene[] = [
             "atmosphere-building",
             "visual-richness",
         ],
-        description:
-            "Tests establishing shot with setting detail requirements",
+        description: "Tests establishing shot with setting detail requirements",
         expectedPanelCount: { min: 7, max: 10 },
         expectedCharacters: 0,
         challengeAreas: [
@@ -199,13 +200,8 @@ export const TEST_SCENES: TestScene[] = [
                 },
             ],
         },
-        focusAreas: [
-            "composition-impact",
-            "visual-drama",
-            "moment-emphasis",
-        ],
-        description:
-            "Tests climactic moment requiring visual impact",
+        focusAreas: ["composition-impact", "visual-drama", "moment-emphasis"],
+        description: "Tests climactic moment requiring visual impact",
         expectedPanelCount: { min: 9, max: 12 },
         expectedCharacters: 3,
         challengeAreas: [
@@ -236,4 +232,3 @@ export const DEFAULT_COMIC_TEST_CONFIG = {
         "climactic-moment",
     ],
 };
-

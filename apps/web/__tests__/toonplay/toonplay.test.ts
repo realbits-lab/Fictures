@@ -112,7 +112,9 @@ function assertSuccessfulResult(
     if (!response.success || !response.result) {
         throw new Error(
             `[TEST] ${label} failed: ${
-                response.error?.message || response.error?.code || "Unknown error"
+                response.error?.message ||
+                response.error?.code ||
+                "Unknown error"
             }`,
         );
     }
@@ -412,14 +414,17 @@ async function generateToonplayViaAPI(
             } catch {
                 errorData = { message: errorText || `HTTP ${response.status}` };
             }
-            
+
             console.error(`[TEST] API Error (${response.status}):`, errorData);
-            
+
             return {
                 success: false,
                 error: {
                     code: "API_ERROR",
-                    message: errorData.error?.message || errorData.message || `HTTP ${response.status}`,
+                    message:
+                        errorData.error?.message ||
+                        errorData.message ||
+                        `HTTP ${response.status}`,
                     details: errorData,
                 },
             };
@@ -446,7 +451,10 @@ async function generateToonplayViaAPI(
         if (error instanceof Error && error.name === "AbortError") {
             throw new Error("Request timeout after 15 minutes");
         }
-        console.error("[TEST] ❌ generateToonplayViaAPI unexpected error:", error);
+        console.error(
+            "[TEST] ❌ generateToonplayViaAPI unexpected error:",
+            error,
+        );
         throw error;
     }
 }
@@ -473,10 +481,7 @@ describe("Toonplay Generation Integration (API)", () => {
             sceneId: testSceneId,
             evaluationMode: "standard",
         });
-        assertSuccessfulResult(
-            standardResponse,
-            "initial standard generation",
-        );
+        assertSuccessfulResult(standardResponse, "initial standard generation");
         standardResult = standardResponse;
     });
     it("should generate toonplay from scene narrative via API", () => {
@@ -647,4 +652,3 @@ describe("Toonplay Generation Integration (API)", () => {
         });
     }, 900000);
 });
-

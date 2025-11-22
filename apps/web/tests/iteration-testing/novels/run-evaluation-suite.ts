@@ -151,12 +151,15 @@ async function generateStory(
 
         try {
             // 1. Generate story foundation
-            console.log(`    • Generating story foundation (version: ${PROMPT_VERSION})...`);
+            console.log(
+                `    • Generating story foundation (version: ${PROMPT_VERSION})...`,
+            );
             const storyResult = await storyService.generateAndSave({
                 userId: "usr_QKl8WRbF-U2u4ymj", // writer@fictures.xyz user ID
                 userPrompt: prompt,
                 language: "en",
-                promptVersion: PROMPT_VERSION !== "v1.0" ? PROMPT_VERSION : undefined,
+                promptVersion:
+                    PROMPT_VERSION !== "v1.0" ? PROMPT_VERSION : undefined,
             });
 
             const storyId = storyResult.story.id;
@@ -742,9 +745,7 @@ function identifyFailurePatterns(
 /**
  * Categorize failure by type
  */
-function categorizeFailure(
-    metricName: string,
-): FailureCategory {
+function categorizeFailure(metricName: string): FailureCategory {
     if (metricName.includes("cycle") || metricName.includes("phase"))
         return FailureCategory.STRUCTURAL;
     if (metricName.includes("emotion") || metricName.includes("gamdong"))

@@ -74,10 +74,8 @@ export class ImageMetricsTracker {
             evaluations.filter((e) => e.metrics.resolutionCompliance).length /
             totalTests;
         const averagePromptAdherence =
-            evaluations.reduce(
-                (sum, e) => sum + e.metrics.promptAdherence,
-                0,
-            ) / totalTests;
+            evaluations.reduce((sum, e) => sum + e.metrics.promptAdherence, 0) /
+            totalTests;
         const formatComplianceRate =
             evaluations.filter((e) => e.metrics.formatValidation).length /
             totalTests;
@@ -116,9 +114,8 @@ export class ImageMetricsTracker {
             evaluations.reduce((sum, e) => sum + e.metrics.artifactCount, 0) /
             totalTests;
         const aspectRatioPreservationRate =
-            evaluations.filter(
-                (e) => e.metrics.aspectRatioPreservation < 0.5,
-            ).length / totalTests;
+            evaluations.filter((e) => e.metrics.aspectRatioPreservation < 0.5)
+                .length / totalTests;
         const variantCountComplianceRate =
             evaluations.filter((e) => e.metrics.variantCount === 2).length /
             totalTests;
@@ -282,4 +279,3 @@ export class ImageMetricsTracker {
         });
     }
 }
-

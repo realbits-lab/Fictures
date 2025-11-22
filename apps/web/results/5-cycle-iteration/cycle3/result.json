@@ -1,43 +1,43 @@
 {
-  "cycle": 3,
-  "name": "Optimized Model Parameters",
-  "imageMetrics": {
-    "version": "v1.3",
-    "totalTests": 9,
-    "testDate": "2025-11-17T23:49:19.285Z",
-    "averageWeightedScore": 4.476773049645391,
-    "passRate": 1,
-    "firstPassSuccessRate": 0.6666666666666666,
-    "categoryAverages": {
-      "generationQuality": 4.790780141843975,
-      "optimizationQuality": 5,
-      "visualQuality": 3.5,
-      "performance": 5
+    "cycle": 3,
+    "name": "Optimized Model Parameters",
+    "imageMetrics": {
+        "version": "v1.3",
+        "totalTests": 9,
+        "testDate": "2025-11-17T23:49:19.285Z",
+        "averageWeightedScore": 4.476773049645391,
+        "passRate": 1,
+        "firstPassSuccessRate": 0.6666666666666666,
+        "categoryAverages": {
+            "generationQuality": 4.790780141843975,
+            "optimizationQuality": 5,
+            "visualQuality": 3.5,
+            "performance": 5
+        },
+        "averageAspectRatioAccuracy": 2.1276595744680766,
+        "resolutionComplianceRate": 1,
+        "averagePromptAdherence": 85,
+        "formatComplianceRate": 1,
+        "averageFileSize": 1027.687282986111,
+        "averageAvifCompressionRatio": 97.81211189214342,
+        "averageAvif1xSize": 23.924913194444443,
+        "averageAvif2xSize": 0,
+        "averageTotalVariantSize": 23.924913194444443,
+        "averageStorageRatio": 2.1878881078565806,
+        "averageVisualQualityScore": 3.5,
+        "averageArtifactCount": 0,
+        "aspectRatioPreservationRate": 1,
+        "variantCountComplianceRate": 1,
+        "averageGenerationTime": 8.644333333333332,
+        "averageOptimizationTime": 6.127111111111112,
+        "averageTotalTime": 19.170888888888886,
+        "successRate": 1,
+        "failurePatterns": []
     },
-    "averageAspectRatioAccuracy": 2.1276595744680766,
-    "resolutionComplianceRate": 1,
-    "averagePromptAdherence": 85,
-    "formatComplianceRate": 1,
-    "averageFileSize": 1027.687282986111,
-    "averageAvifCompressionRatio": 97.81211189214342,
-    "averageAvif1xSize": 23.924913194444443,
-    "averageAvif2xSize": 0,
-    "averageTotalVariantSize": 23.924913194444443,
-    "averageStorageRatio": 2.1878881078565806,
-    "averageVisualQualityScore": 3.5,
-    "averageArtifactCount": 0,
-    "aspectRatioPreservationRate": 1,
-    "variantCountComplianceRate": 1,
-    "averageGenerationTime": 8.644333333333332,
-    "averageOptimizationTime": 6.127111111111112,
-    "averageTotalTime": 19.170888888888886,
-    "successRate": 1,
-    "failurePatterns": []
-  },
-  "improvements": [
-    "Increase inference steps from 4 to 6 for better detail",
-    "Increase guidance scale from 1.0 to 1.5 for better prompt adherence"
-  ],
-  "duration": 203.711,
-  "timestamp": "2025-11-17T23:49:39.326Z"
+    "improvements": [
+        "Increase inference steps from 4 to 6 for better detail",
+        "Increase guidance scale from 1.0 to 1.5 for better prompt adherence"
+    ],
+    "duration": 203.711,
+    "timestamp": "2025-11-17T23:49:39.326Z"
 }

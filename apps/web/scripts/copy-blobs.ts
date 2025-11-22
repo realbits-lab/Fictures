@@ -62,7 +62,9 @@ Examples:
 if (!fromPrefix || !toPrefix) {
     console.error("❌ Error: Both --from and --to prefixes are required");
     console.log("\nUsage:");
-    console.log("  dotenv --file .env.local run pnpm exec tsx scripts/copy-blobs.ts --from main/system --to develop/system --confirm");
+    console.log(
+        "  dotenv --file .env.local run pnpm exec tsx scripts/copy-blobs.ts --from main/system --to develop/system --confirm",
+    );
     process.exit(1);
 }
 
@@ -73,12 +75,16 @@ console.log();
 async function main(): Promise<void> {
     // Check for blob token
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
-        console.error("❌ Error: BLOB_READ_WRITE_TOKEN environment variable is required");
+        console.error(
+            "❌ Error: BLOB_READ_WRITE_TOKEN environment variable is required",
+        );
         process.exit(1);
     }
 
     // Ensure prefixes end with /
-    const sourcePrefix = fromPrefix.endsWith("/") ? fromPrefix : `${fromPrefix}/`;
+    const sourcePrefix = fromPrefix.endsWith("/")
+        ? fromPrefix
+        : `${fromPrefix}/`;
     const destPrefix = toPrefix.endsWith("/") ? toPrefix : `${toPrefix}/`;
 
     console.log(`📁 Source: ${sourcePrefix}`);
@@ -131,7 +137,9 @@ async function main(): Promise<void> {
         console.log("⚠️  PREVIEW MODE - No files will be copied");
         console.log();
         console.log("To copy these files, run with --confirm flag:");
-        console.log(`  dotenv --file .env.local run pnpm exec tsx scripts/copy-blobs.ts --from ${fromPrefix} --to ${toPrefix} --confirm`);
+        console.log(
+            `  dotenv --file .env.local run pnpm exec tsx scripts/copy-blobs.ts --from ${fromPrefix} --to ${toPrefix} --confirm`,
+        );
         console.log();
         process.exit(0);
     }

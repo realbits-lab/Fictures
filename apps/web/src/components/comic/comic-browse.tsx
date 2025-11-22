@@ -45,8 +45,8 @@ export function ComicBrowse() {
                     <StoryLoadingError
                         title="Failed to load comics"
                         message={
-                            (typeof error === "string" 
-                                ? error 
+                            (typeof error === "string"
+                                ? error
                                 : (error as any)?.message) ||
                             "Something went wrong while loading comics."
                         }

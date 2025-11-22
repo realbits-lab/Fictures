@@ -316,7 +316,9 @@ describe("Scene Evaluation API", () => {
         const evaluation = successData.evaluation || successData.metrics;
         if (evaluation) {
             if ("score" in evaluation || "overallScore" in evaluation) {
-                const score = (evaluation as any).score || (evaluation as any).overallScore;
+                const score =
+                    (evaluation as any).score ||
+                    (evaluation as any).overallScore;
                 expect(typeof score).toBe("number");
                 expect(score).toBeGreaterThan(0);
                 expect(score).toBeLessThanOrEqual(4);
@@ -325,7 +327,9 @@ describe("Scene Evaluation API", () => {
             // 8e. Validate 'evaluation.iterations' (if present)
             if ("iterations" in evaluation) {
                 expect(typeof (evaluation as any).iterations).toBe("number");
-                expect((evaluation as any).iterations).toBeGreaterThanOrEqual(1);
+                expect((evaluation as any).iterations).toBeGreaterThanOrEqual(
+                    1,
+                );
             }
 
             // 8f. Validate 'evaluation.improved' (if present)
@@ -397,15 +401,19 @@ describe("Scene Evaluation API", () => {
 
             // 8m. Validate 'metadata.generationTime' (if present)
             if ("generationTime" in successData.metadata) {
-                expect(typeof (successData.metadata as any).generationTime).toBe("number");
-                expect((successData.metadata as any).generationTime).toBeGreaterThan(0);
+                expect(
+                    typeof (successData.metadata as any).generationTime,
+                ).toBe("number");
+                expect(
+                    (successData.metadata as any).generationTime,
+                ).toBeGreaterThan(0);
             }
         }
 
         // 8n. Log response structure for debugging (relaxed validation)
         const responseKeys: string[] = Object.keys(successData);
         console.log("Response keys:", responseKeys);
-        
+
         // Note: Field validation relaxed since API structure may vary
         // The test will validate what's available rather than enforcing exact structure
 
@@ -416,7 +424,8 @@ describe("Scene Evaluation API", () => {
         const metaData = successData.metadata;
 
         if (evalData && ("score" in evalData || "overallScore" in evalData)) {
-            const score = (evalData as any).score || (evalData as any).overallScore;
+            const score =
+                (evalData as any).score || (evalData as any).overallScore;
             expect(score).toBeGreaterThan(0);
         }
         if (metaData && "generationTime" in metaData) {
@@ -431,27 +440,43 @@ describe("Scene Evaluation API", () => {
             console.log(`  Scene ID: ${successData.sceneId}`);
         }
         if (evalData) {
-            const score = (evalData as any).score || (evalData as any).overallScore;
+            const score =
+                (evalData as any).score || (evalData as any).overallScore;
             if (score) console.log(`  Quality Score: ${score}/4.0`);
-            if ("iterations" in evalData) console.log(`  Iterations: ${(evalData as any).iterations}`);
-            if ("improved" in evalData) console.log(`  Improved: ${(evalData as any).improved}`);
+            if ("iterations" in evalData)
+                console.log(`  Iterations: ${(evalData as any).iterations}`);
+            if ("improved" in evalData)
+                console.log(`  Improved: ${(evalData as any).improved}`);
             if ("categories" in evalData) {
                 console.log("  Categories:");
                 const cats = (evalData as any).categories;
                 if (cats.plot) console.log(`    - Plot: ${cats.plot}/4.0`);
-                if (cats.character) console.log(`    - Character: ${cats.character}/4.0`);
-                if (cats.pacing) console.log(`    - Pacing: ${cats.pacing}/4.0`);
+                if (cats.character)
+                    console.log(`    - Character: ${cats.character}/4.0`);
+                if (cats.pacing)
+                    console.log(`    - Pacing: ${cats.pacing}/4.0`);
                 if (cats.prose) console.log(`    - Prose: ${cats.prose}/4.0`);
-                if (cats.worldBuilding) console.log(`    - World-Building: ${cats.worldBuilding}/4.0`);
+                if (cats.worldBuilding)
+                    console.log(
+                        `    - World-Building: ${cats.worldBuilding}/4.0`,
+                    );
             }
             if ("feedback" in evalData) {
                 const feedback = (evalData as any).feedback;
-                if (feedback.strengths) console.log(`  Strengths: ${feedback.strengths.join(", ")}`);
-                if (feedback.improvements) console.log(`  Improvements: ${feedback.improvements.join(", ")}`);
+                if (feedback.strengths)
+                    console.log(
+                        `  Strengths: ${feedback.strengths.join(", ")}`,
+                    );
+                if (feedback.improvements)
+                    console.log(
+                        `  Improvements: ${feedback.improvements.join(", ")}`,
+                    );
             }
         }
         if (metaData && "generationTime" in metaData) {
-            console.log(`  Generation time: ${(metaData as any).generationTime}ms`);
+            console.log(
+                `  Generation time: ${(metaData as any).generationTime}ms`,
+            );
         }
     }, 1800000); // 30 minute timeout for AI evaluation with improvements (increased for longer generation)
 });

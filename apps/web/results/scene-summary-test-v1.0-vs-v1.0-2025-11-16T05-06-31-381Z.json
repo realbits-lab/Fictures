@@ -1,35 +1,33 @@
 {
-  "config": {
-    "controlVersion": "v1.0",
-    "experimentVersion": "v1.0",
-    "testPrompts": [
-      "last-garden"
+    "config": {
+        "controlVersion": "v1.0",
+        "experimentVersion": "v1.0",
+        "testPrompts": ["last-garden"],
+        "sampleSize": 1,
+        "hypothesis": "Experiment version will improve scene summary metrics (phase distribution, emotional beat, pacing)",
+        "expectedImprovement": "See hypothesis"
+    },
+    "testDate": "2025-11-16T05:12:06.578Z",
+    "control": [
+        {
+            "storyId": "story_XX1b0Evh3JcM1ViS",
+            "chapterId": "chapter_IixWN3N9jV6dltq5",
+            "sceneIds": [
+                "scene_ZmXRwyfLPRr0Hm4e",
+                "scene_Axk0sBZ2J3vBQnLA",
+                "scene_jqnqJP-VkHURoPfw",
+                "scene_YVR1bZopExWR1mrg",
+                "scene_7Z4VtaTCzCei7iBZ"
+            ],
+            "evaluations": []
+        }
     ],
-    "sampleSize": 1,
-    "hypothesis": "Experiment version will improve scene summary metrics (phase distribution, emotional beat, pacing)",
-    "expectedImprovement": "See hypothesis"
-  },
-  "testDate": "2025-11-16T05:12:06.578Z",
-  "control": [
-    {
-      "storyId": "story_XX1b0Evh3JcM1ViS",
-      "chapterId": "chapter_IixWN3N9jV6dltq5",
-      "sceneIds": [
-        "scene_ZmXRwyfLPRr0Hm4e",
-        "scene_Axk0sBZ2J3vBQnLA",
-        "scene_jqnqJP-VkHURoPfw",
-        "scene_YVR1bZopExWR1mrg",
-        "scene_7Z4VtaTCzCei7iBZ"
-      ],
-      "evaluations": []
+    "experiment": [],
+    "comparison": {
+        "controlSnapshot": {},
+        "experimentSnapshot": {},
+        "deltas": {},
+        "pValue": 1,
+        "recommendation": "REVERT"
     }
-  ],
-  "experiment": [],
-  "comparison": {
-    "controlSnapshot": {},
-    "experimentSnapshot": {},
-    "deltas": {},
-    "pValue": 1,
-    "recommendation": "REVERT"
-  }
 }

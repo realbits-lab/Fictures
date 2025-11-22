@@ -18,7 +18,7 @@ export class ReadingHistoryManager {
         if (typeof window === "undefined") return [];
 
         try {
-            const key = format 
+            const key = format
                 ? `${ReadingHistoryManager.STORAGE_KEY}_${format}`
                 : ReadingHistoryManager.STORAGE_KEY;
             const data = localStorage.getItem(key);
@@ -50,7 +50,7 @@ export class ReadingHistoryManager {
                 history.push(entry);
             }
 
-            const key = format 
+            const key = format
                 ? `${ReadingHistoryManager.STORAGE_KEY}_${format}`
                 : ReadingHistoryManager.STORAGE_KEY;
             localStorage.setItem(key, JSON.stringify(history));

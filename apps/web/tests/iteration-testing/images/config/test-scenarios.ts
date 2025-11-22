@@ -26,11 +26,7 @@ export const TEST_SCENARIOS: TestScenario[] = [
         name: "Story Cover Image",
         prompt: "A mysterious fantasy forest at twilight, ancient trees with glowing runes, cinematic composition, epic atmosphere",
         imageType: "story",
-        focusAreas: [
-            "composition",
-            "genre-accuracy",
-            "atmospheric-quality",
-        ],
+        focusAreas: ["composition", "genre-accuracy", "atmospheric-quality"],
         description:
             "Baseline test - story cover requiring compelling composition and genre accuracy",
         expectedAspectRatio: "7:4",
@@ -90,11 +86,7 @@ export const TEST_SCENARIOS: TestScenario[] = [
         name: "Emotional Moment",
         prompt: "A quiet moment of revelation, character's face showing mixed emotions of surprise and understanding, soft lighting, intimate composition",
         imageType: "scene",
-        focusAreas: [
-            "emotional-expression",
-            "mood-capture",
-            "subtle-nuance",
-        ],
+        focusAreas: ["emotional-expression", "mood-capture", "subtle-nuance"],
         description:
             "Tests emotional scene generation requiring nuanced expression",
         expectedAspectRatio: "7:4",
@@ -103,15 +95,11 @@ export const TEST_SCENARIOS: TestScenario[] = [
     },
 ];
 
-export const getTestScenario = (
-    id: string,
-): TestScenario | undefined => {
+export const getTestScenario = (id: string): TestScenario | undefined => {
     return TEST_SCENARIOS.find((s) => s.id === id);
 };
 
-export const getTestScenariosByFocus = (
-    focus: string,
-): TestScenario[] => {
+export const getTestScenariosByFocus = (focus: string): TestScenario[] => {
     return TEST_SCENARIOS.filter((s) => s.focusAreas.includes(focus));
 };
 
@@ -127,4 +115,3 @@ export const DEFAULT_IMAGE_TEST_CONFIG = {
         "emotional-moment",
     ],
 };
-

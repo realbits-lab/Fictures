@@ -54,7 +54,9 @@ export function useCommunityStory(storyId: string) {
         const fetchStory = async () => {
             try {
                 setIsLoading(true);
-                const response = await fetch(`/api/community/stories/${storyId}`);
+                const response = await fetch(
+                    `/api/community/stories/${storyId}`,
+                );
 
                 if (!response.ok) {
                     throw new Error("Failed to fetch community story");
@@ -93,7 +95,9 @@ export function useCommunityPosts(storyId: string) {
         const fetchPosts = async () => {
             try {
                 setIsLoading(true);
-                const response = await fetch(`/api/community/stories/${storyId}/posts`);
+                const response = await fetch(
+                    `/api/community/stories/${storyId}/posts`,
+                );
 
                 if (!response.ok) {
                     throw new Error("Failed to fetch community posts");
@@ -126,7 +130,9 @@ export function useCommunityPosts(storyId: string) {
 export function useRevalidateCommunityPosts() {
     const revalidate = async (storyId: string) => {
         try {
-            const response = await fetch(`/api/community/stories/${storyId}/posts`);
+            const response = await fetch(
+                `/api/community/stories/${storyId}/posts`,
+            );
             if (response.ok) {
                 return await response.json();
             }

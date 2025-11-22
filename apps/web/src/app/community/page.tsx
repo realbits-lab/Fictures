@@ -78,24 +78,28 @@ export default function CommunityPage() {
     });
 
     // Transform data when available - convert to StoryGrid compatible format
-    const stories = Array.isArray(data) && data.length > 0
-        ? data.map((story: any) => ({
-              id: story.id,
-              title: story.title,
-              summary: story.summary || "No summary available",
-              genre: story.genre,
-              status: story.status,
-              isPublic: true,
-              viewCount: story.totalPosts || 0,
-              rating: 0,
-              createdAt: new Date(story.lastActivity),
-              imageUrl: story.imageUrl || story.coverImage || "",
-              author: {
-                  id: story.author?.id || "",
-                  name: story.author?.name || story.author || "Unknown Author",
-              },
-          }))
-        : [];
+    const stories =
+        Array.isArray(data) && data.length > 0
+            ? data.map((story: any) => ({
+                  id: story.id,
+                  title: story.title,
+                  summary: story.summary || "No summary available",
+                  genre: story.genre,
+                  status: story.status,
+                  isPublic: true,
+                  viewCount: story.totalPosts || 0,
+                  rating: 0,
+                  createdAt: new Date(story.lastActivity),
+                  imageUrl: story.imageUrl || story.coverImage || "",
+                  author: {
+                      id: story.author?.id || "",
+                      name:
+                          story.author?.name ||
+                          story.author ||
+                          "Unknown Author",
+                  },
+              }))
+            : [];
 
     return (
         <MainLayout>

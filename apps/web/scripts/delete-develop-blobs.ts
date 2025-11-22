@@ -17,7 +17,7 @@
  *   - BLOB_READ_WRITE_TOKEN environment variable
  */
 
-import { list, del } from "@vercel/blob";
+import { del, list } from "@vercel/blob";
 
 // Parse arguments
 const args = process.argv.slice(2);
@@ -59,7 +59,9 @@ const BATCH_SIZE = 100;
 async function main(): Promise<void> {
     // Check for blob token
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
-        console.error("❌ Error: BLOB_READ_WRITE_TOKEN environment variable is required");
+        console.error(
+            "❌ Error: BLOB_READ_WRITE_TOKEN environment variable is required",
+        );
         process.exit(1);
     }
 
@@ -104,7 +106,9 @@ async function main(): Promise<void> {
     } while (cursor);
 
     if (skippedFiles > 0) {
-        console.log(`\n📁 Skipped ${skippedFiles} files under ${EXCLUDED_PREFIX}`);
+        console.log(
+            `\n📁 Skipped ${skippedFiles} files under ${EXCLUDED_PREFIX}`,
+        );
     }
 
     console.log();
@@ -112,7 +116,9 @@ async function main(): Promise<void> {
     console.log();
 
     if (totalFiles === 0) {
-        console.log("ℹ️  No files found under develop/ prefix. Nothing to delete.");
+        console.log(
+            "ℹ️  No files found under develop/ prefix. Nothing to delete.",
+        );
         process.exit(0);
     }
 
@@ -121,7 +127,9 @@ async function main(): Promise<void> {
         console.log("⚠️  PREVIEW MODE - No files will be deleted");
         console.log();
         console.log("To delete these files, run with --confirm flag:");
-        console.log("  dotenv --file .env.local run pnpm exec tsx scripts/delete-develop-blobs.ts --confirm");
+        console.log(
+            "  dotenv --file .env.local run pnpm exec tsx scripts/delete-develop-blobs.ts --confirm",
+        );
         console.log();
         process.exit(0);
     }
@@ -149,7 +157,9 @@ async function main(): Promise<void> {
         deleted += batch.length;
         batches++;
 
-        console.log(`   Batch ${batches}: Deleted ${batch.length} files (${deleted}/${totalFiles})`);
+        console.log(
+            `   Batch ${batches}: Deleted ${batch.length} files (${deleted}/${totalFiles})`,
+        );
     }
 
     console.log();

@@ -44,9 +44,7 @@ export const sfxEmphasisEnum = z.enum([
  * Every panel must specify all visual grammar components for AI image generation
  */
 export const AiComicPanelSpecZodSchema = z.object({
-    panel_number: z
-        .number()
-        .describe("Sequential panel number (1-indexed)"),
+    panel_number: z.number().describe("Sequential panel number (1-indexed)"),
 
     shot_type: shotTypeEnum.describe(
         "Camera framing type (establishing_shot, wide_shot, medium_shot, close_up, etc.)",
@@ -154,13 +152,9 @@ export type AiComicPanelSpecType = z.infer<typeof AiComicPanelSpecZodSchema>;
 export const AiComicToonplayZodSchema = z.object({
     scene_id: z.string().describe("ID of the source scene being adapted"),
 
-    scene_title: z
-        .string()
-        .describe("Title of this scene/toonplay"),
+    scene_title: z.string().describe("Title of this scene/toonplay"),
 
-    total_panels: z
-        .number()
-        .describe("Total number of panels (target: 8-12)"),
+    total_panels: z.number().describe("Total number of panels (target: 8-12)"),
 
     panels: z
         .array(AiComicPanelSpecZodSchema)

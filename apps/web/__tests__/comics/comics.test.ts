@@ -9,12 +9,12 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
 import type { InferSelectModel } from "drizzle-orm";
-import { characters, settings } from "@/lib/schemas/database";
-import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
 import { generateRequestId } from "@/lib/auth/context";
 import { withAuth } from "@/lib/auth/server-context";
+import type { AiComicToonplayType } from "@/lib/schemas/ai/ai-toonplay";
+import type { characters, settings } from "@/lib/schemas/database";
+import { generateComicPanels } from "@/lib/studio/generators/comic-panel-generator";
 
 process.env.COMICS_IMAGE_ONLY = process.env.COMICS_IMAGE_ONLY || "true";
 
@@ -91,7 +91,9 @@ function buildStubToonplay(): AiComicToonplayType {
                 shot_type: "establishing_shot",
                 description: `${baseDescription} Panel one sets tone.`,
                 characters_visible: ["char_stub"],
-                character_poses: { char_stub: "Confident stance surveying ruins" },
+                character_poses: {
+                    char_stub: "Confident stance surveying ruins",
+                },
                 setting_focus: "Vast floating archive",
                 lighting: "Radiant golden shafts of light",
                 camera_angle: "wide panoramic",
@@ -123,7 +125,9 @@ function buildStubToonplay(): AiComicToonplayType {
                 shot_type: "close_up",
                 description: `${baseDescription} Panel three captures emotion.`,
                 characters_visible: ["char_stub"],
-                character_poses: { char_stub: "Hand outstretched toward glyph" },
+                character_poses: {
+                    char_stub: "Hand outstretched toward glyph",
+                },
                 setting_focus: "Glyphs pulsing brighter",
                 lighting: "Intense rim light",
                 camera_angle: "dramatic low angle",
@@ -335,7 +339,9 @@ describe("Comic Panel Image Generation Integration", () => {
             const expectedRatio = 9 / 16;
             const tolerance = 0.05;
 
-            expect(Math.abs(aspectRatio - expectedRatio)).toBeLessThan(tolerance);
+            expect(Math.abs(aspectRatio - expectedRatio)).toBeLessThan(
+                tolerance,
+            );
             logComicsTest(
                 "aspect-ratio",
                 `Panel ${panel.panel_number} computedRatio=${aspectRatio.toFixed(4)} within tolerance`,
@@ -396,7 +402,10 @@ describe("Comic Panel Image Generation Integration", () => {
     }, 120000);
 
     it("should generate images with consistent model/provider", async () => {
-        logComicsTest("consistency", "Checking panel model/provider consistency");
+        logComicsTest(
+            "consistency",
+            "Checking panel model/provider consistency",
+        );
         const result = await generatePanels();
 
         expect(result.metadata.model).toBeDefined();
