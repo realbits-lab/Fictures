@@ -151,6 +151,26 @@ export const virtueType = pgEnum(
     "virtue_type",
     CORE_TRAITS as unknown as [string, ...string[]],
 );
+export const aiWriterStyle = pgEnum("ai_writer_style", [
+    "poetic",
+    "concise",
+    "descriptive",
+    "dialogue-heavy",
+    "philosophical",
+    "humorous",
+    "dramatic",
+    "minimalist",
+]);
+export const aiDesignerStyle = pgEnum("ai_designer_style", [
+    "realistic",
+    "anime",
+    "manga",
+    "western-comic",
+    "painterly",
+    "minimalist",
+    "cinematic",
+    "abstract",
+]);
 // Removed: visibility enum - now uses unified 'status' enum
 
 export const characters = pgTable(
@@ -333,6 +353,10 @@ export const stories = pgTable(
         tone: tone().notNull(), // "hopeful" | "dark" | "bittersweet" | "satirical"
         moralFramework: text("moral_framework").notNull(), // What virtues are valued in this world?
 
+        // === AI CREATORS ===
+        writerId: text("writer_id"),
+        designerId: text("designer_id"),
+
         // === PUBLISHING & ENGAGEMENT ===
         status: status().default("draft").notNull(),
         viewCount: integer("view_count").default(0).notNull(),
@@ -400,6 +424,16 @@ export const stories = pgTable(
             foreignColumns: [users.id],
             name: "stories_author_id_users_id_fk",
         }),
+        foreignKey({
+            columns: [table.writerId],
+            foreignColumns: [aiWriters.id],
+            name: "stories_writer_id_ai_writers_id_fk",
+        }).onDelete("set null"),
+        foreignKey({
+            columns: [table.designerId],
+            foreignColumns: [aiDesigners.id],
+            name: "stories_designer_id_ai_designers_id_fk",
+        }).onDelete("set null"),
     ],
 );
 
@@ -753,6 +787,8 @@ export const communityReplies = pgTable(
         authorId: text("author_id").notNull(),
         parentReplyId: text("parent_reply_id"),
         depth: integer().default(0).notNull(),
+        writerId: text("writer_id"),
+        designerId: text("designer_id"),
         isEdited: boolean("is_edited").default(false),
         editCount: integer("edit_count").default(0),
         lastEditedAt: timestamp("last_edited_at", { mode: "string" }),
@@ -783,6 +819,16 @@ export const communityReplies = pgTable(
             foreignColumns: [table.id],
             name: "community_replies_parent_reply_id_community_replies_id_fk",
         }).onDelete("cascade"),
+        foreignKey({
+            columns: [table.writerId],
+            foreignColumns: [aiWriters.id],
+            name: "community_replies_writer_id_ai_writers_id_fk",
+        }).onDelete("set null"),
+        foreignKey({
+            columns: [table.designerId],
+            foreignColumns: [aiDesigners.id],
+            name: "community_replies_designer_id_ai_designers_id_fk",
+        }).onDelete("set null"),
     ],
 );
 
@@ -1932,6 +1978,160 @@ export const scheduledPublications = pgTable(
 );
 
 // =============================================================================
+// AI Writers and Designers System
+// =============================================================================
+
+export const aiWriters = pgTable(
+    "ai_writers",
+    {
+        id: text().primaryKey().notNull(),
+        name: varchar({ length: 255 }).notNull(),
+        description: text().notNull(),
+        writingStyle: aiWriterStyle("writing_style").notNull(),
+        personality: json().$type<{
+            traits: string[];
+            values: string[];
+            quirks: string[];
+        }>().notNull(),
+        expertise: json().$type<string[]>().notNull(),
+        voiceCharacteristics: json("voice_characteristics").$type<{
+            tone: string;
+            vocabulary: string;
+            sentence_structure: string;
+        }>().notNull(),
+        imageUrl: text("image_url"),
+        usageCount: integer("usage_count").default(0).notNull(),
+        lastUsedAt: timestamp("last_used_at", { mode: "string" }),
+        createdAt: timestamp("created_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp("updated_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index("idx_ai_writers_usage_count").using(
+            "btree",
+            table.usageCount.desc().nullsFirst().op("int4_ops"),
+        ),
+        index("idx_ai_writers_writing_style").using(
+            "btree",
+            table.writingStyle.asc().nullsLast().op("enum_ops"),
+        ),
+    ],
+);
+
+export const aiDesigners = pgTable(
+    "ai_designers",
+    {
+        id: text().primaryKey().notNull(),
+        name: varchar({ length: 255 }).notNull(),
+        description: text().notNull(),
+        designStyle: aiDesignerStyle("design_style").notNull(),
+        personality: json().$type<{
+            traits: string[];
+            values: string[];
+            quirks: string[];
+        }>().notNull(),
+        expertise: json().$type<string[]>().notNull(),
+        aestheticPreferences: json("aesthetic_preferences").$type<{
+            color_palettes: string[];
+            composition_style: string;
+            detail_level: string;
+        }>().notNull(),
+        imageUrl: text("image_url"),
+        usageCount: integer("usage_count").default(0).notNull(),
+        lastUsedAt: timestamp("last_used_at", { mode: "string" }),
+        createdAt: timestamp("created_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+        updatedAt: timestamp("updated_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index("idx_ai_designers_usage_count").using(
+            "btree",
+            table.usageCount.desc().nullsFirst().op("int4_ops"),
+        ),
+        index("idx_ai_designers_design_style").using(
+            "btree",
+            table.designStyle.asc().nullsLast().op("enum_ops"),
+        ),
+    ],
+);
+
+export const aiWriterMemories = pgTable(
+    "ai_writer_memories",
+    {
+        id: text().primaryKey().notNull(),
+        writerId: text("writer_id").notNull(),
+        contextType: varchar("context_type", { length: 50 }).notNull(),
+        contextId: text("context_id"),
+        memory: text().notNull(),
+        importance: integer().default(5).notNull(),
+        createdAt: timestamp("created_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index("idx_ai_writer_memories_writer_id").using(
+            "btree",
+            table.writerId.asc().nullsLast().op("text_ops"),
+        ),
+        index("idx_ai_writer_memories_context").using(
+            "btree",
+            table.contextType.asc().nullsLast().op("text_ops"),
+            table.contextId.asc().nullsLast().op("text_ops"),
+        ),
+        index("idx_ai_writer_memories_importance").using(
+            "btree",
+            table.importance.desc().nullsFirst().op("int4_ops"),
+        ),
+        foreignKey({
+            columns: [table.writerId],
+            foreignColumns: [aiWriters.id],
+            name: "ai_writer_memories_writer_id_ai_writers_id_fk",
+        }).onDelete("cascade"),
+    ],
+);
+
+export const aiDesignerMemories = pgTable(
+    "ai_designer_memories",
+    {
+        id: text().primaryKey().notNull(),
+        designerId: text("designer_id").notNull(),
+        contextType: varchar("context_type", { length: 50 }).notNull(),
+        contextId: text("context_id"),
+        memory: text().notNull(),
+        importance: integer().default(5).notNull(),
+        createdAt: timestamp("created_at", { mode: "string" })
+            .defaultNow()
+            .notNull(),
+    },
+    (table) => [
+        index("idx_ai_designer_memories_designer_id").using(
+            "btree",
+            table.designerId.asc().nullsLast().op("text_ops"),
+        ),
+        index("idx_ai_designer_memories_context").using(
+            "btree",
+            table.contextType.asc().nullsLast().op("text_ops"),
+            table.contextId.asc().nullsLast().op("text_ops"),
+        ),
+        index("idx_ai_designer_memories_importance").using(
+            "btree",
+            table.importance.desc().nullsFirst().op("int4_ops"),
+        ),
+        foreignKey({
+            columns: [table.designerId],
+            foreignColumns: [aiDesigners.id],
+            name: "ai_designer_memories_designer_id_ai_designers_id_fk",
+        }).onDelete("cascade"),
+    ],
+);
+
+// =============================================================================
 // Drizzle ORM Relations
 // =============================================================================
 // Relations enable nested queries like db.query.scenes.findFirst({ with: { chapter: ... } })
@@ -1945,6 +2145,14 @@ export const storiesRelations = relations(stories, ({ many, one }) => ({
     author: one(users, {
         fields: [stories.authorId],
         references: [users.id],
+    }),
+    writer: one(aiWriters, {
+        fields: [stories.writerId],
+        references: [aiWriters.id],
+    }),
+    designer: one(aiDesigners, {
+        fields: [stories.designerId],
+        references: [aiDesigners.id],
     }),
 }));
 
@@ -2123,6 +2331,42 @@ export const studioAgentMessagesRelations = relations(
         chat: one(studioAgentChats, {
             fields: [studioAgentMessages.chatId],
             references: [studioAgentChats.id],
+        }),
+    }),
+);
+
+// AI Writers Relations
+export const aiWritersRelations = relations(aiWriters, ({ many }) => ({
+    stories: many(stories),
+    memories: many(aiWriterMemories),
+    replies: many(communityReplies),
+}));
+
+// AI Designers Relations
+export const aiDesignersRelations = relations(aiDesigners, ({ many }) => ({
+    stories: many(stories),
+    memories: many(aiDesignerMemories),
+    replies: many(communityReplies),
+}));
+
+// AI Writer Memories Relations
+export const aiWriterMemoriesRelations = relations(
+    aiWriterMemories,
+    ({ one }) => ({
+        writer: one(aiWriters, {
+            fields: [aiWriterMemories.writerId],
+            references: [aiWriters.id],
+        }),
+    }),
+);
+
+// AI Designer Memories Relations
+export const aiDesignerMemoriesRelations = relations(
+    aiDesignerMemories,
+    ({ one }) => ({
+        designer: one(aiDesigners, {
+            fields: [aiDesignerMemories.designerId],
+            references: [aiDesigners.id],
         }),
     }),
 );
