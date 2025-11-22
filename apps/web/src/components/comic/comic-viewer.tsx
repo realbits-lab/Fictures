@@ -9,6 +9,7 @@
 
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { AdUnit } from "@/components/ads/AdUnit";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useSceneView } from "@/hooks/use-scene-view";
@@ -309,8 +310,30 @@ export function ComicViewer({
                             onLoad={handlePanelLoad}
                             initialLoadCount={initialLoadCount}
                         />
+
+                        {/* Ad Unit every 4 panels */}
+                        {(index + 1) % 4 === 0 && index < data.panels.length - 1 && (
+                            <div className="my-8">
+                                <AdUnit
+                                    slot="COMIC_AD_SLOT_ID"
+                                    format="rectangle"
+                                    responsive={true}
+                                    className="mx-auto"
+                                />
+                            </div>
+                        )}
                     </div>
                 ))}
+
+                {/* Final ad at the end of comic */}
+                <div className="my-8">
+                    <AdUnit
+                        slot="COMIC_FOOTER_AD_SLOT_ID"
+                        format="horizontal"
+                        responsive={true}
+                        className="mx-auto"
+                    />
+                </div>
             </div>
 
             {/* Progress indicator */}
