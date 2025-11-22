@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import React, { useEffect, useRef, useState } from "react";
+import { AdUnit } from "@/components/ads/AdUnit";
 import { SceneImage } from "@/components/optimized-image";
 import { useChapterScenes } from "@/hooks/use-chapter-scenes";
 import { useScenePrefetch } from "@/hooks/use-scene-prefetch";
@@ -1192,6 +1193,16 @@ export function ChapterReaderClient({
                                                     This scene is empty.
                                                 </p>
                                             )}
+                                        </div>
+
+                                        {/* Ad Unit after scene content */}
+                                        <div className="my-8">
+                                            <AdUnit
+                                                slot="SCENE_AD_SLOT_ID"
+                                                format="rectangle"
+                                                responsive={true}
+                                                className="mx-auto"
+                                            />
                                         </div>
                                     </>
                                 ) : chapterScenes.length > 0 ? (

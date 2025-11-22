@@ -339,6 +339,15 @@ export const stories = pgTable(
         rating: integer().default(0).notNull(),
         ratingCount: integer("rating_count").default(0).notNull(),
 
+        // === TOKEN USAGE & COST TRACKING ===
+        totalInputTokens: integer("total_input_tokens").default(0).notNull(),
+        totalOutputTokens: integer("total_output_tokens").default(0).notNull(),
+        totalTokenCost: integer("total_token_cost").default(0).notNull(), // Cost in cents (USD)
+
+        // === AD REVENUE TRACKING ===
+        totalAdImpressions: integer("total_ad_impressions").default(0).notNull(),
+        totalAdRevenue: integer("total_ad_revenue").default(0).notNull(), // Revenue in cents (USD)
+
         // === VISUAL ===
         imageUrl: text("image_url"),
         imageVariants: json("image_variants").$type<{
@@ -661,6 +670,16 @@ export const scenes = pgTable(
             .default(0)
             .notNull(),
         lastViewedAt: timestamp("last_viewed_at", { mode: "string" }),
+
+        // === TOKEN USAGE & COST TRACKING ===
+        inputTokens: integer("input_tokens").default(0).notNull(), // Tokens used for generation
+        outputTokens: integer("output_tokens").default(0).notNull(), // Tokens generated
+        tokenCost: integer("token_cost").default(0).notNull(), // Cost in cents (USD)
+        modelUsed: varchar("model_used", { length: 100 }), // e.g., "gpt-4o-mini", "claude-3.5-sonnet"
+
+        // === AD REVENUE TRACKING ===
+        adImpressions: integer("ad_impressions").default(0).notNull(), // Number of ad impressions
+        adRevenue: integer("ad_revenue").default(0).notNull(), // Revenue in cents (USD)
 
         // === ORDERING ===
         orderIndex: integer("order_index").notNull(),

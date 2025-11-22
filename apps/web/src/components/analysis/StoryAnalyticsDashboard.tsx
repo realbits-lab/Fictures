@@ -3,6 +3,7 @@
 import {
     ArrowLeft,
     Clock,
+    DollarSign,
     Eye,
     Heart,
     Star,
@@ -139,8 +140,20 @@ export function StoryAnalyticsDashboard({
                     </p>
                 </div>
 
-                {/* Time Range Selector */}
-                <div className="flex items-center gap-2 bg-[rgb(var(--color-muted))] p-1 rounded-lg">
+                <div className="flex flex-col gap-2">
+                    {/* ROI Analysis Link */}
+                    <Link href={`/analysis/${storyId}/roi`}>
+                        <Button
+                            variant="outline"
+                            className="w-full md:w-auto"
+                        >
+                            <DollarSign className="w-4 h-4 mr-2" />
+                            View ROI Analysis
+                        </Button>
+                    </Link>
+
+                    {/* Time Range Selector */}
+                    <div className="flex items-center gap-2 bg-[rgb(var(--color-muted))] p-1 rounded-lg">
                     <button
                         onClick={() => setTimeRange("7d")}
                         className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -171,6 +184,7 @@ export function StoryAnalyticsDashboard({
                     >
                         90 Days
                     </button>
+                </div>
                 </div>
             </div>
 
